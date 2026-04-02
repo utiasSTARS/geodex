@@ -11,6 +11,8 @@ build:
     - doxygen
     - graphviz
   jobs:
+    post_create_environment:
+      - pip install cmake
     pre_build:
       - cmake -B build -DBUILD_DOCS=ON
       - cmake --build build --target docs
