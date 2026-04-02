@@ -1,7 +1,7 @@
 # geodex
 
 [![CI](https://github.com/utiasSTARS/geodex/actions/workflows/ci.yml/badge.svg)](https://github.com/utiasSTARS/geodex/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/utiasSTARS/geodex/graph/badge.svg?token=2GHAOI8Q1F)](https://codecov.io/gh/utiasSTARS/geodex)
+[![codecov](https://codecov.io/github/utiasSTARS/geodex/graph/badge.svg?token=SJXNZZZQ9S)](https://codecov.io/github/utiasSTARS/geodex)
 
 **geodex** is a general-purpose software framework for planning on Riemannian manifolds.
 
