@@ -1,0 +1,12 @@
+/* Default for Desktop: 50% width */
+.responsive-img {
+    width: 40%;
+    height: auto;
+}
+
+/* Override for Mobile (screens smaller than 768px): 100% width */
+@media screen and (max-width: 768px) {
+    .responsive-img {
+        width: 90%;
+    }
+}

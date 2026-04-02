@@ -1,0 +1,43 @@
+[build-system]
+requires = ["scikit-build-core>=0.10", "nanobind>=2.4"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "geodex"
+version = "0.1.0"
+description = "A general-purpose framework for planning on Riemannian manifolds"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.9"
+dependencies = ["numpy>=1.21"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: C++",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "License :: OSI Approved :: Apache Software License",
+]
+
+[project.optional-dependencies]
+test = ["pytest", "numpy"]
+
+[project.urls]
+Homepage = "https://github.com/utiasSTARS/geodex"
+Documentation = "https://geodex.readthedocs.io"
+Repository = "https://github.com/utiasSTARS/geodex"
+Issues = "https://github.com/utiasSTARS/geodex/issues"
+
+[tool.scikit-build]
+cmake.build-type = "Release"
+cmake.args = ["-DBUILD_PYTHON_BINDINGS=ON"]
+wheel.packages = ["python/geodex"]
+
+[tool.pytest.ini_options]
+testpaths = ["python/tests"]

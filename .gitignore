@@ -1,0 +1,9 @@
+build/
+.venv/
+__pycache__/
+*.pyc
+
+# Generated outputs
+*.json
+!package.json
+*.html

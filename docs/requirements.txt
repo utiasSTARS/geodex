@@ -1,0 +1,7 @@
+sphinx<9
+breathe
+sphinx-rtd-theme
+sphinxcontrib-mermaid
+sphinx-tabs
+sphinx-togglebutton
+sphinxcontrib-bibtex

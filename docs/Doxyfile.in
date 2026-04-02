@@ -1,0 +1,44 @@
+# Doxyfile for geodex — configured by CMake
+
+PROJECT_NAME           = "geodex"
+PROJECT_NUMBER         = @PROJECT_VERSION@
+PROJECT_BRIEF          = "Header-only C++20 library for Riemannian manifold operations"
+OUTPUT_DIRECTORY       = @CMAKE_BINARY_DIR@/docs/doxygen
+
+# Input
+INPUT                  = @CMAKE_SOURCE_DIR@/include/geodex
+RECURSIVE              = YES
+FILE_PATTERNS          = *.hpp
+EXCLUDE_PATTERNS       = */detail/*
+
+# Extraction
+EXTRACT_ALL            = NO
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = YES
+
+# Output formats
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+GENERATE_XML           = YES
+
+# Math rendering
+USE_MATHJAX            = YES
+
+# Source browsing
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = NO
+
+# Warnings
+WARN_IF_UNDOCUMENTED   = YES
+WARN_NO_PARAMDOC       = NO
+
+# Preprocessing
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+PREDEFINED             = GEODEX_DEBUG
+
+# Misc
+QUIET                  = YES
+JAVADOC_AUTOBRIEF      = YES
+QT_AUTOBRIEF           = YES
+SORT_MEMBER_DOCS       = NO
