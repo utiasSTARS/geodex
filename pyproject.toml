@@ -22,7 +22,6 @@ classifiers = [
     "Programming Language :: C++",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Mathematics",
-    "License :: OSI Approved :: Apache Software License",
 ]
 
 [project.optional-dependencies]
