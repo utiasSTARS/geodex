@@ -127,45 +127,6 @@ concept HasProject = requires(const M m, const typename M::Point p, const typena
   { m.project(p, v) } -> std::same_as<typename M::Tangent>;
 };
 
-/// @brief True when the manifold opts in, at compile time, to "log is the
-/// Riemannian gradient".
-///
-/// @details On a Riemannian manifold \f$(M, g)\f$ the identity
-/// \f$\nabla_g(\tfrac{1}{2}\, d_g^2(\cdot, q))(x) = -\log_x^g(q)\f$
-/// holds exactly **only when** `log` is the Riemannian logarithm of the metric
-/// `g` currently in use. The library's built-in manifolds declare
-/// `static constexpr bool has_riemannian_log` when their default metric and
-/// retraction yield a true Riemannian log; custom metrics and projection
-/// retractions are (correctly) flagged as incompatible, forcing
-/// `discrete_geodesic` to use finite differences to compute the natural
-/// gradient of the custom metric directly.
-template <typename M>
-concept HasRiemannianLog = requires {
-  requires M::has_riemannian_log;
-};
-
-/// @brief True when the manifold provides a runtime-evaluable `has_riemannian_log_runtime()`
-/// method. Used for manifolds whose metric parameters are runtime-variable
-/// (e.g., `SE2LeftInvariantMetric` weights), where compile-time detection
-/// cannot tell whether the Lie-group log coincides with the Riemannian log.
-template <typename M>
-concept HasRiemannianLogRuntime = requires(const M& m) {
-  { m.has_riemannian_log_runtime() } -> std::convertible_to<bool>;
-};
-
-/// @brief Decide, once per `discrete_geodesic` call, whether the log-fast-path
-/// is mathematically valid for this manifold.
-template <typename M>
-bool resolve_fast_path(const M& m) {
-  if constexpr (HasRiemannianLog<M>) {
-    return true;
-  } else if constexpr (HasRiemannianLogRuntime<M>) {
-    return m.has_riemannian_log_runtime();
-  } else {
-    return false;
-  }
-}
-
 }  // namespace detail
 
 // ---------------------------------------------------------------------------
@@ -514,9 +475,9 @@ auto discrete_geodesic(const M& manifold, const typename M::Point& start, const 
   double step_cap = detail::initial_step_cap(manifold, settings.step_size);
   const double initial_distance = dist;
   // Resolved once per call: is the base log the Riemannian log of the metric?
-  // Combines compile-time opt-in (`M::has_riemannian_log`) with any runtime
-  // detection (`m.has_riemannian_log_runtime()`).
-  const bool fast_path_enabled = detail::resolve_fast_path(manifold);
+  // `is_riemannian_log` collapses the compile-time (`M::has_riemannian_log`)
+  // and runtime (`m.has_riemannian_log_runtime()`) signals into one bool.
+  const bool fast_path_enabled = geodex::is_riemannian_log(manifold);
 
   Point current = start;
 

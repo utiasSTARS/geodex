@@ -28,6 +28,12 @@ class ConfigurationSpace {
   using Point = typename BaseManifoldT::Point;     ///< Point type from the base manifold.
   using Tangent = typename BaseManifoldT::Tangent; ///< Tangent vector type from the base manifold.
 
+  /// @brief Compile-time flag: a custom-metric ConfigurationSpace never satisfies
+  /// the "log = Riemannian log of metric" identity, because the base manifold's
+  /// `log` is defined for its own metric, not `MetricT`. Algorithms like
+  /// `discrete_geodesic` always take the finite-difference natural-gradient path.
+  static constexpr bool has_riemannian_log = false;
+
   /// @brief Construct with a base manifold and a metric.
   /// @param base The base manifold instance.
   /// @param metric The metric policy instance.
