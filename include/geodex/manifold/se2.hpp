@@ -9,8 +9,8 @@
 #include <geodex/core/angle.hpp>
 #include <geodex/core/concepts.hpp>
 #include <geodex/core/retraction.hpp>
+#include <geodex/core/sampler.hpp>
 #include <numbers>
-#include <random>
 #include <type_traits>
 
 #include <geodex/metrics/se2_left_invariant.hpp>
@@ -123,11 +123,17 @@ static_assert(Retraction<SE2EulerRetraction, Eigen::Vector3d, Eigen::Vector3d>);
 ///
 /// @tparam MetricT Metric policy (default: SE2LeftInvariantMetric).
 /// @tparam RetractionT Retraction policy (default: SE2ExponentialMap).
-template <typename MetricT = SE2LeftInvariantMetric, typename RetractionT = SE2ExponentialMap>
+/// @tparam SamplerT Sampler policy for `random_point()` (default: `StochasticSampler`).
+template <typename MetricT = SE2LeftInvariantMetric,
+          typename RetractionT = SE2ExponentialMap,
+          typename SamplerT = StochasticSampler>
 class SE2 {
   MetricT metric_;
   RetractionT retraction_;
-  double x_lo_, x_hi_, y_lo_, y_hi_;
+  /// @brief Workspace bounds used by the default sampler only — they have no
+  /// effect on `exp`, `log`, or the metric.
+  double sample_x_lo_, sample_x_hi_, sample_y_lo_, sample_y_hi_;
+  mutable SamplerT sampler_;
 
  public:
   using Scalar = double;           ///< Scalar type.
@@ -155,40 +161,46 @@ class SE2 {
     }
   }
 
-  /// @brief Default constructor with workspace bounds \f$ [0, 10]^2 \f$.
-  SE2() : x_lo_(0.0), x_hi_(10.0), y_lo_(0.0), y_hi_(10.0) {}
+  /// @brief Default constructor with workspace sampling bounds \f$ [0, 10]^2 \f$.
+  SE2() : sample_x_lo_(0.0), sample_x_hi_(10.0), sample_y_lo_(0.0), sample_y_hi_(10.0) {}
 
   /// @brief Construct with explicit metric.
   /// @param metric The metric policy instance.
-  explicit SE2(MetricT metric) : metric_(std::move(metric)), x_lo_(0.0), x_hi_(10.0), y_lo_(0.0), y_hi_(10.0) {}
+  explicit SE2(MetricT metric)
+      : metric_(std::move(metric)),
+        sample_x_lo_(0.0),
+        sample_x_hi_(10.0),
+        sample_y_lo_(0.0),
+        sample_y_hi_(10.0) {}
 
-  /// @brief Construct with explicit metric, retraction, and workspace bounds.
+  /// @brief Construct with explicit metric, retraction, and workspace sampling bounds.
   /// @param metric The metric policy instance.
   /// @param retraction The retraction policy instance.
-  /// @param x_lo Lower x bound for random sampling.
-  /// @param x_hi Upper x bound for random sampling.
-  /// @param y_lo Lower y bound for random sampling.
-  /// @param y_hi Upper y bound for random sampling.
+  /// @param x_lo Lower x bound for random sampling (sampler only).
+  /// @param x_hi Upper x bound for random sampling (sampler only).
+  /// @param y_lo Lower y bound for random sampling (sampler only).
+  /// @param y_hi Upper y bound for random sampling (sampler only).
   SE2(MetricT metric, RetractionT retraction, double x_lo = 0.0, double x_hi = 10.0,
       double y_lo = 0.0, double y_hi = 10.0)
       : metric_(std::move(metric)),
         retraction_(std::move(retraction)),
-        x_lo_(x_lo),
-        x_hi_(x_hi),
-        y_lo_(y_lo),
-        y_hi_(y_hi) {}
+        sample_x_lo_(x_lo),
+        sample_x_hi_(x_hi),
+        sample_y_lo_(y_lo),
+        sample_y_hi_(y_hi) {}
 
   /// @brief Return the intrinsic dimension (always 3).
   int dim() const { return 3; }
 
-  /// @brief Sample a random pose uniformly in the workspace bounds.
+  /// @brief Sample a random pose uniformly in the sampling bounds.
   /// @return A random pose \f$ (x, y, \theta) \f$.
   Point random_point() const {
-    thread_local std::mt19937 gen{std::random_device{}()};
-    std::uniform_real_distribution<double> dist_x(x_lo_, x_hi_);
-    std::uniform_real_distribution<double> dist_y(y_lo_, y_hi_);
-    std::uniform_real_distribution<double> dist_theta(-std::numbers::pi, std::numbers::pi);
-    return Point(dist_x(gen), dist_y(gen), dist_theta(gen));
+    Eigen::VectorXd box(3);
+    sampler_.sample_box(3, box);
+    const double x = sample_x_lo_ + box[0] * (sample_x_hi_ - sample_x_lo_);
+    const double y = sample_y_lo_ + box[1] * (sample_y_hi_ - sample_y_lo_);
+    const double theta = -std::numbers::pi + box[2] * 2.0 * std::numbers::pi;
+    return Point(x, y, theta);
   }
 
   /// @brief Project an ambient vector onto the tangent space at \f$ p \f$.

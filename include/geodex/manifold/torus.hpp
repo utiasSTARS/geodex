@@ -8,8 +8,8 @@
 #include <geodex/algorithm/distance.hpp>
 #include <geodex/core/angle.hpp>
 #include <geodex/core/concepts.hpp>
+#include <geodex/core/sampler.hpp>
 #include <numbers>
-#include <random>
 #include <type_traits>
 
 #include <geodex/metrics/constant_spd.hpp>
@@ -40,10 +40,14 @@ using TorusFlatMetric = ConstantSPDMetric<Dim>;
 ///
 /// @tparam Dim Compile-time dimension, or `Eigen::Dynamic`.
 /// @tparam MetricT Metric policy (default: TorusFlatMetric).
-template <int Dim = Eigen::Dynamic, typename MetricT = TorusFlatMetric<Dim>>
+/// @tparam SamplerT Sampler policy for `random_point()` (default: `StochasticSampler`).
+template <int Dim = Eigen::Dynamic,
+          typename MetricT = TorusFlatMetric<Dim>,
+          typename SamplerT = StochasticSampler>
 class Torus {
   MetricT metric_;
   int dim_;
+  mutable SamplerT sampler_;
 
  public:
   using Scalar = double;                       ///< Scalar type.
@@ -108,14 +112,14 @@ class Torus {
   /// @brief Sample a uniformly random point in \f$ [0, 2\pi)^n \f$.
   /// @return A random point on the torus.
   Point random_point() const {
-    thread_local std::mt19937 gen{std::random_device{}()};
-    std::uniform_real_distribution<double> dist(0.0, 2.0 * std::numbers::pi);
+    Eigen::VectorXd box(dim_);
+    sampler_.sample_box(dim_, box);
     Point p;
     if constexpr (Dim == Eigen::Dynamic) {
       p.resize(dim_);
     }
     for (int i = 0; i < dim_; ++i) {
-      p[i] = dist(gen);
+      p[i] = box[i] * 2.0 * std::numbers::pi;
     }
     return p;
   }

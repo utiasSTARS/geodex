@@ -7,8 +7,8 @@
 #include <cmath>
 #include <geodex/algorithm/distance.hpp>
 #include <geodex/core/concepts.hpp>
+#include <geodex/core/sampler.hpp>
 #include <limits>
-#include <random>
 #include <type_traits>
 
 #include <geodex/metrics/constant_spd.hpp>
@@ -39,10 +39,16 @@ using EuclideanStandardMetric = ConstantSPDMetric<Dim>;
 ///
 /// @tparam Dim Compile-time dimension, or `Eigen::Dynamic`.
 /// @tparam MetricT Metric policy (default: EuclideanStandardMetric).
-template <int Dim = Eigen::Dynamic, typename MetricT = EuclideanStandardMetric<Dim>>
+/// @tparam SamplerT Sampler policy for `random_point()` (default: `StochasticSampler`).
+template <int Dim = Eigen::Dynamic,
+          typename MetricT = EuclideanStandardMetric<Dim>,
+          typename SamplerT = StochasticSampler>
 class Euclidean {
   MetricT metric_;
   int dim_;
+  Eigen::VectorXd lo_;           ///< Lower sampling bounds (default: -1^n).
+  Eigen::VectorXd hi_;           ///< Upper sampling bounds (default:  1^n).
+  mutable SamplerT sampler_;     ///< Sampler used by `random_point`.
 
  public:
   using Scalar = double;                       ///< Scalar type.
@@ -64,29 +70,48 @@ class Euclidean {
     }
   }
 
-  /// @brief Fixed-dimension constructor.
+  /// @brief Fixed-dimension constructor with default bounds \f$[-1, 1]^n\f$.
   Euclidean()
     requires(Dim != Eigen::Dynamic)
-      : dim_(Dim) {}
+      : dim_(Dim),
+        lo_(Eigen::VectorXd::Constant(Dim, -1.0)),
+        hi_(Eigen::VectorXd::Constant(Dim, 1.0)) {}
 
   /// @brief Fixed-dimension constructor with custom metric.
   /// @param metric The metric policy instance.
   explicit Euclidean(MetricT metric)
     requires(Dim != Eigen::Dynamic)
-      : metric_(std::move(metric)), dim_(Dim) {}
+      : metric_(std::move(metric)),
+        dim_(Dim),
+        lo_(Eigen::VectorXd::Constant(Dim, -1.0)),
+        hi_(Eigen::VectorXd::Constant(Dim, 1.0)) {}
 
   /// @brief Dynamic-dimension constructor.
   /// @param n The dimension of the space.
   explicit Euclidean(int n)
     requires(Dim == Eigen::Dynamic)
-      : metric_(make_default_metric(n)), dim_(n) {}
+      : metric_(make_default_metric(n)),
+        dim_(n),
+        lo_(Eigen::VectorXd::Constant(n, -1.0)),
+        hi_(Eigen::VectorXd::Constant(n, 1.0)) {}
 
   /// @brief Dynamic-dimension constructor with custom metric.
   /// @param n The dimension of the space.
   /// @param metric The metric policy instance.
   Euclidean(int n, MetricT metric)
     requires(Dim == Eigen::Dynamic)
-      : metric_(std::move(metric)), dim_(n) {}
+      : metric_(std::move(metric)),
+        dim_(n),
+        lo_(Eigen::VectorXd::Constant(n, -1.0)),
+        hi_(Eigen::VectorXd::Constant(n, 1.0)) {}
+
+  /// @brief Set the sampling bounds. Values outside these bounds are never
+  /// returned by `random_point()`, but `exp`/`log`/metric operations remain
+  /// unchanged (bounds are a sampler concern, not a topological one).
+  void set_sampling_bounds(const Eigen::VectorXd& lo, const Eigen::VectorXd& hi) {
+    lo_ = lo;
+    hi_ = hi;
+  }
 
  private:
   /// @brief Build the default metric for dynamic Euclidean: `ConstantSPDMetric<Dynamic>(n)`
@@ -104,17 +129,21 @@ class Euclidean {
   /// @brief Return the dimension of the space.
   int dim() const { return dim_; }
 
-  /// @brief Sample a random point from a standard normal distribution.
-  /// @return A point in \f$ \mathbb{R}^n \f$.
+  /// @brief Sample a point uniformly in \f$[\mathrm{lo}, \mathrm{hi}]^n\f$ (default \f$[-1, 1]^n\f$).
+  ///
+  /// @details Uses the configured `SamplerT` (default: `StochasticSampler`)
+  /// to draw uniform box samples and linearly rescales to the sampling
+  /// bounds. Pass `HaltonSampler` via the template parameter for
+  /// deterministic low-discrepancy sampling.
   Point random_point() const {
-    thread_local std::mt19937 gen{std::random_device{}()};
-    std::normal_distribution<double> dist(0.0, 1.0);
+    Eigen::VectorXd box(dim_);
+    sampler_.sample_box(dim_, box);
     Point p;
     if constexpr (Dim == Eigen::Dynamic) {
       p.resize(dim_);
     }
     for (int i = 0; i < dim_; ++i) {
-      p[i] = dist(gen);
+      p[i] = lo_[i] + box[i] * (hi_[i] - lo_[i]);
     }
     return p;
   }
