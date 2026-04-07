@@ -14,9 +14,13 @@ target_link_libraries(test_concepts PRIVATE geodex GTest::gtest_main)
 add_executable(test_sphere test_sphere.cpp)
 target_link_libraries(test_sphere PRIVATE geodex GTest::gtest_main)
 
+add_executable(test_sphere_ndim test_sphere_ndim.cpp)
+target_link_libraries(test_sphere_ndim PRIVATE geodex GTest::gtest_main)
+
 include(GoogleTest)
 gtest_discover_tests(test_concepts)
 gtest_discover_tests(test_sphere)
+gtest_discover_tests(test_sphere_ndim)
 
 add_executable(test_interpolation test_interpolation.cpp)
 target_link_libraries(test_interpolation PRIVATE geodex GTest::gtest_main)

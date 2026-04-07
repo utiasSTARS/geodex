@@ -72,7 +72,7 @@ TEST_F(InterpolationRoundTest, Antipodal) {
 TEST(InterpolationAnisotropic, ConvergesToTarget) {
   Eigen::Matrix3d A = Eigen::Matrix3d::Identity();
   A(0, 0) = 4.0;
-  Sphere<ConstantSPDMetric<3>> sphere{ConstantSPDMetric<3>{A}};
+  Sphere<2, ConstantSPDMetric<3>> sphere{ConstantSPDMetric<3>{A}};
 
   Eigen::Vector3d north(0.0, 0.0, 1.0);
   auto target = point_at_theta(0.8);
@@ -187,7 +187,7 @@ TEST(InterpolationNonRiemannian, SphereProjectionRetractionConverges) {
   // Projection retraction is first-order, not the true exp map. The log-fast-path
   // will still make progress (strict monotone decrease), but may be less accurate
   // per step than the true exp map.
-  using SphereProj = Sphere<SphereRoundMetric, SphereProjectionRetraction>;
+  using SphereProj = Sphere<2, SphereRoundMetric, SphereProjectionRetraction>;
   SphereProj sphere;
   Eigen::Vector3d north(0.0, 0.0, 1.0);
   Eigen::Vector3d target(std::sin(1.0), 0.0, std::cos(1.0));

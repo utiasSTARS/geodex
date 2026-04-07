@@ -143,7 +143,7 @@ int main(int argc, char* argv[]) {
   //    vs "anisotropic metric" effects.
   // ---------------------------------------------------------------------
   {
-    Sphere<SphereRoundMetric, SphereProjectionRetraction> sphere;
+    Sphere<2, SphereRoundMetric, SphereProjectionRetraction> sphere;
     InterpolationSettings s;
     s.step_size = 0.1;
     entries.push_back(run_scenario("2. Round metric, projection retraction", sphere, north,
@@ -160,7 +160,7 @@ int main(int argc, char* argv[]) {
   {
     Eigen::Matrix3d A = Eigen::Matrix3d::Identity();
     A(0, 0) = 4.0;
-    Sphere<ConstantSPDMetric<3>> sphere{ConstantSPDMetric<3>{A}};
+    Sphere<2, ConstantSPDMetric<3>> sphere{ConstantSPDMetric<3>{A}};
     InterpolationSettings s;
     s.step_size = 0.1;
     entries.push_back(
@@ -175,7 +175,7 @@ int main(int argc, char* argv[]) {
   {
     Eigen::Matrix3d A = Eigen::Matrix3d::Identity();
     A(0, 0) = 25.0;
-    Sphere<ConstantSPDMetric<3>> sphere{ConstantSPDMetric<3>{A}};
+    Sphere<2, ConstantSPDMetric<3>> sphere{ConstantSPDMetric<3>{A}};
     InterpolationSettings s;
     s.step_size = 0.05;
     s.max_steps = 500;

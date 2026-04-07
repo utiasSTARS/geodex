@@ -16,15 +16,15 @@ namespace geodex::python {
 
 class PySphere {
  public:
-  using V = std::variant<Sphere<SphereRoundMetric, SphereExponentialMap>,
-                         Sphere<SphereRoundMetric, SphereProjectionRetraction>>;
+  using V = std::variant<Sphere<2, SphereRoundMetric, SphereExponentialMap>,
+                         Sphere<2, SphereRoundMetric, SphereProjectionRetraction>>;
 
   PySphere(const std::string& retraction = "exponential")
       : retraction_name_(retraction) {
     if (retraction == "exponential") {
-      impl_.emplace<Sphere<SphereRoundMetric, SphereExponentialMap>>();
+      impl_.emplace<Sphere<2, SphereRoundMetric, SphereExponentialMap>>();
     } else if (retraction == "projection") {
-      impl_.emplace<Sphere<SphereRoundMetric, SphereProjectionRetraction>>();
+      impl_.emplace<Sphere<2, SphereRoundMetric, SphereProjectionRetraction>>();
     } else {
       throw std::invalid_argument("Unknown retraction: '" + retraction +
                                   "'. Options: 'exponential', 'projection'");

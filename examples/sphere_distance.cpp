@@ -52,12 +52,12 @@ int main() {
   Eigen::Matrix3d A = Eigen::Matrix3d::Identity();
   A(0, 0) = 4.0;
   A(1, 1) = 1.0;
-  Sphere<ConstantSPDMetric<3>> aniso_sphere{ConstantSPDMetric<3>{A}};
+  Sphere<2, ConstantSPDMetric<3>> aniso_sphere{ConstantSPDMetric<3>{A}};
   print_distance_table("Anisotropic metric (A=diag(4,1,1)) + Exponential map", aniso_sphere, north,
                        thetas);
 
   // 3. Round metric + projection retraction
-  Sphere<SphereRoundMetric, SphereProjectionRetraction> proj_sphere;
+  Sphere<2, SphereRoundMetric, SphereProjectionRetraction> proj_sphere;
   print_distance_table("Round metric + Projection retraction", proj_sphere, north, thetas);
 
   return 0;

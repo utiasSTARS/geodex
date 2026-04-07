@@ -47,7 +47,7 @@ BENCHMARK(BM_DiscreteGeodesic_Sphere);
 static void BM_DiscreteGeodesic_SphereAniso(benchmark::State& state) {
   Eigen::Matrix3d A = Eigen::Matrix3d::Identity();
   A(0, 0) = 4.0;
-  using AnisoSphere = Sphere<ConstantSPDMetric<3>>;
+  using AnisoSphere = Sphere<2, ConstantSPDMetric<3>>;
   AnisoSphere sphere{ConstantSPDMetric<3>{A}};
   Eigen::Vector3d start(0.0, 0.0, 1.0);
   Eigen::Vector3d target(std::sin(0.8), 0.0, std::cos(0.8));
