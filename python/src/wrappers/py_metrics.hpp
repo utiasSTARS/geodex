@@ -85,7 +85,7 @@ class PyJacobiMetric {
         }};
   }
 
-  std::string repr() const { return "JacobiMetric(H=" + std::to_string(impl_.total_energy_) + ")"; }
+  std::string repr() const { return "JacobiMetric(H=" + std::to_string(impl_.total_energy()) + ")"; }
 
  private:
   Impl impl_;

@@ -84,6 +84,9 @@ struct JacobiMetric {
                                 const Eigen::MatrixXd& V) const {
     return inner_metric_.inner_matrix(q, U, V);
   }
+
+  /// @brief Return the total energy \f$ H \f$ set at construction.
+  double total_energy() const { return inner_metric_.alpha_.total_energy_; }
 };
 
 /// @brief Factory function for `JacobiMetric` — convenience wrapper that lets

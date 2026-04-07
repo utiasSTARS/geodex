@@ -28,8 +28,7 @@ Sphere
 .. doxygenclass:: geodex::Sphere
    :members:
 
-.. doxygenstruct:: geodex::SphereRoundMetric
-   :members:
+.. doxygentypedef:: geodex::SphereRoundMetric
 
 .. doxygenstruct:: geodex::SphereExponentialMap
    :members:
@@ -43,8 +42,7 @@ Euclidean
 .. doxygenclass:: geodex::Euclidean
    :members:
 
-.. doxygenstruct:: geodex::EuclideanStandardMetric
-   :members:
+.. doxygentypedef:: geodex::EuclideanStandardMetric
 
 
 Torus
@@ -53,8 +51,7 @@ Torus
 .. doxygenclass:: geodex::Torus
    :members:
 
-.. doxygenstruct:: geodex::TorusFlatMetric
-   :members:
+.. doxygentypedef:: geodex::TorusFlatMetric
 
 SE(2)
 ^^^^^
@@ -86,11 +83,21 @@ Metrics
 .. doxygenstruct:: geodex::PullbackMetric
    :members:
 
-.. doxygenstruct:: geodex::IdentityTaskMetric
-   :members:
-
 .. doxygenstruct:: geodex::WeightedMetric
    :members:
+
+Sampling
+--------
+
+.. doxygenclass:: geodex::StochasticSampler
+   :members:
+
+.. doxygenclass:: geodex::HaltonSampler
+   :members:
+
+.. doxygenconcept:: geodex::Sampler
+
+.. doxygenconcept:: geodex::SeedableSampler
 
 Heuristics
 ----------
