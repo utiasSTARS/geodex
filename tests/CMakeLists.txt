@@ -18,6 +18,10 @@ include(GoogleTest)
 gtest_discover_tests(test_concepts)
 gtest_discover_tests(test_sphere)
 
+add_executable(test_interpolation test_interpolation.cpp)
+target_link_libraries(test_interpolation PRIVATE geodex GTest::gtest_main)
+gtest_discover_tests(test_interpolation)
+
 add_executable(test_euclidean test_euclidean.cpp)
 target_link_libraries(test_euclidean PRIVATE geodex GTest::gtest_main)
 target_include_directories(test_euclidean PRIVATE ${CMAKE_SOURCE_DIR}/tests/fixtures)
@@ -38,3 +42,19 @@ gtest_discover_tests(test_metrics)
 add_executable(test_configuration_space test_configuration_space.cpp)
 target_link_libraries(test_configuration_space PRIVATE geodex GTest::gtest_main)
 gtest_discover_tests(test_configuration_space)
+
+add_executable(test_sampler test_sampler.cpp)
+target_link_libraries(test_sampler PRIVATE geodex GTest::gtest_main)
+gtest_discover_tests(test_sampler)
+
+if(BUILD_OMPL_EXAMPLES)
+  add_executable(test_geodex_state_space test_geodex_state_space.cpp)
+  # GTest must come before ompl::ompl so FetchContent headers take priority
+  # over any system-installed GTest (e.g. /opt/homebrew/include/gtest).
+  target_link_libraries(test_geodex_state_space PRIVATE geodex GTest::gtest_main ompl::ompl)
+  gtest_discover_tests(test_geodex_state_space)
+
+  add_executable(test_path_resampling test_path_resampling.cpp)
+  target_link_libraries(test_path_resampling PRIVATE geodex GTest::gtest_main ompl::ompl)
+  gtest_discover_tests(test_path_resampling)
+endif()

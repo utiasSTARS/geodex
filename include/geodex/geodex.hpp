@@ -10,6 +10,7 @@
 #include "core/interpolation.hpp"
 #include "core/metric.hpp"
 #include "core/retraction.hpp"
+#include "core/sampler.hpp"
 #include "manifold/configuration_space.hpp"
 #include "manifold/euclidean.hpp"
 #include "manifold/se2.hpp"
