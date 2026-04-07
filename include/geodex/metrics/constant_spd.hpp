@@ -4,7 +4,8 @@
 #pragma once
 
 #include <Eigen/Core>
-#include <cmath>
+
+#include <geodex/core/metric.hpp>
 
 namespace geodex {
 
@@ -41,7 +42,7 @@ struct ConstantSPDMetric {
   /// @param v Tangent vector.
   /// @return The norm value.
   double norm(const Eigen::Vector<double, Dim>& p, const Eigen::Vector<double, Dim>& v) const {
-    return std::sqrt(inner(p, v, v));
+    return riemannian_norm(*this, p, v);
   }
 
   /// @brief Batched inner product: \f$U^\top A\, V\f$ in a single matrix multiply.

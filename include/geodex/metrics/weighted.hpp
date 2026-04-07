@@ -4,7 +4,8 @@
 #pragma once
 
 #include <Eigen/Core>
-#include <cmath>
+
+#include <geodex/core/metric.hpp>
 
 namespace geodex {
 
@@ -40,7 +41,7 @@ struct WeightedMetric {
   /// @return The scaled norm value.
   template <typename Point, typename Tangent>
   double norm(const Point& q, const Tangent& v) const {
-    return std::sqrt(inner(q, v, v));
+    return riemannian_norm(*this, q, v);
   }
 
   /// @brief Batched inner product: forwards to the base metric's `inner_matrix`

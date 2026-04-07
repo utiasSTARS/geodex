@@ -4,7 +4,8 @@
 #pragma once
 
 #include <Eigen/Core>
-#include <cmath>
+
+#include <geodex/core/metric.hpp>
 
 namespace geodex {
 
@@ -56,7 +57,7 @@ struct PullbackMetric {
   /// @return The norm value.
   template <typename Point, typename Tangent>
   double norm(const Point& q, const Tangent& v) const {
-    return std::sqrt(inner(q, v, v));
+    return riemannian_norm(*this, q, v);
   }
 
   /// @brief Batched inner product: \f$U^\top (J^\top G J + \lambda I)\, V\f$ with
@@ -74,23 +75,6 @@ struct PullbackMetric {
   }
 };
 
-/// @brief Task-space metric that always returns the identity matrix.
-///
-/// @details Used as the default task metric for `make_pullback_euclidean_metric`.
-struct IdentityTaskMetric {
-  int task_dim_;  ///< Dimension of the task space.
-
-  /// @brief Construct with the task-space dimension.
-  /// @param task_dim Dimension of the task space.
-  explicit IdentityTaskMetric(int task_dim) : task_dim_(task_dim) {}
-
-  /// @brief Return the identity matrix.
-  template <typename Point>
-  Eigen::MatrixXd operator()(const Point& /*q*/) const {
-    return Eigen::MatrixXd::Identity(task_dim_, task_dim_);
-  }
-};
-
 /// @brief Create a pullback metric with Euclidean task-space metric (\f$ G_X = I \f$).
 ///
 /// @details Computes \f$ u^\top J^\top J \, v + \lambda \, u^\top v \f$.
@@ -102,8 +86,11 @@ struct IdentityTaskMetric {
 /// @return A PullbackMetric with identity task-space metric.
 template <typename JacobianFn>
 auto make_pullback_euclidean_metric(JacobianFn jac_fn, int task_dim, double lambda = 0.0) {
-  return PullbackMetric<JacobianFn, IdentityTaskMetric>{
-      std::move(jac_fn), IdentityTaskMetric{task_dim}, lambda};
+  auto identity_task_metric = [task_dim](const auto& /*q*/) {
+    return Eigen::MatrixXd::Identity(task_dim, task_dim);
+  };
+  return PullbackMetric<JacobianFn, decltype(identity_task_metric)>{
+      std::move(jac_fn), std::move(identity_task_metric), lambda};
 }
 
 }  // namespace geodex

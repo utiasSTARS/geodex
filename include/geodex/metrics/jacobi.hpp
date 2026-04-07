@@ -4,7 +4,8 @@
 #pragma once
 
 #include <Eigen/Core>
-#include <cmath>
+
+#include <geodex/core/metric.hpp>
 
 namespace geodex {
 
@@ -52,7 +53,7 @@ struct JacobiMetric {
   /// @return The norm value.
   template <typename Point, typename Tangent>
   double norm(const Point& q, const Tangent& v) const {
-    return std::sqrt(inner(q, v, v));
+    return riemannian_norm(*this, q, v);
   }
 
   /// @brief Batched inner product: \f$U^\top \bigl(2(H - P(q)) M(q)\bigr) V\f$

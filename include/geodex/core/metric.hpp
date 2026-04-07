@@ -4,11 +4,22 @@
 #pragma once
 
 #include <Eigen/Core>
+#include <cmath>
 #include <concepts>
 
 #include "concepts.hpp"
 
 namespace geodex {
+
+/// @brief Default Riemannian norm formula \f$ \|v\|_p = \sqrt{\langle v, v \rangle_p} \f$.
+///
+/// @details Shared helper that every metric/manifold with the canonical induced
+/// norm can forward to, removing the duplicated `return std::sqrt(inner(p, v, v));`
+/// body from each implementation.
+template <typename HasInner, typename Point, typename Tangent>
+inline double riemannian_norm(const HasInner& h, const Point& p, const Tangent& v) {
+  return std::sqrt(h.inner(p, v, v));
+}
 
 /// @brief A manifold that provides a Riemannian inner product and norm.
 ///

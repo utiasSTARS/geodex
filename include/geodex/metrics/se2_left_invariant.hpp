@@ -4,7 +4,8 @@
 #pragma once
 
 #include <Eigen/Core>
-#include <cmath>
+
+#include <geodex/core/metric.hpp>
 
 namespace geodex {
 
@@ -46,7 +47,7 @@ struct SE2LeftInvariantMetric {
   /// @param v Tangent vector.
   /// @return The norm value.
   double norm(const Eigen::Vector3d& p, const Eigen::Vector3d& v) const {
-    return std::sqrt(inner(p, v, v));
+    return riemannian_norm(*this, p, v);
   }
 };
 
