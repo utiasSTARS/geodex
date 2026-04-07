@@ -35,6 +35,12 @@ struct SE2LeftInvariantMetric {
     return weights_[0] * u[0] * v[0] + weights_[1] * u[1] * v[1] + weights_[2] * u[2] * v[2];
   }
 
+  /// @brief Batched inner product: \f$U^\top \operatorname{diag}(w)\, V\f$.
+  Eigen::MatrixXd inner_matrix(const Eigen::Vector3d& /*p*/, const Eigen::MatrixXd& U,
+                                const Eigen::MatrixXd& V) const {
+    return U.transpose() * weights_.asDiagonal() * V;
+  }
+
   /// @brief Compute the norm \f$ \|v\| = \sqrt{\langle v, v \rangle} \f$.
   /// @param p Base point.
   /// @param v Tangent vector.

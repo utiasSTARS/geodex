@@ -58,6 +58,20 @@ struct PullbackMetric {
   double norm(const Point& q, const Tangent& v) const {
     return std::sqrt(inner(q, v, v));
   }
+
+  /// @brief Batched inner product: \f$U^\top (J^\top G J + \lambda I)\, V\f$ with
+  /// a single pair of Jacobian / task-metric evaluations.
+  template <typename Point>
+  Eigen::MatrixXd inner_matrix(const Point& q, const Eigen::MatrixXd& U,
+                                const Eigen::MatrixXd& V) const {
+    auto J = jacobian_fn_(q);
+    auto G = task_metric_fn_(q);
+    Eigen::MatrixXd result = (J * U).transpose() * G * (J * V);
+    if (lambda_ > 0.0) {
+      result.noalias() += lambda_ * (U.transpose() * V);
+    }
+    return result;
+  }
 };
 
 /// @brief Task-space metric that always returns the identity matrix.

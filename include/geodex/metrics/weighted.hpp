@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <Eigen/Core>
 #include <cmath>
 
 namespace geodex {
@@ -40,6 +41,16 @@ struct WeightedMetric {
   template <typename Point, typename Tangent>
   double norm(const Point& q, const Tangent& v) const {
     return std::sqrt(inner(q, v, v));
+  }
+
+  /// @brief Batched inner product: forwards to the base metric's `inner_matrix`
+  /// when available and scales the result by \f$\alpha\f$.
+  template <typename Point>
+  Eigen::MatrixXd inner_matrix(const Point& q, const Eigen::MatrixXd& U,
+                                const Eigen::MatrixXd& V) const
+    requires requires { base_.inner_matrix(q, U, V); }
+  {
+    return alpha_ * base_.inner_matrix(q, U, V);
   }
 
   /// @brief Forward injectivity radius from the base metric if available.

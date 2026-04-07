@@ -46,6 +46,20 @@ struct KineticEnergyMetric {
     return std::sqrt(inner(q, v, v));
   }
 
+  /// @brief Batched inner product: \f$U^\top M(q)\, V\f$ computed with a single
+  /// call to the mass-matrix function.
+  ///
+  /// @details This is the performance-critical path for `natural_gradient_fd`
+  /// when the mass matrix is expensive to compute (e.g., forward kinematics for
+  /// a manipulator): instead of calling `mass_matrix_fn_(q)` for every scalar
+  /// \f$G_{ij} = \langle e_i, e_j\rangle_q\f$, we call it once and form the
+  /// entire \f$d\times d\f$ tensor in a single matmul.
+  template <typename Point>
+  Eigen::MatrixXd inner_matrix(const Point& q, const Eigen::MatrixXd& U,
+                                const Eigen::MatrixXd& V) const {
+    return U.transpose() * mass_matrix_fn_(q) * V;
+  }
+
   /// @brief Return the injectivity radius \f$ \infty \f$ (assumes flat topology).
   double injectivity_radius() const { return std::numeric_limits<double>::infinity(); }
 };

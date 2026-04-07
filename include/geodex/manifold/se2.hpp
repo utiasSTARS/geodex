@@ -11,6 +11,7 @@
 #include <geodex/core/retraction.hpp>
 #include <numbers>
 #include <random>
+#include <type_traits>
 
 #include <geodex/metrics/se2_left_invariant.hpp>
 
@@ -133,6 +134,27 @@ class SE2 {
   using Point = Eigen::Vector3d;   ///< Pose \f$ (x, y, \theta) \f$.
   using Tangent = Eigen::Vector3d; ///< Tangent vector \f$ (v_x, v_y, \omega) \f$.
 
+  /// @brief Runtime query: is the currently-configured metric the bi-invariant
+  /// Lie group metric (unit weights on `SE2LeftInvariantMetric` paired with the
+  /// true `SE2ExponentialMap`)?
+  ///
+  /// @details Only in this case is the Lie-group `log` the Riemannian logarithm
+  /// of the metric, so `discrete_geodesic` can safely take the log direction
+  /// as the natural gradient. `discrete_geodesic` calls this method to
+  /// activate the fast path on a per-call basis — anisotropic SE2 metrics
+  /// fall through to finite differences.
+  ///
+  /// Because `SE2LeftInvariantMetric::weights_` is a runtime value, this check
+  /// cannot be made at compile time.
+  bool has_riemannian_log_runtime() const {
+    if constexpr (std::is_same_v<MetricT, SE2LeftInvariantMetric> &&
+                  std::is_same_v<RetractionT, SE2ExponentialMap>) {
+      return metric_.weights_.isApprox(Eigen::Vector3d(1.0, 1.0, 1.0));
+    } else {
+      return false;
+    }
+  }
+
   /// @brief Default constructor with workspace bounds \f$ [0, 10]^2 \f$.
   SE2() : x_lo_(0.0), x_hi_(10.0), y_lo_(0.0), y_hi_(10.0) {}
 
@@ -185,6 +207,14 @@ class SE2 {
 
   /// @brief Riemannian norm at \f$ p \f$.
   Scalar norm(const Point& p, const Tangent& v) const { return metric_.norm(p, v); }
+
+  /// @brief Batched inner product \f$U^\top M(p)\, V\f$ when the metric provides it.
+  Eigen::MatrixXd inner_matrix(const Point& p, const Eigen::MatrixXd& U,
+                                const Eigen::MatrixXd& V) const
+    requires requires { metric_.inner_matrix(p, U, V); }
+  {
+    return metric_.inner_matrix(p, U, V);
+  }
 
   /// @}
 

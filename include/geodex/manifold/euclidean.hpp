@@ -9,6 +9,7 @@
 #include <geodex/core/concepts.hpp>
 #include <limits>
 #include <random>
+#include <type_traits>
 
 #include <geodex/metrics/constant_spd.hpp>
 
@@ -70,6 +71,15 @@ class Euclidean {
   using Point = Eigen::Vector<double, Dim>;    ///< Point type.
   using Tangent = Eigen::Vector<double, Dim>;  ///< Tangent vector type.
 
+  /// @brief Compile-time flag: is `log` the Riemannian logarithm of the metric?
+  ///
+  /// @details True when paired with the default Euclidean dot-product metric.
+  /// Non-default metrics (e.g. `ConstantSPDMetric`) are also flat but live
+  /// under a different inner product, so `discrete_geodesic` uses finite
+  /// differences to compute the natural gradient for those cases.
+  static constexpr bool has_riemannian_log =
+      std::is_same_v<MetricT, EuclideanStandardMetric<Dim>>;
+
   /// @brief Fixed-dimension constructor.
   Euclidean()
     requires(Dim != Eigen::Dynamic)
@@ -128,6 +138,14 @@ class Euclidean {
 
   /// @brief Riemannian norm at \f$ p \f$.
   Scalar norm(const Point& p, const Tangent& v) const { return metric_.norm(p, v); }
+
+  /// @brief Batched inner product \f$U^\top M(p)\, V\f$ when the metric provides it.
+  Eigen::MatrixXd inner_matrix(const Point& p, const Eigen::MatrixXd& U,
+                                const Eigen::MatrixXd& V) const
+    requires requires { metric_.inner_matrix(p, U, V); }
+  {
+    return metric_.inner_matrix(p, U, V);
+  }
 
   /// @}
 

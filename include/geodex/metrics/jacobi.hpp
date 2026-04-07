@@ -54,6 +54,15 @@ struct JacobiMetric {
   double norm(const Point& q, const Tangent& v) const {
     return std::sqrt(inner(q, v, v));
   }
+
+  /// @brief Batched inner product: \f$U^\top \bigl(2(H - P(q)) M(q)\bigr) V\f$
+  /// computed with a single evaluation of \f$M(q)\f$ and \f$P(q)\f$.
+  template <typename Point>
+  Eigen::MatrixXd inner_matrix(const Point& q, const Eigen::MatrixXd& U,
+                                const Eigen::MatrixXd& V) const {
+    const double kinetic_factor = 2.0 * (total_energy_ - potential_fn_(q));
+    return kinetic_factor * (U.transpose() * mass_matrix_fn_(q) * V);
+  }
 };
 
 }  // namespace geodex

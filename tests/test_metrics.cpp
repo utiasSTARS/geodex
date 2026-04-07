@@ -247,3 +247,121 @@ TEST(WeightedMetric, InnerProductProperties) {
   check_bilinearity(metric, p, u, v, w, 2.5, -1.3);
   check_positive_definite(metric, p, u);
 }
+
+// ---------------------------------------------------------------------------
+// inner_matrix batch consistency — each metric's `inner_matrix` must agree
+// with d^2 scalar `inner` calls.
+// ---------------------------------------------------------------------------
+
+namespace {
+/// Reference: compute G_ij = inner(p, B.col(i), B.col(j)) one call at a time.
+template <typename Metric, typename Point>
+Eigen::MatrixXd scalar_gram(const Metric& m, const Point& p, const Eigen::MatrixXd& B) {
+  const int d = static_cast<int>(B.cols());
+  Eigen::MatrixXd G(d, d);
+  for (int i = 0; i < d; ++i) {
+    for (int j = 0; j < d; ++j) {
+      G(i, j) = m.inner(p, B.col(i), B.col(j));
+    }
+  }
+  return G;
+}
+}  // namespace
+
+TEST(InnerMatrixBatch, ConstantSPDMatchesScalar) {
+  Eigen::Matrix3d A = Eigen::Matrix3d::Identity();
+  A(0, 0) = 3.0;
+  A(1, 2) = 0.5;
+  A(2, 1) = 0.5;
+  geodex::ConstantSPDMetric<3> metric{A};
+
+  Eigen::Vector3d p(0.5, -0.2, 1.0);
+  Eigen::MatrixXd B(3, 2);
+  B << 1.0, 0.3, 0.0, 1.0, 0.5, -0.4;
+
+  const Eigen::MatrixXd expected = scalar_gram(metric, p, B);
+  const Eigen::MatrixXd actual = metric.inner_matrix(p, B, B);
+  EXPECT_LT((expected - actual).norm(), 1e-12);
+}
+
+TEST(InnerMatrixBatch, KineticEnergyMatchesScalar) {
+  // Position-dependent mass matrix: M(q) = I + q * q^T.
+  auto mass = [](const Eigen::Vector2d& q) {
+    Eigen::Matrix2d M = Eigen::Matrix2d::Identity();
+    M += q * q.transpose();
+    return M;
+  };
+  geodex::KineticEnergyMetric metric{mass};
+
+  Eigen::Vector2d q(0.7, -0.3);
+  Eigen::MatrixXd B(2, 2);
+  B << 1.0, 0.5, 0.2, 1.0;
+
+  const Eigen::MatrixXd expected = scalar_gram(metric, q, B);
+  const Eigen::MatrixXd actual = metric.inner_matrix(q, B, B);
+  EXPECT_LT((expected - actual).norm(), 1e-12);
+}
+
+TEST(InnerMatrixBatch, SE2LeftInvariantMatchesScalar) {
+  geodex::SE2LeftInvariantMetric metric{1.0, 2.5, 0.7};
+
+  Eigen::Vector3d p(0.0, 0.0, 0.0);
+  Eigen::MatrixXd B(3, 3);
+  B << 1.0, 0.2, -0.1, 0.0, 1.0, 0.4, 0.5, -0.3, 1.0;
+
+  const Eigen::MatrixXd expected = scalar_gram(metric, p, B);
+  const Eigen::MatrixXd actual = metric.inner_matrix(p, B, B);
+  EXPECT_LT((expected - actual).norm(), 1e-12);
+}
+
+TEST(InnerMatrixBatch, WeightedMatchesScalar) {
+  Eigen::Matrix2d A;
+  A << 2.0, 0.5, 0.5, 3.0;
+  geodex::ConstantSPDMetric<2> base{A};
+  geodex::WeightedMetric weighted{base, 2.5};
+
+  Eigen::Vector2d p(1.0, 2.0);
+  Eigen::MatrixXd B(2, 2);
+  B << 1.0, 0.3, 0.5, -0.4;
+
+  const Eigen::MatrixXd expected = scalar_gram(weighted, p, B);
+  const Eigen::MatrixXd actual = weighted.inner_matrix(p, B, B);
+  EXPECT_LT((expected - actual).norm(), 1e-12);
+}
+
+TEST(InnerMatrixBatch, JacobiMatchesScalar) {
+  auto mass = [](const Eigen::Vector2d& /*q*/) { return Eigen::Matrix2d::Identity(); };
+  auto potential = [](const Eigen::Vector2d& q) { return 0.5 * q.squaredNorm(); };
+  geodex::JacobiMetric metric{mass, potential, 10.0};
+
+  Eigen::Vector2d q(0.3, 0.4);
+  Eigen::MatrixXd B(2, 2);
+  B << 1.0, 0.2, 0.1, 1.0;
+
+  const Eigen::MatrixXd expected = scalar_gram(metric, q, B);
+  const Eigen::MatrixXd actual = metric.inner_matrix(q, B, B);
+  EXPECT_LT((expected - actual).norm(), 1e-12);
+}
+
+TEST(InnerMatrixBatch, PullbackMatchesScalar) {
+  // A 2-joint planar-arm Jacobian (2x2) with unit link lengths.
+  auto jac = [](const Eigen::Vector2d& q) {
+    Eigen::Matrix2d J;
+    const double s1 = std::sin(q[0]);
+    const double s12 = std::sin(q[0] + q[1]);
+    const double c1 = std::cos(q[0]);
+    const double c12 = std::cos(q[0] + q[1]);
+    J << -s1 - s12, -s12, c1 + c12, c12;
+    return J;
+  };
+  auto task_metric = [](const Eigen::Vector2d& /*q*/) { return Eigen::Matrix2d::Identity(); };
+  geodex::PullbackMetric metric{jac, task_metric, 1e-3};
+
+  Eigen::Vector2d q(0.3, 0.8);
+  Eigen::MatrixXd B(2, 2);
+  B << 1.0, 0.2, 0.1, 1.0;
+
+  const Eigen::MatrixXd expected = scalar_gram(metric, q, B);
+  const Eigen::MatrixXd actual = metric.inner_matrix(q, B, B);
+  EXPECT_LT((expected - actual).norm(), 1e-10);
+}

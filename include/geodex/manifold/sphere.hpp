@@ -12,6 +12,7 @@
 #include <numbers>
 #include <random>
 #include <string_view>
+#include <type_traits>
 
 #include <geodex/metrics/constant_spd.hpp>
 
@@ -178,6 +179,18 @@ class Sphere {
   using Point = Eigen::Vector3d;   ///< Point type (unit vector in \f$ \mathbb{R}^3 \f$).
   using Tangent = Eigen::Vector3d; ///< Tangent vector type.
 
+  /// @brief Compile-time flag: is `log` the Riemannian logarithm of the metric?
+  ///
+  /// @details True only when the default round metric is paired with the true
+  /// exponential map — in which case `grad((1/2) d^2)(x) = -log_x(q)` holds
+  /// exactly and algorithms like `discrete_geodesic` can take the log direction
+  /// without finite differences. Any other metric (e.g., `ConstantSPDMetric`)
+  /// or any projection retraction must fall back to finite-difference
+  /// natural gradient.
+  static constexpr bool has_riemannian_log =
+      std::is_same_v<MetricT, SphereRoundMetric> &&
+      std::is_same_v<RetractionT, SphereExponentialMap>;
+
   /// @brief Default constructor (requires default-constructible policies).
   Sphere() { log_construction(); }
 
@@ -225,6 +238,19 @@ class Sphere {
   /// @param v Tangent vector.
   /// @return \f$ \|v\|_p \f$
   Scalar norm(const Point& p, const Tangent& v) const { return metric_.norm(p, v); }
+
+  /// @brief Batched inner product \f$U^\top M(p)\, V\f$ when the metric provides it.
+  ///
+  /// @details Forwards to the metric's `inner_matrix` when available. Exists only
+  /// for metrics that implement the optimization hook (e.g. `ConstantSPDMetric`,
+  /// `KineticEnergyMetric`); the FD fallback in `discrete_geodesic` uses this
+  /// path automatically when both sides support it.
+  Eigen::MatrixXd inner_matrix(const Point& p, const Eigen::MatrixXd& U,
+                                const Eigen::MatrixXd& V) const
+    requires requires { metric_.inner_matrix(p, U, V); }
+  {
+    return metric_.inner_matrix(p, U, V);
+  }
 
   /// @}
 

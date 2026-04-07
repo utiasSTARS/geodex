@@ -43,6 +43,19 @@ struct ConstantSPDMetric {
   double norm(const Eigen::Vector<double, Dim>& p, const Eigen::Vector<double, Dim>& v) const {
     return std::sqrt(inner(p, v, v));
   }
+
+  /// @brief Batched inner product: \f$U^\top A\, V\f$ in a single matrix multiply.
+  ///
+  /// @details Provides the `HasBatchInnerMatrix` fast path for algorithms that
+  /// evaluate a tangent-metric tensor in a basis (e.g., `natural_gradient_fd`).
+  /// For `ConstantSPDMetric` this is a simple linear-algebra shortcut; the
+  /// bigger win is for point-dependent metrics like `KineticEnergyMetric`
+  /// where the expensive mass matrix is evaluated once instead of \f$d^2\f$
+  /// times.
+  Eigen::MatrixXd inner_matrix(const Eigen::Vector<double, Dim>& /*p*/,
+                                const Eigen::MatrixXd& U, const Eigen::MatrixXd& V) const {
+    return U.transpose() * A_ * V;
+  }
 };
 
 }  // namespace geodex

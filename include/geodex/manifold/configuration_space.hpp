@@ -73,6 +73,19 @@ class ConfigurationSpace {
   /// @brief Riemannian norm from the custom metric.
   Scalar norm(const Point& p, const Tangent& v) const { return metric_.norm(p, v); }
 
+  /// @brief Batched inner product \f$U^\top M(p)\, V\f$ when the custom metric provides it.
+  ///
+  /// @details Forwards to the metric's `inner_matrix`. This is the main
+  /// performance hook for kinetic-energy configuration spaces, where the
+  /// expensive mass matrix evaluation is amortized over all \f$d^2\f$ entries
+  /// of the tangent-metric tensor in a single call.
+  Eigen::MatrixXd inner_matrix(const Point& p, const Eigen::MatrixXd& U,
+                                const Eigen::MatrixXd& V) const
+    requires requires { metric_.inner_matrix(p, U, V); }
+  {
+    return metric_.inner_matrix(p, U, V);
+  }
+
   /// @}
 
   /// @name Derived operations

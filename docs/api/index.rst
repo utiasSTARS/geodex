@@ -92,7 +92,43 @@ Metrics
 .. doxygenstruct:: geodex::WeightedMetric
    :members:
 
+Heuristics
+----------
+
+.. doxygenstruct:: geodex::EuclideanHeuristic
+   :members:
+
 Algorithms
 ----------
 
 .. doxygenfunction:: geodex::distance_midpoint
+
+.. doxygenstruct:: geodex::InterpolationSettings
+   :members:
+
+.. doxygenenum:: geodex::InterpolationStatus
+
+.. doxygenstruct:: geodex::InterpolationResult
+   :members:
+
+.. doxygenstruct:: geodex::InterpolationWorkspace
+   :members:
+
+.. doxygenfunction:: geodex::discrete_geodesic
+
+Batched inner product
+~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenconcept:: geodex::HasBatchInnerMatrix
+
+OMPL Integration
+----------------
+
+.. doxygenclass:: geodex::ompl_integration::GeodexStateSpace
+   :members:
+
+.. doxygenclass:: geodex::ompl_integration::GeodexState
+   :members:
+
+.. doxygenclass:: geodex::ompl_integration::GeodexStateSampler
+   :members:

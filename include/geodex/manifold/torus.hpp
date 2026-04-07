@@ -10,6 +10,7 @@
 #include <geodex/core/concepts.hpp>
 #include <numbers>
 #include <random>
+#include <type_traits>
 
 namespace geodex {
 
@@ -69,6 +70,18 @@ class Torus {
   using Point = Eigen::Vector<double, Dim>;    ///< Point type (angles in \f$ [0, 2\pi)^n \f$).
   using Tangent = Eigen::Vector<double, Dim>;  ///< Tangent vector type.
 
+  /// @brief Compile-time flag: is `log` the Riemannian logarithm of the metric?
+  ///
+  /// @details Torus topology has trivial exp/log (addition/wrapping), which is
+  /// the Riemannian log exactly when the metric is the default flat metric.
+  /// Any other metric (e.g. `ConstantSPDMetric`) may still be a flat metric in
+  /// the mathematical sense (geodesics coincide with the flat ones up to
+  /// reparameterization), but we conservatively mark it as not log-compatible
+  /// so `discrete_geodesic` uses finite differences to compute the correct
+  /// gradient under that metric.
+  static constexpr bool has_riemannian_log =
+      std::is_same_v<MetricT, TorusFlatMetric<Dim>>;
+
   /// @brief Fixed-dimension constructor.
   Torus()
     requires(Dim != Eigen::Dynamic)
@@ -127,6 +140,14 @@ class Torus {
 
   /// @brief Riemannian norm at \f$ p \f$.
   Scalar norm(const Point& p, const Tangent& v) const { return metric_.norm(p, v); }
+
+  /// @brief Batched inner product \f$U^\top M(p)\, V\f$ when the metric provides it.
+  Eigen::MatrixXd inner_matrix(const Point& p, const Eigen::MatrixXd& U,
+                                const Eigen::MatrixXd& V) const
+    requires requires { metric_.inner_matrix(p, U, V); }
+  {
+    return metric_.inner_matrix(p, U, V);
+  }
 
   /// @}
 
