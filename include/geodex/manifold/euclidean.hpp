@@ -16,38 +16,16 @@
 namespace geodex {
 
 // ---------------------------------------------------------------------------
-// Metric
+// Metric alias
 // ---------------------------------------------------------------------------
 
-/// @brief Standard flat (Euclidean) metric on \f$ \mathbb{R}^n \f$.
+/// @brief The standard Euclidean metric on \f$ \mathbb{R}^n \f$.
 ///
 /// @details The inner product is the standard dot product:
-/// \f$ \langle u, v \rangle = u \cdot v \f$.
-/// The injectivity radius is \f$ \infty \f$.
-///
-/// @tparam Dim Compile-time dimension, or `Eigen::Dynamic` for runtime sizing.
+/// \f$ \langle u, v \rangle = u \cdot v \f$. This is exactly
+/// `ConstantSPDMetric<Dim>` with the identity weight matrix.
 template <int Dim = Eigen::Dynamic>
-struct EuclideanStandardMetric {
-  /// @brief Compute the inner product \f$ \langle u, v \rangle = u \cdot v \f$.
-  /// @param u First tangent vector.
-  /// @param v Second tangent vector.
-  /// @return The inner product value.
-  double inner(const Eigen::Vector<double, Dim>& /*p*/, const Eigen::Vector<double, Dim>& u,
-               const Eigen::Vector<double, Dim>& v) const {
-    return u.dot(v);
-  }
-
-  /// @brief Compute the Euclidean norm \f$ \|v\| = \sqrt{v \cdot v} \f$.
-  /// @param p Base point.
-  /// @param v Tangent vector.
-  /// @return The norm value.
-  double norm(const Eigen::Vector<double, Dim>& p, const Eigen::Vector<double, Dim>& v) const {
-    return std::sqrt(inner(p, v, v));
-  }
-
-  /// @brief Return the injectivity radius \f$ \infty \f$.
-  double injectivity_radius() const { return std::numeric_limits<double>::infinity(); }
-};
+using EuclideanStandardMetric = ConstantSPDMetric<Dim>;
 
 // ---------------------------------------------------------------------------
 // Euclidean manifold
@@ -71,14 +49,20 @@ class Euclidean {
   using Point = Eigen::Vector<double, Dim>;    ///< Point type.
   using Tangent = Eigen::Vector<double, Dim>;  ///< Tangent vector type.
 
-  /// @brief Compile-time flag: is `log` the Riemannian logarithm of the metric?
+  /// @brief Runtime query: is `log` the Riemannian logarithm of the metric?
   ///
-  /// @details True when paired with the default Euclidean dot-product metric.
-  /// Non-default metrics (e.g. `ConstantSPDMetric`) are also flat but live
-  /// under a different inner product, so `discrete_geodesic` uses finite
-  /// differences to compute the natural gradient for those cases.
-  static constexpr bool has_riemannian_log =
-      std::is_same_v<MetricT, EuclideanStandardMetric<Dim>>;
+  /// @details True only when the metric is the identity `ConstantSPDMetric<Dim>`
+  /// (the standard Euclidean dot product). Non-identity SPDs live under a
+  /// different inner product, so `discrete_geodesic` falls back to finite
+  /// differences for those cases.
+  bool has_riemannian_log_runtime() const {
+    if constexpr (std::is_same_v<MetricT, ConstantSPDMetric<Dim>>) {
+      return metric_.A_.isApprox(
+          Eigen::Matrix<double, Dim, Dim>::Identity(dim_, dim_));
+    } else {
+      return false;
+    }
+  }
 
   /// @brief Fixed-dimension constructor.
   Euclidean()
@@ -95,7 +79,7 @@ class Euclidean {
   /// @param n The dimension of the space.
   explicit Euclidean(int n)
     requires(Dim == Eigen::Dynamic)
-      : dim_(n) {}
+      : metric_(make_default_metric(n)), dim_(n) {}
 
   /// @brief Dynamic-dimension constructor with custom metric.
   /// @param n The dimension of the space.
@@ -103,6 +87,19 @@ class Euclidean {
   Euclidean(int n, MetricT metric)
     requires(Dim == Eigen::Dynamic)
       : metric_(std::move(metric)), dim_(n) {}
+
+ private:
+  /// @brief Build the default metric for dynamic Euclidean: `ConstantSPDMetric<Dynamic>(n)`
+  /// when applicable, otherwise a default-constructed metric.
+  static MetricT make_default_metric(int n) {
+    if constexpr (std::is_constructible_v<MetricT, int>) {
+      return MetricT(n);
+    } else {
+      return MetricT{};
+    }
+  }
+
+ public:
 
   /// @brief Return the dimension of the space.
   int dim() const { return dim_; }
@@ -175,12 +172,12 @@ class Euclidean {
   /// @return The distance \f$ d(p, q) \f$.
   Scalar distance(const Point& p, const Point& q) const { return distance_midpoint(*this, p, q); }
 
-  /// @brief Injectivity radius — only available when the metric provides it.
-  Scalar injectivity_radius() const
-    requires requires { metric_.injectivity_radius(); }
-  {
-    return metric_.injectivity_radius();
-  }
+  /// @brief Injectivity radius of \f$ \mathbb{R}^n \f$: \f$ \infty \f$.
+  ///
+  /// @details Assumes the default identity metric — anisotropic custom metrics
+  /// still have an infinite radius on flat space, so this constant is correct
+  /// for every metric on \f$ \mathbb{R}^n \f$.
+  Scalar injectivity_radius() const { return std::numeric_limits<double>::infinity(); }
 
   /// @brief Geodesic interpolation: \f$ (1 - t) p + t q \f$.
   /// @param p Start point.

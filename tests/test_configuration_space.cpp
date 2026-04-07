@@ -27,8 +27,11 @@ static_assert(geodex::RiemannianManifold<geodex::ConfigurationSpace<geodex::Eucl
 using WeightedFlat = geodex::WeightedMetric<geodex::TorusFlatMetric<2>>;
 static_assert(
     geodex::RiemannianManifold<geodex::ConfigurationSpace<geodex::Torus<2>, WeightedFlat>>);
+// ConfigurationSpace<Torus<2>, WeightedMetric<ConstantSPDMetric<2>>> no longer exposes
+// injectivity_radius: after the refactor, ConstantSPDMetric is topology-agnostic and
+// does not provide one, so WeightedMetric's forwarder drops out.
 static_assert(
-    geodex::HasInjectivityRadius<geodex::ConfigurationSpace<geodex::Torus<2>, WeightedFlat>>);
+    !geodex::HasInjectivityRadius<geodex::ConfigurationSpace<geodex::Torus<2>, WeightedFlat>>);
 
 // ---------------------------------------------------------------------------
 // Tests

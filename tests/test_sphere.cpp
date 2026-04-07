@@ -14,9 +14,10 @@ static_assert(RiemannianManifold<Sphere<SphereRoundMetric, SphereProjectionRetra
 static_assert(Retraction<SphereExponentialMap, Eigen::Vector3d, Eigen::Vector3d>);
 static_assert(Retraction<SphereProjectionRetraction, Eigen::Vector3d, Eigen::Vector3d>);
 
-// HasInjectivityRadius checks
+// HasInjectivityRadius is now unconditional on Sphere (topological).
+// The default metric (ConstantSPDMetric<3> identity) gives the canonical π.
 static_assert(HasInjectivityRadius<Sphere<>>);
-static_assert(!HasInjectivityRadius<Sphere<ConstantSPDMetric<3>>>);
+static_assert(HasInjectivityRadius<Sphere<SphereRoundMetric, SphereProjectionRetraction>>);
 
 // Helper: create a known point pair with known geodesic distance.
 // North pole to a point at latitude θ on the great circle through x-axis.

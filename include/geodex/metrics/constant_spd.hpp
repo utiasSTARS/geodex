@@ -24,6 +24,22 @@ template <int Dim = Eigen::Dynamic>
 struct ConstantSPDMetric {
   Eigen::Matrix<double, Dim, Dim> A_;  ///< The SPD weight matrix.
 
+  /// @brief Default: identity weight matrix (only for static Dim).
+  ///
+  /// @details The default metric is the standard ambient inner product, which
+  /// is the "natural" choice for every built-in manifold (Sphere/Euclidean/Torus).
+  /// For `Dim == Eigen::Dynamic` the size is unknown at compile time, so use the
+  /// `int n` constructor below instead.
+  ConstantSPDMetric()
+    requires(Dim != Eigen::Dynamic)
+      : A_(Eigen::Matrix<double, Dim, Dim>::Identity()) {}
+
+  /// @brief Dynamic-size identity factory (size n×n).
+  /// @param n Dimension of the SPD matrix.
+  explicit ConstantSPDMetric(int n)
+    requires(Dim == Eigen::Dynamic)
+      : A_(Eigen::MatrixXd::Identity(n, n)) {}
+
   /// @brief Construct with a given SPD weight matrix.
   /// @param A Symmetric positive-definite matrix defining the metric.
   explicit ConstantSPDMetric(const Eigen::Matrix<double, Dim, Dim>& A) : A_(A) {}

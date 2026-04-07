@@ -19,36 +19,16 @@
 namespace geodex {
 
 // ---------------------------------------------------------------------------
-// Metric policies
+// Metric alias
 // ---------------------------------------------------------------------------
 
-/// @brief Standard round (bi-invariant) metric on \f$ S^2 \f$.
+/// @brief The standard round (bi-invariant) metric on \f$ S^2 \f$.
 ///
 /// @details The inner product is the ambient Euclidean dot product restricted
-/// to tangent vectors: \f$ \langle u, v \rangle_p = u \cdot v \f$.
-/// The injectivity radius is \f$ \pi \f$.
-struct SphereRoundMetric {
-  /// @brief Compute the inner product \f$ \langle u, v \rangle_p = u \cdot v \f$.
-  /// @param u First tangent vector.
-  /// @param v Second tangent vector.
-  /// @return The inner product value.
-  double inner(const Eigen::Vector3d& /*p*/, const Eigen::Vector3d& u,
-               const Eigen::Vector3d& v) const {
-    return u.dot(v);
-  }
-
-  /// @brief Compute the norm \f$ \|v\|_p = \sqrt{\langle v, v \rangle_p} \f$.
-  /// @param p Base point.
-  /// @param v Tangent vector.
-  /// @return The norm value.
-  double norm(const Eigen::Vector3d& p, const Eigen::Vector3d& v) const {
-    return std::sqrt(inner(p, v, v));
-  }
-
-  /// @brief Return the injectivity radius \f$ \pi \f$.
-  double injectivity_radius() const { return std::numbers::pi; }
-};
-
+/// to tangent vectors: \f$ \langle u, v \rangle_p = u \cdot v \f$. This is
+/// exactly `ConstantSPDMetric<3>` with the identity weight matrix — exposed
+/// here under the familiar "round metric" name.
+using SphereRoundMetric = ConstantSPDMetric<3>;
 
 // ---------------------------------------------------------------------------
 // Retraction policies
@@ -157,17 +137,26 @@ class Sphere {
   using Point = Eigen::Vector3d;   ///< Point type (unit vector in \f$ \mathbb{R}^3 \f$).
   using Tangent = Eigen::Vector3d; ///< Tangent vector type.
 
-  /// @brief Compile-time flag: is `log` the Riemannian logarithm of the metric?
+  /// @brief Runtime query: is `log` the Riemannian logarithm of the metric?
   ///
-  /// @details True only when the default round metric is paired with the true
-  /// exponential map — in which case `grad((1/2) d^2)(x) = -log_x(q)` holds
-  /// exactly and algorithms like `discrete_geodesic` can take the log direction
-  /// without finite differences. Any other metric (e.g., `ConstantSPDMetric`)
-  /// or any projection retraction must fall back to finite-difference
-  /// natural gradient.
-  static constexpr bool has_riemannian_log =
-      std::is_same_v<MetricT, SphereRoundMetric> &&
-      std::is_same_v<RetractionT, SphereExponentialMap>;
+  /// @details Only when the metric is the standard round metric (identity SPD
+  /// on the ambient dot product) AND the retraction is the true exponential
+  /// map does `grad((1/2) d^2)(x) = -log_x(q)` hold exactly. Other metrics
+  /// (anisotropic SPDs, projection retractions) fall back to finite-difference
+  /// natural gradient in `discrete_geodesic`.
+  ///
+  /// Because the default metric is now `ConstantSPDMetric<3>`, whose weight
+  /// matrix `A_` is a runtime value, the identity check is runtime. The
+  /// compile-time branch on the metric type and retraction type collapses
+  /// away the check for non-default metrics.
+  bool has_riemannian_log_runtime() const {
+    if constexpr (std::is_same_v<MetricT, ConstantSPDMetric<3>> &&
+                  std::is_same_v<RetractionT, SphereExponentialMap>) {
+      return metric_.A_.isApprox(Eigen::Matrix3d::Identity());
+    } else {
+      return false;
+    }
+  }
 
   /// @brief Default constructor (requires default-constructible policies).
   Sphere() { log_construction(); }
@@ -267,13 +256,14 @@ class Sphere {
     return distance_midpoint(*this, p, q);
   }
 
-  /// @brief Injectivity radius — only available when the metric provides it.
-  /// @return The injectivity radius of the manifold.
-  Scalar injectivity_radius() const
-    requires requires { metric_.injectivity_radius(); }
-  {
-    return metric_.injectivity_radius();
-  }
+  /// @brief Injectivity radius of the round 2-sphere: \f$ \pi \f$.
+  ///
+  /// @details This is the topological injectivity radius assuming the default
+  /// identity metric. For anisotropic custom metrics on the same topology
+  /// (e.g. `ConstantSPDMetric<3>(10 I)`) the effective radius differs by a
+  /// factor of the metric's spectrum — users with custom metrics must compute
+  /// their own bound.
+  Scalar injectivity_radius() const { return std::numbers::pi; }
 
   /// @brief Geodesic interpolation between \f$ p \f$ and \f$ q \f$ at parameter \f$ t \f$.
   /// @param p Start point.
