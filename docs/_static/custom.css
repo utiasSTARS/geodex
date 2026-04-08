@@ -1,3 +1,63 @@
+/* Justify body text like LaTeX. Scoped to the main content area so it does
+   not affect sidebars, code blocks, tables, admonition titles, or captions.
+   `hyphens: auto` softens the rivers that pure justification can create. */
+.rst-content p,
+.rst-content li,
+.rst-content dd {
+    text-align: justify;
+    text-justify: inter-word;
+    -webkit-hyphens: auto;
+    -ms-hyphens: auto;
+    hyphens: auto;
+}
+
+/* Don't justify inside code, tables, or signature blocks. */
+.rst-content pre,
+.rst-content .highlight,
+.rst-content table,
+.rst-content dl.cpp,
+.rst-content dl.py,
+.rst-content dl.c {
+    text-align: left;
+    hyphens: manual;
+}
+
+/* Make Sphinx graphviz SVGs scale to the content column instead of rendering at
+   their intrinsic pt size (which looks tiny in a wide RTD content area and leaves
+   white space on the right). The Sphinx graphviz extension wraps each diagram in
+   <div class="graphviz"><object>...svg...</object></div>. */
+.graphviz {
+    text-align: center;
+    margin: 1em 0;
+}
+.graphviz object,
+.graphviz svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Mermaid: conf.py sets `useMaxWidth: false` so every diagram renders at its
+   intrinsic viewBox width (1 viewBox unit = 1 CSS pixel) and per-character
+   pixel size is identical across diagrams. This block just centers them and
+   strips the default <pre> code-block frame, plus caps absurdly wide diagrams
+   so they don't break out of the content column. */
+pre.mermaid {
+    text-align: center;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 1em 0 !important;
+}
+pre.mermaid > svg,
+.mermaid > svg {
+    max-width: 100% !important;
+    height: auto !important;
+    display: block;
+    margin: 0 auto;
+}
+
 /* Default for Desktop: 50% width */
 .responsive-img {
     width: 40%;

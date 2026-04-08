@@ -57,24 +57,35 @@ The **geodesic distance** between two points is the length of the shortest conne
    d(p, q) = \|\log_p(q)\|_p
 
 (This formula requires exact exp/log. When only approximations are available,
-geodex falls back to the midpoint approximation — see :ref:`distance_midpoint <api:Algorithms>` in the API reference).
+geodex falls back to the midpoint approximation — see :doc:`distance`).
 
 **Retractions** are first- or second-order approximations to the exponential
 map. They are cheaper to evaluate and preserve the manifold topology, but
 unlike the true exp, they are not isometries. geodex separates retractions
-from metrics as independent policy types (see the :doc:`/tutorials/geodex-basics` tutorial for usage).
+from metrics as independent policy types (see :doc:`retractions`).
 
 Concept Hierarchy
 -----------------
 
-**geodex** is built around a small set of C++20 concepts that define what it means to be a manifold, a metric, a retraction, and so on.
-These concepts compose through a *policy-based design*; for example, a manifold class like ``Sphere`` is parameterized by interchangeable metric and retraction policies, and the compiler statically verifies that the assembled type satisfies the full ``RiemannianManifold`` interface.
+**geodex** is built around a small set of C++20 concepts that define what it means to
+be a manifold, a metric, a retraction, and so on.
+These concepts compose through a *policy-based design*: a manifold class like
+``Sphere`` is parameterized by interchangeable metric, retraction, and sampler
+policies, and the compiler statically verifies that the assembled type satisfies the
+full ``RiemannianManifold`` interface.
 
-The central abstraction is a two-level concept hierarchy. ``Manifold`` captures the bare topology (points, tangent vectors, etc), while ``RiemannianManifold`` adds the geometric structure needed for distance computation and motion planning.
+The central abstraction is a two-level hierarchy.
+``Manifold`` captures the bare topology (points, tangent vectors, dimension,
+sampling), while ``RiemannianManifold`` adds the geometric structure needed for
+distance and motion planning.
+Three smaller trait concepts (``HasMetric``, ``HasDistance``, ``HasGeodesic``) let
+algorithms constrain on only the operations they actually use, and
+``HasInjectivityRadius`` exposes the local injectivity radius on manifolds that
+support it.
 
 .. mermaid::
 
-   %%{init: {"theme": "neutral"}}%%
+   %%{init: {'theme':'base','themeVariables':{'primaryColor':'#e7f0fa','primaryTextColor':'#1a1a1a','primaryBorderColor':'#2980b9','lineColor':'#2980b9','secondaryColor':'#e7f0fa','tertiaryColor':'#f7fbfe','background':'transparent'}}}%%
    classDiagram
        direction TB
 
@@ -87,95 +98,177 @@ The central abstraction is a two-level concept hierarchy. ``Manifold`` captures 
            +random_point() Point
        }
 
-       class RiemannianManifold {
-           <<concept>>
-           +inner(p, u, v) Scalar
-           +norm(p, v) Scalar
-           +distance(p, q) Scalar
-           +geodesic(p, q, t) Point
-           +exp(p, v) Point
-           +log(p, q) Tangent
-       }
-
-       class HasInjectivityRadius {
-           <<concept>>
-           +injectivity_radius() Scalar
-       }
-
-       Manifold <|-- RiemannianManifold
-       Manifold <|-- HasInjectivityRadius
-
-``RiemannianManifold`` is deliberately monolithic: any type satisfying it provides the complete interface that algorithms need.
-For finer-grained constraints, geodex also defines three orthogonal trait concepts:
-
-.. mermaid::
-
-   %%{init: {"theme": "neutral"}}%%
-   classDiagram
-       direction LR
-
-       class Manifold {
-           <<concept>>
-       }
-
        class HasMetric {
            <<concept>>
-           +inner(p, u, v) Scalar
-           +norm(p, v) Scalar
+           +inner(p, u, v)
+           +norm(p, v)
        }
 
        class HasDistance {
            <<concept>>
-           +distance(p, q) Scalar
+           +distance(p, q)
        }
 
        class HasGeodesic {
            <<concept>>
-           +geodesic(p, q, t) Point
-           +exp(p, v) Point
-           +log(p, q) Tangent
+           +geodesic(p, q, t)
+           +exp(p, v)
+           +log(p, q)
+       }
+
+       class HasInjectivityRadius {
+           <<concept>>
+           +injectivity_radius()
+       }
+
+       class RiemannianManifold {
+           <<concept>>
        }
 
        Manifold <|-- HasMetric
        Manifold <|-- HasDistance
        Manifold <|-- HasGeodesic
+       Manifold <|-- HasInjectivityRadius
+       HasMetric <|-- RiemannianManifold
+       HasDistance <|-- RiemannianManifold
+       HasGeodesic <|-- RiemannianManifold
 
-These allow algorithms to require only the operations they actually use.
-For example, an algorithm that only needs exp/log can constrain on ``HasGeodesic`` without requiring a full metric.
+Two further policy concepts plug into a manifold from the side.
+``Retraction<R, Point, Tangent>`` is the contract every retraction policy satisfies,
+with just ``retract(p, v)`` and ``inverse_retract(p, q)``.
+``Sampler`` and its refinement ``SeedableSampler`` draw uniform samples from the unit
+box and drive ``random_point()`` on ``Euclidean``, ``Torus``, and ``SE2``.
+
+.. mermaid::
+
+   %%{init: {'theme':'base','themeVariables':{'primaryColor':'#e7f0fa','primaryTextColor':'#1a1a1a','primaryBorderColor':'#2980b9','lineColor':'#2980b9','secondaryColor':'#e7f0fa','tertiaryColor':'#f7fbfe','background':'transparent'}}}%%
+   classDiagram
+       direction TB
+
+       class Manifold {
+           <<concept>>
+       }
+
+       class Retraction {
+           <<concept>>
+           +retract(p, v)
+           +inverse_retract(p, q)
+       }
+
+       class Sampler {
+           <<concept>>
+           +sample_box(d, out)
+       }
+
+       class SeedableSampler {
+           <<concept>>
+           +seed(s)
+       }
+
+       Manifold <-- Retraction : exp / log
+       Manifold <-- Sampler : random_point
+       Sampler <|-- SeedableSampler
 
 How It All Fits Together
 ------------------------
 
-The following diagram shows the full picture: concepts define interfaces,
-policies provide implementations, and manifold classes compose them into
-concrete types that satisfy the concepts.
+Three families of policies (metrics, retractions, samplers) feed into the manifold
+classes, and algorithms consume those manifolds through the ``RiemannianManifold``
+concept.
 
-.. mermaid::
+.. graphviz::
 
-   %%{init: {"theme": "neutral"}}%%
-   flowchart TB
-       subgraph Concepts["Concepts (compile-time)"]
-           Manifold
-           RiemannianManifold
-           Retraction["Retraction&lt;R, Point, Tangent&gt;"]
-       end
+   digraph geodex {
+       rankdir=LR;
+       bgcolor="transparent";
+       compound=true;
+       pad="0.3";
+       nodesep="0.35";
+       ranksep="0.9";
+       node [shape=box, style="filled",
+             fillcolor="#e7f0fa", color="#2980b9", penwidth="1.2",
+             fontname="Helvetica", fontsize=11, fontcolor="#1a1a1a",
+             margin="0.18,0.10", height="0.45"];
+       edge [color="#2980b9", penwidth="1.1",
+             fontname="Helvetica", fontsize=10, fontcolor="#34495e",
+             arrowsize="0.8"];
+       graph [fontname="Helvetica", fontsize=11, fontcolor="#1a1a1a",
+              color="#2980b9", penwidth="1.0",
+              style="filled", fillcolor="#f7fbfe"];
 
-       subgraph Policies["Policies (swappable)"]
-           Metric["MetricT<br/><i>e.g. SphereRoundMetric</i>"]
-           Retr["RetractionT<br/><i>e.g. SphereExponentialMap</i>"]
-       end
+       subgraph cluster_metrics {
+           label="Metrics";
+           ConstantSPDMetric;
+           WeightedMetric;
+           KineticEnergyMetric;
+           JacobiMetric;
+           PullbackMetric;
+           SE2LeftInvariantMetric;
+       }
 
-       subgraph Concrete["Concrete Manifold"]
-           Sphere["Sphere&lt;MetricT, RetractionT&gt;"]
-       end
+       subgraph cluster_retractions {
+           label="Retractions";
+           SphereExponentialMap;
+           SphereProjectionRetraction;
+           SE2ExponentialMap;
+           SE2EulerRetraction;
+       }
 
-       Metric -->|"inner, norm"| Sphere
-       Retr -->|"retract, inverse_retract"| Sphere
-       Sphere -.->|"satisfies"| RiemannianManifold
-       RiemannianManifold -.->|"refines"| Manifold
-       Retr -.->|"satisfies"| Retraction
+       subgraph cluster_samplers {
+           label="Samplers";
+           StochasticSampler;
+           HaltonSampler;
+       }
 
-.. The following pages detail the implementation and usage of these core architectural components:
+       subgraph cluster_manifolds {
+           label="Manifolds";
+           Sphere       [label="Sphere<Dim>"];
+           Euclidean    [label="Euclidean<Dim>"];
+           Torus        [label="Torus<Dim>"];
+           SE2          [label="SE2"];
+           ConfigurationSpace;
+       }
+
+       subgraph cluster_algorithms {
+           label="Algorithms";
+           distance_midpoint;
+           discrete_geodesic;
+       }
+
+       JacobiMetric          -> Sphere    [ltail=cluster_metrics,
+                                            lhead=cluster_manifolds,
+                                            label="metric"];
+       SE2EulerRetraction    -> SE2       [ltail=cluster_retractions,
+                                            lhead=cluster_manifolds,
+                                            label="retraction"];
+       HaltonSampler         -> Euclidean [ltail=cluster_samplers,
+                                            lhead=cluster_manifolds,
+                                            label="sampler"];
+       ConfigurationSpace    -> distance_midpoint
+                                          [ltail=cluster_manifolds,
+                                           lhead=cluster_algorithms,
+                                           label="RiemannianManifold"];
+   }
+
+``Sphere``, ``Euclidean``, ``Torus``, and ``SE2`` carry the topology and a default
+choice of metric, retraction, and sampler, while ``ConfigurationSpace<Base, Metric>``
+reuses an existing base topology with a custom metric. The metric ranges from a
+constant SPD matrix up to configuration-dependent kinetic-energy and Jacobi metrics
+built by composing ``WeightedMetric`` over ``KineticEnergyMetric``. The retraction is
+either an exact Lie-group exp/log or a cheaper first-order approximation, and the
+sampler is the pseudo-random ``StochasticSampler`` or the low-discrepancy
+``HaltonSampler``. Algorithms like ``distance_midpoint`` and ``discrete_geodesic``
+only require ``RiemannianManifold``, so any combination of the above plugs in without
+touching the algorithm itself.
+
+See also
+^^^^^^^^
+
+- :doc:`/tutorials/geodex-basics` for a hands-on walk-through with runnable C++ and
+  Python snippets.
+- :doc:`/tutorials/minimum-energy-planning` for composing ``KineticEnergyMetric`` and
+  ``JacobiMetric`` to plan minimum-energy motions.
+- :doc:`/api/index` for the full reference of every class and concept named above.
 
 References
 ----------
