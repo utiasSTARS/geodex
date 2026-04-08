@@ -1,27 +1,3 @@
-/* Justify body text like LaTeX. Scoped to the main content area so it does
-   not affect sidebars, code blocks, tables, admonition titles, or captions.
-   `hyphens: auto` softens the rivers that pure justification can create. */
-.rst-content p,
-.rst-content li,
-.rst-content dd {
-    text-align: justify;
-    text-justify: inter-word;
-    -webkit-hyphens: auto;
-    -ms-hyphens: auto;
-    hyphens: auto;
-}
-
-/* Don't justify inside code, tables, or signature blocks. */
-.rst-content pre,
-.rst-content .highlight,
-.rst-content table,
-.rst-content dl.cpp,
-.rst-content dl.py,
-.rst-content dl.c {
-    text-align: left;
-    hyphens: manual;
-}
-
 /* Make Sphinx graphviz SVGs scale to the content column instead of rendering at
    their intrinsic pt size (which looks tiny in a wide RTD content area and leaves
    white space on the right). The Sphinx graphviz extension wraps each diagram in
@@ -56,6 +32,24 @@ pre.mermaid > svg,
     height: auto !important;
     display: block;
     margin: 0 auto;
+}
+
+/* Tables: wrap long cell text instead of triggering the RTD theme's
+   horizontal scroll wrapper. Forces a fixed layout so the :widths:
+   directive in list-table actually pins the column proportions, and
+   allows long words to break so prose cells wrap cleanly. */
+.rst-content table.docutils {
+    width: 100%;
+    table-layout: fixed;
+}
+.rst-content table.docutils td,
+.rst-content table.docutils th {
+    white-space: normal !important;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+.wy-table-responsive {
+    overflow: visible;
 }
 
 /* Default for Desktop: 50% width */
