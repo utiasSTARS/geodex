@@ -4,7 +4,6 @@
 #pragma once
 
 #include <Eigen/Core>
-
 #include <geodex/core/metric.hpp>
 
 namespace geodex {
@@ -68,8 +67,8 @@ class ConstantSPDMetric {
   /// bigger win is for point-dependent metrics like `KineticEnergyMetric`
   /// where the expensive mass matrix is evaluated once instead of \f$d^2\f$
   /// times.
-  Eigen::MatrixXd inner_matrix(const Eigen::Vector<double, Dim>& /*p*/,
-                                const Eigen::MatrixXd& U, const Eigen::MatrixXd& V) const {
+  Eigen::MatrixXd inner_matrix(const Eigen::Vector<double, Dim>& /*p*/, const Eigen::MatrixXd& U,
+                               const Eigen::MatrixXd& V) const {
     return U.transpose() * A_ * V;
   }
 

@@ -4,11 +4,10 @@
 #pragma once
 
 #include <Eigen/Core>
-#include <utility>
-
 #include <geodex/core/metric.hpp>
 #include <geodex/metrics/kinetic_energy.hpp>
 #include <geodex/metrics/weighted.hpp>
+#include <utility>
 
 namespace geodex {
 
@@ -68,8 +67,7 @@ class JacobiMetric {
   /// @param pot_fn Callable returning the potential energy.
   /// @param H Total energy (must satisfy \f$ H > P(q) \f$ everywhere on the path).
   JacobiMetric(MassMatrixFn mass_fn, PotentialFn pot_fn, double H)
-      : inner_metric_(KEMetric{std::move(mass_fn)},
-                      AlphaFn(std::move(pot_fn), H)) {
+      : inner_metric_(KEMetric{std::move(mass_fn)}, AlphaFn(std::move(pot_fn), H)) {
     static_assert(std::is_invocable_v<const MassMatrixFn&, const Eigen::VectorXd&>,
                   "MassMatrixFn must be callable with (const VectorXd&)");
     static_assert(std::is_invocable_v<const PotentialFn&, const Eigen::VectorXd&>,
@@ -100,7 +98,7 @@ class JacobiMetric {
   /// the wrapped `WeightedMetric`.
   template <typename Point>
   Eigen::MatrixXd inner_matrix(const Point& q, const Eigen::MatrixXd& U,
-                                const Eigen::MatrixXd& V) const {
+                               const Eigen::MatrixXd& V) const {
     return inner_metric_.inner_matrix(q, U, V);
   }
 

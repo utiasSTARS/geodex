@@ -18,7 +18,8 @@ namespace geodex {
 /// @tparam Tangent The tangent vector type.
 template <typename R, typename Point, typename Tangent>
 concept Retraction = requires(const R r, const Point& p, const Point& q, const Tangent& v) {
-  /// `retract(p, v)` — map tangent vector \f$ v \in T_p\mathcal{M} \f$ to a point on \f$ \mathcal{M} \f$.
+  /// `retract(p, v)` — map tangent vector \f$ v \in T_p\mathcal{M} \f$ to a point on \f$
+  /// \mathcal{M} \f$.
   { r.retract(p, v) } -> std::same_as<Point>;
   /// `inverse_retract(p, q)` — map point \f$ q \f$ to a tangent vector at \f$ p \f$.
   { r.inverse_retract(p, q) } -> std::same_as<Tangent>;

@@ -9,11 +9,10 @@
 #include <geodex/core/angle.hpp>
 #include <geodex/core/concepts.hpp>
 #include <geodex/core/sampler.hpp>
-#include <numbers>
-#include <type_traits>
-
 #include <geodex/metrics/constant_spd.hpp>
 #include <geodex/metrics/identity.hpp>
+#include <numbers>
+#include <type_traits>
 
 namespace geodex {
 
@@ -41,8 +40,7 @@ using TorusFlatMetric = IdentityMetric<Dim>;
 /// @tparam Dim Compile-time dimension, or `Eigen::Dynamic`.
 /// @tparam MetricT Metric policy (default: TorusFlatMetric).
 /// @tparam SamplerT Sampler policy for `random_point()` (default: `StochasticSampler`).
-template <int Dim = Eigen::Dynamic,
-          typename MetricT = TorusFlatMetric<Dim>,
+template <int Dim = Eigen::Dynamic, typename MetricT = TorusFlatMetric<Dim>,
           typename SamplerT = StochasticSampler>
 class Torus {
  public:
@@ -128,7 +126,7 @@ class Torus {
 
   /// @brief Batched inner product \f$U^\top M(p)\, V\f$ when the metric provides it.
   Eigen::MatrixXd inner_matrix(const Point& p, const Eigen::MatrixXd& U,
-                                const Eigen::MatrixXd& V) const
+                               const Eigen::MatrixXd& V) const
     requires MetricHasInnerMatrix<MetricT, Point>
   {
     return metric_.inner_matrix(p, U, V);
@@ -192,7 +190,7 @@ class Torus {
   MetricT metric_;
   int dim_;
   mutable SamplerT sampler_;
-  mutable Eigen::VectorXd sample_buf_;   ///< Preallocated buffer for sampler output.
+  mutable Eigen::VectorXd sample_buf_;  ///< Preallocated buffer for sampler output.
 };
 
 // Verify the default types satisfy RiemannianManifold.

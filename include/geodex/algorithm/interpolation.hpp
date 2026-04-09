@@ -25,7 +25,8 @@ enum class InterpolationStatus {
   Converged,         ///< Distance to target fell below convergence tolerance.
   MaxStepsReached,   ///< Iteration budget exhausted without reaching tolerance.
   GradientVanished,  ///< Riemannian gradient norm is ~0 at a non-target point.
-  CutLocus,          ///< `log` collapsed to ~0 while start and target are distinct (e.g. antipodal on a sphere).
+  CutLocus,  ///< `log` collapsed to ~0 while start and target are distinct (e.g. antipodal on a
+             ///< sphere).
   StepShrunkToZero,  ///< Distortion halving drove step size below `min_step_size`.
   DegenerateInput,   ///< `start == target` on entry; returned a single-point path immediately.
 };
@@ -231,7 +232,8 @@ namespace detail {
 /// `distance_midpoint` because it is very cheap and sufficient for
 /// convergence and progress checks.
 template <RiemannianManifold M>
-inline auto distance_via_log(const M& m, const typename M::Point& a, const typename M::Point& b) -> typename M::Scalar {
+inline auto distance_via_log(const M& m, const typename M::Point& a, const typename M::Point& b) ->
+    typename M::Scalar {
   auto v = m.log(a, b);
   return m.norm(a, v);
 }
@@ -242,7 +244,8 @@ inline auto distance_via_log(const M& m, const typename M::Point& a, const typen
 /// space if the manifold provides `project`) and orthonormalizes via Euclidean
 /// Gram-Schmidt. Returns the number of linearly independent basis vectors found (≤ `d`).
 template <RiemannianManifold M>
-int build_tangent_basis(const M& m, const typename M::Point& p, int d, InterpolationCache<M>& cache) {
+int build_tangent_basis(const M& m, const typename M::Point& p, int d,
+                        InterpolationCache<M>& cache) {
   using Tangent = typename M::Tangent;
   constexpr int N = Tangent::SizeAtCompileTime;
 
@@ -287,8 +290,8 @@ int build_tangent_basis(const M& m, const typename M::Point& p, int d, Interpola
 ///
 /// @return `true` on success, `false` on Cholesky failure or zero-rank basis.
 template <RiemannianManifold M>
-bool natural_gradient_fd(const M& m, const typename M::Point& p, const typename M::Point& target, double h,
-                         InterpolationCache<M>& cache) {
+bool natural_gradient_fd(const M& m, const typename M::Point& p, const typename M::Point& target,
+                         double h, InterpolationCache<M>& cache) {
   using Tangent = typename M::Tangent;
   constexpr int N = Tangent::SizeAtCompileTime;
 
@@ -425,8 +428,9 @@ inline double resolve_fd_epsilon(double user_value, double initial_distance) {
 /// @param cache Optional reusable cache. If null, a stack-local one is used.
 /// @return An `InterpolationResult` carrying the path and termination diagnostics.
 template <RiemannianManifold M>
-auto discrete_geodesic(const M& manifold, const typename M::Point& start, const typename M::Point& target,
-                       InterpolationSettings settings = {}, InterpolationCache<M>* cache = nullptr)
+auto discrete_geodesic(const M& manifold, const typename M::Point& start,
+                       const typename M::Point& target, InterpolationSettings settings = {},
+                       InterpolationCache<M>* cache = nullptr)
     -> InterpolationResult<typename M::Point> {
   using Point = typename M::Point;
   using Tangent = typename M::Tangent;
@@ -529,7 +533,7 @@ auto discrete_geodesic(const M& manifold, const typename M::Point& start, const 
 
       if (!accepted) {
         GEODEX_LOG("  log step rejected (progress_ok=" << progress_ok << " fidelity_ok="
-                                                        << fidelity_ok << "); trying FD");
+                                                       << fidelity_ok << "); trying FD");
       }
     }
 
@@ -590,7 +594,8 @@ auto discrete_geodesic(const M& manifold, const typename M::Point& start, const 
     R.status = InterpolationStatus::MaxStepsReached;
   }
 
-  GEODEX_LOG("=== discrete_geodesic done, " << R.path.size() << " points, status=" << to_string(R.status) << " ===");
+  GEODEX_LOG("=== discrete_geodesic done, " << R.path.size()
+                                            << " points, status=" << to_string(R.status) << " ===");
   return R;
 }
 

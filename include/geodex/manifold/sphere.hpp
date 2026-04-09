@@ -11,11 +11,10 @@
 #include <geodex/core/metric.hpp>
 #include <geodex/core/retraction.hpp>
 #include <geodex/core/sampler.hpp>
-#include <numbers>
-#include <type_traits>
-
 #include <geodex/metrics/constant_spd.hpp>
 #include <geodex/metrics/identity.hpp>
+#include <numbers>
+#include <type_traits>
 
 namespace geodex {
 
@@ -82,8 +81,9 @@ struct SphereExponentialMap {
     if (sin_theta < 1e-10) {
       if (cos_theta < 0.0) {
         // TODO: handle cut locus properly — direction is non-unique for antipodal points.
-        GEODEX_LOG("SphereExponentialMap: log called at cut locus "
-                   "(antipodal points). Returning zero vector.");
+        GEODEX_LOG(
+            "SphereExponentialMap: log called at cut locus "
+            "(antipodal points). Returning zero vector.");
       }
       return Point::Zero(p.size());
     }
@@ -117,8 +117,9 @@ struct SphereProjectionRetraction {
     const Point v = d - d.dot(p) * p;
     if (v.norm() < 1e-10 && p.dot(q) < 0.0) {
       // TODO: handle cut locus properly.
-      GEODEX_LOG("SphereProjectionRetraction: inverse_retract called at cut locus "
-                 "(antipodal points). Returning zero vector.");
+      GEODEX_LOG(
+          "SphereProjectionRetraction: inverse_retract called at cut locus "
+          "(antipodal points). Returning zero vector.");
       return Point::Zero(p.size());
     }
     return v;
@@ -144,18 +145,17 @@ static_assert(Retraction<SphereProjectionRetraction, Eigen::Vector3d, Eigen::Vec
 ///   for runtime sizing. Defaults to `2` (the classical round 2-sphere).
 /// @tparam MetricT Metric policy (default: `ConstantSPDMetric<Dim+1>` identity).
 /// @tparam RetractionT Retraction policy (default: `SphereExponentialMap`).
-template <int Dim = 2,
-          typename MetricT = IdentityMetric<detail::sphere_ambient_v<Dim>>,
-          typename RetractionT = SphereExponentialMap,
-          typename SamplerT = StochasticSampler>
+template <int Dim = 2, typename MetricT = IdentityMetric<detail::sphere_ambient_v<Dim>>,
+          typename RetractionT = SphereExponentialMap, typename SamplerT = StochasticSampler>
 class Sphere {
  public:
   /// @brief Ambient dimension (`Dim + 1` for static, `Eigen::Dynamic` otherwise).
   static constexpr int Ambient = detail::sphere_ambient_v<Dim>;
 
-  using Scalar = double;                            ///< Scalar type.
-  using Point = Eigen::Vector<double, Ambient>;     ///< Point type (unit vector in \f$ \mathbb{R}^{n+1} \f$).
-  using Tangent = Eigen::Vector<double, Ambient>;   ///< Tangent vector type.
+  using Scalar = double;  ///< Scalar type.
+  using Point =
+      Eigen::Vector<double, Ambient>;  ///< Point type (unit vector in \f$ \mathbb{R}^{n+1} \f$).
+  using Tangent = Eigen::Vector<double, Ambient>;  ///< Tangent vector type.
 
   /// @brief Runtime query: is `log` the Riemannian logarithm of the metric?
   ///
@@ -262,7 +262,7 @@ class Sphere {
 
   /// @brief Batched inner product \f$U^\top M(p)\, V\f$ when the metric provides it.
   Eigen::MatrixXd inner_matrix(const Point& p, const Eigen::MatrixXd& U,
-                                const Eigen::MatrixXd& V) const
+                               const Eigen::MatrixXd& V) const
     requires MetricHasInnerMatrix<MetricT, Point>
   {
     return metric_.inner_matrix(p, U, V);
@@ -338,9 +338,9 @@ class Sphere {
 
   MetricT metric_;
   RetractionT retraction_;
-  int dim_;                                ///< Intrinsic dimension (Dim for static, runtime for dynamic).
-  mutable SamplerT sampler_;               ///< Sampler used by `random_point`.
-  mutable Eigen::VectorXd sample_buf_;     ///< Preallocated buffer for Box-Muller uniform samples.
+  int dim_;                   ///< Intrinsic dimension (Dim for static, runtime for dynamic).
+  mutable SamplerT sampler_;  ///< Sampler used by `random_point`.
+  mutable Eigen::VectorXd sample_buf_;  ///< Preallocated buffer for Box-Muller uniform samples.
 };
 
 // Verify the composed types satisfy RiemannianManifold.

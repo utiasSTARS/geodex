@@ -4,7 +4,6 @@
 #pragma once
 
 #include <Eigen/Core>
-
 #include <geodex/core/metric.hpp>
 #include <geodex/metrics/constant_spd.hpp>
 
@@ -42,8 +41,7 @@ class SE2LeftInvariantMetric {
   /// @param u First tangent vector.
   /// @param v Second tangent vector.
   /// @return The inner product value.
-  double inner(const Eigen::Vector3d& p, const Eigen::Vector3d& u,
-               const Eigen::Vector3d& v) const {
+  double inner(const Eigen::Vector3d& p, const Eigen::Vector3d& u, const Eigen::Vector3d& v) const {
     return base_.inner(p, u, v);
   }
 
@@ -53,7 +51,7 @@ class SE2LeftInvariantMetric {
   /// @param V Matrix whose columns are tangent vectors.
   /// @return \f$ U^\top A \, V \f$.
   Eigen::MatrixXd inner_matrix(const Eigen::Vector3d& p, const Eigen::MatrixXd& U,
-                                const Eigen::MatrixXd& V) const {
+                               const Eigen::MatrixXd& V) const {
     return base_.inner_matrix(p, U, V);
   }
 
@@ -66,8 +64,8 @@ class SE2LeftInvariantMetric {
   }
 
  private:
-  Eigen::Vector3d weights_;   ///< Diagonal weight vector \f$ (w_x, w_y, w_\theta) \f$.
-  ConstantSPDMetric<3> base_; ///< Wrapped SPD metric with `A = diag(weights_)`.
+  Eigen::Vector3d weights_;    ///< Diagonal weight vector \f$ (w_x, w_y, w_\theta) \f$.
+  ConstantSPDMetric<3> base_;  ///< Wrapped SPD metric with `A = diag(weights_)`.
 };
 
 }  // namespace geodex

@@ -22,9 +22,9 @@ namespace geodex {
 template <typename BaseManifoldT, typename MetricT>
 class ConfigurationSpace {
  public:
-  using Scalar = typename BaseManifoldT::Scalar;   ///< Scalar type from the base manifold.
-  using Point = typename BaseManifoldT::Point;     ///< Point type from the base manifold.
-  using Tangent = typename BaseManifoldT::Tangent; ///< Tangent vector type from the base manifold.
+  using Scalar = typename BaseManifoldT::Scalar;    ///< Scalar type from the base manifold.
+  using Point = typename BaseManifoldT::Point;      ///< Point type from the base manifold.
+  using Tangent = typename BaseManifoldT::Tangent;  ///< Tangent vector type from the base manifold.
 
   /// @brief Runtime query: is `log` the Riemannian logarithm of the custom metric?
   ///
@@ -32,9 +32,7 @@ class ConfigurationSpace {
   /// Riemannian log of its native metric AND the custom metric happens to match
   /// that native metric. In that case, `discrete_geodesic` can use the fast
   /// log-based natural gradient instead of finite differences.
-  bool has_riemannian_log_runtime() const {
-    return is_riemannian_log(base_);
-  }
+  bool has_riemannian_log_runtime() const { return is_riemannian_log(base_); }
 
   /// @brief Construct with a base manifold and a metric.
   /// @param base The base manifold instance.
@@ -88,7 +86,7 @@ class ConfigurationSpace {
   /// expensive mass matrix evaluation is amortized over all \f$d^2\f$ entries
   /// of the tangent-metric tensor in a single call.
   Eigen::MatrixXd inner_matrix(const Point& p, const Eigen::MatrixXd& U,
-                                const Eigen::MatrixXd& V) const
+                               const Eigen::MatrixXd& V) const
     requires requires(const MetricT& m, const Point& q, const Eigen::MatrixXd& A) {
       { m.inner_matrix(q, A, A) } -> std::convertible_to<Eigen::MatrixXd>;
     }
@@ -102,21 +100,19 @@ class ConfigurationSpace {
   /// @{
 
   /// @brief Geodesic distance via the midpoint approximation.
-  Scalar distance(const Point& p, const Point& q) const {
-    return distance_midpoint(*this, p, q);
-  }
+  Scalar distance(const Point& p, const Point& q) const { return distance_midpoint(*this, p, q); }
 
   /// @brief Injectivity radius — forwarded from the metric if available.
   Scalar injectivity_radius() const
-    requires requires(const MetricT& m) { { m.injectivity_radius() }; }
+    requires requires(const MetricT& m) {
+      { m.injectivity_radius() };
+    }
   {
     return metric_.injectivity_radius();
   }
 
   /// @brief Geodesic interpolation between two points.
-  Point geodesic(const Point& p, const Point& q, Scalar t) const {
-    return exp(p, t * log(p, q));
-  }
+  Point geodesic(const Point& p, const Point& q, Scalar t) const { return exp(p, t * log(p, q)); }
 
   /// @}
 

@@ -4,7 +4,6 @@
 #pragma once
 
 #include <Eigen/Core>
-
 #include <geodex/core/metric.hpp>
 
 namespace geodex {
@@ -24,8 +23,7 @@ class IdentityMetric {
   /// @param u First tangent vector.
   /// @param v Second tangent vector.
   /// @return The inner product value.
-  double inner(const Eigen::Vector<double, Dim>& /*p*/,
-               const Eigen::Vector<double, Dim>& u,
+  double inner(const Eigen::Vector<double, Dim>& /*p*/, const Eigen::Vector<double, Dim>& u,
                const Eigen::Vector<double, Dim>& v) const {
     return u.dot(v);
   }
@@ -34,15 +32,13 @@ class IdentityMetric {
   /// @param p Base point (unused).
   /// @param v Tangent vector.
   /// @return The norm value.
-  double norm(const Eigen::Vector<double, Dim>& p,
-              const Eigen::Vector<double, Dim>& v) const {
+  double norm(const Eigen::Vector<double, Dim>& p, const Eigen::Vector<double, Dim>& v) const {
     return riemannian_norm(*this, p, v);
   }
 
   /// @brief Batched inner product: \f$ U^\top V \f$.
-  Eigen::MatrixXd inner_matrix(const Eigen::Vector<double, Dim>& /*p*/,
-                                const Eigen::MatrixXd& U,
-                                const Eigen::MatrixXd& V) const {
+  Eigen::MatrixXd inner_matrix(const Eigen::Vector<double, Dim>& /*p*/, const Eigen::MatrixXd& U,
+                               const Eigen::MatrixXd& V) const {
     return U.transpose() * V;
   }
 

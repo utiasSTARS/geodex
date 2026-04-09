@@ -8,11 +8,10 @@
 #include <geodex/algorithm/distance.hpp>
 #include <geodex/core/concepts.hpp>
 #include <geodex/core/sampler.hpp>
-#include <limits>
-#include <type_traits>
-
 #include <geodex/metrics/constant_spd.hpp>
 #include <geodex/metrics/identity.hpp>
+#include <limits>
+#include <type_traits>
 
 namespace geodex {
 
@@ -40,8 +39,7 @@ using EuclideanStandardMetric = IdentityMetric<Dim>;
 /// @tparam Dim Compile-time dimension, or `Eigen::Dynamic`.
 /// @tparam MetricT Metric policy (default: EuclideanStandardMetric).
 /// @tparam SamplerT Sampler policy for `random_point()` (default: `StochasticSampler`).
-template <int Dim = Eigen::Dynamic,
-          typename MetricT = EuclideanStandardMetric<Dim>,
+template <int Dim = Eigen::Dynamic, typename MetricT = EuclideanStandardMetric<Dim>,
           typename SamplerT = StochasticSampler>
 class Euclidean {
  public:
@@ -116,7 +114,8 @@ class Euclidean {
   /// @brief Return the dimension of the space.
   int dim() const { return dim_; }
 
-  /// @brief Sample a point uniformly in \f$[\mathrm{lo}, \mathrm{hi}]^n\f$ (default \f$[-1, 1]^n\f$).
+  /// @brief Sample a point uniformly in \f$[\mathrm{lo}, \mathrm{hi}]^n\f$ (default \f$[-1,
+  /// 1]^n\f$).
   ///
   /// @details Uses the configured `SamplerT` (default: `StochasticSampler`)
   /// to draw uniform box samples and linearly rescales to the sampling
@@ -153,7 +152,7 @@ class Euclidean {
 
   /// @brief Batched inner product \f$U^\top M(p)\, V\f$ when the metric provides it.
   Eigen::MatrixXd inner_matrix(const Point& p, const Eigen::MatrixXd& U,
-                                const Eigen::MatrixXd& V) const
+                               const Eigen::MatrixXd& V) const
     requires MetricHasInnerMatrix<MetricT, Point>
   {
     return metric_.inner_matrix(p, U, V);
@@ -217,10 +216,10 @@ class Euclidean {
 
   MetricT metric_;
   int dim_;
-  Eigen::VectorXd lo_;                    ///< Lower sampling bounds (default: -1^n).
-  Eigen::VectorXd hi_;                    ///< Upper sampling bounds (default:  1^n).
-  mutable SamplerT sampler_;              ///< Sampler used by `random_point`.
-  mutable Eigen::VectorXd sample_buf_;    ///< Preallocated buffer for sampler output.
+  Eigen::VectorXd lo_;                  ///< Lower sampling bounds (default: -1^n).
+  Eigen::VectorXd hi_;                  ///< Upper sampling bounds (default:  1^n).
+  mutable SamplerT sampler_;            ///< Sampler used by `random_point`.
+  mutable Eigen::VectorXd sample_buf_;  ///< Preallocated buffer for sampler output.
 };
 
 // Verify the default type satisfies RiemannianManifold.

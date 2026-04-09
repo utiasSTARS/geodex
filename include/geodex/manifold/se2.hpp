@@ -10,10 +10,9 @@
 #include <geodex/core/concepts.hpp>
 #include <geodex/core/retraction.hpp>
 #include <geodex/core/sampler.hpp>
+#include <geodex/metrics/se2_left_invariant.hpp>
 #include <numbers>
 #include <type_traits>
-
-#include <geodex/metrics/se2_left_invariant.hpp>
 
 namespace geodex {
 
@@ -83,12 +82,14 @@ struct SE2ExponentialMap {
   }
 };
 
-/// @brief First-order Euler retraction on SE(2) (cheapest, treats as \f$ \mathbb{R}^2 \times S^1 \f$).
+/// @brief First-order Euler retraction on SE(2) (cheapest, treats as \f$ \mathbb{R}^2 \times S^1
+/// \f$).
 ///
 /// @details Simply adds the tangent vector component-wise with angle wrapping.
 /// This is a valid first-order retraction but does not capture the group structure.
 struct SE2EulerRetraction {
-  /// @brief Euler retraction: \f$ R_p(v) = (p_x + v_x, p_y + v_y, \mathrm{wrap}(p_\theta + v_\theta)) \f$.
+  /// @brief Euler retraction: \f$ R_p(v) = (p_x + v_x, p_y + v_y, \mathrm{wrap}(p_\theta +
+  /// v_\theta)) \f$.
   /// @param p Base pose.
   /// @param v Tangent vector.
   /// @return The retracted pose.
@@ -124,14 +125,13 @@ static_assert(Retraction<SE2EulerRetraction, Eigen::Vector3d, Eigen::Vector3d>);
 /// @tparam MetricT Metric policy (default: SE2LeftInvariantMetric).
 /// @tparam RetractionT Retraction policy (default: SE2ExponentialMap).
 /// @tparam SamplerT Sampler policy for `random_point()` (default: `StochasticSampler`).
-template <typename MetricT = SE2LeftInvariantMetric,
-          typename RetractionT = SE2ExponentialMap,
+template <typename MetricT = SE2LeftInvariantMetric, typename RetractionT = SE2ExponentialMap,
           typename SamplerT = StochasticSampler>
 class SE2 {
  public:
-  using Scalar = double;           ///< Scalar type.
-  using Point = Eigen::Vector3d;   ///< Pose \f$ (x, y, \theta) \f$.
-  using Tangent = Eigen::Vector3d; ///< Tangent vector \f$ (v_x, v_y, \omega) \f$.
+  using Scalar = double;            ///< Scalar type.
+  using Point = Eigen::Vector3d;    ///< Pose \f$ (x, y, \theta) \f$.
+  using Tangent = Eigen::Vector3d;  ///< Tangent vector \f$ (v_x, v_y, \omega) \f$.
 
   /// @brief Runtime query: is the currently-configured metric the bi-invariant
   /// Lie group metric (unit weights on `SE2LeftInvariantMetric` paired with the
@@ -165,8 +165,7 @@ class SE2 {
   /// @brief Construct with sampling bounds.
   /// @param lo Lower sampling bounds \f$(x_\min, y_\min, \theta_\min)\f$.
   /// @param hi Upper sampling bounds \f$(x_\max, y_\max, \theta_\max)\f$.
-  SE2(const Eigen::Vector3d& lo, const Eigen::Vector3d& hi)
-      : lo_(lo), hi_(hi), sample_buf_(3) {}
+  SE2(const Eigen::Vector3d& lo, const Eigen::Vector3d& hi) : lo_(lo), hi_(hi), sample_buf_(3) {}
 
   /// @brief Construct with explicit metric and sampling bounds.
   /// @param metric The metric policy instance.
@@ -180,11 +179,12 @@ class SE2 {
   /// @param retraction The retraction policy instance.
   /// @param lo Lower sampling bounds \f$(x_\min, y_\min, \theta_\min)\f$.
   /// @param hi Upper sampling bounds \f$(x_\max, y_\max, \theta_\max)\f$.
-  SE2(MetricT metric, RetractionT retraction,
-      const Eigen::Vector3d& lo, const Eigen::Vector3d& hi)
+  SE2(MetricT metric, RetractionT retraction, const Eigen::Vector3d& lo, const Eigen::Vector3d& hi)
       : metric_(std::move(metric)),
         retraction_(std::move(retraction)),
-        lo_(lo), hi_(hi), sample_buf_(3) {}
+        lo_(lo),
+        hi_(hi),
+        sample_buf_(3) {}
 
   /// @brief Set the sampling bounds.
   void set_sampling_bounds(const Eigen::Vector3d& lo, const Eigen::Vector3d& hi) {
@@ -199,10 +199,9 @@ class SE2 {
   /// @return A random pose \f$ (x, y, \theta) \f$.
   Point random_point() const {
     sampler_.sample_box(3, sample_buf_);
-    return Point(
-        lo_[0] + sample_buf_[0] * (hi_[0] - lo_[0]),
-        lo_[1] + sample_buf_[1] * (hi_[1] - lo_[1]),
-        lo_[2] + sample_buf_[2] * (hi_[2] - lo_[2]));
+    return Point(lo_[0] + sample_buf_[0] * (hi_[0] - lo_[0]),
+                 lo_[1] + sample_buf_[1] * (hi_[1] - lo_[1]),
+                 lo_[2] + sample_buf_[2] * (hi_[2] - lo_[2]));
   }
 
   /// @brief Project an ambient vector onto the tangent space at \f$ p \f$.
@@ -224,7 +223,7 @@ class SE2 {
 
   /// @brief Batched inner product \f$U^\top M(p)\, V\f$ when the metric provides it.
   Eigen::MatrixXd inner_matrix(const Point& p, const Eigen::MatrixXd& U,
-                                const Eigen::MatrixXd& V) const
+                               const Eigen::MatrixXd& V) const
     requires MetricHasInnerMatrix<MetricT, Point>
   {
     return metric_.inner_matrix(p, U, V);
@@ -271,9 +270,9 @@ class SE2 {
   MetricT metric_;
   RetractionT retraction_;
   Eigen::Vector3d lo_{0.0, 0.0, -std::numbers::pi};   ///< Lower sampling bounds (x, y, theta).
-  Eigen::Vector3d hi_{10.0, 10.0, std::numbers::pi};   ///< Upper sampling bounds (x, y, theta).
+  Eigen::Vector3d hi_{10.0, 10.0, std::numbers::pi};  ///< Upper sampling bounds (x, y, theta).
   mutable SamplerT sampler_;
-  mutable Eigen::VectorXd sample_buf_{3};               ///< Preallocated buffer for sampler output.
+  mutable Eigen::VectorXd sample_buf_{3};  ///< Preallocated buffer for sampler output.
 };
 
 // Verify the composed types satisfy RiemannianManifold.

@@ -4,9 +4,8 @@
 #pragma once
 
 #include <Eigen/Core>
-#include <type_traits>
-
 #include <geodex/core/metric.hpp>
+#include <type_traits>
 
 namespace geodex {
 
@@ -29,10 +28,10 @@ class WeightedMetric {
   /// @brief Construct a weighted metric.
   /// @param base The base metric to scale.
   /// @param alpha Scaling factor — constant `double` or callable `Fn(q) -> double`.
-  WeightedMetric(MetricT base, AlphaT alpha)
-      : base_(std::move(base)), alpha_(std::move(alpha)) {}
+  WeightedMetric(MetricT base, AlphaT alpha) : base_(std::move(base)), alpha_(std::move(alpha)) {}
 
-  /// @brief Compute the scaled inner product \f$\alpha(q) \langle u, v \rangle^{\mathrm{base}}_q\f$.
+  /// @brief Compute the scaled inner product \f$\alpha(q) \langle u, v
+  /// \rangle^{\mathrm{base}}_q\f$.
   /// @param q Configuration point.
   /// @param u First tangent vector.
   /// @param v Second tangent vector.
@@ -42,7 +41,8 @@ class WeightedMetric {
     return evaluate_alpha(q) * base_.inner(q, u, v);
   }
 
-  /// @brief Compute the scaled norm \f$\|v\|_q = \sqrt{\alpha(q) \langle v, v \rangle^{\mathrm{base}}_q}\f$.
+  /// @brief Compute the scaled norm \f$\|v\|_q = \sqrt{\alpha(q) \langle v, v
+  /// \rangle^{\mathrm{base}}_q}\f$.
   /// @param q Configuration point.
   /// @param v Tangent vector.
   /// @return The scaled norm value.
@@ -55,7 +55,7 @@ class WeightedMetric {
   /// when available and scales the result by \f$\alpha(q)\f$.
   template <typename Point>
   Eigen::MatrixXd inner_matrix(const Point& q, const Eigen::MatrixXd& U,
-                                const Eigen::MatrixXd& V) const
+                               const Eigen::MatrixXd& V) const
     requires requires(const MetricT& m, const Point& p, const Eigen::MatrixXd& A) {
       { m.inner_matrix(p, A, A) } -> std::convertible_to<Eigen::MatrixXd>;
     }
@@ -68,7 +68,9 @@ class WeightedMetric {
   /// uniform-scaling guarantee).
   double injectivity_radius() const
     requires(std::is_arithmetic_v<AlphaT> &&
-             requires(const MetricT& m) { { m.injectivity_radius() }; })
+             requires(const MetricT& m) {
+               { m.injectivity_radius() };
+             })
   {
     return base_.injectivity_radius();
   }
@@ -91,8 +93,8 @@ class WeightedMetric {
     }
   }
 
-  MetricT base_;    ///< The base metric.
-  AlphaT alpha_;    ///< The scaling factor (constant or callable).
+  MetricT base_;  ///< The base metric.
+  AlphaT alpha_;  ///< The scaling factor (constant or callable).
 };
 
 }  // namespace geodex

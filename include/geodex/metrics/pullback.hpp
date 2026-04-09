@@ -4,7 +4,6 @@
 #pragma once
 
 #include <Eigen/Core>
-
 #include <geodex/core/metric.hpp>
 
 namespace geodex {
@@ -28,9 +27,7 @@ class PullbackMetric {
   /// @param task_fn Callable returning the task-space metric.
   /// @param lambda Regularization (default 0).
   PullbackMetric(JacobianFn jac_fn, TaskMetricFn task_fn, double lambda = 0.0)
-      : jacobian_fn_(std::move(jac_fn)),
-        task_metric_fn_(std::move(task_fn)),
-        lambda_(lambda) {}
+      : jacobian_fn_(std::move(jac_fn)), task_metric_fn_(std::move(task_fn)), lambda_(lambda) {}
 
   /// @brief Compute the inner product.
   /// @param q Configuration point.
@@ -61,7 +58,7 @@ class PullbackMetric {
   /// a single pair of Jacobian / task-metric evaluations.
   template <typename Point>
   Eigen::MatrixXd inner_matrix(const Point& q, const Eigen::MatrixXd& U,
-                                const Eigen::MatrixXd& V) const {
+                               const Eigen::MatrixXd& V) const {
     const auto J = jacobian_fn_(q);
     const auto G = task_metric_fn_(q);
     Eigen::MatrixXd result = (J * U).transpose() * G * (J * V);

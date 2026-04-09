@@ -4,9 +4,8 @@
 #pragma once
 
 #include <Eigen/Core>
-#include <limits>
-
 #include <geodex/core/metric.hpp>
+#include <limits>
 
 namespace geodex {
 
@@ -56,7 +55,7 @@ class KineticEnergyMetric {
   /// entire \f$d\times d\f$ tensor in a single matmul.
   template <typename Point>
   Eigen::MatrixXd inner_matrix(const Point& q, const Eigen::MatrixXd& U,
-                                const Eigen::MatrixXd& V) const {
+                               const Eigen::MatrixXd& V) const {
     return U.transpose() * mass_matrix_fn_(q) * V;
   }
 

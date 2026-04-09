@@ -20,7 +20,7 @@ namespace geodex {
 /// This method provides a third-order approximation to the exact geodesic distance
 /// on general Riemannian manifolds. It is computationally cheaper than numerical
 /// geodesic integration while maintaining high accuracy for moderately curved spaces.
-/// For manifolds with with exact exponential and logarithmic maps, this formula yields 
+/// For manifolds with with exact exponential and logarithmic maps, this formula yields
 /// the exact geodesic distance.
 ///
 /// @note See Kyaw, P. T., & Kelly, J. (2026). Geometry-Aware Sampling-Based Motion
