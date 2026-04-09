@@ -5,6 +5,7 @@
 
 #include <geodex/algorithm/distance.hpp>
 #include <geodex/core/concepts.hpp>
+#include <geodex/core/metric.hpp>
 
 namespace geodex {
 
@@ -20,19 +21,20 @@ namespace geodex {
 /// @tparam MetricT The metric policy type (must provide `inner` and `norm`).
 template <typename BaseManifoldT, typename MetricT>
 class ConfigurationSpace {
-  BaseManifoldT base_;
-  MetricT metric_;
-
  public:
   using Scalar = typename BaseManifoldT::Scalar;   ///< Scalar type from the base manifold.
   using Point = typename BaseManifoldT::Point;     ///< Point type from the base manifold.
   using Tangent = typename BaseManifoldT::Tangent; ///< Tangent vector type from the base manifold.
 
-  /// @brief Compile-time flag: a custom-metric ConfigurationSpace never satisfies
-  /// the "log = Riemannian log of metric" identity, because the base manifold's
-  /// `log` is defined for its own metric, not `MetricT`. Algorithms like
-  /// `discrete_geodesic` always take the finite-difference natural-gradient path.
-  static constexpr bool has_riemannian_log = false;
+  /// @brief Runtime query: is `log` the Riemannian logarithm of the custom metric?
+  ///
+  /// @details This is true only when the base manifold's own log is already the
+  /// Riemannian log of its native metric AND the custom metric happens to match
+  /// that native metric. In that case, `discrete_geodesic` can use the fast
+  /// log-based natural gradient instead of finite differences.
+  bool has_riemannian_log_runtime() const {
+    return is_riemannian_log(base_);
+  }
 
   /// @brief Construct with a base manifold and a metric.
   /// @param base The base manifold instance.
@@ -87,7 +89,9 @@ class ConfigurationSpace {
   /// of the tangent-metric tensor in a single call.
   Eigen::MatrixXd inner_matrix(const Point& p, const Eigen::MatrixXd& U,
                                 const Eigen::MatrixXd& V) const
-    requires requires { metric_.inner_matrix(p, U, V); }
+    requires requires(const MetricT& m, const Point& q, const Eigen::MatrixXd& A) {
+      { m.inner_matrix(q, A, A) } -> std::convertible_to<Eigen::MatrixXd>;
+    }
   {
     return metric_.inner_matrix(p, U, V);
   }
@@ -104,7 +108,7 @@ class ConfigurationSpace {
 
   /// @brief Injectivity radius — forwarded from the metric if available.
   Scalar injectivity_radius() const
-    requires requires { metric_.injectivity_radius(); }
+    requires requires(const MetricT& m) { { m.injectivity_radius() }; }
   {
     return metric_.injectivity_radius();
   }
@@ -121,6 +125,10 @@ class ConfigurationSpace {
 
   /// @brief Access the metric.
   const MetricT& metric() const { return metric_; }
+
+ private:
+  BaseManifoldT base_;
+  MetricT metric_;
 };
 
 }  // namespace geodex

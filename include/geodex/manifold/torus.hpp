@@ -13,6 +13,7 @@
 #include <type_traits>
 
 #include <geodex/metrics/constant_spd.hpp>
+#include <geodex/metrics/identity.hpp>
 
 namespace geodex {
 
@@ -20,13 +21,12 @@ namespace geodex {
 // Metric alias
 // ---------------------------------------------------------------------------
 
-/// @brief The standard flat metric on \f$ T^n \f$.
+/// @brief Standard flat metric on \f$ T^n \f$.
 ///
 /// @details The inner product is the standard dot product:
-/// \f$ \langle u, v \rangle = u \cdot v \f$. This is exactly
-/// `ConstantSPDMetric<Dim>` with the identity weight matrix.
+/// \f$ \langle u, v \rangle = u \cdot v \f$. Zero-storage stateless metric.
 template <int Dim = Eigen::Dynamic>
-using TorusFlatMetric = ConstantSPDMetric<Dim>;
+using TorusFlatMetric = IdentityMetric<Dim>;
 
 // ---------------------------------------------------------------------------
 // Torus manifold
@@ -45,10 +45,6 @@ template <int Dim = Eigen::Dynamic,
           typename MetricT = TorusFlatMetric<Dim>,
           typename SamplerT = StochasticSampler>
 class Torus {
-  MetricT metric_;
-  int dim_;
-  mutable SamplerT sampler_;
-
  public:
   using Scalar = double;                       ///< Scalar type.
   using Point = Eigen::Vector<double, Dim>;    ///< Point type (angles in \f$ [0, 2\pi)^n \f$).
@@ -62,8 +58,10 @@ class Torus {
   /// their geodesics are reparameterized, so we mark them as not log-compatible
   /// and `discrete_geodesic` uses finite differences.
   bool has_riemannian_log_runtime() const {
-    if constexpr (std::is_same_v<MetricT, ConstantSPDMetric<Dim>>) {
-      return metric_.A_.isApprox(
+    if constexpr (std::is_same_v<MetricT, IdentityMetric<Dim>>) {
+      return true;
+    } else if constexpr (std::is_same_v<MetricT, ConstantSPDMetric<Dim>>) {
+      return metric_.weight_matrix().isApprox(
           Eigen::Matrix<double, Dim, Dim>::Identity(dim_, dim_));
     } else {
       return false;
@@ -73,38 +71,26 @@ class Torus {
   /// @brief Fixed-dimension constructor.
   Torus()
     requires(Dim != Eigen::Dynamic)
-      : dim_(Dim) {}
+      : dim_(Dim), sample_buf_(Dim) {}
 
   /// @brief Fixed-dimension constructor with custom metric.
   /// @param metric The metric policy instance.
   explicit Torus(MetricT metric)
     requires(Dim != Eigen::Dynamic)
-      : metric_(std::move(metric)), dim_(Dim) {}
+      : metric_(std::move(metric)), dim_(Dim), sample_buf_(Dim) {}
 
   /// @brief Dynamic-dimension constructor.
   /// @param n The dimension of the torus.
   explicit Torus(int n)
     requires(Dim == Eigen::Dynamic)
-      : metric_(make_default_metric(n)), dim_(n) {}
+      : metric_(make_default_metric(n)), dim_(n), sample_buf_(n) {}
 
   /// @brief Dynamic-dimension constructor with custom metric.
   /// @param n The dimension of the torus.
   /// @param metric The metric policy instance.
   Torus(int n, MetricT metric)
     requires(Dim == Eigen::Dynamic)
-      : metric_(std::move(metric)), dim_(n) {}
-
- private:
-  /// @brief Build the default metric for dynamic Torus.
-  static MetricT make_default_metric(int n) {
-    if constexpr (std::is_constructible_v<MetricT, int>) {
-      return MetricT(n);
-    } else {
-      return MetricT{};
-    }
-  }
-
- public:
+      : metric_(std::move(metric)), dim_(n), sample_buf_(n) {}
 
   /// @brief Return the dimension of the torus.
   int dim() const { return dim_; }
@@ -112,14 +98,13 @@ class Torus {
   /// @brief Sample a uniformly random point in \f$ [0, 2\pi)^n \f$.
   /// @return A random point on the torus.
   Point random_point() const {
-    Eigen::VectorXd box(dim_);
-    sampler_.sample_box(dim_, box);
+    sampler_.sample_box(dim_, sample_buf_);
     Point p;
     if constexpr (Dim == Eigen::Dynamic) {
       p.resize(dim_);
     }
     for (int i = 0; i < dim_; ++i) {
-      p[i] = box[i] * 2.0 * std::numbers::pi;
+      p[i] = sample_buf_[i] * 2.0 * std::numbers::pi;
     }
     return p;
   }
@@ -144,7 +129,7 @@ class Torus {
   /// @brief Batched inner product \f$U^\top M(p)\, V\f$ when the metric provides it.
   Eigen::MatrixXd inner_matrix(const Point& p, const Eigen::MatrixXd& U,
                                 const Eigen::MatrixXd& V) const
-    requires requires { metric_.inner_matrix(p, U, V); }
+    requires MetricHasInnerMatrix<MetricT, Point>
   {
     return metric_.inner_matrix(p, U, V);
   }
@@ -179,9 +164,10 @@ class Torus {
 
   /// @brief Injectivity radius of \f$ T^n \f$: \f$ \pi \f$ (half the period).
   ///
-  /// @details Assumes the default identity metric and period \f$ 2\pi \f$.
-  /// Anisotropic custom metrics on the same topology scale the effective
-  /// radius by a factor of the metric's spectrum.
+  /// @details Returns the topological value for the default identity metric and
+  /// period \f$ 2\pi \f$. For anisotropic custom metrics the effective radius is
+  /// \f$ \pi / \sqrt{\lambda_{\max}(A)} \f$. This value is an upper bound;
+  /// `discrete_geodesic` may take extra retries if the true radius is smaller.
   Scalar injectivity_radius() const { return std::numbers::pi; }
 
   /// @brief Geodesic interpolation between \f$ p \f$ and \f$ q \f$ at parameter \f$ t \f$.
@@ -192,6 +178,21 @@ class Torus {
   Point geodesic(const Point& p, const Point& q, Scalar t) const { return exp(p, t * log(p, q)); }
 
   /// @}
+
+ private:
+  /// @brief Build the default metric for dynamic Torus.
+  static MetricT make_default_metric(int n) {
+    if constexpr (std::is_constructible_v<MetricT, int>) {
+      return MetricT(n);
+    } else {
+      return MetricT{};
+    }
+  }
+
+  MetricT metric_;
+  int dim_;
+  mutable SamplerT sampler_;
+  mutable Eigen::VectorXd sample_buf_;   ///< Preallocated buffer for sampler output.
 };
 
 // Verify the default types satisfy RiemannianManifold.

@@ -10,11 +10,12 @@
 #include <geodex/core/debug.hpp>
 #include <geodex/core/metric.hpp>
 #include <geodex/core/retraction.hpp>
+#include <geodex/core/sampler.hpp>
 #include <numbers>
-#include <random>
 #include <type_traits>
 
 #include <geodex/metrics/constant_spd.hpp>
+#include <geodex/metrics/identity.hpp>
 
 namespace geodex {
 
@@ -38,10 +39,9 @@ inline constexpr int sphere_ambient_v<Eigen::Dynamic> = Eigen::Dynamic;
 /// @brief The standard round (bi-invariant) metric on \f$ S^2 \f$.
 ///
 /// @details The inner product is the ambient Euclidean dot product restricted
-/// to tangent vectors: \f$ \langle u, v \rangle_p = u \cdot v \f$. This is
-/// exactly `ConstantSPDMetric<3>` with the identity weight matrix — exposed
-/// here under the familiar "round metric" name.
-using SphereRoundMetric = ConstantSPDMetric<3>;
+/// to tangent vectors: \f$ \langle u, v \rangle_p = u \cdot v \f$.
+/// Zero-storage stateless metric.
+using SphereRoundMetric = IdentityMetric<3>;
 
 // ---------------------------------------------------------------------------
 // Retraction policies
@@ -57,6 +57,9 @@ using SphereRoundMetric = ConstantSPDMetric<3>;
 /// struct serves every \f$ S^n \f$.
 struct SphereExponentialMap {
   /// @brief Exponential map \f$ \exp_p(v) \f$ on \f$ S^n \f$.
+  /// @param p Base point on the sphere.
+  /// @param v Tangent vector at \f$ p \f$.
+  /// @return The resulting point on the sphere.
   template <typename Point>
   EIGEN_STRONG_INLINE Point retract(const Point& p, const Point& v) const {
     const double theta = v.norm();
@@ -68,6 +71,9 @@ struct SphereExponentialMap {
   }
 
   /// @brief Logarithmic map \f$ \log_p(q) \f$ on \f$ S^n \f$.
+  /// @param p Base point on the sphere.
+  /// @param q Target point on the sphere.
+  /// @return Tangent vector at \f$ p \f$ such that \f$ \exp_p(v) = q \f$.
   template <typename Point>
   EIGEN_STRONG_INLINE Point inverse_retract(const Point& p, const Point& q) const {
     const double cos_theta = p.dot(q);
@@ -93,12 +99,18 @@ struct SphereExponentialMap {
 /// - `inverse_retract(p, q)` projects \f$ q - p \f$ onto \f$ T_p S^n \f$
 struct SphereProjectionRetraction {
   /// @brief Projection retraction: normalize \f$ p + v \f$.
+  /// @param p Base point on the sphere.
+  /// @param v Tangent vector at \f$ p \f$.
+  /// @return The retracted point on the sphere.
   template <typename Point>
   EIGEN_STRONG_INLINE Point retract(const Point& p, const Point& v) const {
     return (p + v).normalized();
   }
 
   /// @brief Inverse projection retraction.
+  /// @param p Base point on the sphere.
+  /// @param q Target point on the sphere.
+  /// @return Tangent vector at \f$ p \f$ approximating \f$ \log_p(q) \f$.
   template <typename Point>
   EIGEN_STRONG_INLINE Point inverse_retract(const Point& p, const Point& q) const {
     const Point d = q - p;
@@ -133,8 +145,9 @@ static_assert(Retraction<SphereProjectionRetraction, Eigen::Vector3d, Eigen::Vec
 /// @tparam MetricT Metric policy (default: `ConstantSPDMetric<Dim+1>` identity).
 /// @tparam RetractionT Retraction policy (default: `SphereExponentialMap`).
 template <int Dim = 2,
-          typename MetricT = ConstantSPDMetric<detail::sphere_ambient_v<Dim>>,
-          typename RetractionT = SphereExponentialMap>
+          typename MetricT = IdentityMetric<detail::sphere_ambient_v<Dim>>,
+          typename RetractionT = SphereExponentialMap,
+          typename SamplerT = StochasticSampler>
 class Sphere {
  public:
   /// @brief Ambient dimension (`Dim + 1` for static, `Eigen::Dynamic` otherwise).
@@ -144,12 +157,6 @@ class Sphere {
   using Point = Eigen::Vector<double, Ambient>;     ///< Point type (unit vector in \f$ \mathbb{R}^{n+1} \f$).
   using Tangent = Eigen::Vector<double, Ambient>;   ///< Tangent vector type.
 
- private:
-  MetricT metric_;
-  RetractionT retraction_;
-  int dim_;  ///< Intrinsic dimension (Dim for static, runtime for dynamic).
-
- public:
   /// @brief Runtime query: is `log` the Riemannian logarithm of the metric?
   ///
   /// @details Only when the metric is the identity `ConstantSPDMetric<Ambient>`
@@ -157,10 +164,15 @@ class Sphere {
   /// `grad((1/2) d^2)(x) = -log_x(q)` hold exactly. Other metrics and any
   /// projection retraction fall back to finite-difference natural gradient.
   bool has_riemannian_log_runtime() const {
-    if constexpr (std::is_same_v<MetricT, ConstantSPDMetric<Ambient>> &&
-                  std::is_same_v<RetractionT, SphereExponentialMap>) {
-      return metric_.A_.isApprox(
-          Eigen::Matrix<double, Ambient, Ambient>::Identity(dim_ + 1, dim_ + 1));
+    if constexpr (std::is_same_v<RetractionT, SphereExponentialMap>) {
+      if constexpr (std::is_same_v<MetricT, IdentityMetric<Ambient>>) {
+        return true;
+      } else if constexpr (std::is_same_v<MetricT, ConstantSPDMetric<Ambient>>) {
+        return metric_.weight_matrix().isApprox(
+            Eigen::Matrix<double, Ambient, Ambient>::Identity(dim_ + 1, dim_ + 1));
+      } else {
+        return false;
+      }
     } else {
       return false;
     }
@@ -197,17 +209,36 @@ class Sphere {
   /// @brief Return the intrinsic dimension \f$ n \f$ of \f$ S^n \f$.
   int dim() const { return dim_; }
 
-  /// @brief Sample a uniformly random point on \f$ S^n \f$ via Marsaglia's method.
+  /// @brief Sample a uniformly random point on \f$ S^n \f$.
+  ///
+  /// @details Draws `n+1` uniform samples from the sampler via `sample_box`,
+  /// applies the Box-Muller transform to produce standard normal variates, and
+  /// normalizes the resulting vector to project onto the sphere. This is
+  /// mathematically equivalent to Marsaglia's method but uses the configurable
+  /// sampler policy instead of a thread-local RNG.
   /// @return A unit vector in \f$ \mathbb{R}^{n+1} \f$.
   Point random_point() const {
-    thread_local std::mt19937 gen{std::random_device{}()};
-    std::normal_distribution<double> dist(0.0, 1.0);
+    const int n = dim_ + 1;
+    // We need `n` normals. Box-Muller produces pairs, so draw ceil(n/2)*2
+    // uniforms.
+    const int n_pairs = (n + 1) / 2;
+    const int n_uniform = n_pairs * 2;
+    sample_buf_.conservativeResize(n_uniform);
+    sampler_.sample_box(n_uniform, sample_buf_);
+
     Point p;
     if constexpr (Ambient == Eigen::Dynamic) {
-      p.resize(dim_ + 1);
+      p.resize(n);
     }
-    for (int i = 0; i < p.size(); ++i) {
-      p[i] = dist(gen);
+    // Box-Muller: pairs of U(0,1) → pairs of N(0,1).
+    for (int i = 0; i < n_pairs; ++i) {
+      const double u1 = std::max(sample_buf_[2 * i], 1e-300);  // avoid log(0)
+      const double u2 = sample_buf_[2 * i + 1];
+      const double r = std::sqrt(-2.0 * std::log(u1));
+      const double theta = 2.0 * std::numbers::pi * u2;
+      const int j = 2 * i;
+      if (j < n) p[j] = r * std::cos(theta);
+      if (j + 1 < n) p[j + 1] = r * std::sin(theta);
     }
     return p.normalized();
   }
@@ -232,7 +263,7 @@ class Sphere {
   /// @brief Batched inner product \f$U^\top M(p)\, V\f$ when the metric provides it.
   Eigen::MatrixXd inner_matrix(const Point& p, const Eigen::MatrixXd& U,
                                 const Eigen::MatrixXd& V) const
-    requires requires { metric_.inner_matrix(p, U, V); }
+    requires MetricHasInnerMatrix<MetricT, Point>
   {
     return metric_.inner_matrix(p, U, V);
   }
@@ -243,9 +274,15 @@ class Sphere {
   /// @{
 
   /// @brief Exponential map (or retraction) \f$ \exp_p(v) \f$.
+  /// @param p Base point on the sphere.
+  /// @param v Tangent vector at \f$ p \f$.
+  /// @return The resulting point on the sphere.
   Point exp(const Point& p, const Tangent& v) const { return retraction_.retract(p, v); }
 
   /// @brief Logarithmic map (or inverse retraction) \f$ \log_p(q) \f$.
+  /// @param p Base point on the sphere.
+  /// @param q Target point on the sphere.
+  /// @return Tangent vector at \f$ p \f$ such that \f$ \exp_p(v) \approx q \f$.
   Tangent log(const Point& p, const Point& q) const { return retraction_.inverse_retract(p, q); }
 
   /// @}
@@ -254,6 +291,9 @@ class Sphere {
   /// @{
 
   /// @brief Geodesic distance \f$ d(p, q) \f$ via the midpoint approximation.
+  /// @param p First point on the sphere.
+  /// @param q Second point on the sphere.
+  /// @return The geodesic distance.
   Scalar distance(const Point& p, const Point& q) const {
     double dot = p.dot(q);
     if (dot < -1.0 + 1e-10) {
@@ -264,12 +304,19 @@ class Sphere {
 
   /// @brief Injectivity radius of the round n-sphere: \f$ \pi \f$.
   ///
-  /// @details Assumes the default identity metric. Anisotropic custom metrics
-  /// scale the effective radius by a factor of the metric's spectrum — users
-  /// with custom metrics must compute their own bound.
+  /// @details Returns the topological injectivity radius for the default round
+  /// (identity) metric. For anisotropic custom metrics the effective radius is
+  /// smaller: \f$ \pi / \sqrt{\lambda_{\max}(A)} \f$ where \f$ \lambda_{\max} \f$
+  /// is the largest eigenvalue of the weight matrix. This value is an upper
+  /// bound; `discrete_geodesic` uses it for step capping and may take extra
+  /// retries if the true radius is smaller.
   Scalar injectivity_radius() const { return std::numbers::pi; }
 
   /// @brief Geodesic interpolation between \f$ p \f$ and \f$ q \f$ at parameter \f$ t \f$.
+  /// @param p Start point.
+  /// @param q End point.
+  /// @param t Interpolation parameter in \f$ [0, 1] \f$.
+  /// @return The interpolated point on the sphere.
   Point geodesic(const Point& p, const Point& q, Scalar t) const { return exp(p, t * log(p, q)); }
 
   /// @}
@@ -288,6 +335,12 @@ class Sphere {
     GEODEX_LOG("Sphere<" << Dim << ", " << detail::type_name<MetricT>() << ", "
                          << detail::type_name<RetractionT>() << "> created (dim=" << dim() << ")");
   }
+
+  MetricT metric_;
+  RetractionT retraction_;
+  int dim_;                                ///< Intrinsic dimension (Dim for static, runtime for dynamic).
+  mutable SamplerT sampler_;               ///< Sampler used by `random_point`.
+  mutable Eigen::VectorXd sample_buf_;     ///< Preallocated buffer for Box-Muller uniform samples.
 };
 
 // Verify the composed types satisfy RiemannianManifold.

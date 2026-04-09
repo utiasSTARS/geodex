@@ -98,4 +98,14 @@ concept HasBatchInnerMatrix =
       { m.inner_matrix(p, U, V) } -> std::convertible_to<Eigen::MatrixXd>;
     };
 
+/// @brief Check if a metric type provides a batched `inner_matrix` method.
+///
+/// @details Used by manifold classes to conditionally expose `inner_matrix`
+/// without referencing a specific member variable in a requires-clause.
+template <typename MetricT, typename Point>
+concept MetricHasInnerMatrix =
+    requires(const MetricT m, const Point p, const Eigen::MatrixXd U, const Eigen::MatrixXd V) {
+      { m.inner_matrix(p, U, V) } -> std::convertible_to<Eigen::MatrixXd>;
+    };
+
 }  // namespace geodex

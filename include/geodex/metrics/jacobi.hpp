@@ -20,14 +20,22 @@ namespace detail {
 /// kinetic-energy metric into a Jacobi metric. We use a named functor struct
 /// (rather than a lambda) so that `JacobiMetric` has a nameable type.
 template <typename PotentialFn>
-struct JacobiAlphaFunctor {
-  PotentialFn potential_fn_;
-  double total_energy_;
+class JacobiAlphaFunctor {
+ public:
+  JacobiAlphaFunctor(PotentialFn pot_fn, double H)
+      : potential_fn_(std::move(pot_fn)), total_energy_(H) {}
 
   template <typename Point>
   double operator()(const Point& q) const {
     return 2.0 * (total_energy_ - potential_fn_(q));
   }
+
+  /// @brief Access the total energy.
+  double total_energy() const { return total_energy_; }
+
+ private:
+  PotentialFn potential_fn_;
+  double total_energy_;
 };
 
 }  // namespace detail
@@ -49,12 +57,11 @@ struct JacobiAlphaFunctor {
 /// @tparam MassMatrixFn Callable returning the SPD mass matrix at \f$ q \f$.
 /// @tparam PotentialFn Callable returning the scalar potential \f$ P(q) \f$.
 template <typename MassMatrixFn, typename PotentialFn>
-struct JacobiMetric {
+class JacobiMetric {
+ public:
   using KEMetric = KineticEnergyMetric<MassMatrixFn>;
   using AlphaFn = detail::JacobiAlphaFunctor<PotentialFn>;
   using InnerMetric = WeightedMetric<KEMetric, AlphaFn>;
-
-  InnerMetric inner_metric_;
 
   /// @brief Construct a Jacobi metric.
   /// @param mass_fn Callable returning the SPD mass matrix.
@@ -62,15 +69,27 @@ struct JacobiMetric {
   /// @param H Total energy (must satisfy \f$ H > P(q) \f$ everywhere on the path).
   JacobiMetric(MassMatrixFn mass_fn, PotentialFn pot_fn, double H)
       : inner_metric_(KEMetric{std::move(mass_fn)},
-                      AlphaFn{std::move(pot_fn), H}) {}
+                      AlphaFn(std::move(pot_fn), H)) {
+    static_assert(std::is_invocable_v<const MassMatrixFn&, const Eigen::VectorXd&>,
+                  "MassMatrixFn must be callable with (const VectorXd&)");
+    static_assert(std::is_invocable_v<const PotentialFn&, const Eigen::VectorXd&>,
+                  "PotentialFn must be callable with (const VectorXd&)");
+  }
 
   /// @brief Compute the inner product \f$ 2(H - P(q))\, u^\top M(q) \, v \f$.
+  /// @param q Configuration point.
+  /// @param u First tangent vector.
+  /// @param v Second tangent vector.
+  /// @return The inner product value.
   template <typename Point, typename Tangent>
   double inner(const Point& q, const Tangent& u, const Tangent& v) const {
     return inner_metric_.inner(q, u, v);
   }
 
-  /// @brief Compute the norm \f$ \|v\|_q \f$.
+  /// @brief Compute the norm \f$ \|v\|_q = \sqrt{2(H - P(q))\, v^\top M(q) \, v} \f$.
+  /// @param q Configuration point.
+  /// @param v Tangent vector.
+  /// @return The norm value.
   template <typename Point, typename Tangent>
   double norm(const Point& q, const Tangent& v) const {
     return riemannian_norm(*this, q, v);
@@ -86,7 +105,10 @@ struct JacobiMetric {
   }
 
   /// @brief Return the total energy \f$ H \f$ set at construction.
-  double total_energy() const { return inner_metric_.alpha_.total_energy_; }
+  double total_energy() const { return inner_metric_.alpha().total_energy(); }
+
+ private:
+  InnerMetric inner_metric_;
 };
 
 /// @brief Factory function for `JacobiMetric` — convenience wrapper that lets

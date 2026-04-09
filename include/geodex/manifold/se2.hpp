@@ -128,13 +128,6 @@ template <typename MetricT = SE2LeftInvariantMetric,
           typename RetractionT = SE2ExponentialMap,
           typename SamplerT = StochasticSampler>
 class SE2 {
-  MetricT metric_;
-  RetractionT retraction_;
-  /// @brief Workspace bounds used by the default sampler only — they have no
-  /// effect on `exp`, `log`, or the metric.
-  double sample_x_lo_, sample_x_hi_, sample_y_lo_, sample_y_hi_;
-  mutable SamplerT sampler_;
-
  public:
   using Scalar = double;           ///< Scalar type.
   using Point = Eigen::Vector3d;   ///< Pose \f$ (x, y, \theta) \f$.
@@ -155,39 +148,49 @@ class SE2 {
   bool has_riemannian_log_runtime() const {
     if constexpr (std::is_same_v<MetricT, SE2LeftInvariantMetric> &&
                   std::is_same_v<RetractionT, SE2ExponentialMap>) {
-      return metric_.weights_.isApprox(Eigen::Vector3d(1.0, 1.0, 1.0));
+      return metric_.weights().isApprox(Eigen::Vector3d(1.0, 1.0, 1.0));
     } else {
       return false;
     }
   }
 
-  /// @brief Default constructor with workspace sampling bounds \f$ [0, 10]^2 \f$.
-  SE2() : sample_x_lo_(0.0), sample_x_hi_(10.0), sample_y_lo_(0.0), sample_y_hi_(10.0) {}
+  /// @brief Default constructor. Users must call `set_sampling_bounds()` before
+  /// using `random_point()` if the default \f$[0,10]^2 \times [-\pi,\pi)\f$ is unsuitable.
+  SE2() = default;
 
   /// @brief Construct with explicit metric.
   /// @param metric The metric policy instance.
-  explicit SE2(MetricT metric)
-      : metric_(std::move(metric)),
-        sample_x_lo_(0.0),
-        sample_x_hi_(10.0),
-        sample_y_lo_(0.0),
-        sample_y_hi_(10.0) {}
+  explicit SE2(MetricT metric) : metric_(std::move(metric)) {}
 
-  /// @brief Construct with explicit metric, retraction, and workspace sampling bounds.
+  /// @brief Construct with sampling bounds.
+  /// @param lo Lower sampling bounds \f$(x_\min, y_\min, \theta_\min)\f$.
+  /// @param hi Upper sampling bounds \f$(x_\max, y_\max, \theta_\max)\f$.
+  SE2(const Eigen::Vector3d& lo, const Eigen::Vector3d& hi)
+      : lo_(lo), hi_(hi), sample_buf_(3) {}
+
+  /// @brief Construct with explicit metric and sampling bounds.
+  /// @param metric The metric policy instance.
+  /// @param lo Lower sampling bounds \f$(x_\min, y_\min, \theta_\min)\f$.
+  /// @param hi Upper sampling bounds \f$(x_\max, y_\max, \theta_\max)\f$.
+  SE2(MetricT metric, const Eigen::Vector3d& lo, const Eigen::Vector3d& hi)
+      : metric_(std::move(metric)), lo_(lo), hi_(hi), sample_buf_(3) {}
+
+  /// @brief Construct with explicit metric, retraction, and sampling bounds.
   /// @param metric The metric policy instance.
   /// @param retraction The retraction policy instance.
-  /// @param x_lo Lower x bound for random sampling (sampler only).
-  /// @param x_hi Upper x bound for random sampling (sampler only).
-  /// @param y_lo Lower y bound for random sampling (sampler only).
-  /// @param y_hi Upper y bound for random sampling (sampler only).
-  SE2(MetricT metric, RetractionT retraction, double x_lo = 0.0, double x_hi = 10.0,
-      double y_lo = 0.0, double y_hi = 10.0)
+  /// @param lo Lower sampling bounds \f$(x_\min, y_\min, \theta_\min)\f$.
+  /// @param hi Upper sampling bounds \f$(x_\max, y_\max, \theta_\max)\f$.
+  SE2(MetricT metric, RetractionT retraction,
+      const Eigen::Vector3d& lo, const Eigen::Vector3d& hi)
       : metric_(std::move(metric)),
         retraction_(std::move(retraction)),
-        sample_x_lo_(x_lo),
-        sample_x_hi_(x_hi),
-        sample_y_lo_(y_lo),
-        sample_y_hi_(y_hi) {}
+        lo_(lo), hi_(hi), sample_buf_(3) {}
+
+  /// @brief Set the sampling bounds.
+  void set_sampling_bounds(const Eigen::Vector3d& lo, const Eigen::Vector3d& hi) {
+    lo_ = lo;
+    hi_ = hi;
+  }
 
   /// @brief Return the intrinsic dimension (always 3).
   int dim() const { return 3; }
@@ -195,12 +198,11 @@ class SE2 {
   /// @brief Sample a random pose uniformly in the sampling bounds.
   /// @return A random pose \f$ (x, y, \theta) \f$.
   Point random_point() const {
-    Eigen::VectorXd box(3);
-    sampler_.sample_box(3, box);
-    const double x = sample_x_lo_ + box[0] * (sample_x_hi_ - sample_x_lo_);
-    const double y = sample_y_lo_ + box[1] * (sample_y_hi_ - sample_y_lo_);
-    const double theta = -std::numbers::pi + box[2] * 2.0 * std::numbers::pi;
-    return Point(x, y, theta);
+    sampler_.sample_box(3, sample_buf_);
+    return Point(
+        lo_[0] + sample_buf_[0] * (hi_[0] - lo_[0]),
+        lo_[1] + sample_buf_[1] * (hi_[1] - lo_[1]),
+        lo_[2] + sample_buf_[2] * (hi_[2] - lo_[2]));
   }
 
   /// @brief Project an ambient vector onto the tangent space at \f$ p \f$.
@@ -223,7 +225,7 @@ class SE2 {
   /// @brief Batched inner product \f$U^\top M(p)\, V\f$ when the metric provides it.
   Eigen::MatrixXd inner_matrix(const Point& p, const Eigen::MatrixXd& U,
                                 const Eigen::MatrixXd& V) const
-    requires requires { metric_.inner_matrix(p, U, V); }
+    requires MetricHasInnerMatrix<MetricT, Point>
   {
     return metric_.inner_matrix(p, U, V);
   }
@@ -264,6 +266,14 @@ class SE2 {
   Point geodesic(const Point& p, const Point& q, Scalar t) const { return exp(p, t * log(p, q)); }
 
   /// @}
+
+ private:
+  MetricT metric_;
+  RetractionT retraction_;
+  Eigen::Vector3d lo_{0.0, 0.0, -std::numbers::pi};   ///< Lower sampling bounds (x, y, theta).
+  Eigen::Vector3d hi_{10.0, 10.0, std::numbers::pi};   ///< Upper sampling bounds (x, y, theta).
+  mutable SamplerT sampler_;
+  mutable Eigen::VectorXd sample_buf_{3};               ///< Preallocated buffer for sampler output.
 };
 
 // Verify the composed types satisfy RiemannianManifold.

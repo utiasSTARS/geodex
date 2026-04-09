@@ -311,7 +311,7 @@ TEST_F(InterpolationRoundTest, WorkspaceReuseProducesIdenticalResults) {
   auto target = point_at_theta(1.0);
   auto r_no_ws = discrete_geodesic(sphere, north, target);
 
-  InterpolationWorkspace<Sphere<>> ws;
+  InterpolationCache<Sphere<>> ws;
   auto r_with_ws = discrete_geodesic(sphere, north, target, {}, &ws);
 
   ASSERT_EQ(r_no_ws.path.size(), r_with_ws.path.size());

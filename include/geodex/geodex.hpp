@@ -17,6 +17,7 @@
 #include "manifold/sphere.hpp"
 #include "manifold/torus.hpp"
 #include "metrics/constant_spd.hpp"
+#include "metrics/identity.hpp"
 #include "metrics/jacobi.hpp"
 #include "metrics/kinetic_energy.hpp"
 #include "metrics/pullback.hpp"

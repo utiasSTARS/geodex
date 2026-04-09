@@ -21,11 +21,8 @@ namespace geodex {
 /// @tparam JacobianFn Callable returning the Jacobian matrix at \f$ q \f$.
 /// @tparam TaskMetricFn Callable returning the task-space SPD metric at \f$ q \f$.
 template <typename JacobianFn, typename TaskMetricFn>
-struct PullbackMetric {
-  JacobianFn jacobian_fn_;       ///< Callable returning J(q).
-  TaskMetricFn task_metric_fn_;  ///< Callable returning G_X(q).
-  double lambda_;                ///< Regularization parameter.
-
+class PullbackMetric {
+ public:
   /// @brief Construct a pullback metric.
   /// @param jac_fn Callable returning the Jacobian.
   /// @param task_fn Callable returning the task-space metric.
@@ -42,8 +39,8 @@ struct PullbackMetric {
   /// @return The inner product value.
   template <typename Point, typename Tangent>
   double inner(const Point& q, const Tangent& u, const Tangent& v) const {
-    auto J = jacobian_fn_(q);
-    auto G = task_metric_fn_(q);
+    const auto J = jacobian_fn_(q);
+    const auto G = task_metric_fn_(q);
     double val = u.dot(J.transpose() * G * J * v);
     if (lambda_ > 0.0) {
       val += lambda_ * u.dot(v);
@@ -65,14 +62,22 @@ struct PullbackMetric {
   template <typename Point>
   Eigen::MatrixXd inner_matrix(const Point& q, const Eigen::MatrixXd& U,
                                 const Eigen::MatrixXd& V) const {
-    auto J = jacobian_fn_(q);
-    auto G = task_metric_fn_(q);
+    const auto J = jacobian_fn_(q);
+    const auto G = task_metric_fn_(q);
     Eigen::MatrixXd result = (J * U).transpose() * G * (J * V);
     if (lambda_ > 0.0) {
       result.noalias() += lambda_ * (U.transpose() * V);
     }
     return result;
   }
+
+  /// @brief Access the regularization parameter.
+  double lambda() const { return lambda_; }
+
+ private:
+  JacobianFn jacobian_fn_;       ///< Callable returning J(q).
+  TaskMetricFn task_metric_fn_;  ///< Callable returning G_X(q).
+  double lambda_;                ///< Regularization parameter.
 };
 
 /// @brief Create a pullback metric with Euclidean task-space metric (\f$ G_X = I \f$).

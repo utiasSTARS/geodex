@@ -24,21 +24,28 @@ namespace geodex {
 /// @tparam MetricT The base metric type.
 /// @tparam AlphaT  Scaling factor type — either `double` or a callable.
 template <typename MetricT, typename AlphaT = double>
-struct WeightedMetric {
-  MetricT base_;    ///< The base metric.
-  AlphaT alpha_;    ///< The scaling factor (constant or callable).
-
+class WeightedMetric {
+ public:
   /// @brief Construct a weighted metric.
+  /// @param base The base metric to scale.
+  /// @param alpha Scaling factor — constant `double` or callable `Fn(q) -> double`.
   WeightedMetric(MetricT base, AlphaT alpha)
       : base_(std::move(base)), alpha_(std::move(alpha)) {}
 
-  /// @brief Compute the scaled inner product.
+  /// @brief Compute the scaled inner product \f$\alpha(q) \langle u, v \rangle^{\mathrm{base}}_q\f$.
+  /// @param q Configuration point.
+  /// @param u First tangent vector.
+  /// @param v Second tangent vector.
+  /// @return The scaled inner product value.
   template <typename Point, typename Tangent>
   double inner(const Point& q, const Tangent& u, const Tangent& v) const {
     return evaluate_alpha(q) * base_.inner(q, u, v);
   }
 
-  /// @brief Compute the scaled norm.
+  /// @brief Compute the scaled norm \f$\|v\|_q = \sqrt{\alpha(q) \langle v, v \rangle^{\mathrm{base}}_q}\f$.
+  /// @param q Configuration point.
+  /// @param v Tangent vector.
+  /// @return The scaled norm value.
   template <typename Point, typename Tangent>
   double norm(const Point& q, const Tangent& v) const {
     return riemannian_norm(*this, q, v);
@@ -49,7 +56,9 @@ struct WeightedMetric {
   template <typename Point>
   Eigen::MatrixXd inner_matrix(const Point& q, const Eigen::MatrixXd& U,
                                 const Eigen::MatrixXd& V) const
-    requires requires { base_.inner_matrix(q, U, V); }
+    requires requires(const MetricT& m, const Point& p, const Eigen::MatrixXd& A) {
+      { m.inner_matrix(p, A, A) } -> std::convertible_to<Eigen::MatrixXd>;
+    }
   {
     return evaluate_alpha(q) * base_.inner_matrix(q, U, V);
   }
@@ -58,10 +67,17 @@ struct WeightedMetric {
   /// constant-scalar \f$\alpha\f$ (a config-dependent alpha breaks the
   /// uniform-scaling guarantee).
   double injectivity_radius() const
-    requires(std::is_arithmetic_v<AlphaT> && requires { base_.injectivity_radius(); })
+    requires(std::is_arithmetic_v<AlphaT> &&
+             requires(const MetricT& m) { { m.injectivity_radius() }; })
   {
     return base_.injectivity_radius();
   }
+
+  /// @brief Access the base metric.
+  const MetricT& base() const { return base_; }
+
+  /// @brief Access the scaling factor.
+  const AlphaT& alpha() const { return alpha_; }
 
  private:
   /// @brief Evaluate \f$\alpha(q)\f$ — selects between constant scalar and
@@ -74,6 +90,9 @@ struct WeightedMetric {
       return static_cast<double>(alpha_);
     }
   }
+
+  MetricT base_;    ///< The base metric.
+  AlphaT alpha_;    ///< The scaling factor (constant or callable).
 };
 
 }  // namespace geodex

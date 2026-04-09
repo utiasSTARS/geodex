@@ -120,7 +120,7 @@ class PyPullbackMetric {
   }
 
   std::string repr() const {
-    return "PullbackMetric(lambda=" + std::to_string(impl_.lambda_) + ")";
+    return "PullbackMetric(lambda=" + std::to_string(impl_.lambda()) + ")";
   }
 
  private:
@@ -155,7 +155,7 @@ class PyConstantSPDMetric {
   }
 
   std::string repr() const {
-    return "ConstantSPDMetric(dim=" + std::to_string(impl_.A_.rows()) + ")";
+    return "ConstantSPDMetric(dim=" + std::to_string(impl_.weight_matrix().rows()) + ")";
   }
 
  private:

@@ -30,7 +30,7 @@ static void BM_DiscreteGeodesic_Sphere(benchmark::State& state) {
   Eigen::Vector3d start(0.0, 0.0, 1.0);
   Eigen::Vector3d target(std::sin(1.0), 0.0, std::cos(1.0));
 
-  InterpolationWorkspace<Sphere<>> ws;
+  InterpolationCache<Sphere<>> ws;
   long long total_iters = 0, total_halvings = 0, total_calls = 0;
   for (auto _ : state) {
     auto result = discrete_geodesic(sphere, start, target, settings, &ws);
@@ -52,7 +52,7 @@ static void BM_DiscreteGeodesic_SphereAniso(benchmark::State& state) {
   Eigen::Vector3d start(0.0, 0.0, 1.0);
   Eigen::Vector3d target(std::sin(0.8), 0.0, std::cos(0.8));
 
-  InterpolationWorkspace<AnisoSphere> ws;
+  InterpolationCache<AnisoSphere> ws;
   long long total_iters = 0, total_halvings = 0, total_calls = 0;
   for (auto _ : state) {
     auto result = discrete_geodesic(sphere, start, target, settings, &ws);
@@ -71,7 +71,7 @@ static void BM_DiscreteGeodesic_Torus2(benchmark::State& state) {
   Eigen::Vector2d start(0.5, 0.5);
   Eigen::Vector2d target(5.0, 5.0);
 
-  InterpolationWorkspace<Torus<2>> ws;
+  InterpolationCache<Torus<2>> ws;
   long long total_iters = 0, total_halvings = 0, total_calls = 0;
   for (auto _ : state) {
     auto result = discrete_geodesic(torus, start, target, settings, &ws);
@@ -90,7 +90,7 @@ static void BM_DiscreteGeodesic_SE2(benchmark::State& state) {
   Eigen::Vector3d start(1.0, 1.0, 0.0);
   Eigen::Vector3d target(8.0, 8.0, std::numbers::pi / 2.0);
 
-  InterpolationWorkspace<SE2<>> ws;
+  InterpolationCache<SE2<>> ws;
   long long total_iters = 0, total_halvings = 0, total_calls = 0;
   for (auto _ : state) {
     auto result = discrete_geodesic(se2, start, target, settings, &ws);
@@ -113,7 +113,7 @@ static void BM_DiscreteGeodesic_CSpace_KE(benchmark::State& state) {
   Eigen::Vector2d start(0.5, 0.5);
   Eigen::Vector2d target(2.5, 2.5);
 
-  InterpolationWorkspace<CSpace> ws;
+  InterpolationCache<CSpace> ws;
   long long total_iters = 0, total_halvings = 0, total_calls = 0;
   for (auto _ : state) {
     auto result = discrete_geodesic(cspace, start, target, settings, &ws);
@@ -138,7 +138,7 @@ static void BM_DiscreteGeodesic_SE2_Anisotropic(benchmark::State& state) {
   Eigen::Vector3d start(1.0, 1.0, 0.0);
   Eigen::Vector3d target(8.0, 8.0, std::numbers::pi / 2.0);
 
-  InterpolationWorkspace<Se2Aniso> ws;
+  InterpolationCache<Se2Aniso> ws;
   long long total_iters = 0, total_halvings = 0, total_calls = 0;
   for (auto _ : state) {
     auto result = discrete_geodesic(se2, start, target, settings, &ws);
@@ -167,7 +167,7 @@ static void BM_DiscreteGeodesic_Sphere_BatchSteer(benchmark::State& state) {
     targets[i] = sphere.random_point();
   }
 
-  InterpolationWorkspace<Sphere<>> ws;
+  InterpolationCache<Sphere<>> ws;
   long long total_iters = 0, total_halvings = 0, total_calls = 0;
   for (auto _ : state) {
     for (int i = 0; i < N; ++i) {
@@ -194,7 +194,7 @@ static void BM_DiscreteGeodesic_Torus7_BatchSteer(benchmark::State& state) {
     targets[i] = torus.random_point();
   }
 
-  InterpolationWorkspace<Torus7> ws;
+  InterpolationCache<Torus7> ws;
   long long total_iters = 0, total_halvings = 0, total_calls = 0;
   for (auto _ : state) {
     for (int i = 0; i < N; ++i) {
@@ -220,7 +220,7 @@ static void BM_DiscreteGeodesic_SE2_BatchSteer(benchmark::State& state) {
     targets[i] = se2.random_point();
   }
 
-  InterpolationWorkspace<SE2<>> ws;
+  InterpolationCache<SE2<>> ws;
   long long total_iters = 0, total_halvings = 0, total_calls = 0;
   for (auto _ : state) {
     for (int i = 0; i < N; ++i) {

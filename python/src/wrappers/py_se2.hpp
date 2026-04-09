@@ -25,12 +25,14 @@ class PySE2 {
         double y_lo = 0.0, double y_hi = 10.0)
       : retraction_name_(retraction) {
     SE2LeftInvariantMetric metric(wx, wy, wtheta);
+    const Eigen::Vector3d lo(x_lo, y_lo, -std::numbers::pi);
+    const Eigen::Vector3d hi(x_hi, y_hi, std::numbers::pi);
     if (retraction == "exponential") {
       impl_.emplace<SE2<SE2LeftInvariantMetric, SE2ExponentialMap>>(
-          metric, SE2ExponentialMap{}, x_lo, x_hi, y_lo, y_hi);
+          metric, SE2ExponentialMap{}, lo, hi);
     } else if (retraction == "euler") {
       impl_.emplace<SE2<SE2LeftInvariantMetric, SE2EulerRetraction>>(
-          metric, SE2EulerRetraction{}, x_lo, x_hi, y_lo, y_hi);
+          metric, SE2EulerRetraction{}, lo, hi);
     } else {
       throw std::invalid_argument(
           "Unknown retraction: '" + retraction +

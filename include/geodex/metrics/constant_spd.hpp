@@ -21,9 +21,8 @@ namespace geodex {
 ///
 /// @tparam Dim Compile-time dimension, or `Eigen::Dynamic`.
 template <int Dim = Eigen::Dynamic>
-struct ConstantSPDMetric {
-  Eigen::Matrix<double, Dim, Dim> A_;  ///< The SPD weight matrix.
-
+class ConstantSPDMetric {
+ public:
   /// @brief Default: identity weight matrix (only for static Dim).
   ///
   /// @details The default metric is the standard ambient inner product, which
@@ -73,6 +72,12 @@ struct ConstantSPDMetric {
                                 const Eigen::MatrixXd& U, const Eigen::MatrixXd& V) const {
     return U.transpose() * A_ * V;
   }
+
+  /// @brief Access the weight matrix.
+  const Eigen::Matrix<double, Dim, Dim>& weight_matrix() const { return A_; }
+
+ private:
+  Eigen::Matrix<double, Dim, Dim> A_;  ///< The SPD weight matrix.
 };
 
 }  // namespace geodex

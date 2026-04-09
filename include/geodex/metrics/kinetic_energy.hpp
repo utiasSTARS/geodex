@@ -21,9 +21,8 @@ namespace geodex {
 /// @tparam MassMatrixFn A callable type with signature
 ///   `auto operator()(const Point& q) -> Eigen::MatrixXd` (or fixed-size matrix).
 template <typename MassMatrixFn>
-struct KineticEnergyMetric {
-  MassMatrixFn mass_matrix_fn_;  ///< Callable returning M(q).
-
+class KineticEnergyMetric {
+ public:
   /// @brief Construct with a mass matrix function.
   /// @param fn Callable returning the SPD mass matrix at a given configuration.
   explicit KineticEnergyMetric(MassMatrixFn fn) : mass_matrix_fn_(std::move(fn)) {}
@@ -63,6 +62,9 @@ struct KineticEnergyMetric {
 
   /// @brief Return the injectivity radius \f$ \infty \f$ (assumes flat topology).
   double injectivity_radius() const { return std::numeric_limits<double>::infinity(); }
+
+ private:
+  MassMatrixFn mass_matrix_fn_;  ///< Callable returning M(q).
 };
 
 }  // namespace geodex

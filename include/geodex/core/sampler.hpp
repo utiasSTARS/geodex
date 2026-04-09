@@ -30,7 +30,7 @@ inline constexpr std::array<int, 30> halton_primes = {
 /// @param index 1-based index into the sequence.
 /// @param base Prime base for the digit expansion.
 /// @return The value of the van der Corput sequence at `index` in base `base`.
-inline double van_der_corput(std::uint64_t index, int base) {
+inline double van_der_corput(const std::uint64_t index, const int base) {
   double result = 0.0;
   double f = 1.0 / static_cast<double>(base);
   std::uint64_t i = index;
@@ -47,7 +47,7 @@ inline double van_der_corput(std::uint64_t index, int base) {
 
 /// @brief Concept: a type that fills a length-`d` vector with uniform samples in \f$[0, 1)\f$.
 template <typename S>
-concept Sampler = requires(S& s, int d, Eigen::Ref<Eigen::VectorXd> out) {
+concept Sampler = requires(S& s, const int d, Eigen::Ref<Eigen::VectorXd> out) {
   { s.sample_box(d, out) } -> std::same_as<void>;
 };
 
@@ -78,7 +78,7 @@ class StochasticSampler {
   }
 
   /// @brief Fill `out[0..d-1]` with uniform values in \f$[0, 1)\f$.
-  void sample_box(int d, Eigen::Ref<Eigen::VectorXd> out) {
+  void sample_box(const int d, Eigen::Ref<Eigen::VectorXd> out) {
     std::uniform_real_distribution<double> dist(0.0, 1.0);
     auto& g = owned_ ? gen_ : thread_local_gen();
     for (int i = 0; i < d; ++i) {
@@ -114,7 +114,7 @@ class HaltonSampler {
   void seed(std::uint64_t s) { index_ = s; }
 
   /// @brief Fill `out[0..d-1]` with the next Halton sample.
-  void sample_box(int d, Eigen::Ref<Eigen::VectorXd> out) {
+  void sample_box(const int d, Eigen::Ref<Eigen::VectorXd> out) {
     ++index_;  // 1-based
     for (int i = 0; i < d; ++i) {
       out[i] = detail::van_der_corput(index_,

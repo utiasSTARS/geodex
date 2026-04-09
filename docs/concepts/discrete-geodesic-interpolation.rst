@@ -193,7 +193,7 @@ needs a coarse path. ``distortion_ratio`` is the safety valve for retractions th
 are not isometries, such as ``SphereProjectionRetraction`` under an anisotropic
 metric or ``SE2EulerRetraction`` away from :math:`\theta = 0`.
 
-For hot loops, pass an ``InterpolationWorkspace`` to reuse the basis matrix, Gram
+For hot loops, pass an ``InterpolationCache`` to reuse the basis matrix, Gram
 matrix, and gradient buffers across calls. The workspace is resized once on first use
 and then avoids all per-iteration heap allocations.
 
@@ -303,7 +303,7 @@ See also
 - :doc:`/tutorials/geodex-basics` for end-to-end use of the library.
 - :doc:`/api/index` for the full API reference of ``discrete_geodesic``,
   ``InterpolationSettings``, ``InterpolationResult``, and
-  ``InterpolationWorkspace``.
+  ``InterpolationCache``.
 
 References
 ----------

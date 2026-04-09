@@ -1,5 +1,5 @@
 /// @file interpolation.hpp
-/// @brief Discrete geodesic walk via Riemannian natural gradient descent.
+/// @brief Discrete geodesic interpolation via Riemannian natural gradient descent.
 
 #pragma once
 
@@ -135,23 +135,23 @@ concept HasProject = requires(const M m, const typename M::Point p, const typena
 
 /// @brief Reusable scratch buffers for `discrete_geodesic`.
 ///
-/// @details Passing a workspace to `discrete_geodesic` eliminates per-iteration
+/// @details Passing a cache to `discrete_geodesic` eliminates per-iteration
 /// heap allocations (for fixed-size manifolds) and per-call allocation beyond the
-/// first call (for dynamic-size manifolds). Intended for using in hot loops
+/// first call (for dynamic-size manifolds). Intended for use in hot loops
 /// such as steering functions in sampling-based planners:
 ///
 /// ```cpp
-/// geodex::InterpolationWorkspace<Sphere<>> ws;
+/// geodex::InterpolationCache<Sphere<>> cache;
 /// for (auto& edge : edges) {
-///   auto r = geodex::discrete_geodesic(sphere, edge.a, edge.b, settings, &ws);
+///   auto r = geodex::discrete_geodesic(sphere, edge.a, edge.b, settings, &cache);
 ///   ...
 /// }
 /// ```
 ///
-/// Users who do not need this optimization can omit the workspace argument and
+/// Users who do not need this optimization can omit the cache argument and
 /// a stack-local one will be used automatically.
 template <RiemannianManifold M>
-struct InterpolationWorkspace {
+struct InterpolationCache {
   using Point = typename M::Point;      ///< Manifold point type.
   using Tangent = typename M::Tangent;  ///< Manifold tangent vector type.
 
@@ -193,7 +193,7 @@ struct InterpolationWorkspace {
 // Result
 // ---------------------------------------------------------------------------
 
-/// @brief Output of the discrete geodesic walk.
+/// @brief Output of the discrete geodesic interpolation.
 ///
 /// @tparam PointT Point type of the manifold (e.g. `Eigen::Vector3d`).
 template <typename PointT>
@@ -236,24 +236,24 @@ inline auto distance_via_log(const M& m, const typename M::Point& a, const typen
   return m.norm(a, v);
 }
 
-/// @brief Build an orthonormal tangent basis at `p` into `ws.basis_mat`.
+/// @brief Build an orthonormal tangent basis at `p` into `cache.basis_mat`.
 ///
 /// @details Seeds columns with ambient unit vectors (projected onto the tangent
 /// space if the manifold provides `project`) and orthonormalizes via Euclidean
 /// Gram-Schmidt. Returns the number of linearly independent basis vectors found (≤ `d`).
 template <RiemannianManifold M>
-int build_tangent_basis(const M& m, const typename M::Point& p, int d, InterpolationWorkspace<M>& ws) {
+int build_tangent_basis(const M& m, const typename M::Point& p, int d, InterpolationCache<M>& cache) {
   using Tangent = typename M::Tangent;
   constexpr int N = Tangent::SizeAtCompileTime;
 
-  const int ambient = static_cast<int>(p.size());
-  ws.basis_mat.resize(ambient, d);
+  const int ambient_dim = static_cast<int>(p.size());
+  cache.basis_mat.resize(ambient_dim, d);
 
   int col = 0;
-  for (int i = 0; i < ambient && col < d; ++i) {
+  for (int i = 0; i < ambient_dim && col < d; ++i) {
     Tangent e_i;
     if constexpr (N == Eigen::Dynamic) {
-      e_i = Tangent::Zero(ambient);
+      e_i = Tangent::Zero(ambient_dim);
     } else {
       e_i = Tangent::Zero();
     }
@@ -265,98 +265,98 @@ int build_tangent_basis(const M& m, const typename M::Point& p, int d, Interpola
 
     // Euclidean Gram-Schmidt against existing basis columns.
     for (int j = 0; j < col; ++j) {
-      const double dot = e_i.dot(ws.basis_mat.col(j));
-      e_i -= dot * ws.basis_mat.col(j);
+      const double dot = e_i.dot(cache.basis_mat.col(j));
+      e_i -= dot * cache.basis_mat.col(j);
     }
 
     const double nrm = e_i.norm();
     if (nrm > 1e-12) {
-      ws.basis_mat.col(col) = e_i / nrm;
+      cache.basis_mat.col(col) = e_i / nrm;
       ++col;
     }
   }
 
   if (col < d) {
-    ws.basis_mat.conservativeResize(Eigen::NoChange, col);
+    cache.basis_mat.conservativeResize(Eigen::NoChange, col);
   }
   return col;
 }
 
 /// @brief Compute the Riemannian natural gradient of \f$\tfrac{1}{2}\, d^2(\cdot, \text{target})\f$
-/// at `p` via finite differences. Writes the ambient-space gradient into `ws.v_fd`.
+/// at `p` via finite differences. Writes the ambient-space gradient into `cache.v_fd`.
 ///
 /// @return `true` on success, `false` on Cholesky failure or zero-rank basis.
 template <RiemannianManifold M>
 bool natural_gradient_fd(const M& m, const typename M::Point& p, const typename M::Point& target, double h,
-                         InterpolationWorkspace<M>& ws) {
+                         InterpolationCache<M>& cache) {
   using Tangent = typename M::Tangent;
   constexpr int N = Tangent::SizeAtCompileTime;
 
-  const int d = build_tangent_basis(m, p, m.dim(), ws);
+  const int d = build_tangent_basis(m, p, m.dim(), cache);
   if (d == 0) {
     if constexpr (N == Eigen::Dynamic) {
-      ws.v_fd = Tangent::Zero(p.size());
+      cache.v_fd = Tangent::Zero(p.size());
     } else {
-      ws.v_fd = Tangent::Zero();
+      cache.v_fd = Tangent::Zero();
     }
     return false;
   }
 
-  ws.grad.resize(d);
-  ws.G.resize(d, d);
-  ws.alpha.resize(d);
+  cache.grad.resize(d);
+  cache.G.resize(d, d);
+  cache.alpha.resize(d);
 
   // 1) Coordinate gradient via central finite differences.
   for (int i = 0; i < d; ++i) {
-    const auto p_plus = m.exp(p, h * ws.basis_mat.col(i));
-    const auto p_minus = m.exp(p, -h * ws.basis_mat.col(i));
+    const auto p_plus = m.exp(p, h * cache.basis_mat.col(i));
+    const auto p_minus = m.exp(p, -h * cache.basis_mat.col(i));
     const double d_plus = distance_via_log(m, p_plus, target);
     const double d_minus = distance_via_log(m, p_minus, target);
-    ws.grad(i) = (0.5 * d_plus * d_plus - 0.5 * d_minus * d_minus) / (2.0 * h);
+    cache.grad(i) = (0.5 * d_plus * d_plus - 0.5 * d_minus * d_minus) / (2.0 * h);
   }
-  GEODEX_LOG("  natural_gradient_fd grad=" << ws.grad.transpose());
+  GEODEX_LOG("  natural_gradient_fd grad=" << cache.grad.transpose());
 
   // 2) Metric tensor G_ij = <e_i, e_j>_p. Use batch path if the manifold
   // provides `inner_matrix` (e.g., KineticEnergyMetric: one mass-matrix eval
   // instead of d^2 scalar calls).
   if constexpr (HasBatchInnerMatrix<M>) {
-    const Eigen::MatrixXd B = ws.basis_mat.leftCols(d);
+    const Eigen::MatrixXd B = cache.basis_mat.leftCols(d);
     const Eigen::MatrixXd G_full = m.inner_matrix(p, B, B);
-    ws.G = 0.5 * (G_full + G_full.transpose());  // symmetrize against FP noise
+    cache.G = 0.5 * (G_full + G_full.transpose());  // symmetrize against FP noise
   } else {
     for (int i = 0; i < d; ++i) {
       for (int j = i; j < d; ++j) {
-        ws.G(i, j) = m.inner(p, ws.basis_mat.col(i), ws.basis_mat.col(j));
-        ws.G(j, i) = ws.G(i, j);
+        cache.G(i, j) = m.inner(p, cache.basis_mat.col(i), cache.basis_mat.col(j));
+        cache.G(j, i) = cache.G(i, j);
       }
     }
   }
-  GEODEX_LOG("  natural_gradient_fd G=\n" << ws.G);
+  GEODEX_LOG("  natural_gradient_fd G=\n" << cache.G);
 
   // 3) Scale-relative Tikhonov regularization + LLT solve.
-  const double trace = ws.G.diagonal().sum();
+  const double trace = cache.G.diagonal().sum();
   const double reg = 1e-12 * std::max(1.0, trace / static_cast<double>(d));
-  ws.G.diagonal().array() += reg;
+  cache.G.diagonal().array() += reg;
 
-  auto solver = ws.G.llt();
+  auto solver = cache.G.llt();
   if (solver.info() != Eigen::Success) {
     GEODEX_LOG("  natural_gradient_fd: LLT failed");
     if constexpr (N == Eigen::Dynamic) {
-      ws.v_fd = Tangent::Zero(p.size());
+      cache.v_fd = Tangent::Zero(p.size());
     } else {
-      ws.v_fd = Tangent::Zero();
+      cache.v_fd = Tangent::Zero();
     }
     return false;
   }
 
-  ws.alpha = solver.solve(-ws.grad);
-  GEODEX_LOG("  natural_gradient_fd alpha=" << ws.alpha.transpose());
+  cache.alpha = solver.solve(-cache.grad);
+  GEODEX_LOG("  natural_gradient_fd alpha=" << cache.alpha.transpose());
 
   // 4) Reconstruct in ambient space: v_fd = B * alpha.
   if constexpr (N == Eigen::Dynamic) {
-    ws.v_fd = ws.basis_mat.leftCols(d) * ws.alpha;
+    cache.v_fd = cache.basis_mat.leftCols(d) * cache.alpha;
   } else {
-    ws.v_fd.noalias() = ws.basis_mat.leftCols(d) * ws.alpha;
+    cache.v_fd.noalias() = cache.basis_mat.leftCols(d) * cache.alpha;
   }
   return true;
 }
@@ -422,24 +422,26 @@ inline double resolve_fd_epsilon(double user_value, double initial_distance) {
 /// @param start Starting point.
 /// @param target Target point to walk toward.
 /// @param settings Algorithm parameters.
-/// @param ws Optional reusable workspace. If null, a stack-local one is used.
+/// @param cache Optional reusable cache. If null, a stack-local one is used.
 /// @return An `InterpolationResult` carrying the path and termination diagnostics.
 template <RiemannianManifold M>
 auto discrete_geodesic(const M& manifold, const typename M::Point& start, const typename M::Point& target,
-                       InterpolationSettings settings = {}, InterpolationWorkspace<M>* ws = nullptr)
+                       InterpolationSettings settings = {}, InterpolationCache<M>* cache = nullptr)
     -> InterpolationResult<typename M::Point> {
   using Point = typename M::Point;
   using Tangent = typename M::Tangent;
   using Result = InterpolationResult<Point>;
 
   Result R;
-  R.path.reserve(std::min(settings.max_steps + 1, 128));
+  /// Default reserve cap: avoid over-allocating when max_steps is very large.
+  static constexpr int kDefaultPathReserve = 128;
+  R.path.reserve(std::min(settings.max_steps + 1, kDefaultPathReserve));
   R.path.push_back(start);
 
-  // Workspace: either the caller-supplied one or a stack-local default.
-  InterpolationWorkspace<M> stack_ws;
-  InterpolationWorkspace<M>& W = ws ? *ws : stack_ws;
-  W.reset(static_cast<int>(start.size()), manifold.dim());
+  // Cache: either the caller-supplied one or a stack-local default.
+  InterpolationCache<M> stack_cache;
+  InterpolationCache<M>& C = cache ? *cache : stack_cache;
+  C.reset(static_cast<int>(start.size()), manifold.dim());
 
   GEODEX_LOG("=== discrete_geodesic start ===");
   GEODEX_LOG("start=" << start.transpose() << "  target=" << target.transpose());
@@ -534,16 +536,16 @@ auto discrete_geodesic(const M& manifold, const typename M::Point& start, const 
     // --- FD natural gradient. Always used when the manifold does not provide a
     // Riemannian log; used as a fallback when the log-step verification fails. ---
     if (!accepted) {
-      if (!detail::natural_gradient_fd(manifold, current, target, fd_eps, W)) {
+      if (!detail::natural_gradient_fd(manifold, current, target, fd_eps, C)) {
         R.status = InterpolationStatus::GradientVanished;
         break;
       }
-      const double fd_norm = manifold.norm(current, W.v_fd);
+      const double fd_norm = manifold.norm(current, C.v_fd);
       if (fd_norm < settings.gradient_eps) {
         R.status = InterpolationStatus::GradientVanished;
         break;
       }
-      direction = (1.0 / fd_norm) * W.v_fd;
+      direction = (1.0 / fd_norm) * C.v_fd;
       proposed = manifold.exp(current, step_used * direction);
       new_v_log = manifold.log(proposed, target);
       new_dist = manifold.norm(proposed, new_v_log);

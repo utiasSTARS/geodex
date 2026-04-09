@@ -68,22 +68,25 @@ Configuration Space
 Metrics
 -------
 
-.. doxygenstruct:: geodex::ConstantSPDMetric
+.. doxygenclass:: geodex::IdentityMetric
    :members:
 
-.. doxygenstruct:: geodex::SE2LeftInvariantMetric
+.. doxygenclass:: geodex::ConstantSPDMetric
    :members:
 
-.. doxygenstruct:: geodex::KineticEnergyMetric
+.. doxygenclass:: geodex::SE2LeftInvariantMetric
    :members:
 
-.. doxygenstruct:: geodex::JacobiMetric
+.. doxygenclass:: geodex::KineticEnergyMetric
    :members:
 
-.. doxygenstruct:: geodex::PullbackMetric
+.. doxygenclass:: geodex::JacobiMetric
    :members:
 
-.. doxygenstruct:: geodex::WeightedMetric
+.. doxygenclass:: geodex::PullbackMetric
+   :members:
+
+.. doxygenclass:: geodex::WeightedMetric
    :members:
 
 Sampling
@@ -118,7 +121,7 @@ Algorithms
 .. doxygenstruct:: geodex::InterpolationResult
    :members:
 
-.. doxygenstruct:: geodex::InterpolationWorkspace
+.. doxygenstruct:: geodex::InterpolationCache
    :members:
 
 .. doxygenfunction:: geodex::discrete_geodesic

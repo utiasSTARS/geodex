@@ -12,6 +12,7 @@
 #include <type_traits>
 
 #include <geodex/metrics/constant_spd.hpp>
+#include <geodex/metrics/identity.hpp>
 
 namespace geodex {
 
@@ -22,10 +23,9 @@ namespace geodex {
 /// @brief The standard Euclidean metric on \f$ \mathbb{R}^n \f$.
 ///
 /// @details The inner product is the standard dot product:
-/// \f$ \langle u, v \rangle = u \cdot v \f$. This is exactly
-/// `ConstantSPDMetric<Dim>` with the identity weight matrix.
+/// \f$ \langle u, v \rangle = u \cdot v \f$. Zero-storage stateless metric.
 template <int Dim = Eigen::Dynamic>
-using EuclideanStandardMetric = ConstantSPDMetric<Dim>;
+using EuclideanStandardMetric = IdentityMetric<Dim>;
 
 // ---------------------------------------------------------------------------
 // Euclidean manifold
@@ -44,12 +44,6 @@ template <int Dim = Eigen::Dynamic,
           typename MetricT = EuclideanStandardMetric<Dim>,
           typename SamplerT = StochasticSampler>
 class Euclidean {
-  MetricT metric_;
-  int dim_;
-  Eigen::VectorXd lo_;           ///< Lower sampling bounds (default: -1^n).
-  Eigen::VectorXd hi_;           ///< Upper sampling bounds (default:  1^n).
-  mutable SamplerT sampler_;     ///< Sampler used by `random_point`.
-
  public:
   using Scalar = double;                       ///< Scalar type.
   using Point = Eigen::Vector<double, Dim>;    ///< Point type.
@@ -62,8 +56,10 @@ class Euclidean {
   /// different inner product, so `discrete_geodesic` falls back to finite
   /// differences for those cases.
   bool has_riemannian_log_runtime() const {
-    if constexpr (std::is_same_v<MetricT, ConstantSPDMetric<Dim>>) {
-      return metric_.A_.isApprox(
+    if constexpr (std::is_same_v<MetricT, IdentityMetric<Dim>>) {
+      return true;
+    } else if constexpr (std::is_same_v<MetricT, ConstantSPDMetric<Dim>>) {
+      return metric_.weight_matrix().isApprox(
           Eigen::Matrix<double, Dim, Dim>::Identity(dim_, dim_));
     } else {
       return false;
@@ -75,7 +71,8 @@ class Euclidean {
     requires(Dim != Eigen::Dynamic)
       : dim_(Dim),
         lo_(Eigen::VectorXd::Constant(Dim, -1.0)),
-        hi_(Eigen::VectorXd::Constant(Dim, 1.0)) {}
+        hi_(Eigen::VectorXd::Constant(Dim, 1.0)),
+        sample_buf_(Dim) {}
 
   /// @brief Fixed-dimension constructor with custom metric.
   /// @param metric The metric policy instance.
@@ -84,7 +81,8 @@ class Euclidean {
       : metric_(std::move(metric)),
         dim_(Dim),
         lo_(Eigen::VectorXd::Constant(Dim, -1.0)),
-        hi_(Eigen::VectorXd::Constant(Dim, 1.0)) {}
+        hi_(Eigen::VectorXd::Constant(Dim, 1.0)),
+        sample_buf_(Dim) {}
 
   /// @brief Dynamic-dimension constructor.
   /// @param n The dimension of the space.
@@ -93,7 +91,8 @@ class Euclidean {
       : metric_(make_default_metric(n)),
         dim_(n),
         lo_(Eigen::VectorXd::Constant(n, -1.0)),
-        hi_(Eigen::VectorXd::Constant(n, 1.0)) {}
+        hi_(Eigen::VectorXd::Constant(n, 1.0)),
+        sample_buf_(n) {}
 
   /// @brief Dynamic-dimension constructor with custom metric.
   /// @param n The dimension of the space.
@@ -103,7 +102,8 @@ class Euclidean {
       : metric_(std::move(metric)),
         dim_(n),
         lo_(Eigen::VectorXd::Constant(n, -1.0)),
-        hi_(Eigen::VectorXd::Constant(n, 1.0)) {}
+        hi_(Eigen::VectorXd::Constant(n, 1.0)),
+        sample_buf_(n) {}
 
   /// @brief Set the sampling bounds. Values outside these bounds are never
   /// returned by `random_point()`, but `exp`/`log`/metric operations remain
@@ -112,19 +112,6 @@ class Euclidean {
     lo_ = lo;
     hi_ = hi;
   }
-
- private:
-  /// @brief Build the default metric for dynamic Euclidean: `ConstantSPDMetric<Dynamic>(n)`
-  /// when applicable, otherwise a default-constructed metric.
-  static MetricT make_default_metric(int n) {
-    if constexpr (std::is_constructible_v<MetricT, int>) {
-      return MetricT(n);
-    } else {
-      return MetricT{};
-    }
-  }
-
- public:
 
   /// @brief Return the dimension of the space.
   int dim() const { return dim_; }
@@ -136,14 +123,13 @@ class Euclidean {
   /// bounds. Pass `HaltonSampler` via the template parameter for
   /// deterministic low-discrepancy sampling.
   Point random_point() const {
-    Eigen::VectorXd box(dim_);
-    sampler_.sample_box(dim_, box);
+    sampler_.sample_box(dim_, sample_buf_);
     Point p;
     if constexpr (Dim == Eigen::Dynamic) {
       p.resize(dim_);
     }
     for (int i = 0; i < dim_; ++i) {
-      p[i] = lo_[i] + box[i] * (hi_[i] - lo_[i]);
+      p[i] = lo_[i] + sample_buf_[i] * (hi_[i] - lo_[i]);
     }
     return p;
   }
@@ -168,7 +154,7 @@ class Euclidean {
   /// @brief Batched inner product \f$U^\top M(p)\, V\f$ when the metric provides it.
   Eigen::MatrixXd inner_matrix(const Point& p, const Eigen::MatrixXd& U,
                                 const Eigen::MatrixXd& V) const
-    requires requires { metric_.inner_matrix(p, U, V); }
+    requires MetricHasInnerMatrix<MetricT, Point>
   {
     return metric_.inner_matrix(p, U, V);
   }
@@ -203,9 +189,10 @@ class Euclidean {
 
   /// @brief Injectivity radius of \f$ \mathbb{R}^n \f$: \f$ \infty \f$.
   ///
-  /// @details Assumes the default identity metric — anisotropic custom metrics
-  /// still have an infinite radius on flat space, so this constant is correct
-  /// for every metric on \f$ \mathbb{R}^n \f$.
+  /// @details Euclidean space is flat, so the injectivity radius is infinite
+  /// regardless of the metric. Anisotropic custom metrics change geodesic
+  /// directions but not the fact that the space is simply connected and
+  /// geodesically complete.
   Scalar injectivity_radius() const { return std::numeric_limits<double>::infinity(); }
 
   /// @brief Geodesic interpolation: \f$ (1 - t) p + t q \f$.
@@ -216,6 +203,24 @@ class Euclidean {
   Point geodesic(const Point& p, const Point& q, Scalar t) const { return (1.0 - t) * p + t * q; }
 
   /// @}
+
+ private:
+  /// @brief Build the default metric for dynamic Euclidean: `ConstantSPDMetric<Dynamic>(n)`
+  /// when applicable, otherwise a default-constructed metric.
+  static MetricT make_default_metric(int n) {
+    if constexpr (std::is_constructible_v<MetricT, int>) {
+      return MetricT(n);
+    } else {
+      return MetricT{};
+    }
+  }
+
+  MetricT metric_;
+  int dim_;
+  Eigen::VectorXd lo_;                    ///< Lower sampling bounds (default: -1^n).
+  Eigen::VectorXd hi_;                    ///< Upper sampling bounds (default:  1^n).
+  mutable SamplerT sampler_;              ///< Sampler used by `random_point`.
+  mutable Eigen::VectorXd sample_buf_;    ///< Preallocated buffer for sampler output.
 };
 
 // Verify the default type satisfies RiemannianManifold.
