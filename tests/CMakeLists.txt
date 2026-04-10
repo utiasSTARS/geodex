@@ -48,6 +48,10 @@ add_executable(test_configuration_space test_configuration_space.cpp)
 target_link_libraries(test_configuration_space PRIVATE geodex GTest::gtest_main)
 gtest_discover_tests(test_configuration_space)
 
+add_executable(test_clearance_metric test_clearance_metric.cpp)
+target_link_libraries(test_clearance_metric PRIVATE geodex GTest::gtest_main)
+gtest_discover_tests(test_clearance_metric)
+
 add_executable(test_sampler test_sampler.cpp)
 target_link_libraries(test_sampler PRIVATE geodex GTest::gtest_main)
 gtest_discover_tests(test_sampler)

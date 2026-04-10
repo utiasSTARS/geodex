@@ -13,11 +13,15 @@ target_link_libraries(cspace_rrt_star PRIVATE geodex ompl::ompl)
 add_executable(minimum_energy_planning minimum_energy_planning.cpp)
 target_link_libraries(minimum_energy_planning PRIVATE geodex ompl::ompl)
 
+add_executable(se2_clearance_planning se2_clearance_planning.cpp)
+target_link_libraries(se2_clearance_planning PRIVATE geodex ompl::ompl)
+
 install(TARGETS
   euclidean_planning
   se2_planning
   se2_willow_planning
   cspace_rrt_star
   minimum_energy_planning
+  se2_clearance_planning
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )

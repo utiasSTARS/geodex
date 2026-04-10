@@ -25,6 +25,23 @@ class SE2LeftInvariantMetric {
   /// @brief Construct with unit weights (isotropic).
   SE2LeftInvariantMetric() : SE2LeftInvariantMetric(1.0, 1.0, 1.0) {}
 
+  /// @brief Create a car-like metric with a specified effective turning radius.
+  ///
+  /// @details The metric \f$ g = \mathrm{diag}(w_x, w_y, w_\theta) \f$ with high
+  /// \f$ w_y \f$ suppresses lateral motion. The effective minimum turning radius
+  /// of the resulting geodesic is approximately
+  /// \f$ r_{\mathrm{eff}} \approx \sqrt{w_\theta / w_x} \f$.
+  ///
+  /// @param turning_radius Desired effective turning radius.
+  /// @param lateral_penalty Weight for lateral (y) motion — higher values more
+  ///        strongly suppress sideslip (default 100.0).
+  /// @return An SE2LeftInvariantMetric configured for car-like behavior.
+  static SE2LeftInvariantMetric car_like(const double turning_radius,
+                                         const double lateral_penalty = 100.0) {
+    return SE2LeftInvariantMetric(1.0, lateral_penalty,
+                                  turning_radius * turning_radius);
+  }
+
   /// @brief Construct with explicit weights.
   /// @param wx Translational weight in x.
   /// @param wy Translational weight in y.
