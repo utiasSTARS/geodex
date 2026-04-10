@@ -28,11 +28,13 @@ class ConfigurationSpace {
 
   /// @brief Runtime query: is `log` the Riemannian logarithm of the custom metric?
   ///
-  /// @details This is true only when the base manifold's own log is already the
-  /// Riemannian log of its native metric AND the custom metric happens to match
-  /// that native metric. In that case, `discrete_geodesic` can use the fast
-  /// log-based natural gradient instead of finite differences.
-  bool has_riemannian_log_runtime() const { return is_riemannian_log(base_); }
+  /// @details Always returns `false`. The whole purpose of `ConfigurationSpace`
+  /// is to overlay a custom metric on a base manifold — the base's `log` is the
+  /// Riemannian log of the base's native metric, not of the custom metric.
+  /// This forces `discrete_geodesic` to use the finite-difference natural
+  /// gradient, which correctly follows the energy-minimizing curve under the
+  /// custom metric.
+  bool has_riemannian_log_runtime() const { return false; }
 
   /// @brief Construct with a base manifold and a metric.
   /// @param base The base manifold instance.

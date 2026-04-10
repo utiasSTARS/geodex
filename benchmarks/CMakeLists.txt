@@ -24,3 +24,8 @@ target_include_directories(bench_metrics PRIVATE ${CMAKE_SOURCE_DIR}/tests/fixtu
 
 add_executable(bench_retractions bench_retractions.cpp)
 target_link_libraries(bench_retractions PRIVATE geodex benchmark::benchmark benchmark::benchmark_main)
+
+if(TARGET ompl::ompl)
+  add_executable(bench_ompl_interpolation bench_ompl_interpolation.cpp)
+  target_link_libraries(bench_ompl_interpolation PRIVATE geodex benchmark::benchmark benchmark::benchmark_main ompl::ompl)
+endif()

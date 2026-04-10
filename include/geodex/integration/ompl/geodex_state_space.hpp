@@ -12,8 +12,12 @@
 #include <cassert>
 #include <cmath>
 #include <cstring>
+#include <geodex/algorithm/interpolation.hpp>
 #include <geodex/core/concepts.hpp>
+#include <geodex/core/metric.hpp>
+#include <geodex/integration/ompl/geodex_path_cache.hpp>
 #include <limits>
+#include <optional>
 
 namespace geodex {
 namespace ompl_integration {
@@ -215,6 +219,49 @@ class GeodexStateSpace : public ob::StateSpace {
   /// @brief Get the collision checking resolution.
   double getCollisionResolution() const { return collision_resolution_; }
 
+  /// @brief Control discrete geodesic interpolation mode.
+  ///
+  /// @details Three modes:
+  /// - **`auto`** (default, pass `std::nullopt`): uses `is_riemannian_log()` to
+  ///   decide — identity metrics take the fast path, non-identity metrics use
+  ///   the discrete geodesic with caching.
+  /// - **`true`** (force on): always uses discrete geodesic regardless of the
+  ///   `is_riemannian_log()` signal. Use this for `ConfigurationSpace` with
+  ///   point-dependent metrics (e.g., `KineticEnergyMetric`, `JacobiMetric`)
+  ///   where the base manifold's log is not the Riemannian log of the custom
+  ///   metric.
+  /// - **`false`** (force off): always uses simple `geodesic(p, q, t)`.
+  ///
+  /// @param mode `std::nullopt` for auto, `true` to force on, `false` to force off.
+  void setUseDiscreteGeodesic(const std::optional<bool> mode) {
+    use_discrete_geodesic_ = mode;
+  }
+
+  /// @brief Get the current discrete geodesic mode.
+  std::optional<bool> getUseDiscreteGeodesic() const { return use_discrete_geodesic_; }
+
+  /// @brief Set the interpolation settings for discrete geodesic computation.
+  /// @param settings The settings (step_size, convergence_tol, max_steps, etc.).
+  void setInterpolationSettings(const InterpolationSettings& settings) {
+    interpolation_settings_ = settings;
+  }
+
+  /// @brief Get the current interpolation settings.
+  const InterpolationSettings& getInterpolationSettings() const {
+    return interpolation_settings_;
+  }
+
+  /// @brief Convenience: set the step size for discrete geodesic interpolation.
+  ///
+  /// @details Controls the maximum Riemannian distance between consecutive
+  /// waypoints in the cached geodesic path. Smaller values increase resolution
+  /// (and computation cost). Default is 0.5.
+  ///
+  /// @param step_size Maximum step size per iteration.
+  void setGeodesicStepSize(const double step_size) {
+    interpolation_settings_.step_size = step_size;
+  }
+
   // -- StateSpace interface --
 
   /// @brief Return the ambient dimension of the state space.
@@ -306,6 +353,15 @@ class GeodexStateSpace : public ob::StateSpace {
   }
 
   /// @brief Geodesic interpolation between two states.
+  ///
+  /// @details For manifolds where `is_riemannian_log()` returns true (identity
+  /// metric with matching retraction), uses the direct `geodesic(p, q, t)` —
+  /// zero overhead. For non-flat metrics, computes a discrete geodesic via
+  /// Riemannian natural gradient descent, caches the path, and serves
+  /// subsequent lookups via arc-length parameterization. The cache is keyed on
+  /// the (from, to) state pair; sequential calls with the same pair (as in
+  /// `DiscreteMotionValidator::checkMotion`) amortize the computation.
+  ///
   /// @param from Start state.
   /// @param to End state.
   /// @param t Interpolation parameter in [0, 1].
@@ -315,10 +371,45 @@ class GeodexStateSpace : public ob::StateSpace {
     const auto* f = from->as<StateType>();
     const auto* tgt = to->as<StateType>();
     auto* s = state->as<StateType>();
-    Point result = manifold_.geodesic(f->asEigen(), tgt->asEigen(), t);
-    for (unsigned int i = 0; i < ambient_dim_; ++i) {
-      s->values[i] = result[i];
+
+    // Resolve whether to use discrete geodesic for this call:
+    //   nullopt (auto) → check is_riemannian_log; true → force on; false → force off.
+    const bool use_simple =
+        use_discrete_geodesic_.has_value() ? !use_discrete_geodesic_.value()
+                                           : is_riemannian_log(manifold_);
+    if (use_simple) {
+      Point result = manifold_.geodesic(f->asEigen(), tgt->asEigen(), t);
+      for (unsigned int i = 0; i < ambient_dim_; ++i) s->values[i] = result[i];
+      return;
     }
+
+    // Boundary: avoid cache computation for endpoints.
+    if (t <= 0.0) {
+      copyState(state, from);
+      return;
+    }
+    if (t >= 1.0) {
+      copyState(state, to);
+      return;
+    }
+
+    // Check cache; compute if miss.
+    Point p_from = f->asEigen();
+    Point p_to = tgt->asEigen();
+    if (!geodesic_cache_.matches(p_from, p_to, ambient_dim_)) {
+      geodesic_cache_.compute(manifold_, p_from, p_to, interpolation_settings_);
+    }
+
+    // Fallback on convergence failure (cut locus, gradient vanished, etc.).
+    if (!geodesic_cache_.valid()) {
+      Point result = manifold_.geodesic(p_from, p_to, t);
+      for (unsigned int i = 0; i < ambient_dim_; ++i) s->values[i] = result[i];
+      return;
+    }
+
+    // Arc-length lookup from cache.
+    Point result = geodesic_cache_.at(manifold_, t);
+    for (unsigned int i = 0; i < ambient_dim_; ++i) s->values[i] = result[i];
   }
 
   /// @brief Allocate the default state sampler.
@@ -385,6 +476,9 @@ class GeodexStateSpace : public ob::StateSpace {
   ob::RealVectorBounds bounds_;
   unsigned int ambient_dim_;
   double collision_resolution_ = 0.0;
+  std::optional<bool> use_discrete_geodesic_;  ///< nullopt=auto, true=force on, false=force off
+  InterpolationSettings interpolation_settings_;
+  mutable GeodesicPathCache<ManifoldT> geodesic_cache_;
 };
 
 }  // namespace ompl_integration
