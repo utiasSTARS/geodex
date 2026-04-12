@@ -56,6 +56,10 @@ add_executable(test_sampler test_sampler.cpp)
 target_link_libraries(test_sampler PRIVATE geodex GTest::gtest_main)
 gtest_discover_tests(test_sampler)
 
+add_executable(test_collision test_collision.cpp)
+target_link_libraries(test_collision PRIVATE geodex GTest::gtest_main)
+gtest_discover_tests(test_collision)
+
 if(BUILD_OMPL_EXAMPLES)
   add_executable(test_geodex_state_space test_geodex_state_space.cpp)
   # GTest must come before ompl::ompl so FetchContent headers take priority

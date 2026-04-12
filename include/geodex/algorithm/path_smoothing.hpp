@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <geodex/algorithm/interpolation.hpp>
 #include <geodex/core/concepts.hpp>
 #include <geodex/core/metric.hpp>
 #include <random>
@@ -28,7 +29,8 @@ namespace geodex {
 struct PathSmoothingSettings {
   // --- Shortcutting phase ---
   int max_shortcut_attempts = 200;  ///< Random shortcut attempts.
-  int edge_collision_samples = 10;  ///< Geodesic samples per edge for collision.
+  int edge_collision_samples = 10;  ///< Minimum geodesic samples per edge for collision.
+  double collision_resolution = 0.1;  ///< Max spacing (meters) between collision checks.
 
   // --- L-BFGS energy smoothing phase ---
   int lbfgs_target_segments = 64;   ///< Upsample resolution for L-BFGS.
@@ -39,6 +41,9 @@ struct PathSmoothingSettings {
   int lbfgs_memory = 7;             ///< L-BFGS history size.
   double armijo_c = 1e-4;           ///< Armijo sufficient decrease parameter.
   double max_displacement = 0.0;    ///< Trust region radius per waypoint (0 = disabled).
+
+  // --- Discrete geodesic densification ---
+  InterpolationSettings interp;     ///< Settings for discrete_geodesic between waypoints.
 };
 
 /// @brief Result of path smoothing.
@@ -104,69 +109,58 @@ Eigen::MatrixXd gram_matrix(const M& manifold, const Eigen::VectorXd& q_vec) {
 // L-BFGS infrastructure (ported from geodesic_bvp.hpp)
 // ---------------------------------------------------------------------------
 
-/// @brief Compute discrete path energy: \f$ N \sum_k d_k^T M(m_k) d_k \f$.
+/// @brief Compute energy of a single segment using manifold log.
+template <RiemannianManifold M>
+double segment_energy(const M& manifold, const Eigen::VectorXd& a, const Eigen::VectorXd& b) {
+  const int d = manifold.dim();
+  typename M::Point pa, pb;
+  if constexpr (M::Point::SizeAtCompileTime == Eigen::Dynamic) {
+    pa.resize(d);
+    pb.resize(d);
+  }
+  for (int i = 0; i < d; ++i) {
+    pa[i] = a[i];
+    pb[i] = b[i];
+  }
+  auto v = manifold.log(pa, pb);
+  return manifold.inner(pa, v, v);
+}
+
+/// @brief Compute discrete path energy using manifold log: \f$ N \sum_k \|log(q_k, q_{k+1})\|^2 \f$.
 template <RiemannianManifold M>
 double compute_energy(const M& manifold, const std::vector<Eigen::VectorXd>& path) {
   const int N = static_cast<int>(path.size()) - 1;
   double E = 0.0;
   for (int k = 0; k < N; ++k) {
-    Eigen::VectorXd mid = 0.5 * (path[k] + path[k + 1]);
-    Eigen::VectorXd diff = path[k + 1] - path[k];
-    Eigen::MatrixXd G = gram_matrix(manifold, mid);
-    E += diff.dot(G * diff);
+    E += segment_energy(manifold, path[k], path[k + 1]);
   }
   return N * E;
 }
 
-/// @brief Compute energy gradient w.r.t. interior waypoints.
+/// @brief Compute energy gradient via FD, using manifold log for energy.
 template <RiemannianManifold M>
-Eigen::VectorXd compute_gradient(const M& manifold, const std::vector<Eigen::VectorXd>& path,
+Eigen::VectorXd compute_gradient(const M& manifold, std::vector<Eigen::VectorXd>& path,
                                  double fd_eps) {
   const int N = static_cast<int>(path.size()) - 1;
   const int n = static_cast<int>(path[0].size());
   const int n_interior = N - 1;
   Eigen::VectorXd grad = Eigen::VectorXd::Zero(n_interior * n);
 
-  // Precompute midpoints, diffs, mass matrices.
-  std::vector<Eigen::VectorXd> mids(N);
-  std::vector<Eigen::VectorXd> diffs(N);
-  std::vector<Eigen::MatrixXd> Ms(N);
-  for (int k = 0; k < N; ++k) {
-    mids[k] = 0.5 * (path[k] + path[k + 1]);
-    diffs[k] = path[k + 1] - path[k];
-    Ms[k] = gram_matrix(manifold, mids[k]);
-  }
-
   for (int i = 1; i < N; ++i) {
-    Eigen::VectorXd gi = Eigen::VectorXd::Zero(n);
-
-    // Analytic part: from quadratic form in segments (i-1,i) and (i,i+1).
-    gi += 2.0 * N * (Ms[i - 1] * diffs[i - 1]);
-    gi -= 2.0 * N * (Ms[i] * diffs[i]);
-
-    // Metric sensitivity via FD: waypoint q_i affects midpoints of both segments.
     for (int j = 0; j < n; ++j) {
-      // Segment (i-1, i)
-      {
-        Eigen::VectorXd mid_p = mids[i - 1], mid_m = mids[i - 1];
-        mid_p[j] += fd_eps;
-        mid_m[j] -= fd_eps;
-        double dtMpd = diffs[i - 1].dot(gram_matrix(manifold, mid_p) * diffs[i - 1]);
-        double dtMmd = diffs[i - 1].dot(gram_matrix(manifold, mid_m) * diffs[i - 1]);
-        gi[j] += N * 0.5 * (dtMpd - dtMmd) / (2.0 * fd_eps);
-      }
-      // Segment (i, i+1)
-      {
-        Eigen::VectorXd mid_p = mids[i], mid_m = mids[i];
-        mid_p[j] += fd_eps;
-        mid_m[j] -= fd_eps;
-        double dtMpd = diffs[i].dot(gram_matrix(manifold, mid_p) * diffs[i]);
-        double dtMmd = diffs[i].dot(gram_matrix(manifold, mid_m) * diffs[i]);
-        gi[j] += N * 0.5 * (dtMpd - dtMmd) / (2.0 * fd_eps);
-      }
+      // Only segments (i-1,i) and (i,i+1) depend on path[i].
+      path[i][j] += fd_eps;
+      double E_plus = segment_energy(manifold, path[i - 1], path[i]) +
+                      segment_energy(manifold, path[i], path[i + 1]);
+      path[i][j] -= 2.0 * fd_eps;
+      double E_minus = segment_energy(manifold, path[i - 1], path[i]) +
+                       segment_energy(manifold, path[i], path[i + 1]);
+      path[i][j] += fd_eps;  // restore
+
+      grad[(i - 1) * n + j] = N * (E_plus - E_minus) / (2.0 * fd_eps);
     }
 
-    grad.segment((i - 1) * n, n) = gi;
+    // grad.segment((i - 1) * n, n) already set above.
   }
   return grad;
 }
@@ -215,14 +209,29 @@ inline Eigen::VectorXd lbfgs_direction(const Eigen::VectorXd& grad,
   return -r;
 }
 
-/// @brief Insert midpoints to double resolution.
-inline std::vector<Eigen::VectorXd> upsample(const std::vector<Eigen::VectorXd>& path) {
+/// @brief Insert geodesic midpoints to double resolution.
+template <RiemannianManifold M>
+std::vector<Eigen::VectorXd> upsample(const M& manifold,
+                                       const std::vector<Eigen::VectorXd>& path) {
+  const int d = manifold.dim();
   std::vector<Eigen::VectorXd> refined;
   refined.reserve(2 * path.size() - 1);
   for (std::size_t i = 0; i < path.size(); ++i) {
     refined.push_back(path[i]);
     if (i + 1 < path.size()) {
-      refined.push_back(0.5 * (path[i] + path[i + 1]));
+      typename M::Point pa, pb;
+      if constexpr (M::Point::SizeAtCompileTime == Eigen::Dynamic) {
+        pa.resize(d);
+        pb.resize(d);
+      }
+      for (int j = 0; j < d; ++j) {
+        pa[j] = path[i][j];
+        pb[j] = path[i + 1][j];
+      }
+      auto mid = manifold.geodesic(pa, pb, 0.5);
+      Eigen::VectorXd mid_vec(d);
+      for (int j = 0; j < d; ++j) mid_vec[j] = mid[j];
+      refined.push_back(mid_vec);
     }
   }
   return refined;
@@ -379,7 +388,8 @@ int optimize_constrained(const M& manifold, const ValidityFn& validity_fn,
 /// @brief Metric-aware random shortcutting with collision checking along geodesics.
 template <RiemannianManifold M, typename ValidityFn>
 int shortcut(const M& manifold, const ValidityFn& validity_fn,
-             std::vector<typename M::Point>& path, int max_attempts, int edge_samples) {
+             std::vector<typename M::Point>& path, int min_edge_samples,
+             double collision_resolution, int max_attempts) {
   int total_removed = 0;
   std::mt19937 rng(42);
 
@@ -405,10 +415,15 @@ int shortcut(const M& manifold, const ValidityFn& validity_fn,
 
     if (E_direct >= E_sub) continue;
 
+    // Scale collision checks with edge length to avoid missing obstacles.
+    double coord_dist = (path[j] - path[i]).template head<2>().norm();
+    int n_checks = std::max(min_edge_samples,
+                            static_cast<int>(std::ceil(coord_dist / collision_resolution)));
+
     // Collision check along geodesic shortcut.
     bool valid = true;
-    for (int s = 1; s <= edge_samples; ++s) {
-      double t = static_cast<double>(s) / (edge_samples + 1);
+    for (int s = 1; s <= n_checks; ++s) {
+      double t = static_cast<double>(s) / (n_checks + 1);
       auto mid = manifold.geodesic(path[i], path[j], t);
       if (!validity_fn(mid)) {
         valid = false;
@@ -460,76 +475,54 @@ PathSmoothingResult<typename M::Point> smooth_path(const M& manifold,
 
   PathSmoothingResult<Point> result;
 
-  // --- Phase 1: Metric-aware shortcutting ---
-  std::vector<Point> path = initial_path;
-  result.vertices_removed =
-      detail::shortcut(manifold, validity_fn, path, settings.max_shortcut_attempts,
-                       settings.edge_collision_samples);
-
-  // --- Phase 2: L-BFGS energy smoothing ---
-  if (path.size() >= 3) {
-    const int d = manifold.dim();
-
-    // Convert to VectorXd for L-BFGS.
-    std::vector<Eigen::VectorXd> vpath(path.size());
-    for (std::size_t i = 0; i < path.size(); ++i) {
-      vpath[i] = Eigen::VectorXd(d);
-      for (int j = 0; j < d; ++j) vpath[i][j] = path[i][j];
-    }
-
-    // Upsample to target resolution.
-    while (static_cast<int>(vpath.size()) - 1 < settings.lbfgs_target_segments) {
-      vpath = detail::upsample(vpath);
-    }
-
-    Eigen::VectorXd ref_x = detail::pack_interior(vpath);
-
-    result.smooth_iterations =
-        detail::optimize_constrained(manifold, validity_fn, vpath, settings, ref_x);
-
-    // Convert back.
-    path.resize(vpath.size());
-    for (std::size_t i = 0; i < vpath.size(); ++i) {
-      if constexpr (Point::SizeAtCompileTime == Eigen::Dynamic) {
-        path[i].resize(d);
-      }
-      for (int j = 0; j < d; ++j) path[i][j] = vpath[i][j];
-    }
+  if (initial_path.size() < 3) {
+    result.path = initial_path;
+    return result;
   }
 
-  // --- Final validation ---
-  result.collision_free = true;
-  for (const auto& q : path) {
-    if (!validity_fn(q)) {
-      result.collision_free = false;
-      break;
-    }
-  }
-  if (result.collision_free) {
-    const int N = static_cast<int>(path.size()) - 1;
-    for (int k = 0; k < N; ++k) {
-      for (int s = 1; s <= settings.edge_collision_samples; ++s) {
-        double t = static_cast<double>(s) / (settings.edge_collision_samples + 1);
-        auto mid = manifold.geodesic(path[k], path[k + 1], t);
-        if (!validity_fn(mid)) {
-          result.collision_free = false;
-          break;
-        }
-      }
-      if (!result.collision_free) break;
-    }
+  const int d = manifold.dim();
+
+  // Phase 1: Shortcutting — remove redundant vertices along manifold geodesics.
+  std::vector<Point> shortcut_path = initial_path;
+  result.vertices_removed = detail::shortcut(manifold, validity_fn, shortcut_path,
+                                              settings.edge_collision_samples,
+                                              settings.collision_resolution,
+                                              settings.max_shortcut_attempts);
+
+  // Convert to VectorXd.
+  std::vector<Eigen::VectorXd> vpath(shortcut_path.size());
+  for (std::size_t i = 0; i < shortcut_path.size(); ++i) {
+    vpath[i] = Eigen::VectorXd(d);
+    for (int j = 0; j < d; ++j) vpath[i][j] = shortcut_path[i][j];
   }
 
-  // Compute final energy via manifold distance.
+  // Upsample with manifold geodesic midpoints.
+  while (static_cast<int>(vpath.size()) - 1 < settings.lbfgs_target_segments) {
+    vpath = detail::upsample(manifold, vpath);
+  }
+
+  // Save reference for trust region — keeps result close to raw path.
+  Eigen::VectorXd ref_x = detail::pack_interior(vpath);
+
+  // L-BFGS energy minimization with collision constraints.
+  result.smooth_iterations =
+      detail::optimize_constrained(manifold, validity_fn, vpath, settings, ref_x);
+
+  // Convert back.
+  std::vector<Point> path(vpath.size());
+  for (std::size_t i = 0; i < vpath.size(); ++i) {
+    if constexpr (Point::SizeAtCompileTime == Eigen::Dynamic) {
+      path[i].resize(d);
+    }
+    for (int j = 0; j < d; ++j) path[i][j] = vpath[i][j];
+  }
+
   result.energy = 0.0;
-  {
-    const int N = static_cast<int>(path.size()) - 1;
-    for (int k = 0; k < N; ++k) {
-      double d = manifold.distance(path[k], path[k + 1]);
-      result.energy += d * d;
-    }
-    result.energy *= N;
+  for (std::size_t k = 0; k + 1 < path.size(); ++k) {
+    double dd = manifold.distance(path[k], path[k + 1]);
+    result.energy += dd * dd;
   }
+  result.energy *= static_cast<double>(path.size() - 1);
   result.distance = std::sqrt(std::max(result.energy, 0.0));
   result.path = std::move(path);
 

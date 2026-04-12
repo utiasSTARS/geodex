@@ -6,11 +6,12 @@
 #include <Eigen/Core>
 #include <cmath>
 #include <geodex/algorithm/distance.hpp>
-#include <geodex/core/angle.hpp>
 #include <geodex/core/concepts.hpp>
 #include <geodex/core/retraction.hpp>
 #include <geodex/core/sampler.hpp>
 #include <geodex/metrics/se2_left_invariant.hpp>
+#include <geodex/utils/angle.hpp>
+#include <geodex/utils/math.hpp>
 #include <numbers>
 #include <type_traits>
 
@@ -252,9 +253,6 @@ class SE2 {
   /// @{
 
   /// @brief Geodesic distance \f$ d(p, q) \f$ via the midpoint approximation.
-  /// @param p First pose.
-  /// @param q Second pose.
-  /// @return The approximate geodesic distance.
   Scalar distance(const Point& p, const Point& q) const { return distance_midpoint(*this, p, q); }
 
   /// @brief Geodesic interpolation between \f$ p \f$ and \f$ q \f$ at parameter \f$ t \f$.
@@ -275,8 +273,203 @@ class SE2 {
   mutable Eigen::VectorXd sample_buf_{3};  ///< Preallocated buffer for sampler output.
 };
 
+// Forward declaration for ConfigurationSpace overload below.
+template <typename BaseManifold, typename MetricT>
+class ConfigurationSpace;
+
 // Verify the composed types satisfy RiemannianManifold.
 static_assert(RiemannianManifold<SE2<>>);
 static_assert(RiemannianManifold<SE2<SE2LeftInvariantMetric, SE2EulerRetraction>>);
+
+// ---------------------------------------------------------------------------
+// distance_midpoint overloads for SE(2)
+// ---------------------------------------------------------------------------
+//
+// The implementation shares trig across the log→exp→log→log chain:
+//   - 2 utils::sincos calls
+//   - sincos(mid.θ) derived via angle-addition (no trig)
+//   - tan(dθ/4) derived via half-angle formula (no trig)
+//   - fma() for single-cycle FMADD on ARM
+//   - NEON 2-wide for log(m,a) and log(m,b) in parallel
+// Only norm() is called from the manifold — preserves metric evaluation.
+
+#ifdef __ARM_NEON
+#include <arm_neon.h>
+#elif defined(__SSE2__)
+#include <immintrin.h>
+#endif
+
+namespace detail {
+
+/// @brief SE(2) fused midpoint retraction: computes midpoint + v_diff with
+///        minimal trig, then delegates norm to the manifold.
+template <RiemannianManifold M>
+auto distance_midpoint_se2_impl(const M& m, const Eigen::Vector3d& a,
+                                const Eigen::Vector3d& b) -> typename M::Scalar {
+  const double dxw = b[0] - a[0], dyw = b[1] - a[1];
+  const double dtheta = wrap_to_pi(b[2] - a[2]);
+  const double half_dt = 0.5 * dtheta;
+  const double quarter_dt = 0.25 * dtheta;
+  const double abs_dt = std::abs(dtheta);
+  const double abs_hdt = std::abs(half_dt);
+
+  // === sincos #1: a.θ ===
+  double sa, ca;
+  utils::sincos(a[2], &sa, &ca);
+
+  const double dx = std::fma(ca, dxw, sa * dyw);
+  const double dy = std::fma(-sa, dxw, ca * dyw);
+
+  // === sincos #2: dθ/2 ===
+  double sh, ch;
+  utils::sincos(half_dt, &sh, &ch);
+
+  const double s_dt = 2.0 * sh * ch;
+  const double c_dt = std::fma(ch, ch, -(sh * sh));
+
+  // --- log(a, b): V⁻¹(dθ) — branchless ---
+  const bool general = abs_dt > 1e-10;
+  const double inv_dt = general ? (1.0 / dtheta) : 1.0;
+  const double s_o = general ? (s_dt * inv_dt) : 1.0;
+  const double cm1_o = general ? ((1.0 - c_dt) * inv_dt) : 0.0;
+
+  const double vx_ab = std::fma(s_o, dx, cm1_o * dy);
+  const double vy_ab = std::fma(s_o, dy, -cm1_o * dx);
+
+  // --- exp(a, 0.5·v_ab): V(dθ/2) ---
+  const double hvx = 0.5 * vx_ab, hvy = 0.5 * vy_ab;
+  const bool hgeneral = abs_hdt > 1e-10;
+  const double inv_hdt = hgeneral ? (1.0 / half_dt) : 1.0;
+  const double sho = hgeneral ? (sh * inv_hdt) : 1.0;
+  const double chm1o = hgeneral ? ((1.0 - ch) * inv_hdt) : 0.0;
+
+  const double tx = std::fma(sho, hvx, -chm1o * hvy);
+  const double ty = std::fma(sho, hvy, chm1o * hvx);
+  const double mx = std::fma(ca, tx, std::fma(-sa, ty, a[0]));
+  const double my = std::fma(sa, tx, std::fma(ca, ty, a[1]));
+
+  // --- sincos(mid.θ) via angle-addition (no trig) ---
+  const double cm = std::fma(ca, ch, -(sa * sh));
+  const double sm = std::fma(sa, ch, ca * sh);
+
+  // --- log(m,a) and log(m,b) ---
+  const double dxw_ma = a[0] - mx, dyw_ma = a[1] - my;
+  const double dxw_mb = b[0] - mx, dyw_mb = b[1] - my;
+
+#ifdef __ARM_NEON
+  const float64x2_t vcm = vdupq_n_f64(cm);
+  const float64x2_t vsm = vdupq_n_f64(sm);
+  float64x2_t dxw_pair = {dxw_ma, dxw_mb};
+  float64x2_t dyw_pair = {dyw_ma, dyw_mb};
+
+  float64x2_t dx_pair = vfmaq_f64(vmulq_f64(vcm, dxw_pair), vsm, dyw_pair);
+  float64x2_t dy_pair = vfmsq_f64(vmulq_f64(vcm, dyw_pair), vsm, dxw_pair);
+
+  double vx_ma, vy_ma, vx_mb, vy_mb;
+  if (hgeneral) {
+    const double tan_q = sh / (1.0 + ch);
+    const double cot_q = quarter_dt / tan_q;
+    const float64x2_t vc = vdupq_n_f64(cot_q);
+    const float64x2_t vq = {-quarter_dt, quarter_dt};
+    const float64x2_t vnq = vnegq_f64(vq);
+    float64x2_t vx_pair = vfmaq_f64(vmulq_f64(vc, dx_pair), vq, dy_pair);
+    float64x2_t vy_pair = vfmaq_f64(vmulq_f64(vc, dy_pair), vnq, dx_pair);
+    vx_ma = vgetq_lane_f64(vx_pair, 0);
+    vy_ma = vgetq_lane_f64(vy_pair, 0);
+    vx_mb = vgetq_lane_f64(vx_pair, 1);
+    vy_mb = vgetq_lane_f64(vy_pair, 1);
+  } else {
+    const float64x2_t vq = {quarter_dt, -quarter_dt};
+    const float64x2_t vnq = {-quarter_dt, quarter_dt};
+    float64x2_t vx_pair = vfmaq_f64(dx_pair, vq, dy_pair);
+    float64x2_t vy_pair = vfmaq_f64(dy_pair, vnq, dx_pair);
+    vx_ma = vgetq_lane_f64(vx_pair, 0);
+    vy_ma = vgetq_lane_f64(vy_pair, 0);
+    vx_mb = vgetq_lane_f64(vx_pair, 1);
+    vy_mb = vgetq_lane_f64(vy_pair, 1);
+  }
+#elif defined(__SSE2__)
+  const __m128d vcm = _mm_set1_pd(cm);
+  const __m128d vsm = _mm_set1_pd(sm);
+  // _mm_set_pd(high, low): lane 0 = ma, lane 1 = mb
+  __m128d dxw_pair = _mm_set_pd(dxw_mb, dxw_ma);
+  __m128d dyw_pair = _mm_set_pd(dyw_mb, dyw_ma);
+
+  // dx_pair = cm*dxw + sm*dyw, dy_pair = cm*dyw - sm*dxw
+  __m128d dx_pair = utils::geodex_fmadd_pd(vsm, dyw_pair, _mm_mul_pd(vcm, dxw_pair));
+  __m128d dy_pair = utils::geodex_fnmadd_pd(vsm, dxw_pair, _mm_mul_pd(vcm, dyw_pair));
+
+  double vx_ma, vy_ma, vx_mb, vy_mb;
+  if (hgeneral) {
+    const double tan_q = sh / (1.0 + ch);
+    const double cot_q = quarter_dt / tan_q;
+    const __m128d vc = _mm_set1_pd(cot_q);
+    // vq: lane 0 = -quarter_dt (for ma), lane 1 = quarter_dt (for mb)
+    const __m128d vq = _mm_set_pd(quarter_dt, -quarter_dt);
+    const __m128d vnq = _mm_sub_pd(_mm_setzero_pd(), vq);
+    __m128d vx_pair = utils::geodex_fmadd_pd(vq, dy_pair, _mm_mul_pd(vc, dx_pair));
+    __m128d vy_pair = utils::geodex_fmadd_pd(vnq, dx_pair, _mm_mul_pd(vc, dy_pair));
+    vx_ma = _mm_cvtsd_f64(vx_pair);
+    vy_ma = _mm_cvtsd_f64(vy_pair);
+    vx_mb = _mm_cvtsd_f64(_mm_unpackhi_pd(vx_pair, vx_pair));
+    vy_mb = _mm_cvtsd_f64(_mm_unpackhi_pd(vy_pair, vy_pair));
+  } else {
+    // vq: lane 0 = quarter_dt (for ma), lane 1 = -quarter_dt (for mb)
+    const __m128d vq = _mm_set_pd(-quarter_dt, quarter_dt);
+    const __m128d vnq = _mm_set_pd(quarter_dt, -quarter_dt);
+    __m128d vx_pair = utils::geodex_fmadd_pd(vq, dy_pair, dx_pair);
+    __m128d vy_pair = utils::geodex_fmadd_pd(vnq, dx_pair, dy_pair);
+    vx_ma = _mm_cvtsd_f64(vx_pair);
+    vy_ma = _mm_cvtsd_f64(vy_pair);
+    vx_mb = _mm_cvtsd_f64(_mm_unpackhi_pd(vx_pair, vx_pair));
+    vy_mb = _mm_cvtsd_f64(_mm_unpackhi_pd(vy_pair, vy_pair));
+  }
+#else
+  const double dx_ma = cm * dxw_ma + sm * dyw_ma;
+  const double dy_ma = -sm * dxw_ma + cm * dyw_ma;
+  const double dx_mb = cm * dxw_mb + sm * dyw_mb;
+  const double dy_mb = -sm * dxw_mb + cm * dyw_mb;
+
+  double vx_ma, vy_ma, vx_mb, vy_mb;
+  if (hgeneral) {
+    const double tan_q = sh / (1.0 + ch);
+    const double cot_q = quarter_dt / tan_q;
+    vx_ma = cot_q * dx_ma - quarter_dt * dy_ma;
+    vy_ma = quarter_dt * dx_ma + cot_q * dy_ma;
+    vx_mb = cot_q * dx_mb + quarter_dt * dy_mb;
+    vy_mb = -quarter_dt * dx_mb + cot_q * dy_mb;
+  } else {
+    vx_ma = dx_ma + quarter_dt * dy_ma;
+    vy_ma = -quarter_dt * dx_ma + dy_ma;
+    vx_mb = dx_mb - quarter_dt * dy_mb;
+    vy_mb = quarter_dt * dx_mb + dy_mb;
+  }
+#endif
+
+  Eigen::Vector3d midpoint(mx, my, wrap_to_pi(a[2] + half_dt));
+  Eigen::Vector3d v_diff(vx_mb - vx_ma, vy_mb - vy_ma, dtheta);
+  return m.norm(midpoint, v_diff);
+}
+
+}  // namespace detail
+
+/// @brief Fused distance_midpoint overload for SE2.
+template <typename MetricT, typename RetractionT, typename SamplerT>
+auto distance_midpoint(const SE2<MetricT, RetractionT, SamplerT>& m, const Eigen::Vector3d& a,
+                       const Eigen::Vector3d& b) -> double {
+  return detail::distance_midpoint_se2_impl(m, a, b);
+}
+
+/// @brief Fused distance_midpoint overload for ConfigurationSpace wrapping an SE(2) base.
+///
+/// @note ConfigurationSpace is forward-declared here; the full definition is in
+///       configuration_space.hpp. This overload is instantiated only when both
+///       headers are included, which is the normal usage pattern.
+template <typename BaseM, typename MetricT>
+  requires std::is_same_v<typename BaseM::Point, Eigen::Vector3d>
+auto distance_midpoint(const ConfigurationSpace<BaseM, MetricT>& m, const Eigen::Vector3d& a,
+                       const Eigen::Vector3d& b) -> double {
+  return detail::distance_midpoint_se2_impl(m, a, b);
+}
 
 }  // namespace geodex

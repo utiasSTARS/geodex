@@ -309,10 +309,10 @@ TEST(PathSmoothing, RespectsObstacles) {
   geodex::SE2LeftInvariantMetric metric{1.0, 1.0, 0.5};
   geodex::SE2<> manifold{metric};
 
-  // Path that goes around an obstacle at (2.5, 1.0).
+  // Path that goes around an obstacle at (2.5, 0.5).
   std::vector<Eigen::Vector3d> path = {
-      {0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {2.0, -0.5, 0.0},
-      {3.0, 0.0, 0.0}, {4.0, 0.0, 0.0}, {5.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0}, {1.0, -1.0, 0.0}, {2.0, -2.0, 0.0},
+      {3.0, -2.0, 0.0}, {4.0, -1.0, 0.0}, {5.0, 0.0, 0.0},
   };
 
   double obs_cx = 2.5, obs_cy = 0.5, obs_r = 0.8;

@@ -113,6 +113,15 @@ struct InterpolationSettings {
   /// flags a cut-locus situation (e.g., antipodal points on the sphere where
   /// `log` returns zero).
   double cut_locus_eps = 1e-10;
+
+  /// @brief Force the log-based direction even when `is_riemannian_log()` is false.
+  ///
+  /// @details When true, the algorithm always uses `log(current, target)` as the
+  /// descent direction and never falls back to the FD natural gradient. The metric's
+  /// norm and distance still control step sizing and convergence. This produces
+  /// smoother paths (no FD oscillation) but the path follows the base retraction's
+  /// geodesic rather than the true Riemannian geodesic of the configured metric.
+  bool force_log_direction = false;
 };
 
 // ---------------------------------------------------------------------------
@@ -483,7 +492,8 @@ auto discrete_geodesic(const M& manifold, const typename M::Point& start,
   // Resolved once per call: is the base log the Riemannian log of the metric?
   // `is_riemannian_log` collapses the compile-time (`M::has_riemannian_log`)
   // and runtime (`m.has_riemannian_log_runtime()`) signals into one bool.
-  const bool fast_path_enabled = geodex::is_riemannian_log(manifold);
+  const bool fast_path_enabled =
+      settings.force_log_direction || geodex::is_riemannian_log(manifold);
 
   Point current = start;
 

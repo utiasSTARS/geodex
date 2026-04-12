@@ -19,6 +19,7 @@ Google Benchmark is fetched automatically via CMake FetchContent.
 ./build/benchmarks/bench_algorithms
 ./build/benchmarks/bench_metrics
 ./build/benchmarks/bench_retractions
+./build/benchmarks/bench_collision
 
 # JSON output for regression tracking
 ./build/benchmarks/bench_manifold_ops --benchmark_format=json --benchmark_out=results/bench_manifold_ops.json
@@ -35,6 +36,7 @@ Google Benchmark is fetched automatically via CMake FetchContent.
 | `bench_algorithms.cpp` | `discrete_geodesic` on all manifolds; batch `distance_midpoint` throughput (1000 pairs); dimension scaling |
 | `bench_metrics.cpp` | `inner` and `norm` for all 7 metric types; ConfigurationSpace overhead vs bare manifold |
 | `bench_retractions.cpp` | SE(2) and Sphere retraction speed; Sphere projection accuracy vs exponential map |
+| `bench_collision.cpp` | Collision primitives: circle/rectangle SDF eval and scaling, distance grid single/batch lookup, polygon footprint transform, footprint grid checker (early-out vs full check); fast math: `fast_exp` vs `std::exp`, `sincos` vs separate trig |
 | `bench_ompl_interpolation.cpp` | OMPL `GeodexStateSpace::interpolate()` with discrete geodesic cache; cache hot/cold; motion validation overhead (requires OMPL) |
 
 ## Reference Results
@@ -212,6 +214,142 @@ with strong anisotropy should increase `max_steps` via `setInterpolationSettings
 **When it adds no value (fast path used):**
 - Any manifold with identity metric and matching retraction
 - Flat spaces (Euclidean, Torus) with constant metrics — geodesics are straight lines
+
+### Collision Primitives and Fast Math (ns per call)
+
+Benchmark: `bench_collision` — measures all collision SDF evaluation, distance grid
+queries, polygon footprint transforms, and fast math utilities.
+
+Machine: Apple M2 (8-core, arm64), macOS 15.3.1, Apple clang, `-O2`
+Date: 2026-04-11
+
+**SDF evaluation scaling** (parameterized by obstacle count):
+
+| Benchmark | N=5 | N=10 | N=20 | N=50 |
+|-----------|:---:|:---:|:---:|:---:|
+| CircleSmoothSDF | 20 | 27 | 46 | 114 |
+| CircleSmoothSDF (is_free) | 2.5 | 4.8 | 9.4 | 23 |
+| RectSmoothSDF (NEON) | 4.8 | 6.2 | 9.4 | 22 |
+
+Single `CircleSDF` evaluation: **0.6 ns** (one sqrt + subtract).
+
+RectSmoothSDF benefits from NEON 2-wide processing and bounding-sphere early-out,
+keeping cost low even at N=50. CircleSmoothSDF scales linearly with circle count
+(~2.3 ns/circle) after the single-pass caching optimization.
+
+**Distance grid queries:**
+
+| Benchmark | Time | Throughput |
+|-----------|:---:|:---:|
+| Single bilinear lookup | 2.9 ns | — |
+| Batch N=16 | 31 ns | 509M items/s |
+| Batch N=32 | 61 ns | 522M items/s |
+| Batch N=64 | 121 ns | 528M items/s |
+| Batch N=128 | 250 ns | 513M items/s |
+
+Batch throughput is ~2 ns/point with NEON vectorized bilinear interpolation.
+The scalar gather (no ARM NEON gather instruction) is the bottleneck.
+
+**Polygon footprint and checker:**
+
+| Benchmark | Time |
+|-----------|:---:|
+| PolygonFootprint transform (spe=2, 8 samples) | 6.7 ns |
+| PolygonFootprint transform (spe=4, 16 samples) | 10 ns |
+| PolygonFootprint transform (spe=8, 32 samples) | 18 ns |
+| FootprintGridChecker (bounding sphere early-out) | 4.6 ns |
+| FootprintGridChecker (full perimeter check) | 52 ns |
+
+The bounding-sphere early-out (center distance > bounding radius + margin) resolves
+most queries in 4.6 ns without transforming the polygon. The full check (transform +
+batch grid lookup + min-reduce) costs 52 ns for a 16-sample rectangle footprint.
+
+**Fast math utilities:**
+
+| Function | Time | vs stdlib |
+|----------|:---:|:---:|
+| `fast_exp` | 1.0 ns | **2.5x** faster than `std::exp` (2.5 ns) |
+| `sincos` | 4.7 ns | ~same as separate `sin`+`cos` (Apple libm optimizes both) |
+
+`fast_exp` (Schraudolph IEEE 754 bit trick, ~4% max relative error) is used in all
+log-sum-exp smooth-min SDF computations. The 2.5x speedup compounds across obstacle
+counts in `CircleSmoothSDF` and `RectSmoothSDF`.
+
+### x86 Reference Results — Collision Primitives and Fast Math
+
+Machine: Intel Core i7-10875H (8-core/16-thread, x86_64), 32 GB RAM, Ubuntu 24.04
+Compiler: GCC 13.3.0, `-O3 -march=native` (SSE4.2 + AVX2 + FMA enabled)
+Date: 2026-04-12
+
+**SDF evaluation scaling** (parameterized by obstacle count):
+
+| Benchmark | N=5 | N=10 | N=20 | N=50 |
+|-----------|:---:|:---:|:---:|:---:|
+| CircleSmoothSDF | 24 | 36 | 59 | 128 |
+| CircleSmoothSDF (is_free) | 3.3 | 6.1 | 12 | 29 |
+| RectSmoothSDF (SSE2) | 4.1 | 5.8 | 9.7 | 21 |
+
+Single `CircleSDF` evaluation: **1.3 ns**.
+
+RectSmoothSDF SSE2 performance is on par with ARM NEON: the 2-wide processing,
+bounding-sphere early-out, and `fast_exp` vectorization translate directly. The SSE2
+path uses `_mm_movemask_pd` for the early-out check, which is slightly more efficient
+than NEON's per-lane extraction.
+
+**Distance grid queries:**
+
+| Benchmark | Time | Throughput |
+|-----------|:---:|:---:|
+| Single bilinear lookup | 6.7 ns | — |
+| Batch N=16 | 74 ns | 218M items/s |
+| Batch N=32 | 146 ns | 222M items/s |
+| Batch N=64 | 298 ns | 217M items/s |
+| Batch N=128 | 568 ns | 228M items/s |
+
+Batch throughput is ~4.4 ns/point with SSE2 vectorized bilinear interpolation.
+Lower than ARM (~2 ns/point) because the benchmark grid (100x100 doubles = 80 KB)
+fits in the M2's 128 KB L1D but spills on the i7's 32 KB L1D. Each bilinear lookup
+gathers 4 grid values; on x86 these frequently miss L1 and hit L2 (~10 cycles vs
+~4 cycles for an L1 hit). The scalar single-point lookup shows the same 2.3x gap
+(6.7 vs 2.9 ns), confirming the bottleneck is cache capacity, not SIMD efficiency.
+
+**Polygon footprint and checker:**
+
+| Benchmark | Time |
+|-----------|:---:|
+| PolygonFootprint transform (spe=2, 8 samples) | 13 ns |
+| PolygonFootprint transform (spe=4, 16 samples) | 19 ns |
+| PolygonFootprint transform (spe=8, 32 samples) | 26 ns |
+| FootprintGridChecker (bounding sphere early-out) | 9.2 ns |
+| FootprintGridChecker (full perimeter check) | 99 ns |
+
+**Fast math utilities:**
+
+| Function | Time | vs stdlib |
+|----------|:---:|:---:|
+| `fast_exp` | 0.9 ns | **5.3x** faster than `std::exp` (4.8 ns) |
+| `sincos` | 9.9 ns | ~same as separate `sin`+`cos` (glibc optimizes both) |
+
+`fast_exp` delivers a larger relative speedup on x86 (5.3x vs 2.5x on ARM) because
+`std::exp` in glibc is slower than Apple's libm, while the Schraudolph bit trick runs
+at similar speed on both architectures.
+
+### x86 vs ARM NEON — Collision Summary
+
+| Benchmark | ARM M2 (NEON) | x86 i7-10875H (SSE2) | Ratio |
+|-----------|:---:|:---:|:---:|
+| RectSmoothSDF N=5 | 4.8 ns | 4.1 ns | 0.85x |
+| RectSmoothSDF N=50 | 22 ns | 21 ns | 0.95x |
+| DistanceGrid batch throughput | 520M/s | 222M/s | 2.3x slower |
+| FootprintGridChecker full | 52 ns | 99 ns | 1.9x slower |
+| fast_exp | 1.0 ns | 0.9 ns | 0.90x |
+| fast_exp vs std::exp speedup | 2.5x | 5.3x | — |
+
+The SSE2 RectSmoothSDF path matches or beats ARM NEON despite being a direct 2-wide
+port (same width). The distance grid and footprint checker are slower on x86 because
+the 80 KB benchmark grid fits in the M2's 128 KB L1D but exceeds the i7's 32 KB L1D,
+causing L2 spills on every bilinear gather. This is a cache capacity effect, not a
+SIMD efficiency issue — the vectorization code itself is equally efficient on both.
 
 ## Key Findings
 
