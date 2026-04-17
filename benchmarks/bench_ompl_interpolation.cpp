@@ -1,18 +1,18 @@
 /// @file bench_ompl_interpolation.cpp
 /// @brief Benchmarks for GeodexStateSpace interpolation with discrete geodesic caching.
 
-#include <benchmark/benchmark.h>
-
-#include <ompl/base/SpaceInformation.h>
-#include <ompl/base/DiscreteMotionValidator.h>
-#include <ompl/base/spaces/RealVectorBounds.h>
+#include <numbers>
 
 #include <Eigen/Core>
-#include <geodex/integration/ompl/geodex_state_space.hpp>
-#include <geodex/manifold/euclidean.hpp>
-#include <geodex/manifold/se2.hpp>
-#include <geodex/metrics/constant_spd.hpp>
-#include <numbers>
+#include <benchmark/benchmark.h>
+#include <ompl/base/DiscreteMotionValidator.h>
+#include <ompl/base/SpaceInformation.h>
+#include <ompl/base/spaces/RealVectorBounds.h>
+
+#include "geodex/integration/ompl/geodex_state_space.hpp"
+#include "geodex/manifold/euclidean.hpp"
+#include "geodex/manifold/se2.hpp"
+#include "geodex/metrics/constant_spd.hpp"
 
 namespace ob = ompl::base;
 
@@ -45,13 +45,13 @@ static void setStateValues(ob::State* s, double v0, double v1, double v2) {
 
 static void BM_Interpolate_SE2_Identity(benchmark::State& state) {
   using M = geodex::SE2<>;
-  using SS = geodex::ompl_integration::GeodexStateSpace<M>;
-  using ST = geodex::ompl_integration::GeodexState<M>;
+  using SS = geodex::integration::ompl::GeodexStateSpace<M>;
+  using ST = geodex::integration::ompl::GeodexState<M>;
 
   geodex::SE2LeftInvariantMetric metric{1.0, 1.0, 1.0};
   M manifold{metric};
   auto space = std::make_shared<SS>(manifold, makeSE2Bounds());
-  space->setUseDiscreteGeodesic(true);
+  space->setInterpolationMode(geodex::integration::ompl::InterpolationMode::RiemannianGeodesic);
 
   auto* s1 = space->allocState();
   auto* s2 = space->allocState();
@@ -79,13 +79,13 @@ BENCHMARK(BM_Interpolate_SE2_Identity)->Arg(10)->Arg(50)->Arg(100);
 
 static void BM_Interpolate_SE2_Anisotropic_CacheHot(benchmark::State& state) {
   using M = geodex::SE2<geodex::SE2LeftInvariantMetric, geodex::SE2ExponentialMap>;
-  using SS = geodex::ompl_integration::GeodexStateSpace<M>;
-  using ST = geodex::ompl_integration::GeodexState<M>;
+  using SS = geodex::integration::ompl::GeodexStateSpace<M>;
+  using ST = geodex::integration::ompl::GeodexState<M>;
 
   geodex::SE2LeftInvariantMetric metric{1.0, 100.0, 0.5};
   M manifold{metric};
   auto space = std::make_shared<SS>(manifold, makeSE2Bounds());
-  space->setUseDiscreteGeodesic(true);
+  space->setInterpolationMode(geodex::integration::ompl::InterpolationMode::RiemannianGeodesic);
 
   auto* s1 = space->allocState();
   auto* s2 = space->allocState();
@@ -114,13 +114,13 @@ BENCHMARK(BM_Interpolate_SE2_Anisotropic_CacheHot)->Arg(10)->Arg(50)->Arg(100);
 
 static void BM_Interpolate_SE2_Anisotropic_CacheCold(benchmark::State& state) {
   using M = geodex::SE2<geodex::SE2LeftInvariantMetric, geodex::SE2ExponentialMap>;
-  using SS = geodex::ompl_integration::GeodexStateSpace<M>;
-  using ST = geodex::ompl_integration::GeodexState<M>;
+  using SS = geodex::integration::ompl::GeodexStateSpace<M>;
+  using ST = geodex::integration::ompl::GeodexState<M>;
 
   geodex::SE2LeftInvariantMetric metric{1.0, 100.0, 0.5};
   M manifold{metric};
   auto space = std::make_shared<SS>(manifold, makeSE2Bounds());
-  space->setUseDiscreteGeodesic(true);
+  space->setInterpolationMode(geodex::integration::ompl::InterpolationMode::RiemannianGeodesic);
 
   auto* s1 = space->allocState();
   auto* s2 = space->allocState();
@@ -148,8 +148,8 @@ BENCHMARK(BM_Interpolate_SE2_Anisotropic_CacheCold);
 
 static void BM_Interpolate_Euclidean_Anisotropic_CacheHot(benchmark::State& state) {
   using M = geodex::Euclidean<2, geodex::ConstantSPDMetric<2>>;
-  using SS = geodex::ompl_integration::GeodexStateSpace<M>;
-  using ST = geodex::ompl_integration::GeodexState<M>;
+  using SS = geodex::integration::ompl::GeodexStateSpace<M>;
+  using ST = geodex::integration::ompl::GeodexState<M>;
 
   Eigen::Matrix2d A;
   A << 4.0, 0.0, 0.0, 1.0;
@@ -160,7 +160,7 @@ static void BM_Interpolate_Euclidean_Anisotropic_CacheHot(benchmark::State& stat
   bounds.setLow(0.0);
   bounds.setHigh(10.0);
   auto space = std::make_shared<SS>(manifold, bounds);
-  space->setUseDiscreteGeodesic(true);
+  space->setInterpolationMode(geodex::integration::ompl::InterpolationMode::RiemannianGeodesic);
 
   auto* s1 = space->allocState();
   auto* s2 = space->allocState();
@@ -190,8 +190,8 @@ BENCHMARK(BM_Interpolate_Euclidean_Anisotropic_CacheHot)->Arg(10)->Arg(50)->Arg(
 
 static void BM_MotionValidation_SE2_Anisotropic(benchmark::State& state) {
   using M = geodex::SE2<geodex::SE2LeftInvariantMetric, geodex::SE2ExponentialMap>;
-  using SS = geodex::ompl_integration::GeodexStateSpace<M>;
-  using ST = geodex::ompl_integration::GeodexState<M>;
+  using SS = geodex::integration::ompl::GeodexStateSpace<M>;
+  using ST = geodex::integration::ompl::GeodexState<M>;
 
   geodex::SE2LeftInvariantMetric metric{1.0, 100.0, 0.5};
   M manifold{metric};
@@ -199,7 +199,9 @@ static void BM_MotionValidation_SE2_Anisotropic(benchmark::State& state) {
   space->setCollisionResolution(0.1);
 
   const bool use_discrete = state.range(0);
-  space->setUseDiscreteGeodesic(use_discrete);
+  space->setInterpolationMode(use_discrete
+                                  ? geodex::integration::ompl::InterpolationMode::RiemannianGeodesic
+                                  : geodex::integration::ompl::InterpolationMode::BaseGeodesic);
 
   auto si = std::make_shared<ob::SpaceInformation>(space);
   si->setStateValidityChecker([](const ob::State*) { return true; });
@@ -230,8 +232,8 @@ BENCHMARK(BM_MotionValidation_SE2_Anisotropic)
 
 static void BM_ValidSegmentCount_SE2(benchmark::State& state) {
   using M = geodex::SE2<geodex::SE2LeftInvariantMetric, geodex::SE2ExponentialMap>;
-  using SS = geodex::ompl_integration::GeodexStateSpace<M>;
-  using ST = geodex::ompl_integration::GeodexState<M>;
+  using SS = geodex::integration::ompl::GeodexStateSpace<M>;
+  using ST = geodex::integration::ompl::GeodexState<M>;
 
   geodex::SE2LeftInvariantMetric metric{1.0, 100.0, 0.5};
   M manifold{metric};

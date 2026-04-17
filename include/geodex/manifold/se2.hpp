@@ -3,17 +3,20 @@
 
 #pragma once
 
-#include <Eigen/Core>
 #include <cmath>
-#include <geodex/algorithm/distance.hpp>
-#include <geodex/core/concepts.hpp>
-#include <geodex/core/retraction.hpp>
-#include <geodex/core/sampler.hpp>
-#include <geodex/metrics/se2_left_invariant.hpp>
-#include <geodex/utils/angle.hpp>
-#include <geodex/utils/math.hpp>
+
 #include <numbers>
 #include <type_traits>
+
+#include <Eigen/Core>
+
+#include "geodex/algorithm/distance.hpp"
+#include "geodex/core/concepts.hpp"
+#include "geodex/core/retraction.hpp"
+#include "geodex/core/sampler.hpp"
+#include "geodex/metrics/se2_left_invariant.hpp"
+#include "geodex/utils/angle.hpp"
+#include "geodex/utils/math.hpp"
 
 namespace geodex {
 
@@ -52,7 +55,7 @@ struct SE2ExponentialMap {
     const double dx = ct * tx - st * ty;
     const double dy = st * tx + ct * ty;
 
-    return Eigen::Vector3d(p[0] + dx, p[1] + dy, wrap_to_pi(p[2] + omega));
+    return Eigen::Vector3d(p[0] + dx, p[1] + dy, utils::wrap_to_pi(p[2] + omega));
   }
 
   /// @brief Logarithmic map \f$ \log_p(q) \f$ on SE(2).
@@ -65,7 +68,7 @@ struct SE2ExponentialMap {
     const double dxw = q[0] - p[0], dyw = q[1] - p[1];
     const double dx = ct * dxw + st * dyw;
     const double dy = -st * dxw + ct * dyw;
-    const double dtheta = wrap_to_pi(q[2] - p[2]);
+    const double dtheta = utils::wrap_to_pi(q[2] - p[2]);
 
     double vx, vy;
     if (std::abs(dtheta) < 1e-8) {
@@ -96,7 +99,7 @@ struct SE2EulerRetraction {
   /// @return The retracted pose.
   EIGEN_STRONG_INLINE
   Eigen::Vector3d retract(const Eigen::Vector3d p, const Eigen::Vector3d v) const {
-    return Eigen::Vector3d(p[0] + v[0], p[1] + v[1], wrap_to_pi(p[2] + v[2]));
+    return Eigen::Vector3d(p[0] + v[0], p[1] + v[1], utils::wrap_to_pi(p[2] + v[2]));
   }
 
   /// @brief Inverse Euler retraction.
@@ -105,7 +108,7 @@ struct SE2EulerRetraction {
   /// @return Tangent vector at \f$ p \f$.
   EIGEN_STRONG_INLINE
   Eigen::Vector3d inverse_retract(const Eigen::Vector3d p, const Eigen::Vector3d q) const {
-    return Eigen::Vector3d(q[0] - p[0], q[1] - p[1], wrap_to_pi(q[2] - p[2]));
+    return Eigen::Vector3d(q[0] - p[0], q[1] - p[1], utils::wrap_to_pi(q[2] - p[2]));
   }
 };
 
@@ -304,10 +307,10 @@ namespace detail {
 /// @brief SE(2) fused midpoint retraction: computes midpoint + v_diff with
 ///        minimal trig, then delegates norm to the manifold.
 template <RiemannianManifold M>
-auto distance_midpoint_se2_impl(const M& m, const Eigen::Vector3d& a,
-                                const Eigen::Vector3d& b) -> typename M::Scalar {
+auto distance_midpoint_se2_impl(const M& m, const Eigen::Vector3d& a, const Eigen::Vector3d& b) ->
+    typename M::Scalar {
   const double dxw = b[0] - a[0], dyw = b[1] - a[1];
-  const double dtheta = wrap_to_pi(b[2] - a[2]);
+  const double dtheta = utils::wrap_to_pi(b[2] - a[2]);
   const double half_dt = 0.5 * dtheta;
   const double quarter_dt = 0.25 * dtheta;
   const double abs_dt = std::abs(dtheta);
@@ -446,7 +449,7 @@ auto distance_midpoint_se2_impl(const M& m, const Eigen::Vector3d& a,
   }
 #endif
 
-  Eigen::Vector3d midpoint(mx, my, wrap_to_pi(a[2] + half_dt));
+  Eigen::Vector3d midpoint(mx, my, utils::wrap_to_pi(a[2] + half_dt));
   Eigen::Vector3d v_diff(vx_mb - vx_ma, vy_mb - vy_ma, dtheta);
   return m.norm(midpoint, v_diff);
 }

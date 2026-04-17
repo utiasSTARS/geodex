@@ -3,17 +3,21 @@
 
 #pragma once
 
+#include <optional>
+
 #include <ompl/base/OptimizationObjective.h>
 #include <ompl/base/SpaceInformation.h>
 
-#include <geodex/algorithm/heuristics.hpp>
-#include <geodex/integration/ompl/geodex_informed_sampler.hpp>
-#include <geodex/integration/ompl/geodex_state_space.hpp>
+#include "geodex/algorithm/heuristics.hpp"
+#include "geodex/integration/ompl/geodex_informed_sampler.hpp"
+#include "geodex/integration/ompl/geodex_state_space.hpp"
 
-namespace geodex {
-namespace ompl_integration {
+namespace geodex::integration::ompl {
 
-namespace ob = ompl::base;
+using geodex::EuclideanHeuristic;
+using geodex::RiemannianManifold;
+
+namespace ob = ::ompl::base;
 
 /// @brief OMPL optimization objective for geodex manifolds.
 ///
@@ -21,6 +25,14 @@ namespace ob = ompl::base;
 /// admissible heuristic (default: Euclidean chord distance) for `motionCostHeuristic`
 /// and `costToGo`. This enables informed planners (InformedRRT*, BIT*) to focus
 /// sampling in promising regions.
+///
+/// When `setIntegratedArcCost(true)` is enabled, `motionCost` returns the sum
+/// of per-segment Riemannian distances along the cached discrete-geodesic arc
+/// instead of the endpoint-only `si->distance()`. This makes the planner's
+/// parent-selection and rewiring reflect the actual curved arc the local
+/// planner will traverse under the custom metric, rather than a scalar
+/// midpoint approximation of its endpoints. Falls back to endpoint distance
+/// when the cache cannot hold a valid path for the pair.
 ///
 /// @tparam ManifoldT A type satisfying `geodex::RiemannianManifold`.
 /// @tparam HeuristicT Callable with signature `double(Point, Point)`. Defaults to
@@ -43,11 +55,28 @@ class GeodexOptimizationObjective : public ob::OptimizationObjective {
         [this](const ob::State* s, const ob::Goal*) { return this->costToGoHeuristic(s); });
   }
 
+  /// @brief Opt into integrated-arc motion cost.
+  ///
+  /// @details When enabled, `motionCost(s1, s2)` computes the arc cost by
+  /// summing per-segment Riemannian distances along the cached discrete
+  /// geodesic from `s1` to `s2`, triggering a compute when the cache doesn't
+  /// hold the pair. When disabled (default), `motionCost` uses
+  /// `si->distance()`.
+  void setIntegratedArcCost(bool enabled) { integrated_arc_cost_ = enabled; }
+
+  /// @brief Whether integrated-arc cost is enabled.
+  bool usesIntegratedArcCost() const { return integrated_arc_cost_; }
+
   /// @brief State cost (zero for path-length objectives).
   ob::Cost stateCost(const ob::State* /*s*/) const override { return ob::Cost(0.0); }
 
-  /// @brief Motion cost is the geodesic distance (via si->distance).
+  /// @brief Motion cost: endpoint distance by default, arc cost when enabled.
   ob::Cost motionCost(const ob::State* s1, const ob::State* s2) const override {
+    if (integrated_arc_cost_) {
+      if (auto cost = tryArcCost(s1, s2); cost.has_value()) {
+        return ob::Cost(*cost);
+      }
+    }
     return ob::Cost(si_->distance(s1, s2));
   }
 
@@ -72,9 +101,25 @@ class GeodexOptimizationObjective : public ob::OptimizationObjective {
     return ob::Cost(heuristic_(s->asEigen(), goal_coords_));
   }
 
+  /// @brief Compute the integrated arc cost if the state space is a
+  /// `GeodexStateSpace<ManifoldT>`; otherwise returns nullopt so the caller
+  /// falls back to endpoint distance. Populates the cache when needed.
+  std::optional<double> tryArcCost(const ob::State* s1, const ob::State* s2) const {
+    const auto* space = dynamic_cast<const GeodexStateSpace<ManifoldT>*>(si_->getStateSpace().get());
+    if (!space) return std::nullopt;
+    const auto* a = s1->as<StateType>();
+    const auto* b = s2->as<StateType>();
+    Point pa = a->asEigen();
+    Point pb = b->asEigen();
+    space->ensureGeodesicCached(pa, pb);
+    const auto& cache = space->getGeodesicCache();
+    if (!cache.valid()) return std::nullopt;
+    return cache.total_arc_cost();
+  }
+
   Point goal_coords_;
   HeuristicT heuristic_;
+  bool integrated_arc_cost_ = false;
 };
 
-}  // namespace ompl_integration
-}  // namespace geodex
+}  // namespace geodex::integration::ompl

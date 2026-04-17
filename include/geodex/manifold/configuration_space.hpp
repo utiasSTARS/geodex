@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include <geodex/algorithm/distance.hpp>
-#include <geodex/core/concepts.hpp>
-#include <geodex/core/metric.hpp>
+#include "geodex/algorithm/distance.hpp"
+#include "geodex/core/concepts.hpp"
+#include "geodex/core/metric.hpp"
 
 namespace geodex {
 
@@ -34,6 +34,10 @@ class ConfigurationSpace {
   /// This forces `discrete_geodesic` to use the finite-difference natural
   /// gradient, which correctly follows the energy-minimizing curve under the
   /// custom metric.
+  /// @warning Setting `InterpolationSettings::force_log_direction = true` on a
+  /// ConfigurationSpace bypasses this and uses the base manifold's log for direction.
+  /// The resulting path follows the base metric's geodesic, not the custom metric's.
+  /// Only use when the base log is a reasonable approximation.
   bool has_riemannian_log_runtime() const { return false; }
 
   /// @brief Construct with a base manifold and a metric.

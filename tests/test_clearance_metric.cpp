@@ -1,16 +1,18 @@
 /// @file test_clearance_metric.cpp
 /// @brief Tests for SDFConformalMetric.
 
-#include <gtest/gtest.h>
-
 #include <cmath>
-#include <geodex/algorithm/path_smoothing.hpp>
-#include <geodex/manifold/configuration_space.hpp>
-#include <geodex/manifold/euclidean.hpp>
-#include <geodex/manifold/se2.hpp>
-#include <geodex/metrics/clearance.hpp>
+
 #include <numbers>
 #include <vector>
+
+#include <gtest/gtest.h>
+
+#include "geodex/algorithm/path_smoothing.hpp"
+#include "geodex/manifold/configuration_space.hpp"
+#include "geodex/manifold/euclidean.hpp"
+#include "geodex/manifold/se2.hpp"
+#include "geodex/metrics/clearance.hpp"
 
 // ---------------------------------------------------------------------------
 // Simple circular obstacle SDF (individual, exact)
@@ -231,8 +233,8 @@ TEST(SDFConformalMetric, EuclideanDistanceIncreasesNearObstacle) {
   geodex::ConfigurationSpace cspace{euc, metric};
 
   // Two points, same Euclidean distance apart
-  Eigen::Vector2d a_far(50.0, 50.0), b_far(51.0, 50.0);    // far from obstacle
-  Eigen::Vector2d a_near(6.5, 5.0), b_near(7.5, 5.0);      // near obstacle
+  Eigen::Vector2d a_far(50.0, 50.0), b_far(51.0, 50.0);  // far from obstacle
+  Eigen::Vector2d a_near(6.5, 5.0), b_near(7.5, 5.0);    // near obstacle
 
   double d_far = cspace.distance(a_far, b_far);
   double d_near = cspace.distance(a_near, b_near);
@@ -252,17 +254,17 @@ TEST(PathSmoothing, ShortcuttingReducesVertices) {
 
   // Create a zigzag path with redundant vertices.
   std::vector<Eigen::Vector3d> path = {
-      {0.0, 0.0, 0.0}, {1.0, 1.0, 0.1}, {2.0, 0.5, 0.0},
+      {0.0, 0.0, 0.0}, {1.0, 1.0, 0.1},  {2.0, 0.5, 0.0},
       {3.0, 1.5, 0.2}, {4.0, 0.0, -0.1}, {5.0, 1.0, 0.0},
   };
   auto validity = [](const Eigen::Vector3d&) { return true; };  // no obstacles
 
-  geodex::PathSmoothingSettings settings;
+  geodex::algorithm::PathSmoothingSettings settings;
   settings.max_shortcut_attempts = 100;
   settings.lbfgs_target_segments = 16;
   settings.lbfgs_max_iterations = 50;
 
-  auto result = geodex::smooth_path(manifold, validity, path, settings);
+  auto result = geodex::algorithm::smooth_path(manifold, validity, path, settings);
 
   // Should have removed some vertices and reduced energy.
   EXPECT_GE(result.vertices_removed, 0);
@@ -292,12 +294,12 @@ TEST(PathSmoothing, LBFGSReducesEnergy) {
   }
   E_before *= static_cast<double>(path.size() - 1);
 
-  geodex::PathSmoothingSettings settings;
+  geodex::algorithm::PathSmoothingSettings settings;
   settings.max_shortcut_attempts = 50;
   settings.lbfgs_target_segments = 32;
   settings.lbfgs_max_iterations = 100;
 
-  auto result = geodex::smooth_path(manifold, validity, path, settings);
+  auto result = geodex::algorithm::smooth_path(manifold, validity, path, settings);
 
   // Smoothed path should have lower energy.
   EXPECT_LT(result.energy, E_before);
@@ -311,7 +313,7 @@ TEST(PathSmoothing, RespectsObstacles) {
 
   // Path that goes around an obstacle at (2.5, 0.5).
   std::vector<Eigen::Vector3d> path = {
-      {0.0, 0.0, 0.0}, {1.0, -1.0, 0.0}, {2.0, -2.0, 0.0},
+      {0.0, 0.0, 0.0},  {1.0, -1.0, 0.0}, {2.0, -2.0, 0.0},
       {3.0, -2.0, 0.0}, {4.0, -1.0, 0.0}, {5.0, 0.0, 0.0},
   };
 
@@ -321,12 +323,12 @@ TEST(PathSmoothing, RespectsObstacles) {
     return dx * dx + dy * dy > obs_r * obs_r;
   };
 
-  geodex::PathSmoothingSettings settings;
+  geodex::algorithm::PathSmoothingSettings settings;
   settings.max_shortcut_attempts = 100;
   settings.lbfgs_target_segments = 32;
   settings.lbfgs_max_iterations = 100;
 
-  auto result = geodex::smooth_path(manifold, validity, path, settings);
+  auto result = geodex::algorithm::smooth_path(manifold, validity, path, settings);
 
   EXPECT_TRUE(result.collision_free);
 

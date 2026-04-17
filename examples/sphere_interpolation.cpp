@@ -10,16 +10,19 @@
 /// open sphere.html
 /// ```
 
-#include <Eigen/Core>
 #include <cmath>
 #include <cstdio>
+
 #include <fstream>
-#include <geodex/geodex.hpp>
 #include <iomanip>
 #include <iostream>
 #include <numbers>
 #include <string>
 #include <vector>
+
+#include <Eigen/Core>
+
+#include "geodex/geodex.hpp"
 
 using namespace geodex;
 
@@ -31,7 +34,7 @@ static Eigen::Vector3d point_at_theta(double theta) {
 /// azimuth `phi` around the z axis (0 → x-axis, π/2 → y-axis).
 static Eigen::Vector3d spherical_point(double theta, double phi) {
   return Eigen::Vector3d(std::sin(theta) * std::cos(phi), std::sin(theta) * std::sin(phi),
-                          std::cos(theta));
+                         std::cos(theta));
 }
 
 /// Write a JSON array of 3D points: [[x,y,z], ...]
@@ -119,8 +122,8 @@ int main(int argc, char* argv[]) {
   // the metric's directional preference is actually visible. A target on the
   // y=0 plane makes the problem one-dimensional along the great circle, and
   // any metric yields the same (straight great-circle) path.
-  const double theta = 1.3;       // polar angle from north
-  const double phi = 0.9;         // azimuth in x-y plane (~52 deg)
+  const double theta = 1.3;  // polar angle from north
+  const double phi = 0.9;    // azimuth in x-y plane (~52 deg)
   const Eigen::Vector3d shared_target = spherical_point(theta, phi);
 
   // ---------------------------------------------------------------------
@@ -146,8 +149,8 @@ int main(int argc, char* argv[]) {
     Sphere<2, SphereRoundMetric, SphereProjectionRetraction> sphere;
     InterpolationSettings s;
     s.step_size = 0.1;
-    entries.push_back(run_scenario("2. Round metric, projection retraction", sphere, north,
-                                    shared_target, s));
+    entries.push_back(
+        run_scenario("2. Round metric, projection retraction", sphere, north, shared_target, s));
   }
 
   // ---------------------------------------------------------------------

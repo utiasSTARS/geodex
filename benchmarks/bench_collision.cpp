@@ -1,13 +1,15 @@
 /// @file bench_collision.cpp
 /// @brief Micro-benchmarks for collision primitives and fast math utilities.
 
-#include <benchmark/benchmark.h>
+#include <cmath>
+
+#include <vector>
 
 #include <Eigen/Core>
-#include <cmath>
-#include <geodex/collision/collision.hpp>
-#include <geodex/utils/math.hpp>
-#include <vector>
+#include <benchmark/benchmark.h>
+
+#include "geodex/collision/collision.hpp"
+#include "geodex/utils/math.hpp"
 
 using namespace geodex::collision;
 
@@ -47,8 +49,7 @@ static DistanceGrid make_grid() {
   for (int r = 0; r < h; ++r) {
     for (int c = 0; c < w; ++c) {
       // Distance to nearest border (simple approximation).
-      data[static_cast<size_t>(r) * w + c] =
-          0.05 * std::min({r, c, h - 1 - r, w - 1 - c});
+      data[static_cast<size_t>(r) * w + c] = 0.05 * std::min({r, c, h - 1 - r, w - 1 - c});
     }
   }
   return DistanceGrid(w, h, 0.05, std::move(data));

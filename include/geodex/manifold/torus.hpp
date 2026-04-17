@@ -3,16 +3,19 @@
 
 #pragma once
 
-#include <Eigen/Core>
 #include <cmath>
-#include <geodex/algorithm/distance.hpp>
-#include <geodex/utils/angle.hpp>
-#include <geodex/core/concepts.hpp>
-#include <geodex/core/sampler.hpp>
-#include <geodex/metrics/constant_spd.hpp>
-#include <geodex/metrics/identity.hpp>
+
 #include <numbers>
 #include <type_traits>
+
+#include <Eigen/Core>
+
+#include "geodex/algorithm/distance.hpp"
+#include "geodex/core/concepts.hpp"
+#include "geodex/core/sampler.hpp"
+#include "geodex/metrics/constant_spd.hpp"
+#include "geodex/metrics/identity.hpp"
+#include "geodex/utils/angle.hpp"
 
 namespace geodex {
 
@@ -141,13 +144,13 @@ class Torus {
   /// @param p Base point.
   /// @param v Tangent vector.
   /// @return The resulting point, wrapped to \f$ [0, 2\pi)^n \f$.
-  Point exp(const Point& p, const Tangent& v) const { return wrap_point<Dim>(p + v); }
+  Point exp(const Point& p, const Tangent& v) const { return utils::wrap_point<Dim>(p + v); }
 
   /// @brief Logarithmic map: shortest-path tangent vector from \f$ p \f$ to \f$ q \f$.
   /// @param p Base point.
   /// @param q Target point.
   /// @return The wrapped difference in \f$ [-\pi, \pi)^n \f$.
-  Tangent log(const Point& p, const Point& q) const { return wrap_delta<Dim>(q - p); }
+  Tangent log(const Point& p, const Point& q) const { return utils::wrap_delta<Dim>(q - p); }
 
   /// @}
 

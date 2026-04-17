@@ -3,12 +3,14 @@
 
 #pragma once
 
-#include <Eigen/Core>
-#include <geodex/manifold/se2.hpp>
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <variant>
+
+#include <Eigen/Core>
+
+#include "geodex/manifold/se2.hpp"
 
 #include "dynamic_manifold.hpp"
 
@@ -20,23 +22,21 @@ class PySE2 {
                          SE2<SE2LeftInvariantMetric, SE2EulerRetraction>>;
 
   PySE2(double wx = 1.0, double wy = 1.0, double wtheta = 1.0,
-        const std::string& retraction = "exponential",
-        double x_lo = 0.0, double x_hi = 10.0,
+        const std::string& retraction = "exponential", double x_lo = 0.0, double x_hi = 10.0,
         double y_lo = 0.0, double y_hi = 10.0)
       : retraction_name_(retraction) {
     SE2LeftInvariantMetric metric(wx, wy, wtheta);
     const Eigen::Vector3d lo(x_lo, y_lo, -std::numbers::pi);
     const Eigen::Vector3d hi(x_hi, y_hi, std::numbers::pi);
     if (retraction == "exponential") {
-      impl_.emplace<SE2<SE2LeftInvariantMetric, SE2ExponentialMap>>(
-          metric, SE2ExponentialMap{}, lo, hi);
+      impl_.emplace<SE2<SE2LeftInvariantMetric, SE2ExponentialMap>>(metric, SE2ExponentialMap{}, lo,
+                                                                    hi);
     } else if (retraction == "euler") {
-      impl_.emplace<SE2<SE2LeftInvariantMetric, SE2EulerRetraction>>(
-          metric, SE2EulerRetraction{}, lo, hi);
+      impl_.emplace<SE2<SE2LeftInvariantMetric, SE2EulerRetraction>>(metric, SE2EulerRetraction{},
+                                                                     lo, hi);
     } else {
-      throw std::invalid_argument(
-          "Unknown retraction: '" + retraction +
-          "'. Options: 'exponential', 'euler'");
+      throw std::invalid_argument("Unknown retraction: '" + retraction +
+                                  "'. Options: 'exponential', 'euler'");
     }
   }
 
@@ -48,8 +48,7 @@ class PySE2 {
     return std::visit([](const auto& m) { return m.random_point(); }, impl_);
   }
 
-  double inner(const Eigen::Vector3d& p, const Eigen::Vector3d& u,
-               const Eigen::Vector3d& v) const {
+  double inner(const Eigen::Vector3d& p, const Eigen::Vector3d& u, const Eigen::Vector3d& v) const {
     return std::visit([&](const auto& m) { return m.inner(p, u, v); }, impl_);
   }
 
@@ -69,8 +68,7 @@ class PySE2 {
     return std::visit([&](const auto& m) { return m.distance(p, q); }, impl_);
   }
 
-  Eigen::Vector3d geodesic(const Eigen::Vector3d& p, const Eigen::Vector3d& q,
-                           double t) const {
+  Eigen::Vector3d geodesic(const Eigen::Vector3d& p, const Eigen::Vector3d& q, double t) const {
     return std::visit([&](const auto& m) { return m.geodesic(p, q, t); }, impl_);
   }
 
@@ -84,13 +82,13 @@ class PySE2 {
         },
         [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& v) -> Eigen::VectorXd {
           Eigen::Vector3d p3(p), v3(v);
-          return std::visit(
-              [&](const auto& m) -> Eigen::VectorXd { return m.exp(p3, v3); }, *shared);
+          return std::visit([&](const auto& m) -> Eigen::VectorXd { return m.exp(p3, v3); },
+                            *shared);
         },
         [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& q) -> Eigen::VectorXd {
           Eigen::Vector3d p3(p), q3(q);
-          return std::visit(
-              [&](const auto& m) -> Eigen::VectorXd { return m.log(p3, q3); }, *shared);
+          return std::visit([&](const auto& m) -> Eigen::VectorXd { return m.log(p3, q3); },
+                            *shared);
         },
         [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& u,
                  const Eigen::VectorXd& v) -> double {
@@ -105,9 +103,17 @@ class PySE2 {
         [](const Eigen::VectorXd& /*p*/, const Eigen::VectorXd& v) { return v; }};
   }
 
-  std::string repr() const {
-    return "SE2(retraction='" + retraction_name_ + "')";
+  /// @brief Factory for car-like SE2 with turning radius constraint.
+  static PySE2 car_like(const double turning_radius, const double lateral_penalty = 100.0,
+                        const std::string& retraction = "exponential", const double x_lo = 0.0,
+                        const double x_hi = 10.0, const double y_lo = 0.0,
+                        const double y_hi = 10.0) {
+    const auto metric = SE2LeftInvariantMetric::car_like(turning_radius, lateral_penalty);
+    return PySE2(metric.weights()[0], metric.weights()[1], metric.weights()[2], retraction, x_lo,
+                 x_hi, y_lo, y_hi);
   }
+
+  std::string repr() const { return "SE2(retraction='" + retraction_name_ + "')"; }
 
  private:
   V impl_;

@@ -9,17 +9,20 @@
 
 #pragma once
 
-#include <Eigen/Core>
-#include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <geodex/algorithm/interpolation.hpp>
-#include <geodex/core/concepts.hpp>
-#include <geodex/core/metric.hpp>
+
+#include <algorithm>
 #include <random>
 #include <vector>
 
-namespace geodex {
+#include <Eigen/Core>
+
+#include "geodex/algorithm/interpolation.hpp"
+#include "geodex/core/concepts.hpp"
+#include "geodex/core/metric.hpp"
+
+namespace geodex::algorithm {
 
 // ---------------------------------------------------------------------------
 // Settings and result types
@@ -28,22 +31,33 @@ namespace geodex {
 /// @brief Settings for metric-aware path smoothing.
 struct PathSmoothingSettings {
   // --- Shortcutting phase ---
-  int max_shortcut_attempts = 200;  ///< Random shortcut attempts.
-  int edge_collision_samples = 10;  ///< Minimum geodesic samples per edge for collision.
+  int max_shortcut_attempts = 200;    ///< Random shortcut attempts.
+  int edge_collision_samples = 10;    ///< Minimum geodesic samples per edge for collision.
   double collision_resolution = 0.1;  ///< Max spacing (meters) between collision checks.
 
   // --- L-BFGS energy smoothing phase ---
-  int lbfgs_target_segments = 64;   ///< Upsample resolution for L-BFGS.
-  int lbfgs_max_iterations = 200;   ///< Max L-BFGS iterations.
-  double grad_tol = 1e-8;           ///< Convergence: gradient infinity norm.
-  double energy_tol = 1e-10;        ///< Convergence: relative energy change.
-  double fd_epsilon = 1e-7;         ///< Finite difference step for dM/dq.
-  int lbfgs_memory = 7;             ///< L-BFGS history size.
-  double armijo_c = 1e-4;           ///< Armijo sufficient decrease parameter.
-  double max_displacement = 0.0;    ///< Trust region radius per waypoint (0 = disabled).
+  int lbfgs_target_segments = 64;  ///< Upsample resolution for L-BFGS.
+  int lbfgs_max_iterations = 200;  ///< Max L-BFGS iterations.
+  double grad_tol = 1e-8;          ///< Convergence: gradient infinity norm.
+  double energy_tol = 1e-10;       ///< Convergence: relative energy change.
+  double fd_epsilon = 1e-7;        ///< Finite difference step for dM/dq.
+  int lbfgs_memory = 7;            ///< L-BFGS history size.
+  double armijo_c = 1e-4;          ///< Armijo sufficient decrease parameter.
+
+  /// @brief Trust region radius per waypoint (coordinate units). 0 disables.
+  ///
+  /// @details Bounds how far each interior waypoint can drift from its initial
+  /// (upsampled) position during L-BFGS. Disabled by default because the
+  /// initial upsample uses straight-line midpoints between raw waypoints — on
+  /// a curved Riemannian geodesic these midpoints are offset from the true
+  /// geodesic, and clamping them prevents L-BFGS from converging to a smooth
+  /// curve (it gets stuck with zig-zag between initial and target positions).
+  /// Set to a positive value if you need a hard cap on per-waypoint drift.
+  double max_displacement = 0.0;
+  int armijo_max_backtracks = 30;  ///< Max bisection steps in Armijo line search.
 
   // --- Discrete geodesic densification ---
-  InterpolationSettings interp;     ///< Settings for discrete_geodesic between waypoints.
+  InterpolationSettings interp;  ///< Settings for discrete_geodesic between waypoints.
 };
 
 /// @brief Result of path smoothing.
@@ -77,7 +91,7 @@ Eigen::MatrixXd gram_matrix(const M& manifold, const Eigen::VectorXd& q_vec) {
   for (int i = 0; i < d; ++i) q[i] = q_vec[i];
 
   if constexpr (HasBatchInnerMatrix<M>) {
-    Eigen::MatrixXd I = Eigen::MatrixXd::Identity(d, d);
+    const Eigen::MatrixXd I = Eigen::MatrixXd::Identity(d, d);
     Eigen::MatrixXd G = manifold.inner_matrix(q, I, I);
     return 0.5 * (G + G.transpose());  // symmetrize against FP noise
   } else {
@@ -106,7 +120,7 @@ Eigen::MatrixXd gram_matrix(const M& manifold, const Eigen::VectorXd& q_vec) {
 }
 
 // ---------------------------------------------------------------------------
-// L-BFGS infrastructure (ported from geodesic_bvp.hpp)
+// L-BFGS infrastructure
 // ---------------------------------------------------------------------------
 
 /// @brief Compute energy of a single segment using manifold log.
@@ -122,13 +136,17 @@ double segment_energy(const M& manifold, const Eigen::VectorXd& a, const Eigen::
     pa[i] = a[i];
     pb[i] = b[i];
   }
-  auto v = manifold.log(pa, pb);
+  const auto v = manifold.log(pa, pb);
   return manifold.inner(pa, v, v);
 }
 
-/// @brief Compute discrete path energy using manifold log: \f$ N \sum_k \|log(q_k, q_{k+1})\|^2 \f$.
+/// @brief Discrete Dirichlet energy: \f$ N \sum_{k=0}^{N-1} \|\log_{q_k}(q_{k+1})\|^2 \f$.
+///
+/// @details Standard finite-difference approximation of the continuous Riemannian
+/// energy functional \f$ E[\gamma] = \int_0^1 \|\dot\gamma(t)\|^2\,dt \f$.
+/// Minimizers converge to geodesics as \f$ N \to \infty \f$.
 template <RiemannianManifold M>
-double compute_energy(const M& manifold, const std::vector<Eigen::VectorXd>& path) {
+double dirichlet_energy(const M& manifold, const std::vector<Eigen::VectorXd>& path) {
   const int N = static_cast<int>(path.size()) - 1;
   double E = 0.0;
   for (int k = 0; k < N; ++k) {
@@ -150,17 +168,15 @@ Eigen::VectorXd compute_gradient(const M& manifold, std::vector<Eigen::VectorXd>
     for (int j = 0; j < n; ++j) {
       // Only segments (i-1,i) and (i,i+1) depend on path[i].
       path[i][j] += fd_eps;
-      double E_plus = segment_energy(manifold, path[i - 1], path[i]) +
-                      segment_energy(manifold, path[i], path[i + 1]);
+      const double E_plus = segment_energy(manifold, path[i - 1], path[i]) +
+                            segment_energy(manifold, path[i], path[i + 1]);
       path[i][j] -= 2.0 * fd_eps;
-      double E_minus = segment_energy(manifold, path[i - 1], path[i]) +
-                       segment_energy(manifold, path[i], path[i + 1]);
+      const double E_minus = segment_energy(manifold, path[i - 1], path[i]) +
+                             segment_energy(manifold, path[i], path[i + 1]);
       path[i][j] += fd_eps;  // restore
 
       grad[(i - 1) * n + j] = N * (E_plus - E_minus) / (2.0 * fd_eps);
     }
-
-    // grad.segment((i - 1) * n, n) already set above.
   }
   return grad;
 }
@@ -199,23 +215,32 @@ inline Eigen::VectorXd lbfgs_direction(const Eigen::VectorXd& grad,
     q -= alpha[i] * y_hist[i];
   }
 
-  double gamma = s_hist.back().dot(y_hist.back()) / y_hist.back().dot(y_hist.back());
+  const double gamma = s_hist.back().dot(y_hist.back()) / y_hist.back().dot(y_hist.back());
   Eigen::VectorXd r = gamma * q;
 
   for (int i = 0; i < m; ++i) {
-    double beta = rho[i] * y_hist[i].dot(r);
+    const double beta = rho[i] * y_hist[i].dot(r);
     r += (alpha[i] - beta) * s_hist[i];
   }
   return -r;
 }
 
-/// @brief Insert geodesic midpoints to double resolution.
+/// @brief Insert evenly-spaced geodesic points to increase path resolution.
+///
+/// @param manifold The manifold instance.
+/// @param path Input path.
+/// @param subdivisions Intermediate points per edge (1 = double, 2 = triple, etc.).
+/// @return Refined path with (N * (subdivisions + 1) + 1) points from original N+1.
+///
+/// @note Uses the base manifold's geodesic() for midpoint insertion. For non-identity
+/// metrics the midpoints are approximate; the L-BFGS optimizer corrects them. Using
+/// discrete_geodesic here would be correct but prohibitively expensive in the inner loop.
 template <RiemannianManifold M>
-std::vector<Eigen::VectorXd> upsample(const M& manifold,
-                                       const std::vector<Eigen::VectorXd>& path) {
+std::vector<Eigen::VectorXd> upsample(const M& manifold, const std::vector<Eigen::VectorXd>& path,
+                                      const int subdivisions = 1) {
   const int d = manifold.dim();
   std::vector<Eigen::VectorXd> refined;
-  refined.reserve(2 * path.size() - 1);
+  refined.reserve(path.size() + (path.size() - 1) * subdivisions);
   for (std::size_t i = 0; i < path.size(); ++i) {
     refined.push_back(path[i]);
     if (i + 1 < path.size()) {
@@ -228,22 +253,27 @@ std::vector<Eigen::VectorXd> upsample(const M& manifold,
         pa[j] = path[i][j];
         pb[j] = path[i + 1][j];
       }
-      auto mid = manifold.geodesic(pa, pb, 0.5);
-      Eigen::VectorXd mid_vec(d);
-      for (int j = 0; j < d; ++j) mid_vec[j] = mid[j];
-      refined.push_back(mid_vec);
+      for (int s = 1; s <= subdivisions; ++s) {
+        const double t = static_cast<double>(s) / (subdivisions + 1);
+        const auto mid = manifold.geodesic(pa, pb, t);
+        Eigen::VectorXd mid_vec(d);
+        for (int j = 0; j < d; ++j) mid_vec[j] = mid[j];
+        refined.push_back(mid_vec);
+      }
     }
   }
   return refined;
 }
 
 /// @brief Collision-constrained Armijo line search.
+///
+/// @note Uses the base manifold's geodesic() for edge collision checks. For non-identity
+/// metrics the intermediate samples are approximate; see upsample() for rationale.
 template <RiemannianManifold M, typename ValidityFn>
 double armijo_constrained(const M& manifold, const ValidityFn& validity_fn,
                           std::vector<Eigen::VectorXd>& path, const Eigen::VectorXd& x,
-                          const Eigen::VectorXd& dir, const Eigen::VectorXd& grad, double f0,
-                          double armijo_c, int edge_samples, double max_disp,
-                          const Eigen::VectorXd& ref_x) {
+                          const Eigen::VectorXd& dir, const Eigen::VectorXd& grad, const double f0,
+                          const PathSmoothingSettings& settings, const Eigen::VectorXd& ref_x) {
   double step = 1.0;
   const double slope = grad.dot(dir);
   if (slope >= 0) return 0.0;
@@ -252,15 +282,15 @@ double armijo_constrained(const M& manifold, const ValidityFn& validity_fn,
   const int n = static_cast<int>(path[0].size());
   const int n_interior = N - 1;
 
-  for (int iter = 0; iter < 30; ++iter) {
+  for (int iter = 0; iter < settings.armijo_max_backtracks; ++iter) {
     Eigen::VectorXd x_new = x + step * dir;
 
     // Trust region check.
-    if (max_disp > 0.0) {
+    if (settings.max_displacement > 0.0) {
       bool within = true;
       for (int k = 0; k < n_interior && within; ++k) {
-        double disp = (x_new.segment(k * n, n) - ref_x.segment(k * n, n)).norm();
-        if (disp > max_disp) within = false;
+        const double disp = (x_new.segment(k * n, n) - ref_x.segment(k * n, n)).norm();
+        if (disp > settings.max_displacement) within = false;
       }
       if (!within) {
         step *= 0.5;
@@ -299,9 +329,9 @@ double armijo_constrained(const M& manifold, const ValidityFn& validity_fn,
         a[i] = path[k][i];
         b[i] = path[k + 1][i];
       }
-      for (int s = 1; s <= edge_samples; ++s) {
-        double t = static_cast<double>(s) / (edge_samples + 1);
-        auto mid = manifold.geodesic(a, b, t);
+      for (int s = 1; s <= settings.edge_collision_samples; ++s) {
+        const double t = static_cast<double>(s) / (settings.edge_collision_samples + 1);
+        const auto mid = manifold.geodesic(a, b, t);
         if (!validity_fn(mid)) {
           valid = false;
           break;
@@ -314,8 +344,8 @@ double armijo_constrained(const M& manifold, const ValidityFn& validity_fn,
     }
 
     // Armijo energy decrease.
-    double f_new = compute_energy(manifold, path);
-    if (f_new <= f0 + armijo_c * step * slope) {
+    const double f_new = dirichlet_energy(manifold, path);
+    if (f_new <= f0 + settings.armijo_c * step * slope) {
       return step;
     }
     step *= 0.5;
@@ -328,8 +358,7 @@ double armijo_constrained(const M& manifold, const ValidityFn& validity_fn,
 /// @brief Collision-constrained L-BFGS energy minimization.
 template <RiemannianManifold M, typename ValidityFn>
 int optimize_constrained(const M& manifold, const ValidityFn& validity_fn,
-                         std::vector<Eigen::VectorXd>& path,
-                         const PathSmoothingSettings& settings,
+                         std::vector<Eigen::VectorXd>& path, const PathSmoothingSettings& settings,
                          const Eigen::VectorXd& ref_x) {
   const int N = static_cast<int>(path.size()) - 1;
   const int n = static_cast<int>(path[0].size());
@@ -337,7 +366,7 @@ int optimize_constrained(const M& manifold, const ValidityFn& validity_fn,
   if (n_vars == 0) return 0;
 
   Eigen::VectorXd x = pack_interior(path);
-  double f = compute_energy(manifold, path);
+  double f = dirichlet_energy(manifold, path);
   Eigen::VectorXd grad = compute_gradient(manifold, path, settings.fd_epsilon);
 
   std::vector<Eigen::VectorXd> s_hist, y_hist;
@@ -347,20 +376,19 @@ int optimize_constrained(const M& manifold, const ValidityFn& validity_fn,
     const double grad_norm = grad.cwiseAbs().maxCoeff();
     if (grad_norm < settings.grad_tol) break;
 
-    Eigen::VectorXd dir = lbfgs_direction(grad, s_hist, y_hist);
+    const Eigen::VectorXd dir = lbfgs_direction(grad, s_hist, y_hist);
 
-    Eigen::VectorXd x_old = x;
+    const Eigen::VectorXd x_old = x;
     const double f_old = f;
-    Eigen::VectorXd grad_old = grad;
+    const Eigen::VectorXd grad_old = grad;
 
-    const double step = armijo_constrained(manifold, validity_fn, path, x, dir, grad, f,
-                                           settings.armijo_c, settings.edge_collision_samples,
-                                           settings.max_displacement, ref_x);
+    const double step =
+        armijo_constrained(manifold, validity_fn, path, x, dir, grad, f, settings, ref_x);
     if (step == 0.0) break;
 
     x = x_old + step * dir;
     unpack_interior(x, path);
-    f = compute_energy(manifold, path);
+    f = dirichlet_energy(manifold, path);
     grad = compute_gradient(manifold, path, settings.fd_epsilon);
 
     if (std::abs(f - f_old) < settings.energy_tol * std::abs(f_old) && f_old > 0) break;
@@ -385,11 +413,10 @@ int optimize_constrained(const M& manifold, const ValidityFn& validity_fn,
 // Shortcutting
 // ---------------------------------------------------------------------------
 
-/// @brief Metric-aware random shortcutting with collision checking along geodesics.
+/// @brief Metric-aware randomized shortcutting with collision checking along geodesics.
 template <RiemannianManifold M, typename ValidityFn>
-int shortcut(const M& manifold, const ValidityFn& validity_fn,
-             std::vector<typename M::Point>& path, int min_edge_samples,
-             double collision_resolution, int max_attempts) {
+int shortcut(const M& manifold, const ValidityFn& validity_fn, std::vector<typename M::Point>& path,
+             int min_edge_samples, double collision_resolution, int max_attempts) {
   int total_removed = 0;
   std::mt19937 rng(42);
 
@@ -402,29 +429,30 @@ int shortcut(const M& manifold, const ValidityFn& validity_fn,
     if (i > j) std::swap(i, j);
     if (j - i < 2) continue;
 
-    // Compare sub-path energy vs direct connection.
-    double E_sub = 0.0;
+    // Compare arc lengths. Direct connection must be meaningfully shorter than
+    // the sub-path under the configured metric. A small margin avoids spurious
+    // shortcuts on already-smooth paths (where d_direct ≈ Σ d_k by triangle
+    // inequality), which would discard good RRT*/RRT geometry — particularly
+    // costly for ConfigurationSpace with point-dependent metrics where the
+    // straight-line direct can hide an expensive region between the endpoints.
+    double L_sub = 0.0;
     for (int k = i; k < j; ++k) {
-      double d = manifold.distance(path[k], path[k + 1]);
-      E_sub += d * d;
+      L_sub += static_cast<double>(manifold.distance(path[k], path[k + 1]));
     }
-    E_sub *= (j - i);
-
-    double d_direct = manifold.distance(path[i], path[j]);
-    double E_direct = d_direct * d_direct;
-
-    if (E_direct >= E_sub) continue;
+    const double L_direct = static_cast<double>(manifold.distance(path[i], path[j]));
+    if (L_direct >= 0.95 * L_sub) continue;
 
     // Scale collision checks with edge length to avoid missing obstacles.
-    double coord_dist = (path[j] - path[i]).template head<2>().norm();
-    int n_checks = std::max(min_edge_samples,
-                            static_cast<int>(std::ceil(coord_dist / collision_resolution)));
+    // Ambient-coordinate distance (matches `collision_resolution` units).
+    const double coord_dist = (path[j] - path[i]).norm();
+    const int n_checks =
+        std::max(min_edge_samples, static_cast<int>(std::ceil(coord_dist / collision_resolution)));
 
     // Collision check along geodesic shortcut.
     bool valid = true;
     for (int s = 1; s <= n_checks; ++s) {
-      double t = static_cast<double>(s) / (n_checks + 1);
-      auto mid = manifold.geodesic(path[i], path[j], t);
+      const double t = static_cast<double>(s) / (n_checks + 1);
+      const auto mid = manifold.geodesic(path[i], path[j], t);
       if (!validity_fn(mid)) {
         valid = false;
         break;
@@ -466,10 +494,9 @@ int shortcut(const M& manifold, const ValidityFn& validity_fn,
 /// @param settings Smoothing parameters.
 /// @return PathSmoothingResult with smoothed path, energy, and diagnostics.
 template <RiemannianManifold M, typename ValidityFn>
-PathSmoothingResult<typename M::Point> smooth_path(const M& manifold,
-                                                    const ValidityFn& validity_fn,
-                                                    const std::vector<typename M::Point>& initial_path,
-                                                    PathSmoothingSettings settings = {}) {
+PathSmoothingResult<typename M::Point> smooth_path(
+    const M& manifold, const ValidityFn& validity_fn,
+    const std::vector<typename M::Point>& initial_path, PathSmoothingSettings settings = {}) {
   using Point = typename M::Point;
   assert(initial_path.size() >= 2);
 
@@ -484,10 +511,9 @@ PathSmoothingResult<typename M::Point> smooth_path(const M& manifold,
 
   // Phase 1: Shortcutting — remove redundant vertices along manifold geodesics.
   std::vector<Point> shortcut_path = initial_path;
-  result.vertices_removed = detail::shortcut(manifold, validity_fn, shortcut_path,
-                                              settings.edge_collision_samples,
-                                              settings.collision_resolution,
-                                              settings.max_shortcut_attempts);
+  result.vertices_removed =
+      detail::shortcut(manifold, validity_fn, shortcut_path, settings.edge_collision_samples,
+                       settings.collision_resolution, settings.max_shortcut_attempts);
 
   // Convert to VectorXd.
   std::vector<Eigen::VectorXd> vpath(shortcut_path.size());
@@ -496,13 +522,17 @@ PathSmoothingResult<typename M::Point> smooth_path(const M& manifold,
     for (int j = 0; j < d; ++j) vpath[i][j] = shortcut_path[i][j];
   }
 
-  // Upsample with manifold geodesic midpoints.
-  while (static_cast<int>(vpath.size()) - 1 < settings.lbfgs_target_segments) {
-    vpath = detail::upsample(manifold, vpath);
+  // Upsample with manifold geodesic midpoints — skip when the raw input is
+  // already at or above the target resolution. Preserves the raw path shape for
+  // dense, near-optimal inputs (e.g., minimum-energy planning output).
+  if (static_cast<int>(vpath.size()) - 1 < settings.lbfgs_target_segments) {
+    while (static_cast<int>(vpath.size()) - 1 < settings.lbfgs_target_segments) {
+      vpath = detail::upsample(manifold, vpath);
+    }
   }
 
   // Save reference for trust region — keeps result close to raw path.
-  Eigen::VectorXd ref_x = detail::pack_interior(vpath);
+  const Eigen::VectorXd ref_x = detail::pack_interior(vpath);
 
   // L-BFGS energy minimization with collision constraints.
   result.smooth_iterations =
@@ -519,7 +549,7 @@ PathSmoothingResult<typename M::Point> smooth_path(const M& manifold,
 
   result.energy = 0.0;
   for (std::size_t k = 0; k + 1 < path.size(); ++k) {
-    double dd = manifold.distance(path[k], path[k + 1]);
+    const double dd = manifold.distance(path[k], path[k + 1]);
     result.energy += dd * dd;
   }
   result.energy *= static_cast<double>(path.size() - 1);
@@ -529,4 +559,4 @@ PathSmoothingResult<typename M::Point> smooth_path(const M& manifold,
   return result;
 }
 
-}  // namespace geodex
+}  // namespace geodex::algorithm

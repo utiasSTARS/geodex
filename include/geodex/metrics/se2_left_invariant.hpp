@@ -4,8 +4,9 @@
 #pragma once
 
 #include <Eigen/Core>
-#include <geodex/core/metric.hpp>
-#include <geodex/metrics/constant_spd.hpp>
+
+#include "geodex/core/metric.hpp"
+#include "geodex/metrics/constant_spd.hpp"
 
 namespace geodex {
 
@@ -36,10 +37,12 @@ class SE2LeftInvariantMetric {
   /// @param lateral_penalty Weight for lateral (y) motion — higher values more
   ///        strongly suppress sideslip (default 100.0).
   /// @return An SE2LeftInvariantMetric configured for car-like behavior.
+  /// @note Soft constraint only: the metric penalizes but does not forbid motions
+  /// violating the turning radius. Near start/goal the planner may produce in-place
+  /// rotations.
   static SE2LeftInvariantMetric car_like(const double turning_radius,
                                          const double lateral_penalty = 100.0) {
-    return SE2LeftInvariantMetric(1.0, lateral_penalty,
-                                  turning_radius * turning_radius);
+    return SE2LeftInvariantMetric(1.0, lateral_penalty, turning_radius * turning_radius);
   }
 
   /// @brief Construct with explicit weights.

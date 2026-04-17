@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include <geodex/core/concepts.hpp>
-#include <geodex/core/debug.hpp>
+#include "geodex/core/concepts.hpp"
+#include "geodex/core/debug.hpp"
 
 namespace geodex {
 

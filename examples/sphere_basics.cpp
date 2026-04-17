@@ -7,12 +7,15 @@
 ///   - Geodesic distance and interpolation
 ///   - Swapping metrics (ConstantSPDMetric) and retractions (projection retraction)
 
-#include <Eigen/Core>
 #include <cmath>
-#include <geodex/geodex.hpp>
+
 #include <iomanip>
 #include <iostream>
 #include <numbers>
+
+#include <Eigen/Core>
+
+#include "geodex/geodex.hpp"
 
 using namespace geodex;
 

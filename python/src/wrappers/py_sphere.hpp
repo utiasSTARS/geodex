@@ -3,12 +3,14 @@
 
 #pragma once
 
-#include <Eigen/Core>
-#include <geodex/manifold/sphere.hpp>
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <variant>
+
+#include <Eigen/Core>
+
+#include "geodex/manifold/sphere.hpp"
 
 #include "dynamic_manifold.hpp"
 
@@ -19,8 +21,7 @@ class PySphere {
   using V = std::variant<Sphere<2, SphereRoundMetric, SphereExponentialMap>,
                          Sphere<2, SphereRoundMetric, SphereProjectionRetraction>>;
 
-  PySphere(const std::string& retraction = "exponential")
-      : retraction_name_(retraction) {
+  PySphere(const std::string& retraction = "exponential") : retraction_name_(retraction) {
     if (retraction == "exponential") {
       impl_.emplace<Sphere<2, SphereRoundMetric, SphereExponentialMap>>();
     } else if (retraction == "projection") {
@@ -43,8 +44,7 @@ class PySphere {
     return std::visit([&](const auto& m) { return m.project(p, v); }, impl_);
   }
 
-  double inner(const Eigen::Vector3d& p, const Eigen::Vector3d& u,
-               const Eigen::Vector3d& v) const {
+  double inner(const Eigen::Vector3d& p, const Eigen::Vector3d& u, const Eigen::Vector3d& v) const {
     return std::visit([&](const auto& m) { return m.inner(p, u, v); }, impl_);
   }
 
@@ -64,8 +64,7 @@ class PySphere {
     return std::visit([&](const auto& m) { return m.distance(p, q); }, impl_);
   }
 
-  Eigen::Vector3d geodesic(const Eigen::Vector3d& p, const Eigen::Vector3d& q,
-                           double t) const {
+  Eigen::Vector3d geodesic(const Eigen::Vector3d& p, const Eigen::Vector3d& q, double t) const {
     return std::visit([&](const auto& m) { return m.geodesic(p, q, t); }, impl_);
   }
 
@@ -79,13 +78,13 @@ class PySphere {
         },
         [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& v) -> Eigen::VectorXd {
           Eigen::Vector3d p3(p), v3(v);
-          return std::visit(
-              [&](const auto& m) -> Eigen::VectorXd { return m.exp(p3, v3); }, *shared);
+          return std::visit([&](const auto& m) -> Eigen::VectorXd { return m.exp(p3, v3); },
+                            *shared);
         },
         [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& q) -> Eigen::VectorXd {
           Eigen::Vector3d p3(p), q3(q);
-          return std::visit(
-              [&](const auto& m) -> Eigen::VectorXd { return m.log(p3, q3); }, *shared);
+          return std::visit([&](const auto& m) -> Eigen::VectorXd { return m.log(p3, q3); },
+                            *shared);
         },
         [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& u,
                  const Eigen::VectorXd& v) -> double {
@@ -98,14 +97,12 @@ class PySphere {
         },
         [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& v) -> Eigen::VectorXd {
           Eigen::Vector3d p3(p), v3(v);
-          return std::visit(
-              [&](const auto& m) -> Eigen::VectorXd { return m.project(p3, v3); }, *shared);
+          return std::visit([&](const auto& m) -> Eigen::VectorXd { return m.project(p3, v3); },
+                            *shared);
         }};
   }
 
-  std::string repr() const {
-    return "Sphere(retraction='" + retraction_name_ + "')";
-  }
+  std::string repr() const { return "Sphere(retraction='" + retraction_name_ + "')"; }
 
  private:
   V impl_;

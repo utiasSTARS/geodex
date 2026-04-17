@@ -9,6 +9,7 @@ void bind_se2(nb::module_& m);
 void bind_metrics(nb::module_& m);
 void bind_config_space(nb::module_& m);
 void bind_algorithms(nb::module_& m);
+void bind_collision(nb::module_& m);
 
 NB_MODULE(_geodex_core, m) {
   m.doc() = "geodex: planning on Riemannian manifolds";
@@ -20,4 +21,5 @@ NB_MODULE(_geodex_core, m) {
   bind_metrics(m);
   bind_config_space(m);
   bind_algorithms(m);
+  bind_collision(m);
 }

@@ -8,13 +8,15 @@
 
 #pragma once
 
-#include <algorithm>
 #include <cmath>
+
+#include <algorithm>
 #include <fstream>
-#include <geodex/utils/math.hpp>
 #include <iostream>
 #include <string>
 #include <vector>
+
+#include "geodex/utils/math.hpp"
 
 #ifdef __ARM_NEON
 #include <arm_neon.h>
@@ -42,8 +44,7 @@ class DistanceGrid {
   /// @param height Grid height in cells.
   /// @param resolution Meters per cell.
   /// @param data Row-major distance values: data[r * width + c].
-  DistanceGrid(const int width, const int height, const double resolution,
-               std::vector<double> data)
+  DistanceGrid(const int width, const int height, const double resolution, std::vector<double> data)
       : width_(width), height_(height), resolution_(resolution), data_(std::move(data)) {}
 
   /// @brief Load from the geodex distance transform file format.
@@ -135,13 +136,13 @@ class DistanceGrid {
 
       // Gather 4 grid values per point (8 loads total).
       const float64x2_t d00 = {data_[static_cast<size_t>(r0_a) * width_ + c0_a],
-                                data_[static_cast<size_t>(r0_b) * width_ + c0_b]};
+                               data_[static_cast<size_t>(r0_b) * width_ + c0_b]};
       const float64x2_t d10 = {data_[static_cast<size_t>(r0_a) * width_ + c1_a],
-                                data_[static_cast<size_t>(r0_b) * width_ + c1_b]};
+                               data_[static_cast<size_t>(r0_b) * width_ + c1_b]};
       const float64x2_t d01 = {data_[static_cast<size_t>(r1_a) * width_ + c0_a],
-                                data_[static_cast<size_t>(r1_b) * width_ + c0_b]};
+                               data_[static_cast<size_t>(r1_b) * width_ + c0_b]};
       const float64x2_t d11 = {data_[static_cast<size_t>(r1_a) * width_ + c1_a],
-                                data_[static_cast<size_t>(r1_b) * width_ + c1_b]};
+                               data_[static_cast<size_t>(r1_b) * width_ + c1_b]};
 
       // Bilinear interpolation via NEON FMA.
       const float64x2_t omfx = vsubq_f64(vone, vfx);
@@ -222,9 +223,13 @@ class DistanceGrid {
 #endif
   }
 
+  /// @brief Grid width in cells.
   int width() const { return width_; }
+  /// @brief Grid height in cells.
   int height() const { return height_; }
+  /// @brief Cell size in meters.
   double resolution() const { return resolution_; }
+  /// @brief Raw distance data array.
   const std::vector<double>& data() const { return data_; }
 
  private:
@@ -242,8 +247,10 @@ class DistanceGrid {
 /// Extracts (x, y) from the configuration point and queries the grid.
 class GridSDF {
  public:
+  /// @brief Construct from a DistanceGrid pointer.
   explicit GridSDF(const DistanceGrid* grid) : grid_(grid) {}
 
+  /// @brief Evaluate grid-interpolated signed distance at (x, y).
   template <typename Point>
   double operator()(const Point& q) const {
     return grid_->distance_at(q[0], q[1]);
@@ -264,15 +271,18 @@ class GridSDF {
 template <typename SDFType>
 class InflatedSDF {
  public:
-  InflatedSDF(SDFType sdf, const double inflation)
-      : sdf_(std::move(sdf)), inflation_(inflation) {}
+  /// @brief Construct with a base SDF and inflation radius.
+  InflatedSDF(SDFType sdf, const double inflation) : sdf_(std::move(sdf)), inflation_(inflation) {}
 
+  /// @brief Evaluate inflated signed distance at (x, y).
   template <typename Point>
   double operator()(const Point& q) const {
     return sdf_(q) - inflation_;
   }
 
+  /// @brief Get the inflation radius.
   double inflation() const { return inflation_; }
+  /// @brief Get the underlying base SDF.
   const SDFType& base() const { return sdf_; }
 
  private:

@@ -3,16 +3,19 @@
 
 #pragma once
 
-#include <Eigen/Cholesky>
-#include <Eigen/Core>
-#include <algorithm>
 #include <cmath>
-#include <geodex/core/concepts.hpp>
-#include <geodex/core/debug.hpp>
-#include <geodex/core/metric.hpp>
+
+#include <algorithm>
 #include <limits>
 #include <type_traits>
 #include <vector>
+
+#include <Eigen/Cholesky>
+#include <Eigen/Core>
+
+#include "geodex/core/concepts.hpp"
+#include "geodex/core/debug.hpp"
+#include "geodex/core/metric.hpp"
 
 namespace geodex {
 
@@ -122,6 +125,21 @@ struct InterpolationSettings {
   /// smoother paths (no FD oscillation) but the path follows the base retraction's
   /// geodesic rather than the true Riemannian geodesic of the configured metric.
   bool force_log_direction = false;
+
+  /// @brief Relative-error threshold above which the midpoint distance surrogate
+  /// used by the FD gradient is deemed unreliable and falls back to
+  /// `|log(a,b)|_R`.
+  ///
+  /// @details `natural_gradient_fd` samples \f$d^2(p \pm h\,e_i, q)\f$ via a
+  /// third-order-accurate midpoint formula (see `distance_midpoint`). For a true
+  /// Riemannian midpoint we have \f$\log_m(a) = -\log_m(b)\f$, so the quantity
+  /// \f$\|v_{ma} + v_{mb}\|_m / \|v_{mb} - v_{ma}\|_m\f$ is zero. When this
+  /// ratio exceeds `tau`, the midpoint is considered unreliable (non-Riemannian
+  /// retraction, cut locus, or non-smoothness between the samples) and the FD
+  /// sample falls back to `|log|_R` for the entire basis direction. The count
+  /// of fallbacks is reported on `InterpolationResult::fd_midpoint_fallbacks`.
+  /// Set to 0.0 to force via-log for every sample. Default 0.25.
+  double fd_midpoint_guard_tau = 0.25;
 };
 
 // ---------------------------------------------------------------------------
@@ -220,6 +238,17 @@ struct InterpolationResult {
   /// @brief Number of times the step cap was halved due to distortion / progress failure.
   int distortion_halvings = 0;
 
+  /// @brief Number of FD basis directions whose midpoint distance surrogate was
+  /// rejected by the runtime guard and replaced with `|log|_R` for that sample.
+  ///
+  /// @details Summed across all iterations of the walk. A nonzero value is a
+  /// strong signal that the manifold/retraction/metric combination is
+  /// producing a midpoint that is not the Riemannian midpoint (e.g. projection
+  /// retraction on an anisotropic metric, SE(2) Euler retraction for large Δθ,
+  /// cut-locus crossings, or a non-smooth metric feature within ~h of the
+  /// midpoint).
+  int fd_midpoint_fallbacks = 0;
+
   /// @brief Riemannian distance from `start` to `target` at entry.
   double initial_distance = 0.0;
 
@@ -245,6 +274,57 @@ inline auto distance_via_log(const M& m, const typename M::Point& a, const typen
     typename M::Scalar {
   auto v = m.log(a, b);
   return m.norm(a, v);
+}
+
+/// @brief Midpoint distance surrogate with a generic runtime reliability guard.
+///
+/// @details Computes the third-order-accurate midpoint distance
+/// \f$\|\log_m(b) - \log_m(a)\|_m\f$ where
+/// \f$m = \exp_a(\tfrac{1}{2}\log_a(b))\f$, and checks the Riemannian-midpoint
+/// identity \f$\log_m(a) = -\log_m(b)\f$ — equivalently
+/// \f$\|v_{ma} + v_{mb}\|_m \ll \|v_{mb} - v_{ma}\|_m\f$. When the relative
+/// deviation exceeds `tau`, the midpoint is considered unreliable (see the
+/// InterpolationSettings doc for scenarios) and the function returns the
+/// first-order fallback \f$|\log_a(b)|_R\f$ instead. The boolean out-parameter
+/// `tripped` reports which branch was taken so the caller can count fallbacks
+/// for diagnostics.
+///
+/// Used inside `natural_gradient_fd` where an accurate
+/// \f$\nabla(\tfrac{1}{2}\,d^2)\f$ is required — the main-loop progress check
+/// continues to use the cheaper `distance_via_log` directly.
+template <RiemannianManifold M>
+inline auto distance_midpoint_fd(const M& m, const typename M::Point& a,
+                                 const typename M::Point& b, double tau, bool& tripped) ->
+    typename M::Scalar {
+  using Scalar = typename M::Scalar;
+  using Tangent = typename M::Tangent;
+
+  const auto v_ab = m.log(a, b);
+  // Degenerate: a == b. Midpoint is trivially exact.
+  if (v_ab.squaredNorm() == Scalar{0}) {
+    tripped = false;
+    return Scalar{0};
+  }
+
+  const auto mid = m.exp(a, Scalar{0.5} * v_ab);
+  const auto v_ma = m.log(mid, a);
+  const auto v_mb = m.log(mid, b);
+  const Tangent v_diff = v_mb - v_ma;
+  const Tangent v_sum = v_mb + v_ma;
+  const Scalar d_mid = m.norm(mid, v_diff);
+
+  // Guard: for a true Riemannian midpoint, v_ma = -v_mb, so ||v_sum|| should be
+  // tiny compared to ||v_diff||. When it isn't, fall back to |log|_R which is
+  // more robust though less accurate.
+  if (d_mid > Scalar{0}) {
+    const Scalar err = m.norm(mid, v_sum);
+    if (err > tau * d_mid) {
+      tripped = true;
+      return m.norm(a, v_ab);
+    }
+  }
+  tripped = false;
+  return d_mid;
 }
 
 /// @brief Build an orthonormal tangent basis at `p` into `cache.basis_mat`.
@@ -297,10 +377,18 @@ int build_tangent_basis(const M& m, const typename M::Point& p, int d,
 /// @brief Compute the Riemannian natural gradient of \f$\tfrac{1}{2}\, d^2(\cdot, \text{target})\f$
 /// at `p` via finite differences. Writes the ambient-space gradient into `cache.v_fd`.
 ///
+/// @details The \f$d^2\f$ samples used for central differences go through
+/// `distance_midpoint_fd`, a third-order-accurate midpoint surrogate with a
+/// runtime guard that falls back per-sample to `|log|_R` when the Riemannian
+/// midpoint identity is violated (see that function for the failure modes).
+/// The count of fallbacks this call incurred is added to `*fallbacks_out` when
+/// non-null, so the top-level result can report it.
+///
 /// @return `true` on success, `false` on Cholesky failure or zero-rank basis.
 template <RiemannianManifold M>
 bool natural_gradient_fd(const M& m, const typename M::Point& p, const typename M::Point& target,
-                         double h, InterpolationCache<M>& cache) {
+                         double h, double guard_tau, InterpolationCache<M>& cache,
+                         int* fallbacks_out = nullptr) {
   using Tangent = typename M::Tangent;
   constexpr int N = Tangent::SizeAtCompileTime;
 
@@ -318,12 +406,22 @@ bool natural_gradient_fd(const M& m, const typename M::Point& p, const typename 
   cache.G.resize(d, d);
   cache.alpha.resize(d);
 
-  // 1) Coordinate gradient via central finite differences.
+  // 1) Coordinate gradient via central finite differences. Sample d^2 via the
+  // midpoint surrogate with guard; when the guard trips for either sample in a
+  // basis direction we recompute both via-log so the two terms of the central
+  // difference use the same surrogate (mixing would bias the quotient).
   for (int i = 0; i < d; ++i) {
     const auto p_plus = m.exp(p, h * cache.basis_mat.col(i));
     const auto p_minus = m.exp(p, -h * cache.basis_mat.col(i));
-    const double d_plus = distance_via_log(m, p_plus, target);
-    const double d_minus = distance_via_log(m, p_minus, target);
+    bool tripped_plus = false;
+    bool tripped_minus = false;
+    double d_plus = distance_midpoint_fd(m, p_plus, target, guard_tau, tripped_plus);
+    double d_minus = distance_midpoint_fd(m, p_minus, target, guard_tau, tripped_minus);
+    if (tripped_plus || tripped_minus) {
+      if (!tripped_plus) d_plus = distance_via_log(m, p_plus, target);
+      if (!tripped_minus) d_minus = distance_via_log(m, p_minus, target);
+      if (fallbacks_out) ++(*fallbacks_out);
+    }
     cache.grad(i) = (0.5 * d_plus * d_plus - 0.5 * d_minus * d_minus) / (2.0 * h);
   }
   GEODEX_LOG("  natural_gradient_fd grad=" << cache.grad.transpose());
@@ -550,7 +648,9 @@ auto discrete_geodesic(const M& manifold, const typename M::Point& start,
     // --- FD natural gradient. Always used when the manifold does not provide a
     // Riemannian log; used as a fallback when the log-step verification fails. ---
     if (!accepted) {
-      if (!detail::natural_gradient_fd(manifold, current, target, fd_eps, C)) {
+      if (!detail::natural_gradient_fd(manifold, current, target, fd_eps,
+                                       settings.fd_midpoint_guard_tau, C,
+                                       &R.fd_midpoint_fallbacks)) {
         R.status = InterpolationStatus::GradientVanished;
         break;
       }

@@ -3,14 +3,16 @@
 /// InterpolationStatus, InterpolationResult, distance_midpoint, discrete_geodesic,
 /// EuclideanHeuristic.
 
-#include <nanobind/nanobind.h>
 #include <nanobind/eigen/dense.h>
+#include <nanobind/nanobind.h>
+#include <nanobind/stl/function.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/vector.h>
 
-#include <geodex/algorithm/distance.hpp>
-#include <geodex/algorithm/heuristics.hpp>
-#include <geodex/algorithm/interpolation.hpp>
+#include "geodex/algorithm/distance.hpp"
+#include "geodex/algorithm/heuristics.hpp"
+#include "geodex/algorithm/interpolation.hpp"
+#include "geodex/algorithm/path_smoothing.hpp"
 
 #include "wrappers/dynamic_manifold.hpp"
 #include "wrappers/py_config_space.hpp"
@@ -26,14 +28,11 @@ namespace {
 
 /// Extract a DynamicManifold from any known Python manifold type.
 DynamicManifold extract_algo_manifold(nb::object obj) {
-  if (nb::isinstance<PySphere>(obj))
-    return nb::cast<const PySphere&>(obj).to_dynamic_manifold();
+  if (nb::isinstance<PySphere>(obj)) return nb::cast<const PySphere&>(obj).to_dynamic_manifold();
   if (nb::isinstance<PyEuclidean>(obj))
     return nb::cast<const PyEuclidean&>(obj).to_dynamic_manifold();
-  if (nb::isinstance<PyTorus>(obj))
-    return nb::cast<const PyTorus&>(obj).to_dynamic_manifold();
-  if (nb::isinstance<PySE2>(obj))
-    return nb::cast<const PySE2&>(obj).to_dynamic_manifold();
+  if (nb::isinstance<PyTorus>(obj)) return nb::cast<const PyTorus&>(obj).to_dynamic_manifold();
+  if (nb::isinstance<PySE2>(obj)) return nb::cast<const PySE2&>(obj).to_dynamic_manifold();
   if (nb::isinstance<PyConfigurationSpace>(obj))
     return nb::cast<const PyConfigurationSpace&>(obj).to_dynamic_manifold();
   throw std::invalid_argument(
@@ -49,7 +48,7 @@ void bind_algorithms(nb::module_& m) {
 
   // --- InterpolationStatus ---
   nb::enum_<InterpolationStatus>(m, "InterpolationStatus",
-      "Termination status for the discrete geodesic walk.")
+                                 "Termination status for the discrete geodesic walk.")
       .value("Converged", InterpolationStatus::Converged,
              "Distance to target fell below convergence tolerance.")
       .value("MaxStepsReached", InterpolationStatus::MaxStepsReached,
@@ -64,40 +63,41 @@ void bind_algorithms(nb::module_& m) {
              "start == target on entry; returned a single-point path.");
 
   // --- InterpolationSettings ---
-  nb::class_<InterpolationSettings>(m, "InterpolationSettings",
+  nb::class_<InterpolationSettings>(
+      m, "InterpolationSettings",
       "Settings for the discrete geodesic walk.\n\n"
       "Walk semantics: each iteration takes a Riemannian step of length\n"
       "min(step_size, remaining_distance) in the descent direction. Iteration\n"
       "count and returned-path size scale as ~initial_distance / step_size,\n"
       "so step_size also serves as the effective path resolution.")
-      .def("__init__",
-           [](InterpolationSettings* s, double step_size, double convergence_tol,
-              double convergence_rel, int max_steps, double fd_epsilon,
-              double distortion_ratio, double growth_factor, double min_step_size,
-              double gradient_eps, double cut_locus_eps) {
-             new (s) InterpolationSettings{step_size,       convergence_tol,  convergence_rel,
-                                          max_steps,        fd_epsilon,       distortion_ratio,
-                                          growth_factor,    min_step_size,    gradient_eps,
-                                          cut_locus_eps};
-           },
-           nb::arg("step_size") = 0.5, nb::arg("convergence_tol") = 1e-4,
-           nb::arg("convergence_rel") = 1e-3, nb::arg("max_steps") = 100,
-           nb::arg("fd_epsilon") = 0.0, nb::arg("distortion_ratio") = 1.5,
-           nb::arg("growth_factor") = 1.5, nb::arg("min_step_size") = 1e-12,
-           nb::arg("gradient_eps") = 1e-12, nb::arg("cut_locus_eps") = 1e-10,
-           "Create interpolation settings.\n\n"
-           "Args:\n"
-           "    step_size: Max Riemannian step per iteration (also effective path resolution).\n"
-           "    convergence_tol: Absolute stop threshold on |log(current, target)|_R.\n"
-           "    convergence_rel: Relative stop threshold (distance < rel * initial_distance).\n"
-           "    max_steps: Maximum number of successful gradient-descent steps.\n"
-           "    fd_epsilon: Central FD step for the fallback gradient; 0 means auto-select.\n"
-           "    distortion_ratio: Progress-check tolerance; 1.5 requires at least 50% of the\n"
-           "        intended step length in distance decrease before accepting a step.\n"
-           "    growth_factor: After a successful step, regrow the step cap by this factor.\n"
-           "    min_step_size: Failure threshold after repeated distortion halvings.\n"
-           "    gradient_eps: Gradient norm threshold for GradientVanished status.\n"
-           "    cut_locus_eps: |log|_R threshold that flags a cut-locus situation.")
+      .def(
+          "__init__",
+          [](InterpolationSettings* s, double step_size, double convergence_tol,
+             double convergence_rel, int max_steps, double fd_epsilon, double distortion_ratio,
+             double growth_factor, double min_step_size, double gradient_eps,
+             double cut_locus_eps) {
+            new (s) InterpolationSettings{
+                step_size,        convergence_tol, convergence_rel, max_steps,    fd_epsilon,
+                distortion_ratio, growth_factor,   min_step_size,   gradient_eps, cut_locus_eps};
+          },
+          nb::arg("step_size") = 0.5, nb::arg("convergence_tol") = 1e-4,
+          nb::arg("convergence_rel") = 1e-3, nb::arg("max_steps") = 100,
+          nb::arg("fd_epsilon") = 0.0, nb::arg("distortion_ratio") = 1.5,
+          nb::arg("growth_factor") = 1.5, nb::arg("min_step_size") = 1e-12,
+          nb::arg("gradient_eps") = 1e-12, nb::arg("cut_locus_eps") = 1e-10,
+          "Create interpolation settings.\n\n"
+          "Args:\n"
+          "    step_size: Max Riemannian step per iteration (also effective path resolution).\n"
+          "    convergence_tol: Absolute stop threshold on |log(current, target)|_R.\n"
+          "    convergence_rel: Relative stop threshold (distance < rel * initial_distance).\n"
+          "    max_steps: Maximum number of successful gradient-descent steps.\n"
+          "    fd_epsilon: Central FD step for the fallback gradient; 0 means auto-select.\n"
+          "    distortion_ratio: Progress-check tolerance; 1.5 requires at least 50% of the\n"
+          "        intended step length in distance decrease before accepting a step.\n"
+          "    growth_factor: After a successful step, regrow the step cap by this factor.\n"
+          "    min_step_size: Failure threshold after repeated distortion halvings.\n"
+          "    gradient_eps: Gradient norm threshold for GradientVanished status.\n"
+          "    cut_locus_eps: |log|_R threshold that flags a cut-locus situation.")
       .def_rw("step_size", &InterpolationSettings::step_size,
               "Max Riemannian step per iteration; also the effective path resolution.")
       .def_rw("convergence_tol", &InterpolationSettings::convergence_tol,
@@ -127,11 +127,12 @@ void bind_algorithms(nb::module_& m) {
   // --- InterpolationResult ---
   using PyResult = InterpolationResult<Eigen::VectorXd>;
   nb::class_<PyResult>(m, "InterpolationResult",
-      "Output of discrete_geodesic.\n\n"
-      "Carries the discretised path, a termination status, iteration count,\n"
-      "and the initial/final Riemannian distances to target.")
-      .def_ro("path", &PyResult::path,
-              "list[np.ndarray] — points traced from start toward target (always starts with start).")
+                       "Output of discrete_geodesic.\n\n"
+                       "Carries the discretised path, a termination status, iteration count,\n"
+                       "and the initial/final Riemannian distances to target.")
+      .def_ro(
+          "path", &PyResult::path,
+          "list[np.ndarray] — points traced from start toward target (always starts with start).")
       .def_ro("status", &PyResult::status,
               "InterpolationStatus — termination reason. Always check before using `path`.")
       .def_ro("iterations", &PyResult::iterations,
@@ -197,7 +198,8 @@ void bind_algorithms(nb::module_& m) {
       "    initial_distance, final_distance.");
 
   // --- EuclideanHeuristic ---
-  nb::class_<geodex::EuclideanHeuristic>(m, "EuclideanHeuristic",
+  nb::class_<geodex::EuclideanHeuristic>(
+      m, "EuclideanHeuristic",
       "Euclidean (L2) heuristic between coordinate vectors.\n\n"
       "Computes the chord distance ||a - b||_2. Admissible for any manifold where\n"
       "geodesic distance >= chord distance (e.g., convex subsets of Euclidean space).")
@@ -207,4 +209,48 @@ void bind_algorithms(nb::module_& m) {
           [](const geodex::EuclideanHeuristic& h, const Eigen::VectorXd& a,
              const Eigen::VectorXd& b) { return h(a, b); },
           nb::arg("a"), nb::arg("b"), "Compute ||a - b||_2.");
+
+  // --- PathSmoothingSettings ---
+  using PSS = geodex::algorithm::PathSmoothingSettings;
+  nb::class_<PSS>(m, "PathSmoothingSettings", "Settings for metric-aware path smoothing.")
+      .def(nb::init<>(), "Create default path smoothing settings.")
+      .def_rw("max_shortcut_attempts", &PSS::max_shortcut_attempts)
+      .def_rw("edge_collision_samples", &PSS::edge_collision_samples)
+      .def_rw("collision_resolution", &PSS::collision_resolution)
+      .def_rw("lbfgs_target_segments", &PSS::lbfgs_target_segments)
+      .def_rw("lbfgs_max_iterations", &PSS::lbfgs_max_iterations)
+      .def_rw("grad_tol", &PSS::grad_tol)
+      .def_rw("energy_tol", &PSS::energy_tol)
+      .def_rw("fd_epsilon", &PSS::fd_epsilon)
+      .def_rw("lbfgs_memory", &PSS::lbfgs_memory)
+      .def_rw("armijo_c", &PSS::armijo_c)
+      .def_rw("max_displacement", &PSS::max_displacement)
+      .def_rw("armijo_max_backtracks", &PSS::armijo_max_backtracks);
+
+  // --- PathSmoothingResult ---
+  using PSR = geodex::algorithm::PathSmoothingResult<Eigen::VectorXd>;
+  nb::class_<PSR>(m, "PathSmoothingResult", "Result of path smoothing.")
+      .def_ro("path", &PSR::path, "Smoothed path (list of arrays).")
+      .def_ro("energy", &PSR::energy, "Discrete energy of the result.")
+      .def_ro("distance", &PSR::distance, "Geodesic distance estimate.")
+      .def_ro("vertices_removed", &PSR::vertices_removed, "Vertices removed in shortcutting.")
+      .def_ro("smooth_iterations", &PSR::smooth_iterations, "L-BFGS iterations used.")
+      .def_ro("collision_free", &PSR::collision_free, "Whether final path is collision-free.");
+
+  // --- smooth_path ---
+  using ValidityFn = std::function<bool(const Eigen::VectorXd&)>;
+  m.def(
+      "smooth_path",
+      [](nb::object manifold_obj, ValidityFn validity_fn, const std::vector<Eigen::VectorXd>& path,
+         PSS settings) {
+        const DynamicManifold manifold = extract_algo_manifold(manifold_obj);
+        return geodex::algorithm::smooth_path(manifold, validity_fn, path, settings);
+      },
+      nb::arg("manifold"), nb::arg("validity_fn"), nb::arg("path"), nb::arg("settings") = PSS{},
+      "Smooth a path using metric-aware shortcutting and L-BFGS energy minimization.\n\n"
+      "Args:\n"
+      "    manifold: Any geodex manifold.\n"
+      "    validity_fn: Callable(q) -> bool, returns True if collision-free.\n"
+      "    path: List of waypoints (numpy arrays).\n"
+      "    settings: PathSmoothingSettings (optional).");
 }

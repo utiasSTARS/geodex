@@ -10,12 +10,15 @@
 
 #pragma once
 
-#include <Eigen/Core>
-#include <array>
 #include <cmath>
-#include <geodex/utils/math.hpp>
+
+#include <array>
 #include <limits>
 #include <vector>
+
+#include <Eigen/Core>
+
+#include "geodex/utils/math.hpp"
 
 #ifdef __ARM_NEON
 #include <arm_neon.h>
@@ -41,8 +44,8 @@ inline std::array<Eigen::Vector2d, 4> rect_corners(const RectObstacle& r) {
   const double hl = r.half_length, hw = r.half_width;
   return {{
       {r.cx + ct * (-hl) - st * (-hw), r.cy + st * (-hl) + ct * (-hw)},
-      {r.cx + ct * (hl) - st * (-hw), r.cy + st * (hl) + ct * (-hw)},
-      {r.cx + ct * (hl) - st * (hw), r.cy + st * (hl) + ct * (hw)},
+      {r.cx + ct * (hl)-st * (-hw), r.cy + st * (hl) + ct * (-hw)},
+      {r.cx + ct * (hl)-st * (hw), r.cy + st * (hl) + ct * (hw)},
       {r.cx + ct * (-hl) - st * (hw), r.cy + st * (-hl) + ct * (hw)},
   }};
 }
@@ -89,6 +92,7 @@ inline bool rects_overlap(const RectObstacle& a, const RectObstacle& b) {
 /// radius. Arrays are padded to a multiple of 2 for NEON 2-wide processing.
 class RectObstacleSoA {
  public:
+  /// @brief Build SoA arrays from a vector of obstacles with skip distance.
   void build(const std::vector<RectObstacle>& obstacles, const double skip_dist) {
     n_ = static_cast<int>(obstacles.size());
     n_padded_ = (n_ + 1) & ~1;
@@ -108,21 +112,29 @@ class RectObstacleSoA {
       cy_[i] = o.cy;
       half_length_[i] = o.half_length;
       half_width_[i] = o.half_width;
-      const double diag =
-          std::sqrt(o.half_length * o.half_length + o.half_width * o.half_width);
+      const double diag = std::sqrt(o.half_length * o.half_length + o.half_width * o.half_width);
       const double br = diag + skip_dist;
       bounding_r2_[i] = br * br;
     }
   }
 
+  /// @brief Number of actual obstacles.
   int count() const { return n_; }
+  /// @brief Number of obstacles including SIMD padding.
   int padded_count() const { return n_padded_; }
+  /// @brief Obstacle center x-coordinates.
   const double* cx() const { return cx_.data(); }
+  /// @brief Obstacle center y-coordinates.
   const double* cy() const { return cy_.data(); }
+  /// @brief Precomputed cos(theta) for each obstacle.
   const double* ct() const { return ct_.data(); }
+  /// @brief Precomputed sin(theta) for each obstacle.
   const double* st() const { return st_.data(); }
+  /// @brief Half-length of each obstacle.
   const double* half_length() const { return half_length_.data(); }
+  /// @brief Half-width of each obstacle.
   const double* half_width() const { return half_width_.data(); }
+  /// @brief Squared bounding sphere radius for early-out.
   const double* bounding_r2() const { return bounding_r2_.data(); }
 
  private:
@@ -149,6 +161,7 @@ class RectObstacleSoA {
 /// x86 SSE2 path uses 2-wide float64 processing with optional SSE4.1/FMA.
 class RectSmoothSDF {
  public:
+  /// @brief Construct from obstacles with smoothing and optional inflation.
   RectSmoothSDF(std::vector<RectObstacle> obstacles, const double beta = 20.0,
                 const double inflation = 0.0)
       : obstacles_(std::move(obstacles)),
@@ -159,6 +172,7 @@ class RectSmoothSDF {
     simd_buf_.resize(soa_.padded_count());
   }
 
+  /// @brief Evaluate smooth signed distance at point (x, y).
   template <typename Point>
   double operator()(const Point& q) const {
     const double px = q[0], py = q[1];
@@ -173,8 +187,11 @@ class RectSmoothSDF {
 #endif
   }
 
+  /// @brief Get the rectangle obstacles.
   const std::vector<RectObstacle>& obstacles() const { return obstacles_; }
+  /// @brief Get the log-sum-exp smoothing parameter.
   double beta() const { return beta_; }
+  /// @brief Get the inflation radius.
   double inflation() const { return inflation_; }
 
  private:
@@ -216,10 +233,8 @@ class RectSmoothSDF {
       const float64x2_t lx = vaddq_f64(vmulq_f64(vct, dx), vmulq_f64(vst, dy));
       const float64x2_t ly = vsubq_f64(vmulq_f64(vct, dy), vmulq_f64(vst, dx));
 
-      const float64x2_t alx =
-          vreinterpretq_f64_u64(vandq_u64(vreinterpretq_u64_f64(lx), abs_mask));
-      const float64x2_t aly =
-          vreinterpretq_f64_u64(vandq_u64(vreinterpretq_u64_f64(ly), abs_mask));
+      const float64x2_t alx = vreinterpretq_f64_u64(vandq_u64(vreinterpretq_u64_f64(lx), abs_mask));
+      const float64x2_t aly = vreinterpretq_f64_u64(vandq_u64(vreinterpretq_u64_f64(ly), abs_mask));
 
       const float64x2_t vhl = vld1q_f64(soa_.half_length() + i);
       const float64x2_t vhw = vld1q_f64(soa_.half_width() + i);
@@ -281,8 +296,8 @@ class RectSmoothSDF {
     const __m128d vskip = _mm_set1_pd(skip_dist_);
     const __m128d vinfl = _mm_set1_pd(inflation_);
     const __m128d abs_mask = _mm_castsi128_pd(_mm_set1_epi64x(0x7FFFFFFFFFFFFFFFLL));
-    const __m128d sign_mask = _mm_castsi128_pd(_mm_set1_epi64x(
-        static_cast<int64_t>(0x8000000000000000ULL)));
+    const __m128d sign_mask =
+        _mm_castsi128_pd(_mm_set1_epi64x(static_cast<int64_t>(0x8000000000000000ULL)));
 
     double* neg_beta_d = simd_buf_.data();
     int total = 0;

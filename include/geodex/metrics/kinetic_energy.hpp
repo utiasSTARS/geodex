@@ -3,9 +3,11 @@
 
 #pragma once
 
-#include <Eigen/Core>
-#include <geodex/core/metric.hpp>
 #include <limits>
+
+#include <Eigen/Core>
+
+#include "geodex/core/metric.hpp"
 
 namespace geodex {
 

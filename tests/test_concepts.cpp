@@ -1,7 +1,7 @@
+#include <Eigen/Core>
 #include <gtest/gtest.h>
 
-#include <Eigen/Core>
-#include <geodex/geodex.hpp>
+#include "geodex/geodex.hpp"
 
 // A mock Euclidean manifold that satisfies all concepts.
 struct MockEuclidean {

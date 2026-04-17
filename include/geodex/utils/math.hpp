@@ -16,10 +16,11 @@
 
 #pragma once
 
-#include <algorithm>
-#include <bit>
 #include <cmath>
 #include <cstdint>
+
+#include <algorithm>
+#include <bit>
 
 #ifdef __ARM_NEON
 #include <arm_neon.h>
@@ -103,9 +104,8 @@ inline float64x2_t fast_exp(float64x2_t x) {
 ///
 /// where (ct, st) = (cos θ, sin θ) are broadcast values and (dx, dy) are
 /// 2-wide coordinate pairs (e.g., body-frame polygon samples).
-inline void rotate_2wide(const float64x2_t ct, const float64x2_t st,
-                         const float64x2_t dx, const float64x2_t dy,
-                         float64x2_t& rx, float64x2_t& ry) {
+inline void rotate_2wide(const float64x2_t ct, const float64x2_t st, const float64x2_t dx,
+                         const float64x2_t dy, float64x2_t& rx, float64x2_t& ry) {
   rx = vfmsq_f64(vmulq_f64(ct, dx), st, dy);  // ct*dx - st*dy
   ry = vfmaq_f64(vmulq_f64(ct, dy), st, dx);  // st*dx + ct*dy
 }
@@ -117,9 +117,8 @@ inline void rotate_2wide(const float64x2_t ct, const float64x2_t st,
 ///   ly = ct * dy - st * dx
 ///
 /// Used by SDF code to transform query points into obstacle-local frames.
-inline void inverse_rotate_2wide(const float64x2_t ct, const float64x2_t st,
-                                 const float64x2_t dx, const float64x2_t dy,
-                                 float64x2_t& lx, float64x2_t& ly) {
+inline void inverse_rotate_2wide(const float64x2_t ct, const float64x2_t st, const float64x2_t dx,
+                                 const float64x2_t dy, float64x2_t& lx, float64x2_t& ly) {
   lx = vfmaq_f64(vmulq_f64(ct, dx), st, dy);  // ct*dx + st*dy
   ly = vfmsq_f64(vmulq_f64(ct, dy), st, dx);  // ct*dy - st*dx
 }
@@ -136,8 +135,7 @@ inline void inverse_rotate_2wide(const float64x2_t ct, const float64x2_t st,
 
 /// @brief Branchless blend: select trueVal where mask is all-1s, falseVal otherwise.
 /// Uses SSE4.1 _mm_blendv_pd when available, SSE2 bitwise fallback otherwise.
-inline __m128d geodex_blendv_pd(const __m128d falseVal, const __m128d trueVal,
-                                const __m128d mask) {
+inline __m128d geodex_blendv_pd(const __m128d falseVal, const __m128d trueVal, const __m128d mask) {
 #ifdef __SSE4_1__
   return _mm_blendv_pd(falseVal, trueVal, mask);
 #else
@@ -195,8 +193,8 @@ inline __m128d fast_exp(__m128d x) {
 /// @brief Forward rotation: rotate 2 points by angle θ (body → world).
 ///   rx = ct * dx - st * dy
 ///   ry = st * dx + ct * dy
-inline void rotate_2wide(const __m128d ct, const __m128d st, const __m128d dx,
-                         const __m128d dy, __m128d& rx, __m128d& ry) {
+inline void rotate_2wide(const __m128d ct, const __m128d st, const __m128d dx, const __m128d dy,
+                         __m128d& rx, __m128d& ry) {
   rx = geodex_fnmadd_pd(st, dy, _mm_mul_pd(ct, dx));  // ct*dx - st*dy
   ry = geodex_fmadd_pd(st, dx, _mm_mul_pd(ct, dy));   // st*dx + ct*dy
 }
@@ -207,7 +205,7 @@ inline void rotate_2wide(const __m128d ct, const __m128d st, const __m128d dx,
 inline void inverse_rotate_2wide(const __m128d ct, const __m128d st, const __m128d dx,
                                  const __m128d dy, __m128d& lx, __m128d& ly) {
   lx = geodex_fmadd_pd(st, dy, _mm_mul_pd(ct, dx));   // ct*dx + st*dy
-  ly = geodex_fnmadd_pd(st, dx, _mm_mul_pd(ct, dy));   // ct*dy - st*dx
+  ly = geodex_fnmadd_pd(st, dx, _mm_mul_pd(ct, dy));  // ct*dy - st*dx
 }
 
 #endif  // __SSE2__

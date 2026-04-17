@@ -1,16 +1,17 @@
 /// @file test_metrics.cpp
 /// @brief Tests for extracted and new metric types.
 
-#include <gtest/gtest.h>
+#include <cmath>
 
 #include <Eigen/Core>
-#include <cmath>
-#include <geodex/metrics/constant_spd.hpp>
-#include <geodex/metrics/jacobi.hpp>
-#include <geodex/metrics/kinetic_energy.hpp>
-#include <geodex/metrics/pullback.hpp>
-#include <geodex/metrics/se2_left_invariant.hpp>
-#include <geodex/metrics/weighted.hpp>
+#include <gtest/gtest.h>
+
+#include "geodex/metrics/constant_spd.hpp"
+#include "geodex/metrics/jacobi.hpp"
+#include "geodex/metrics/kinetic_energy.hpp"
+#include "geodex/metrics/pullback.hpp"
+#include "geodex/metrics/se2_left_invariant.hpp"
+#include "geodex/metrics/weighted.hpp"
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -156,8 +157,8 @@ TEST(JacobiMetric, ScalesWithEnergy) {
   auto mass_fn = [](const Eigen::Vector2d& /*q*/) { return Eigen::Matrix2d::Identity(); };
   auto pot_fn = [](const Eigen::Vector2d& /*q*/) { return 1.0; };
 
-  geodex::JacobiMetric metric1{mass_fn, pot_fn, 3.0};   // factor = 2*(3-1) = 4
-  geodex::JacobiMetric metric2{mass_fn, pot_fn, 6.0};   // factor = 2*(6-1) = 10
+  geodex::JacobiMetric metric1{mass_fn, pot_fn, 3.0};  // factor = 2*(3-1) = 4
+  geodex::JacobiMetric metric2{mass_fn, pot_fn, 6.0};  // factor = 2*(6-1) = 10
 
   Eigen::Vector2d q(0, 0);
   Eigen::Vector2d v(1, 0);
@@ -177,9 +178,7 @@ TEST(PullbackMetric, InnerProductProperties) {
     J << 1.0, 0.0, 0.0, 1.0, 0.5, 0.5;
     return J;
   };
-  auto task_metric_fn = [](const Eigen::Vector2d& /*q*/) {
-    return Eigen::Matrix3d::Identity();
-  };
+  auto task_metric_fn = [](const Eigen::Vector2d& /*q*/) { return Eigen::Matrix3d::Identity(); };
 
   geodex::PullbackMetric metric{jac_fn, task_metric_fn};
 

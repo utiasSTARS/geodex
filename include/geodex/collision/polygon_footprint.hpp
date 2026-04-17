@@ -8,10 +8,13 @@
 
 #pragma once
 
-#include <Eigen/Core>
 #include <cmath>
-#include <geodex/utils/math.hpp>
+
 #include <vector>
+
+#include <Eigen/Core>
+
+#include "geodex/utils/math.hpp"
 
 #ifdef __ARM_NEON
 #include <arm_neon.h>
@@ -110,8 +113,7 @@ class PolygonFootprint {
   /// @param theta Rotation angle (radians).
   /// @param[out] wx World-frame x-coordinates (must have capacity >= sample_count()).
   /// @param[out] wy World-frame y-coordinates (must have capacity >= sample_count()).
-  void transform(const double x, const double y, const double theta, double* wx,
-                 double* wy) const {
+  void transform(const double x, const double y, const double theta, double* wx, double* wy) const {
     double ct, st;
     utils::sincos(theta, &st, &ct);
 

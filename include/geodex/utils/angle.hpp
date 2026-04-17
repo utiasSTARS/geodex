@@ -3,10 +3,11 @@
 
 #pragma once
 
-#include <Eigen/Core>
 #include <numbers>
 
-namespace geodex {
+#include <Eigen/Core>
+
+namespace geodex::utils {
 
 /// @brief Wrap angle to \f$ [-\pi, \pi) \f$.
 ///
@@ -41,4 +42,4 @@ Eigen::Vector<double, Dim> wrap_delta(const Eigen::Vector<double, Dim>& d) {
   return d.unaryExpr([](double x) { return wrap_to_pi(x); });
 }
 
-}  // namespace geodex
+}  // namespace geodex::utils

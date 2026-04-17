@@ -3,12 +3,14 @@
 
 #pragma once
 
-#include <Eigen/Core>
-#include <geodex/manifold/sphere.hpp>
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <variant>
+
+#include <Eigen/Core>
+
+#include "geodex/manifold/sphere.hpp"
 
 #include "dynamic_manifold.hpp"
 
@@ -21,7 +23,8 @@ namespace geodex::python {
 class PySphereN {
  public:
   using SphereExp = Sphere<Eigen::Dynamic, IdentityMetric<Eigen::Dynamic>, SphereExponentialMap>;
-  using SphereProj = Sphere<Eigen::Dynamic, IdentityMetric<Eigen::Dynamic>, SphereProjectionRetraction>;
+  using SphereProj =
+      Sphere<Eigen::Dynamic, IdentityMetric<Eigen::Dynamic>, SphereProjectionRetraction>;
   using V = std::variant<SphereExp, SphereProj>;
 
   PySphereN(int n, const std::string& retraction = "exponential")
@@ -51,8 +54,7 @@ class PySphereN {
     return std::visit([&](const auto& m) -> Eigen::VectorXd { return m.project(p, v); }, impl_);
   }
 
-  double inner(const Eigen::VectorXd& p, const Eigen::VectorXd& u,
-               const Eigen::VectorXd& v) const {
+  double inner(const Eigen::VectorXd& p, const Eigen::VectorXd& u, const Eigen::VectorXd& v) const {
     return std::visit([&](const auto& m) { return m.inner(p, u, v); }, impl_);
   }
 
@@ -72,8 +74,7 @@ class PySphereN {
     return std::visit([&](const auto& m) { return m.distance(p, q); }, impl_);
   }
 
-  Eigen::VectorXd geodesic(const Eigen::VectorXd& p, const Eigen::VectorXd& q,
-                            double t) const {
+  Eigen::VectorXd geodesic(const Eigen::VectorXd& p, const Eigen::VectorXd& q, double t) const {
     return std::visit([&](const auto& m) -> Eigen::VectorXd { return m.geodesic(p, q, t); }, impl_);
   }
 
@@ -86,12 +87,10 @@ class PySphereN {
                             *shared);
         },
         [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& v) -> Eigen::VectorXd {
-          return std::visit(
-              [&](const auto& m) -> Eigen::VectorXd { return m.exp(p, v); }, *shared);
+          return std::visit([&](const auto& m) -> Eigen::VectorXd { return m.exp(p, v); }, *shared);
         },
         [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& q) -> Eigen::VectorXd {
-          return std::visit(
-              [&](const auto& m) -> Eigen::VectorXd { return m.log(p, q); }, *shared);
+          return std::visit([&](const auto& m) -> Eigen::VectorXd { return m.log(p, q); }, *shared);
         },
         [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& u,
                  const Eigen::VectorXd& v) -> double {
@@ -101,8 +100,8 @@ class PySphereN {
           return std::visit([&](const auto& m) { return m.norm(p, v); }, *shared);
         },
         [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& v) -> Eigen::VectorXd {
-          return std::visit(
-              [&](const auto& m) -> Eigen::VectorXd { return m.project(p, v); }, *shared);
+          return std::visit([&](const auto& m) -> Eigen::VectorXd { return m.project(p, v); },
+                            *shared);
         }};
   }
 

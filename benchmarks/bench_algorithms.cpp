@@ -1,13 +1,16 @@
 /// @file bench_algorithms.cpp
 /// @brief Benchmarks for geodex algorithms: discrete_geodesic and distance_midpoint.
 
-#include <benchmark/benchmark.h>
-
-#include <Eigen/Core>
 #include <cmath>
-#include <geodex/geodex.hpp>
+
 #include <numbers>
 #include <vector>
+
+#include <Eigen/Core>
+#include <benchmark/benchmark.h>
+
+#include "geodex/geodex.hpp"
+#include "geodex/metrics/clearance.hpp"
 
 #include "planar_manipulator_metric.hpp"
 
@@ -106,7 +109,8 @@ BENCHMARK(BM_DiscreteGeodesic_SE2);
 
 static void BM_DiscreteGeodesic_CSpace_KE(benchmark::State& state) {
   PlanarManipulatorMetric arm_metric;
-  auto ke = KineticEnergyMetric{[&](const Eigen::Vector2d& q) { return arm_metric.mass_matrix(q); }};
+  auto ke =
+      KineticEnergyMetric{[&](const Eigen::Vector2d& q) { return arm_metric.mass_matrix(q); }};
   using CSpace = ConfigurationSpace<Torus<2>, decltype(ke)>;
   CSpace cspace{Torus<2>{}, std::move(ke)};
 
@@ -151,6 +155,82 @@ static void BM_DiscreteGeodesic_SE2_Anisotropic(benchmark::State& state) {
   state.counters["halvings/call"] = static_cast<double>(total_halvings) / total_calls;
 }
 BENCHMARK(BM_DiscreteGeodesic_SE2_Anisotropic);
+
+// ---------------------------------------------------------------------------
+// SE(2) + SDFConformal — exercises the FD path on a spatially-varying metric.
+// Compares the new midpoint FD surrogate against the forced via-log fallback
+// (tau=0), which reproduces the pre-fix behavior. Same (start, target, step)
+// across the two entries so wall time / iterations / halvings / fallbacks are
+// directly comparable.
+// ---------------------------------------------------------------------------
+
+namespace {
+
+auto make_sdf_conformal_cspace() {
+  auto sdf = [](const Eigen::Vector3d& q) {
+    const double r = std::sqrt(q[0] * q[0] + q[1] * q[1]);
+    return r - 1.0;  // unit circle at origin, positive outside
+  };
+  SE2LeftInvariantMetric base{1.0, 1.0, 0.5};
+  SE2<SE2LeftInvariantMetric, SE2ExponentialMap> se2{base};
+  SDFConformalMetric clearance{base, sdf, 2.0, 2.0};
+  using CSpace = ConfigurationSpace<decltype(se2), decltype(clearance)>;
+  return CSpace{se2, std::move(clearance)};
+}
+
+const Eigen::Vector3d kSDFStart{-2.0, 1.5, 0.0};
+const Eigen::Vector3d kSDFTarget{2.0, 1.5, 0.0};
+
+}  // namespace
+
+static void BM_DiscreteGeodesic_SE2_SDFConformal_Midpoint(benchmark::State& state) {
+  auto cspace = make_sdf_conformal_cspace();
+  using CSpace = decltype(cspace);
+
+  InterpolationSettings s = settings;
+  s.step_size = 0.2;
+  s.max_steps = 200;
+
+  InterpolationCache<CSpace> ws;
+  long long total_iters = 0, total_halvings = 0, total_fallbacks = 0, total_calls = 0;
+  for (auto _ : state) {
+    auto result = discrete_geodesic(cspace, kSDFStart, kSDFTarget, s, &ws);
+    total_iters += result.iterations;
+    total_halvings += result.distortion_halvings;
+    total_fallbacks += result.fd_midpoint_fallbacks;
+    ++total_calls;
+    benchmark::DoNotOptimize(result);
+  }
+  state.counters["iters/call"] = static_cast<double>(total_iters) / total_calls;
+  state.counters["halvings/call"] = static_cast<double>(total_halvings) / total_calls;
+  state.counters["fallbacks/call"] = static_cast<double>(total_fallbacks) / total_calls;
+}
+BENCHMARK(BM_DiscreteGeodesic_SE2_SDFConformal_Midpoint);
+
+static void BM_DiscreteGeodesic_SE2_SDFConformal_ViaLog(benchmark::State& state) {
+  auto cspace = make_sdf_conformal_cspace();
+  using CSpace = decltype(cspace);
+
+  InterpolationSettings s = settings;
+  s.step_size = 0.2;
+  s.max_steps = 200;
+  s.fd_midpoint_guard_tau = 0.0;  // force via-log on every FD sample
+
+  InterpolationCache<CSpace> ws;
+  long long total_iters = 0, total_halvings = 0, total_fallbacks = 0, total_calls = 0;
+  for (auto _ : state) {
+    auto result = discrete_geodesic(cspace, kSDFStart, kSDFTarget, s, &ws);
+    total_iters += result.iterations;
+    total_halvings += result.distortion_halvings;
+    total_fallbacks += result.fd_midpoint_fallbacks;
+    ++total_calls;
+    benchmark::DoNotOptimize(result);
+  }
+  state.counters["iters/call"] = static_cast<double>(total_iters) / total_calls;
+  state.counters["halvings/call"] = static_cast<double>(total_halvings) / total_calls;
+  state.counters["fallbacks/call"] = static_cast<double>(total_fallbacks) / total_calls;
+}
+BENCHMARK(BM_DiscreteGeodesic_SE2_SDFConformal_ViaLog);
 
 // ---------------------------------------------------------------------------
 // Batch steer workload — simulates an RRT* steer loop with N random endpoints

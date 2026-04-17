@@ -3,22 +3,25 @@
 
 #pragma once
 
+#include <cmath>
+
+#include <memory>
+#include <type_traits>
+#include <vector>
+
 #include <ompl/base/goals/GoalSampleableRegion.h>
 #include <ompl/base/samplers/InformedStateSampler.h>
 #include <ompl/util/ProlateHyperspheroid.h>
 #include <ompl/util/RandomNumbers.h>
 
-#include <cmath>
-#include <geodex/algorithm/heuristics.hpp>
-#include <geodex/integration/ompl/geodex_state_space.hpp>
-#include <memory>
-#include <type_traits>
-#include <vector>
+#include "geodex/algorithm/heuristics.hpp"
+#include "geodex/integration/ompl/geodex_state_space.hpp"
 
-namespace geodex {
-namespace ompl_integration {
+namespace geodex::integration::ompl {
 
-namespace ob = ompl::base;
+using geodex::EuclideanHeuristic;
+
+namespace ob = ::ompl::base;
 
 /// @brief Direct informed sampler for GeodexStateSpace.
 ///
@@ -55,8 +58,8 @@ class GeodexDirectInfSampler : public ob::InformedSampler {
 
     if constexpr (std::is_same_v<HeuristicT, EuclideanHeuristic>) {
       // Build the prolate hyperspheroid from the two foci
-      phs_ = std::make_shared<ompl::ProlateHyperspheroid>(dim, start_coords_.data(),
-                                                          goal_coords_.data());
+      phs_ = std::make_shared<::ompl::ProlateHyperspheroid>(dim, start_coords_.data(),
+                                                            goal_coords_.data());
     }
   }
 
@@ -167,11 +170,10 @@ class GeodexDirectInfSampler : public ob::InformedSampler {
   std::vector<double> start_coords_;
   std::vector<double> goal_coords_;
   ob::StateSamplerPtr baseSampler_;
-  ompl::RNG rng_;
+  ::ompl::RNG rng_;
 
   // Only used for EuclideanHeuristic
-  std::shared_ptr<ompl::ProlateHyperspheroid> phs_;
+  std::shared_ptr<::ompl::ProlateHyperspheroid> phs_;
 };
 
-}  // namespace ompl_integration
-}  // namespace geodex
+}  // namespace geodex::integration::ompl

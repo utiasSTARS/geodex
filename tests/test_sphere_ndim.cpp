@@ -1,9 +1,11 @@
-#include <gtest/gtest.h>
+#include <cmath>
+
+#include <numbers>
 
 #include <Eigen/Core>
-#include <cmath>
-#include <geodex/geodex.hpp>
-#include <numbers>
+#include <gtest/gtest.h>
+
+#include "geodex/geodex.hpp"
 
 using namespace geodex;
 

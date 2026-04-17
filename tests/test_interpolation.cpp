@@ -1,9 +1,12 @@
-#include <gtest/gtest.h>
+#include <cmath>
+
+#include <numbers>
 
 #include <Eigen/Core>
-#include <cmath>
-#include <geodex/geodex.hpp>
-#include <numbers>
+#include <gtest/gtest.h>
+
+#include "geodex/geodex.hpp"
+#include "geodex/metrics/clearance.hpp"
 
 using namespace geodex;
 
@@ -324,4 +327,93 @@ TEST_F(InterpolationRoundTest, WorkspaceReuseProducesIdenticalResults) {
   // Reuse across multiple calls — should still produce identical results.
   auto r_reused = discrete_geodesic(sphere, north, target, {}, &ws);
   ASSERT_EQ(r_with_ws.path.size(), r_reused.path.size());
+}
+
+// ---------------------------------------------------------------------------
+// Midpoint FD surrogate with runtime guard
+// ---------------------------------------------------------------------------
+
+// Arc cost = sum of per-segment Riemannian norms along the path, measured with
+// the given manifold's metric. Useful for comparing surrogate quality.
+template <typename M>
+static double arc_cost(const M& m, const std::vector<typename M::Point>& path) {
+  double sum = 0.0;
+  for (size_t i = 1; i < path.size(); ++i) {
+    const auto v = m.log(path[i - 1], path[i]);
+    sum += m.norm(path[i - 1], v);
+  }
+  return sum;
+}
+
+TEST(InterpolationGuardedMidpoint, SE2SDFConformalConverges) {
+  // SE(2) with a mild SDFConformalMetric over a circular obstacle. Both the
+  // midpoint FD (default) and via-log FD (tau=0) should converge, and the new
+  // counter should be exposed and correctly reporting.
+  auto sdf = [](const Eigen::Vector3d& q) {
+    const double r = std::sqrt(q[0] * q[0] + q[1] * q[1]);
+    return r - 1.0;  // unit circle at origin, positive outside
+  };
+
+  SE2LeftInvariantMetric base_metric{1.0, 1.0, 0.5};
+  SE2<SE2LeftInvariantMetric, SE2ExponentialMap> se2{base_metric};
+  SDFConformalMetric clearance_metric{base_metric, sdf, 2.0, 2.0};
+  ConfigurationSpace cspace{se2, clearance_metric};
+
+  // Path above the obstacle; the straight-line path only grazes high-c region.
+  const Eigen::Vector3d start(-2.0, 1.5, 0.0);
+  const Eigen::Vector3d target(2.0, 1.5, 0.0);
+
+  InterpolationSettings midpoint_settings;
+  midpoint_settings.step_size = 0.2;
+  midpoint_settings.max_steps = 200;
+  midpoint_settings.convergence_tol = 1e-3;
+  // default fd_midpoint_guard_tau = 0.25
+
+  InterpolationSettings vialog_settings = midpoint_settings;
+  vialog_settings.fd_midpoint_guard_tau = 0.0;  // force via-log on every sample
+
+  auto r_midpoint = discrete_geodesic(cspace, start, target, midpoint_settings);
+  auto r_vialog = discrete_geodesic(cspace, start, target, vialog_settings);
+
+  EXPECT_EQ(r_midpoint.status, InterpolationStatus::Converged);
+  EXPECT_EQ(r_vialog.status, InterpolationStatus::Converged);
+
+  // SE(2) + SE2ExponentialMap gives v_ma + v_mb = 0 exactly (group midpoint
+  // identity), so the default-tau guard should not trip.
+  EXPECT_EQ(r_midpoint.fd_midpoint_fallbacks, 0);
+
+  // Every FD sample trips under tau=0 (any nonzero imbalance exceeds zero);
+  // counter should be nonzero.
+  EXPECT_GT(r_vialog.fd_midpoint_fallbacks, 0);
+}
+
+TEST(InterpolationGuardedMidpoint, IdenticalResultsOnRiemannianLog) {
+  // For manifolds whose base log IS the Riemannian log of the metric, the FD
+  // path isn't even exercised (fast path wins). This is a sanity check: the
+  // presence of the midpoint/guard machinery must not perturb the result for
+  // Riemannian-log configurations.
+  Sphere<> sphere;
+  const Eigen::Vector3d north(0.0, 0.0, 1.0);
+  const Eigen::Vector3d target = point_at_theta(1.0);
+
+  InterpolationSettings default_settings;
+
+  InterpolationSettings tau_zero = default_settings;
+  tau_zero.fd_midpoint_guard_tau = 0.0;
+
+  auto r_default = discrete_geodesic(sphere, north, target, default_settings);
+  auto r_tau_zero = discrete_geodesic(sphere, north, target, tau_zero);
+
+  EXPECT_EQ(r_default.status, InterpolationStatus::Converged);
+  EXPECT_EQ(r_tau_zero.status, InterpolationStatus::Converged);
+
+  // Fast path only — FD path never runs, so the fallback counter stays at zero
+  // regardless of tau.
+  EXPECT_EQ(r_default.fd_midpoint_fallbacks, 0);
+  EXPECT_EQ(r_tau_zero.fd_midpoint_fallbacks, 0);
+
+  ASSERT_EQ(r_default.path.size(), r_tau_zero.path.size());
+  for (size_t i = 0; i < r_default.path.size(); ++i) {
+    EXPECT_LT((r_default.path[i] - r_tau_zero.path[i]).norm(), 1e-12);
+  }
 }

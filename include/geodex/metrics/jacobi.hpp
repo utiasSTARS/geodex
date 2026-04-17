@@ -3,11 +3,13 @@
 
 #pragma once
 
-#include <Eigen/Core>
-#include <geodex/core/metric.hpp>
-#include <geodex/metrics/kinetic_energy.hpp>
-#include <geodex/metrics/weighted.hpp>
 #include <utility>
+
+#include <Eigen/Core>
+
+#include "geodex/core/metric.hpp"
+#include "geodex/metrics/kinetic_energy.hpp"
+#include "geodex/metrics/weighted.hpp"
 
 namespace geodex {
 

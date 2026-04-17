@@ -1,29 +1,28 @@
 /// @file test_path_resampling.cpp
 /// @brief Tests for uniform arc-length path resampling used in the Nav2 planner.
 
-#include <gtest/gtest.h>
+#include <cmath>
 
+#include <numbers>
+#include <vector>
+
+#include <gtest/gtest.h>
 #include <ompl/base/SpaceInformation.h>
 #include <ompl/base/spaces/RealVectorBounds.h>
 #include <ompl/geometric/PathGeometric.h>
 
-#include <cmath>
-#include <geodex/integration/ompl/geodex_state_space.hpp>
-#include <geodex/manifold/se2.hpp>
-#include <numbers>
-#include <vector>
+#include "geodex/integration/ompl/geodex_state_space.hpp"
+#include "geodex/manifold/se2.hpp"
 
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
 
 using SE2Manifold = geodex::SE2<>;
-using AnisotropicSE2 =
-    geodex::SE2<geodex::SE2LeftInvariantMetric, geodex::SE2ExponentialMap>;
-using StateSpace = geodex::ompl_integration::GeodexStateSpace<SE2Manifold>;
-using AnisotropicStateSpace =
-    geodex::ompl_integration::GeodexStateSpace<AnisotropicSE2>;
+using AnisotropicSE2 = geodex::SE2<geodex::SE2LeftInvariantMetric, geodex::SE2ExponentialMap>;
+using StateSpace = geodex::integration::ompl::GeodexStateSpace<SE2Manifold>;
+using AnisotropicStateSpace = geodex::integration::ompl::GeodexStateSpace<AnisotropicSE2>;
 template <typename M>
-using StateType = geodex::ompl_integration::GeodexState<M>;
+using StateType = geodex::integration::ompl::GeodexState<M>;
 
 // ---------------------------------------------------------------------------
 // Resampling function extracted from Nav2 planner for testability
@@ -33,11 +32,10 @@ using StateType = geodex::ompl_integration::GeodexState<M>;
 /// Uses geodesic interpolation (exp/log) for intermediate poses.
 /// Returns a vector of (x, y, theta) waypoints.
 template <typename ManifoldT>
-static std::vector<Eigen::Vector3d> resamplePath(
-    const og::PathGeometric& solution,
-    const ob::SpaceInformationPtr& si,
-    double waypoint_spacing) {
-  using ST = geodex::ompl_integration::GeodexState<ManifoldT>;
+static std::vector<Eigen::Vector3d> resamplePath(const og::PathGeometric& solution,
+                                                 const ob::SpaceInformationPtr& si,
+                                                 double waypoint_spacing) {
+  using ST = geodex::integration::ompl::GeodexState<ManifoldT>;
 
   size_t n = solution.getStateCount();
   if (n < 2) {
@@ -78,8 +76,7 @@ static std::vector<Eigen::Vector3d> resamplePath(
     if (segLength > 1e-9) {
       double t = (targetDist - segStart) / segLength;
       ob::State* interp = si->allocState();
-      si->getStateSpace()->interpolate(solution.getState(segIdx),
-                                       solution.getState(segIdx + 1), t,
+      si->getStateSpace()->interpolate(solution.getState(segIdx), solution.getState(segIdx + 1), t,
                                        interp);
       const auto* s = interp->as<ST>();
       poses.push_back({s->values[0], s->values[1], s->values[2]});
@@ -100,8 +97,7 @@ static std::vector<Eigen::Vector3d> resamplePath(
 // Helpers
 // ---------------------------------------------------------------------------
 
-static std::pair<std::shared_ptr<StateSpace>, ob::SpaceInformationPtr>
-makeIsotropicSetup() {
+static std::pair<std::shared_ptr<StateSpace>, ob::SpaceInformationPtr> makeIsotropicSetup() {
   geodex::SE2LeftInvariantMetric metric{1.0, 1.0, 0.5};
   SE2Manifold manifold{metric, geodex::SE2ExponentialMap{},
                        Eigen::Vector3d(0.0, 0.0, -std::numbers::pi),
@@ -120,8 +116,7 @@ makeIsotropicSetup() {
   return {space, si};
 }
 
-static std::pair<std::shared_ptr<AnisotropicStateSpace>,
-                 ob::SpaceInformationPtr>
+static std::pair<std::shared_ptr<AnisotropicStateSpace>, ob::SpaceInformationPtr>
 makeAnisotropicSetup() {
   geodex::SE2LeftInvariantMetric metric{1.0, 100.0, 0.5};
   AnisotropicSE2 manifold{metric, geodex::SE2ExponentialMap{},
@@ -143,7 +138,7 @@ makeAnisotropicSetup() {
 
 template <typename M>
 static void setState(ob::State* state, double x, double y, double theta) {
-  auto* s = state->as<geodex::ompl_integration::GeodexState<M>>();
+  auto* s = state->as<geodex::integration::ompl::GeodexState<M>>();
   s->values[0] = x;
   s->values[1] = y;
   s->values[2] = theta;
@@ -214,8 +209,7 @@ TEST(PathResampling, StraightPath_UniformSpacing) {
 
   // All interior spacings (except possibly the last) should be ~0.5m
   for (size_t i = 0; i + 1 < spacings.size(); ++i) {
-    EXPECT_NEAR(spacings[i], 0.5, 0.05)
-        << "Spacing at index " << i << " is " << spacings[i];
+    EXPECT_NEAR(spacings[i], 0.5, 0.05) << "Spacing at index " << i << " is " << spacings[i];
   }
   // Last spacing can be shorter (remainder)
   EXPECT_LE(spacings.back(), 0.5 + 0.05);
@@ -286,8 +280,7 @@ TEST(PathResampling, AnisotropicMetric_UniformXYSpacing) {
     auto spacings = xySpacings(poses);
 
     for (size_t i = 0; i + 1 < spacings.size(); ++i) {
-      EXPECT_NEAR(spacings[i], 0.1, 0.02)
-          << "X-path spacing[" << i << "] = " << spacings[i];
+      EXPECT_NEAR(spacings[i], 0.1, 0.02) << "X-path spacing[" << i << "] = " << spacings[i];
     }
     EXPECT_GE(poses.size(), 99u);
 
@@ -310,8 +303,7 @@ TEST(PathResampling, AnisotropicMetric_UniformXYSpacing) {
     auto spacings = xySpacings(poses);
 
     for (size_t i = 0; i + 1 < spacings.size(); ++i) {
-      EXPECT_NEAR(spacings[i], 0.1, 0.02)
-          << "Y-path spacing[" << i << "] = " << spacings[i];
+      EXPECT_NEAR(spacings[i], 0.1, 0.02) << "Y-path spacing[" << i << "] = " << spacings[i];
     }
     EXPECT_GE(poses.size(), 99u);
 
@@ -338,8 +330,7 @@ TEST(PathResampling, DiagonalPath_UniformSpacing) {
   auto spacings = xySpacings(poses);
 
   for (size_t i = 0; i + 1 < spacings.size(); ++i) {
-    EXPECT_NEAR(spacings[i], 0.2, 0.05)
-        << "Diagonal spacing[" << i << "] = " << spacings[i];
+    EXPECT_NEAR(spacings[i], 0.2, 0.05) << "Diagonal spacing[" << i << "] = " << spacings[i];
   }
 
   space->freeState(s0);
@@ -354,7 +345,7 @@ TEST(PathResampling, MultiSegmentPath_UniformSpacing) {
   // Simulate an RRT*-like path with 4 waypoints
   std::vector<std::tuple<double, double, double>> waypoints = {
       {5.0, 5.0, 0.0},
-      {15.0, 5.0, 0.0},   // 10m east
+      {15.0, 5.0, 0.0},    // 10m east
       {15.0, 15.0, 1.57},  // 10m north
       {25.0, 15.0, 0.0},   // 10m east
   };
@@ -372,8 +363,7 @@ TEST(PathResampling, MultiSegmentPath_UniformSpacing) {
   auto spacings = xySpacings(poses);
 
   for (size_t i = 0; i + 1 < spacings.size(); ++i) {
-    EXPECT_NEAR(spacings[i], 0.5, 0.1)
-        << "Multi-segment spacing[" << i << "] = " << spacings[i];
+    EXPECT_NEAR(spacings[i], 0.5, 0.1) << "Multi-segment spacing[" << i << "] = " << spacings[i];
   }
 
   // Roughly 30m / 0.5m = 60 waypoints (geodesic SE(2) paths with rotation

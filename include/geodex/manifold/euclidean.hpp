@@ -3,15 +3,18 @@
 
 #pragma once
 
-#include <Eigen/Core>
 #include <cmath>
-#include <geodex/algorithm/distance.hpp>
-#include <geodex/core/concepts.hpp>
-#include <geodex/core/sampler.hpp>
-#include <geodex/metrics/constant_spd.hpp>
-#include <geodex/metrics/identity.hpp>
+
 #include <limits>
 #include <type_traits>
+
+#include <Eigen/Core>
+
+#include "geodex/algorithm/distance.hpp"
+#include "geodex/core/concepts.hpp"
+#include "geodex/core/sampler.hpp"
+#include "geodex/metrics/constant_spd.hpp"
+#include "geodex/metrics/identity.hpp"
 
 namespace geodex {
 

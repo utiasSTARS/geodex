@@ -1,17 +1,19 @@
 /// @file test_collision.cpp
 /// @brief Tests for geodex::collision module.
 
-#include <gtest/gtest.h>
+#include <cmath>
+
+#include <numbers>
 
 #include <Eigen/Core>
-#include <cmath>
-#include <geodex/collision/circle_sdf.hpp>
-#include <geodex/collision/distance_grid.hpp>
-#include <geodex/collision/footprint_grid_checker.hpp>
-#include <geodex/collision/polygon_footprint.hpp>
-#include <geodex/collision/rectangle_sdf.hpp>
-#include <geodex/utils/math.hpp>
-#include <numbers>
+#include <gtest/gtest.h>
+
+#include "geodex/collision/circle_sdf.hpp"
+#include "geodex/collision/distance_grid.hpp"
+#include "geodex/collision/footprint_grid_checker.hpp"
+#include "geodex/collision/polygon_footprint.hpp"
+#include "geodex/collision/rectangle_sdf.hpp"
+#include "geodex/utils/math.hpp"
 
 using namespace geodex::collision;
 
@@ -327,4 +329,16 @@ TEST(FootprintGridChecker, SDFCallable) {
   const double expected = 3.0 - fp.bounding_radius() - 0.5;
   EXPECT_NEAR(sdf, expected, 0.01);
   EXPECT_GT(sdf, 0.0);
+}
+
+TEST(FootprintGridChecker, Accessors) {
+  std::vector<double> data(100 * 100, 3.0);
+  DistanceGrid grid(100, 100, 0.1, data);
+
+  const auto fp = PolygonFootprint::rectangle(0.5, 0.3, 4);
+  const FootprintGridChecker checker(&grid, fp, 0.25);
+
+  EXPECT_EQ(checker.grid(), &grid);
+  EXPECT_EQ(checker.footprint().sample_count(), fp.sample_count());
+  EXPECT_DOUBLE_EQ(checker.safety_margin(), 0.25);
 }

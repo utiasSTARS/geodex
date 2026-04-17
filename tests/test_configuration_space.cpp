@@ -1,16 +1,17 @@
 /// @file test_configuration_space.cpp
 /// @brief Tests for ConfigurationSpace manifold wrapper.
 
-#include <gtest/gtest.h>
+#include <cmath>
 
 #include <Eigen/Core>
-#include <cmath>
-#include <geodex/core/concepts.hpp>
-#include <geodex/manifold/configuration_space.hpp>
-#include <geodex/manifold/euclidean.hpp>
-#include <geodex/manifold/torus.hpp>
-#include <geodex/metrics/kinetic_energy.hpp>
-#include <geodex/metrics/weighted.hpp>
+#include <gtest/gtest.h>
+
+#include "geodex/core/concepts.hpp"
+#include "geodex/manifold/configuration_space.hpp"
+#include "geodex/manifold/euclidean.hpp"
+#include "geodex/manifold/torus.hpp"
+#include "geodex/metrics/kinetic_energy.hpp"
+#include "geodex/metrics/weighted.hpp"
 
 // ---------------------------------------------------------------------------
 // Concept checks

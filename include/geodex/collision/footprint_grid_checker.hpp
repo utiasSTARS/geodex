@@ -13,13 +13,16 @@
 
 #pragma once
 
-#include <Eigen/Core>
-#include <algorithm>
 #include <cmath>
+
+#include <algorithm>
 #include <limits>
-#include <geodex/collision/distance_grid.hpp>
-#include <geodex/collision/polygon_footprint.hpp>
 #include <vector>
+
+#include <Eigen/Core>
+
+#include "geodex/collision/distance_grid.hpp"
+#include "geodex/collision/polygon_footprint.hpp"
 
 #ifdef __ARM_NEON
 #include <arm_neon.h>
@@ -60,8 +63,11 @@ class FootprintGridChecker {
     return min_distance_impl(q[0], q[1], q[2]);
   }
 
+  /// @brief Get the underlying distance grid.
   const DistanceGrid* grid() const { return grid_; }
+  /// @brief Get the polygon footprint.
   const PolygonFootprint& footprint() const { return footprint_; }
+  /// @brief Get the safety margin.
   double safety_margin() const { return safety_margin_; }
 
  private:
@@ -119,8 +125,7 @@ class FootprintGridChecker {
     for (int i = 0; i < n2; i += 2) {
       vmin = _mm_min_pd(vmin, _mm_loadu_pd(dist.data() + i));
     }
-    double min_d = std::min(_mm_cvtsd_f64(vmin),
-                            _mm_cvtsd_f64(_mm_unpackhi_pd(vmin, vmin)));
+    double min_d = std::min(_mm_cvtsd_f64(vmin), _mm_cvtsd_f64(_mm_unpackhi_pd(vmin, vmin)));
     if (n2 < nr) {
       min_d = std::min(min_d, dist[n2]);
     }

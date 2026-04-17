@@ -1,39 +1,35 @@
 /// @file test_geodex_state_space.cpp
 /// @brief Tests for GeodexStateSpace OMPL integration.
 
-#include <gtest/gtest.h>
+#include <cmath>
 
+#include <numbers>
+
+#include <gtest/gtest.h>
 #include <ompl/base/DiscreteMotionValidator.h>
 #include <ompl/base/SpaceInformation.h>
 #include <ompl/base/spaces/RealVectorBounds.h>
 
-#include <cmath>
-#include <geodex/algorithm/interpolation.hpp>
-#include <geodex/integration/ompl/geodex_state_space.hpp>
-#include <geodex/manifold/se2.hpp>
-#include <geodex/manifold/euclidean.hpp>
-#include <geodex/metrics/constant_spd.hpp>
-#include <numbers>
+#include "geodex/algorithm/interpolation.hpp"
+#include "geodex/integration/ompl/geodex_state_space.hpp"
+#include "geodex/manifold/euclidean.hpp"
+#include "geodex/manifold/se2.hpp"
+#include "geodex/metrics/constant_spd.hpp"
 
 namespace ob = ompl::base;
 using SE2Manifold = geodex::SE2<>;
-using StateSpace = geodex::ompl_integration::GeodexStateSpace<SE2Manifold>;
-using StateType = geodex::ompl_integration::GeodexState<SE2Manifold>;
+using StateSpace = geodex::integration::ompl::GeodexStateSpace<SE2Manifold>;
+using StateType = geodex::integration::ompl::GeodexState<SE2Manifold>;
 
 // Anisotropic SE2 types (car-like: expensive lateral motion).
-using AnisotropicSE2 =
-    geodex::SE2<geodex::SE2LeftInvariantMetric, geodex::SE2ExponentialMap>;
-using AnisotropicSE2Space =
-    geodex::ompl_integration::GeodexStateSpace<AnisotropicSE2>;
-using AnisotropicSE2State =
-    geodex::ompl_integration::GeodexState<AnisotropicSE2>;
+using AnisotropicSE2 = geodex::SE2<geodex::SE2LeftInvariantMetric, geodex::SE2ExponentialMap>;
+using AnisotropicSE2Space = geodex::integration::ompl::GeodexStateSpace<AnisotropicSE2>;
+using AnisotropicSE2State = geodex::integration::ompl::GeodexState<AnisotropicSE2>;
 
 // Anisotropic Euclidean types.
 using AnisotropicEuclidean = geodex::Euclidean<2, geodex::ConstantSPDMetric<2>>;
-using AnisotropicEuclideanSpace =
-    geodex::ompl_integration::GeodexStateSpace<AnisotropicEuclidean>;
-using AnisotropicEuclideanState =
-    geodex::ompl_integration::GeodexState<AnisotropicEuclidean>;
+using AnisotropicEuclideanSpace = geodex::integration::ompl::GeodexStateSpace<AnisotropicEuclidean>;
+using AnisotropicEuclideanState = geodex::integration::ompl::GeodexState<AnisotropicEuclidean>;
 
 /// Helper: create SE(2) OMPL bounds.
 static ob::RealVectorBounds makeSE2Bounds(double x_lo, double x_hi, double y_lo, double y_hi) {
@@ -180,8 +176,7 @@ TEST(GeodexStateSpaceTest, CollisionCheck_ThinWallDetected_WithRotation) {
   setState(s2, 8.0, 5.0, std::numbers::pi / 2.0);
 
   auto mv = std::make_shared<ob::DiscreteMotionValidator>(si);
-  EXPECT_FALSE(mv->checkMotion(s1, s2))
-      << "Wall must be detected even when path includes rotation";
+  EXPECT_FALSE(mv->checkMotion(s1, s2)) << "Wall must be detected even when path includes rotation";
 
   space->freeState(s1);
   space->freeState(s2);
@@ -206,8 +201,7 @@ TEST(GeodexStateSpaceTest, Interpolation_StaysCollisionFree) {
   setState(s2, 4.0, 10.0, 1.0);
 
   auto mv = std::make_shared<ob::DiscreteMotionValidator>(si);
-  EXPECT_TRUE(mv->checkMotion(s1, s2))
-      << "Edge that doesn't cross the wall should be valid";
+  EXPECT_TRUE(mv->checkMotion(s1, s2)) << "Edge that doesn't cross the wall should be valid";
 
   // Interpolate and verify all points are valid
   unsigned int n = space->validSegmentCount(s1, s2);
@@ -215,8 +209,7 @@ TEST(GeodexStateSpaceTest, Interpolation_StaysCollisionFree) {
   for (unsigned int i = 0; i <= n; ++i) {
     double t = static_cast<double>(i) / static_cast<double>(n);
     space->interpolate(s1, s2, t, interp);
-    EXPECT_TRUE(si->isValid(interp))
-        << "Interpolated state at t=" << t << " is invalid";
+    EXPECT_TRUE(si->isValid(interp)) << "Interpolated state at t=" << t << " is invalid";
   }
 
   space->freeState(interp);
@@ -258,8 +251,7 @@ TEST(GeodexDiscreteGeodesicTest, IdentityMetric_InterpolateUnchanged) {
     auto expected = manifold.geodesic(p1, p2, t);
     auto* r = result->as<StateType>();
     for (int i = 0; i < 3; ++i) {
-      EXPECT_DOUBLE_EQ(r->values[i], expected[i])
-          << "Mismatch at t=" << t << " dim=" << i;
+      EXPECT_DOUBLE_EQ(r->values[i], expected[i]) << "Mismatch at t=" << t << " dim=" << i;
     }
   }
 
@@ -278,7 +270,7 @@ TEST(GeodexDiscreteGeodesicTest, DisableFlag_ForcesSimpleGeodesic) {
 
   auto bounds = makeSE2Bounds(0.0, 10.0, 0.0, 10.0);
   auto space = std::make_shared<AnisotropicSE2Space>(manifold, bounds);
-  space->setUseDiscreteGeodesic(false);
+  space->setInterpolationMode(geodex::integration::ompl::InterpolationMode::BaseGeodesic);
 
   auto* s1 = space->allocState();
   auto* s2 = space->allocState();
@@ -320,7 +312,7 @@ TEST(GeodexDiscreteGeodesicTest, BoundaryValues_ExactEndpoints) {
 
   auto bounds = makeSE2Bounds(0.0, 10.0, 0.0, 10.0);
   auto space = std::make_shared<AnisotropicSE2Space>(manifold, bounds);
-  space->setUseDiscreteGeodesic(true);
+  space->setInterpolationMode(geodex::integration::ompl::InterpolationMode::RiemannianGeodesic);
 
   auto* s1 = space->allocState();
   auto* s2 = space->allocState();
@@ -359,8 +351,7 @@ TEST(GeodexDiscreteGeodesicTest, BoundaryValues_ExactEndpoints) {
 
 TEST(GeodexDiscreteGeodesicTest, AnisotropicEuclidean_MonotoneDistance) {
   Eigen::Matrix2d A;
-  A << 4.0, 0.0,
-       0.0, 1.0;  // 4x weight on x-axis
+  A << 4.0, 0.0, 0.0, 1.0;  // 4x weight on x-axis
   geodex::ConstantSPDMetric<2> metric{A};
   AnisotropicEuclidean manifold{metric};
 
@@ -368,7 +359,7 @@ TEST(GeodexDiscreteGeodesicTest, AnisotropicEuclidean_MonotoneDistance) {
   bounds.setLow(0.0);
   bounds.setHigh(10.0);
   auto space = std::make_shared<AnisotropicEuclideanSpace>(manifold, bounds);
-  space->setUseDiscreteGeodesic(true);
+  space->setInterpolationMode(geodex::integration::ompl::InterpolationMode::RiemannianGeodesic);
 
   auto* s1 = space->allocState();
   auto* s2 = space->allocState();
@@ -385,8 +376,7 @@ TEST(GeodexDiscreteGeodesicTest, AnisotropicEuclidean_MonotoneDistance) {
     double t = static_cast<double>(j) / N;
     space->interpolate(s1, s2, t, result);
     double d = space->distance(s1, result);
-    EXPECT_GE(d, prev_dist - 1e-10)
-        << "Distance should be monotonically increasing at t=" << t;
+    EXPECT_GE(d, prev_dist - 1e-10) << "Distance should be monotonically increasing at t=" << t;
     prev_dist = d;
   }
 
@@ -425,7 +415,7 @@ TEST(GeodexDiscreteGeodesicTest, AnisotropicSE2_BetterThanRetraction) {
   space->copyState(prev, s1);
 
   double discrete_length = 0.0;
-  space->setUseDiscreteGeodesic(true);
+  space->setInterpolationMode(geodex::integration::ompl::InterpolationMode::RiemannianGeodesic);
   for (int j = 1; j <= N; ++j) {
     space->interpolate(s1, s2, static_cast<double>(j) / N, curr);
     discrete_length += space->distance(prev, curr);
@@ -435,7 +425,7 @@ TEST(GeodexDiscreteGeodesicTest, AnisotropicSE2_BetterThanRetraction) {
   // Compute total path length with simple retraction interpolation
   double retraction_length = 0.0;
   space->copyState(prev, s1);
-  space->setUseDiscreteGeodesic(false);
+  space->setInterpolationMode(geodex::integration::ompl::InterpolationMode::BaseGeodesic);
   for (int j = 1; j <= N; ++j) {
     space->interpolate(s1, s2, static_cast<double>(j) / N, curr);
     retraction_length += space->distance(prev, curr);
@@ -465,7 +455,7 @@ TEST(GeodexDiscreteGeodesicTest, AnisotropicSE2_ThinWallDetected) {
   auto bounds = makeSE2Bounds(0.0, 60.0, 0.0, 48.0);
   auto space = std::make_shared<AnisotropicSE2Space>(manifold, bounds);
   space->setCollisionResolution(0.05);
-  space->setUseDiscreteGeodesic(true);
+  space->setInterpolationMode(geodex::integration::ompl::InterpolationMode::RiemannianGeodesic);
 
   auto si = std::make_shared<ob::SpaceInformation>(space);
   // Thin wall at x in [5.0, 5.2]
@@ -503,7 +493,7 @@ TEST(GeodexDiscreteGeodesicTest, ConvFailure_GracefulFallback) {
 
   auto bounds = makeSE2Bounds(0.0, 10.0, 0.0, 10.0);
   auto space = std::make_shared<AnisotropicSE2Space>(manifold, bounds);
-  space->setUseDiscreteGeodesic(true);
+  space->setInterpolationMode(geodex::integration::ompl::InterpolationMode::RiemannianGeodesic);
 
   // Use very restrictive settings to force convergence issues
   geodex::InterpolationSettings settings;
@@ -522,9 +512,7 @@ TEST(GeodexDiscreteGeodesicTest, ConvFailure_GracefulFallback) {
   s2->as<AnisotropicSE2State>()->values[2] = 2.0;
 
   // Should not crash — falls back to simple geodesic or uses partial path
-  EXPECT_NO_FATAL_FAILURE({
-    space->interpolate(s1, s2, 0.5, result);
-  });
+  EXPECT_NO_FATAL_FAILURE({ space->interpolate(s1, s2, 0.5, result); });
 
   // Result should be a valid state (not NaN)
   auto* r = result->as<AnisotropicSE2State>();

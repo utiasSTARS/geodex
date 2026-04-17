@@ -1,10 +1,10 @@
 /// @file bench_manifold_ops.cpp
 /// @brief Micro-benchmarks for manifold primitive operations.
 
+#include <Eigen/Core>
 #include <benchmark/benchmark.h>
 
-#include <Eigen/Core>
-#include <geodex/geodex.hpp>
+#include "geodex/geodex.hpp"
 
 using namespace geodex;
 

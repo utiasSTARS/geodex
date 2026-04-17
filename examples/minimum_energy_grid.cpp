@@ -8,14 +8,16 @@
 /// Usage:
 ///   ./minimum_energy_grid [output.json]
 
-#include <Eigen/Core>
-#include <Eigen/LU>
 #include <cmath>
+
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <string>
 #include <vector>
+
+#include <Eigen/Core>
+#include <Eigen/LU>
 
 namespace {
 
@@ -53,9 +55,7 @@ double potential(const Eigen::Vector2d& q, const ArmParams& p) {
 
 /// Analytical upper bound on potential energy.
 ///   Pmax = g * (m1*lc1 + m2*(l1 + lc2))
-double pmax_analytical(const ArmParams& p) {
-  return p.g * (p.m1 * p.lc1 + p.m2 * (p.l1 + p.lc2));
-}
+double pmax_analytical(const ArmParams& p) { return p.g * (p.m1 * p.lc1 + p.m2 * (p.l1 + p.lc2)); }
 
 /// Write a 2x2 matrix as [[a,b],[c,d]].
 void write_matrix2d(std::ostream& out, const Eigen::Matrix2d& M) {

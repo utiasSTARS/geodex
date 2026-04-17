@@ -9,12 +9,14 @@
 
 #pragma once
 
-#include <Eigen/Core>
-#include <array>
-#include <concepts>
 #include <cstddef>
 #include <cstdint>
+
+#include <array>
+#include <concepts>
 #include <random>
+
+#include <Eigen/Core>
 
 namespace geodex {
 

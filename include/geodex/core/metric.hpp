@@ -3,9 +3,11 @@
 
 #pragma once
 
-#include <Eigen/Core>
 #include <cmath>
+
 #include <concepts>
+
+#include <Eigen/Core>
 
 #include "concepts.hpp"
 

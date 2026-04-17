@@ -8,9 +8,11 @@
 #pragma once
 
 #include <cmath>
-#include <geodex/utils/math.hpp>
+
 #include <limits>
 #include <vector>
+
+#include "geodex/utils/math.hpp"
 
 namespace geodex::collision {
 
@@ -23,15 +25,20 @@ class CircleSDF {
   CircleSDF(const double cx, const double cy, const double radius)
       : cx_(cx), cy_(cy), radius_(radius), radius_sq_(radius * radius) {}
 
+  /// @brief Evaluate signed distance from point to circle boundary.
   template <typename Point>
   double operator()(const Point& q) const {
     const double dx = q[0] - cx_, dy = q[1] - cy_;
     return std::sqrt(dx * dx + dy * dy) - radius_;
   }
 
+  /// @brief X-coordinate of the circle center.
   double cx() const { return cx_; }
+  /// @brief Y-coordinate of the circle center.
   double cy() const { return cy_; }
+  /// @brief Radius of the circle.
   double radius() const { return radius_; }
+  /// @brief Squared radius of the circle.
   double radius_sq() const { return radius_sq_; }
 
  private:
@@ -52,9 +59,11 @@ class CircleSDF {
 /// \f]
 class CircleSmoothSDF {
  public:
+  /// @brief Construct from a list of circles and smoothing parameter.
   CircleSmoothSDF(std::vector<CircleSDF> circles, const double beta = 20.0)
       : circles_(std::move(circles)), beta_(beta) {}
 
+  /// @brief Evaluate smooth signed distance at point (x, y).
   template <typename Point>
   double operator()(const Point& q) const {
     if (circles_.empty()) return std::numeric_limits<double>::max();
@@ -90,7 +99,9 @@ class CircleSmoothSDF {
     return true;
   }
 
+  /// @brief Get the underlying circle obstacles.
   const std::vector<CircleSDF>& circles() const { return circles_; }
+  /// @brief Get the log-sum-exp smoothing parameter.
   double beta() const { return beta_; }
 
  private:

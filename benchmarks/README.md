@@ -33,7 +33,7 @@ Google Benchmark is fetched automatically via CMake FetchContent.
 | File | What it measures |
 |------|-----------------|
 | `bench_manifold_ops.cpp` | exp, log, distance, inner, norm, geodesic, random_point per manifold; dimension scaling for Torus/Euclidean (d=2..50) |
-| `bench_algorithms.cpp` | `discrete_geodesic` on all manifolds; batch `distance_midpoint` throughput (1000 pairs); dimension scaling |
+| `bench_algorithms.cpp` | `discrete_geodesic` single-pair on all manifolds; batch-steer workload (256 random endpoint pairs, shared workspace); SDFConformal FD path (midpoint guard vs forced via-log); batch `distance_midpoint` throughput (1000 pairs); dimension scaling |
 | `bench_metrics.cpp` | `inner` and `norm` for all 7 metric types; ConfigurationSpace overhead vs bare manifold |
 | `bench_retractions.cpp` | SE(2) and Sphere retraction speed; Sphere projection accuracy vs exponential map |
 | `bench_collision.cpp` | Collision primitives: circle/rectangle SDF eval and scaling, distance grid single/batch lookup, polygon footprint transform, footprint grid checker (early-out vs full check); fast math: `fast_exp` vs `std::exp`, `sincos` vs separate trig |
@@ -43,8 +43,9 @@ Google Benchmark is fetched automatically via CMake FetchContent.
 
 Machine: Apple M2 (8-core, arm64), 16 GB RAM, macOS 15.3.1
 Compiler: Apple clang 15.0.0, `-O2` (CMake Release)
-Date: 2026-04-08 (re-run after `feature/refactoring`: metric/sampler policy split,
-`discrete_geodesic` hardening, and `ConstantSPDMetric` unification)
+Date: 2026-04-17 (run after `feature/ompl-integration`: discrete-geodesic
+caching in OMPL adapter, FD midpoint guard with via-log fallback, `SDFConformalMetric`,
+path smoothing arc-length shortcut criterion).
 
 ### Manifold Primitives (ns per call)
 
@@ -59,43 +60,100 @@ Date: 2026-04-08 (re-run after `feature/refactoring`: metric/sampler policy spli
 
 ### Dimension Scaling: distance_midpoint (ns)
 
-| Dimension | Torus (fixed) | Torus (dynamic) | Euclidean (dynamic) |
-|-----------|:---:|:---:|:---:|
-| 2 | 7.9 | 156 | 96 |
-| 5 | -- | 208 | 123 |
-| 7 | 31 | 228 | 132 |
-| 10 | -- | 218 | 121 |
-| 20 | -- | 289 | 155 |
-| 50 | -- | 892 | 550 |
+Torus at compile-time fixed dimension versus `Torus<Eigen::Dynamic>` constructed
+at runtime. The fixed column is derived from the batch benchmarks
+(`BM_DistanceMidpoint_Torus2_Batch`, `BM_DistanceMidpoint_Torus7_Batch`) by
+dividing by the 1000-pair batch size; the dynamic column is per-call
+(`BM_DistanceMidpoint_TorusDynamic/d`).
 
-Fixed-dimension types remain ~20x faster than dynamic at d=2 thanks to stack
-allocation and compile-time loop unrolling.
+| Dimension | Torus (fixed) | Torus (dynamic) |
+|-----------|:---:|:---:|
+| 2 | 6.3 | 138 |
+| 5 | -- | 187 |
+| 7 | 38 | 200 |
+| 10 | -- | 195 |
+| 20 | -- | 247 |
+| 50 | -- | 656 |
 
-### Algorithm Performance (ns per call)
+Fixed-dimension types are ~20x faster than dynamic at d=2 thanks to stack
+allocation and compile-time loop unrolling. The dynamic cost grows roughly
+linearly with dimension (heap vectors + Eigen's dynamic dispatch).
 
-| Manifold | discrete_geodesic |
-|----------|:---:|
-| Sphere (round metric) | 231 |
-| Sphere (anisotropic) | 1,399 |
-| Torus<2> (flat metric) | 138 |
-| SE2 (exp map) | 1,240 |
-| SE2 (anisotropic SE2LeftInvariant) | 7,293 |
-| ConfigurationSpace<Torus<2>, KineticEnergyMetric> | 1,290 |
+### Algorithm Performance: discrete_geodesic single pair (ns per call)
 
-`discrete_geodesic` got roughly **5–8× faster** across the board compared to the
-pre-refactor numbers (e.g. Sphere round 1432→231 ns, SE2 10639→1240 ns). The
-speedup comes from the hardened natural-gradient loop landing in far fewer
-iterations on well-conditioned inputs (`iters/call` is 2–7 for isotropic
-metrics, 22–23 for anisotropic ones).
+Single `start → target` walk with a pre-allocated `InterpolationCache` workspace.
+`iters/call` is the average number of gradient steps to convergence at the
+default `settings.step_size = 0.5`.
+
+| Manifold | Time | iters/call |
+|----------|:---:|:---:|
+| Sphere (round metric) | 218 | 2 |
+| Sphere (anisotropic `ConstantSPD<3>`) | 2,706 | 4 |
+| Torus<2> (flat metric) | 130 | 6 |
+| SE2 (exp map, isotropic) | 1,246 | 23 |
+| SE2 (anisotropic `SE2LeftInvariant`) | 11,630 | 22 |
+| ConfigurationSpace<Torus<2>, KineticEnergyMetric> | 1,544 | 7 |
+
+Isotropic metrics (`is_riemannian_log` returns true) use the log direction
+directly — no FD sampling per step, so cost per iteration is minimal. The
+anisotropic/point-dependent rows (`SphereAniso`, `SE2_Anisotropic`, `CSpace_KE`)
+pay one central finite-difference natural gradient per step: 2·d samples of
+`distance_midpoint_fd` under the metric, which dominates wall time. Each sample
+itself calls the metric's `inner` (the 5.9 ns and 11.9 ns for KE/Jacobi listed
+further down), so the FD cost scales with the metric's per-evaluation price.
+
+### SDFConformal FD path: midpoint guard vs forced via-log
+
+Benchmarks: `BM_DiscreteGeodesic_SE2_SDFConformal_{Midpoint,ViaLog}`. Same
+`(start, target, step_size, max_steps)` under a spatially-varying
+`SDFConformalMetric` (unit-circle obstacle at origin). The two rows toggle
+`fd_midpoint_guard_tau` between its default (midpoint surrogate with guard) and
+0.0 (force the via-log fallback on every FD sample, which reproduces the
+pre-guard behavior).
+
+| Mode | Time | iters/call | fallbacks/call |
+|------|:---:|:---:|:---:|
+| Midpoint guard (default) | 13,221 ns | 24 | 0 |
+| Forced via-log (tau = 0) | 12,174 ns | 24 | 72 |
+
+Both paths converge in the same number of iterations and have essentially the
+same wall time — but the guarded midpoint form avoids the 72 per-iteration
+via-log recomputations. The guard lets the cheaper midpoint distance stand when
+it agrees with via-log, falling back per-sample only when the two diverge. On
+this benchmark the guard always agrees, so `fallbacks/call` is 0 at the
+default; forcing `tau = 0` shows the upper bound on via-log work we avoid.
+
+### Batch steer workload (RRT\* inner loop)
+
+Benchmarks: `BM_DiscreteGeodesic_*_BatchSteer`. Each invocation runs 256
+`discrete_geodesic` calls between independent random `(start, target)` pairs
+reusing a single `InterpolationCache`. This is the primary "RRT\* steer loop"
+shape — many short walks from unrelated roots through one workspace.
+
+| Manifold | Batch total | Per steer | Throughput | iters/call |
+|----------|:---:|:---:|:---:|:---:|
+| Sphere (round metric) | 93.8 µs | 366 ns | 2.73 M/s | 3.6 |
+| Torus<7> (flat metric) | 112.7 µs | 440 ns | 2.27 M/s | 9.7 |
+| SE2 (exp map) | 199.6 µs | 780 ns | 1.28 M/s | 13.5 |
+
+Per-steer cost is lower than the single-pair "Algorithm Performance" numbers
+because the workspace stays hot across steers and random endpoints give a
+distribution of distances around the injectivity-radius sweet spot. Use these
+numbers as a realistic RRT*/G-RRT* budget: ~1–3 M steers/second per core for
+isotropic metrics on the manifolds geodex currently supports.
 
 ### Batch distance_midpoint Throughput (1000 pairs)
 
-| Manifold | Total (us) | Throughput |
+| Manifold | Total (µs) | Throughput |
 |----------|:---:|:---:|
-| Torus<2> | 6.2 | 161M/s |
-| Torus<7> | 41.3 | 24M/s |
-| SE2 | 41.9 | 24M/s |
-| Sphere | 88.9 | 11M/s |
+| Torus<2> | 6.3 | 159 M/s |
+| Torus<7> | 38.0 | 26 M/s |
+| SE2 | 26.4 | 38 M/s |
+| Sphere | 93.0 | 11 M/s |
+
+`distance_midpoint` is a single exp + 3 log per pair. Sphere is slowest because
+log involves `acos` + vector normalization; Torus at low dim is fastest because
+exp/log reduce to arithmetic + angle wrap.
 
 ### Metric inner Product (ns per call)
 
@@ -370,10 +428,16 @@ SIMD efficiency issue — the vectorization code itself is equally efficient on 
   constant SPD on flat spaces, both methods produce identical paths; the discrete
   geodesic adds overhead without quality gain. A future `IsFlat` concept could
   extend the fast path to all constant metrics on flat spaces.
-- **`discrete_geodesic` is now the biggest win from the refactor** — the
-  hardened natural-gradient loop converges in a handful of iterations for
-  isotropic metrics, giving a 5–8× speedup on Sphere/Torus/SE2 without changing
-  the public API.
+- **`discrete_geodesic` cost is dominated by FD sampling for anisotropic /
+  point-dependent metrics.** Isotropic rows (Sphere round, Torus, SE2 exp, KE
+  on CSpace) converge in 2–23 iters with no FD fallback — hundreds of ns to a
+  few µs per walk. Anisotropic rows (`SphereAniso`, `SE2_Anisotropic`,
+  SDFConformal) pay 2·d `distance_midpoint_fd` samples per step; cost scales
+  with the metric's per-evaluation price and the number of steps, not the
+  loop overhead.
+- **Batch-steer throughput sets the RRT\* budget.** With a reused workspace,
+  geodex does ~2.7 M steers/s on Sphere (round), ~2.3 M/s on Torus<7>, and
+  ~1.3 M/s on SE2 — a useful ceiling when sizing planners.
 - **Metric unification is free.** Routing `EuclideanStandard`, `TorusFlat`, and
   `SE2LeftInvariant` through `ConstantSPDMetric` did not regress `inner`/`norm`
   performance (sub-nanosecond at low dim, identical to the old specialised

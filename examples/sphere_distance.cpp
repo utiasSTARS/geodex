@@ -7,12 +7,15 @@
 ///   2. Anisotropic metric (A=diag(4,1,1)) + exponential map
 ///   3. Round metric + projection retraction
 
-#include <Eigen/Core>
 #include <cmath>
-#include <geodex/geodex.hpp>
+
 #include <iomanip>
 #include <iostream>
 #include <numbers>
+
+#include <Eigen/Core>
+
+#include "geodex/geodex.hpp"
 
 using namespace geodex;
 

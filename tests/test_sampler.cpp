@@ -1,6 +1,7 @@
 #include <Eigen/Core>
-#include <geodex/core/sampler.hpp>
 #include <gtest/gtest.h>
+
+#include "geodex/core/sampler.hpp"
 
 using geodex::HaltonSampler;
 using geodex::Sampler;

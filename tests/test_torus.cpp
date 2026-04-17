@@ -1,11 +1,14 @@
-#include <gtest/gtest.h>
-
-#include <Eigen/Core>
 #include <cmath>
-#include <geodex/geodex.hpp>
+
 #include <numbers>
 
+#include <Eigen/Core>
+#include <gtest/gtest.h>
+
+#include "geodex/geodex.hpp"
+
 using namespace geodex;
+using namespace geodex::utils;
 
 // Compile-time concept checks
 static_assert(RiemannianManifold<Torus<2>>);
