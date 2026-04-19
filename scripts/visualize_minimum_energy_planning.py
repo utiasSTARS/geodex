@@ -185,15 +185,15 @@ def plot_planning(data, output_path):
                 alpha=0.7, zorder=3, label="raw",
             )
 
-        if smoothed:
-            xs = [p[0] for p in smoothed]
-            ys = [p[1] for p in smoothed]
-            ax.plot(
-                xs, ys,
-                color="#d62728", linewidth=2.5, zorder=4, label="smoothed",
-            )
+        # if smoothed:
+        #     xs = [p[0] for p in smoothed]
+        #     ys = [p[1] for p in smoothed]
+        #     ax.plot(
+        #         xs, ys,
+        #         color="#d62728", linewidth=2.5, zorder=4, label="smoothed",
+        #     )
 
-        ax.legend(loc="lower right", fontsize=11, framealpha=0.85)
+        # ax.legend(loc="lower right", fontsize=11, framealpha=0.85)
 
         # Start and goal markers
         ax.plot(start[0], start[1], "o", color="#2ca02c", markersize=9, zorder=5)

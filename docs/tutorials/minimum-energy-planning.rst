@@ -287,10 +287,104 @@ Planning with Asymptotically Optimal Planners
 
 .. note::
 
-   OMPL integration is coming in a future release.
-   This will allow plugging any Riemannian metric directly into OMPL's
-   asymptotically optimal planners (RRT*, BIT*, etc.) via the
-   ``GeodexStateSpace`` and ``GeodexOptimizationObjective`` adapters.
+   This example requires OMPL, which must be built from source with modern CMake targets.
+   See the `OMPL installation guide <https://ompl.kavrakilab.org/installation.html>`_ for details.
+
+With a clear picture of how these metrics reshape the geometry, we can now plan actual motions on it.
+We will run the motion planner three times on the same start and goal pairs, once with the Euclidean metric, once with the kinetic energy metric, and once with the Jacobi metric, and compare the resulting paths.
+
+geodex provides an OMPL integration layer that wraps any ``RiemannianManifold`` as an ``ompl::base::StateSpace``.
+The two key classes are ``GeodexStateSpace`` (which delegates ``distance()`` and ``interpolate()`` to the manifold) and ``GeodexOptimizationObjective`` (which uses geodesic distance as the path cost).
+Together, these allow you to plug any Riemannian metric into OMPL's asymptotically optimal planners without needing to modify the underlying planner itself.
+The following snippet shows how to set up and solve using RRT* algorithm with each of the three metrics (see the full example for details):
+
+.. tabs::
+
+   .. code-tab:: c++
+
+      #include <geodex/geodex.hpp>
+      #include <geodex/integration/ompl/geodex_state_space.hpp>
+      #include <geodex/integration/ompl/geodex_optimization_objective.hpp>
+      #include <ompl/geometric/SimpleSetup.h>
+      #include <ompl/geometric/planners/rrt/RRTstar.h>
+
+      namespace ob = ompl::base;
+      namespace og = ompl::geometric;
+      using geodex::integration::ompl::GeodexStateSpace;
+      using geodex::integration::ompl::GeodexOptimizationObjective;
+
+      // -- Flat metric (identity on R^2) --
+      geodex::Euclidean<2> flat_euclidean;
+
+      // -- Kinetic energy metric --
+      PlanarArmMassMatrix mass_fn;                          // functor from above
+      geodex::KineticEnergyMetric ke_metric{mass_fn};
+      geodex::ConfigurationSpace cspace_ke{geodex::Euclidean<2>{}, ke_metric};
+
+      // -- Jacobi metric --
+      constexpr double H = 1.2 * pmax;
+      geodex::JacobiMetric jacobi_metric{mass_fn, potential, H};
+      geodex::ConfigurationSpace cspace_j{geodex::Euclidean<2>{}, jacobi_metric};
+
+      // Wrap any of the above as an OMPL state space (example: Jacobi)
+      ob::RealVectorBounds bounds(2);
+      bounds.setLow(-M_PI);
+      bounds.setHigh(M_PI);
+      auto space = std::make_shared<GeodexStateSpace<decltype(cspace_j)>>(cspace_j, bounds);
+
+      og::SimpleSetup ss(space);
+      // ... set start, goal, planner ...
+      auto objective = std::make_shared<
+          GeodexOptimizationObjective<decltype(cspace_j)>>(
+          ss.getSpaceInformation(), goal_coords);
+      ss.setOptimizationObjective(objective);
+      ss.setPlanner(std::make_shared<og::RRTstar>(ss.getSpaceInformation()));
+      ss.solve(5.0);
+
+   .. code-tab:: py
+
+      # Python bindings do not support OMPL integration.   
+
+.. figure:: figs/minimum_energy_planning.svg
+   :align: center
+   :alt: RRT* under Euclidean, KE, and Jacobi metrics
+
+   Figure: RRT* trees and solution paths under Euclidean (left), kinetic energy (centre), and Jacobi (right) metrics. Background colour maps the determinant of the respective metric tensor.
+
+Under the Euclidean metric, the planner treats all joint displacements equally.
+The background is uniform (:math:`\det(I) = 1` everywhere) and the solution path is just a straight line in joint space.
+
+The kinetic energy metric biases the planner toward configurations where the effective inertia is lower.
+The background shows :math:`\det(M(q))`, which varies with the elbow angle.
+The path naturally curves toward folded-arm configurations (:math:`q_2` near :math:`\pm\pi`) to minimize kinematic effort.
+
+The Jacobi metric explicitly penalises high-potential regions through its conformal factor :math:`2(H - P(q))`.
+The background shows :math:`\det(J(q))`, which shrinks toward zero near the potential ridge.
+Because distances grow to infinity as :math:`P(q)` approaches :math:`H`, the planner is forced to route around the ridge.
+The resulting path safely avoids configurations where the arm would fight gravity, even if it requires a longer coordinate-space detour.
+
+This tutorial demonstrates how the choice of Riemannian metric elegantly encodes physics directly into the planning objective.
+The Euclidean metric ignores physics, the kinetic energy metric respects inertial coupling, and the Jacobi metric accounts for both inertia and gravitational potential simultaneously.
+
+Reproducing the figures:
+
+.. toggle::
+
+   .. code-block:: sh
+   
+      # Requires matplotlib and LaTeX
+      pip install matplotlib
+      sudo apt update && sudo apt install -y texlive-latex-extra dvipng cm-super
+
+      # Configure and build (requires OMPL)
+      cmake -B build -DBUILD_OMPL_EXAMPLES=ON -Dompl_DIR=/path/to/ompl/install/share/ompl/cmake
+      cmake --build build --target minimum_energy_planning
+
+      # Run the planning example
+      ./build/examples/ompl/minimum_energy_planning minimum_energy_planning.json
+
+      # Render SVG figure
+      python scripts/visualize_minimum_energy_planning.py minimum_energy_planning.json
 
 References
 ----------

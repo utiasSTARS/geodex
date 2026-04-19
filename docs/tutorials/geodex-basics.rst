@@ -513,7 +513,7 @@ The distribution depends on the manifold:
       auto p1 = sphere.random_point();  // uniform on S²
       auto p2 = R3.random_point();      // uniform in [-1, 1]³
       auto p3 = T2.random_point();      // uniform in [0, 2π)²
-      auto p4 = se2.random_point();     // uniform in workspace bounds
+      auto p4 = se2.random_point();     // uniform in sampling bounds
 
    .. code-tab:: py
 
@@ -525,7 +525,7 @@ The distribution depends on the manifold:
       p1 = sphere.random_point()     # uniform on S²
       p2 = euclidean.random_point()  # uniform in [-1, 1]³
       p3 = torus.random_point()      # uniform in [0, 2π)²
-      p4 = se2.random_point()        # uniform in workspace bounds
+      p4 = se2.random_point()        # uniform in sampling bounds
 
 The sphere uses the standard technique of normalizing a Gaussian vector to obtain a
 uniform distribution on :math:`\mathbb{S}^n`. Euclidean space draws each coordinate
@@ -546,7 +546,7 @@ The torus samples each angle uniformly from :math:`[0, 2\pi)`.
 
 .. note::
 
-   For SE(2), ``random_point()`` samples the position :math:`(x, y)` uniformly within workspace bounds (default: :math:`[0, 10]^2`) and the heading :math:`\theta` uniformly from :math:`[-\pi, \pi)`.
+   For SE(2), ``random_point()`` samples the position :math:`(x, y)` uniformly within the configured sampling bounds (default: :math:`[0, 10]^2`) and the heading :math:`\theta` uniformly from :math:`[-\pi, \pi)`.
    The bounds can be configured via the constructor.
 
 

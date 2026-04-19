@@ -108,15 +108,6 @@ RunResult run_planner(ManifoldT manifold, const std::string& label, const std::s
     }
 
     if (raw_points.size() >= 3) {
-      // Disable randomized shortcutting for shape-preserving smoothing.
-      // Shortcutting compares metric distances between waypoint pairs to decide
-      // whether to replace a sub-path with a direct connection. For
-      // ConfigurationSpace with point-dependent metrics (KineticEnergy, Jacobi),
-      // manifold.distance(p, q) uses the metric at p and does not see the
-      // metric variation between p and q — so it can underestimate the true
-      // arc cost across high-cost regions and admit shortcuts that destroy
-      // the RRT*-found shape. L-BFGS with the trust-region default still
-      // smooths kinks while staying near the raw path.
       geodex::algorithm::PathSmoothingSettings settings;
       settings.max_shortcut_attempts = 0;
       auto smoothed = geodex::algorithm::smooth_path(
@@ -124,9 +115,6 @@ RunResult run_planner(ManifoldT manifold, const std::string& label, const std::s
       for (const auto& p : smoothed.path) {
         result.smoothed_path.push_back({p[0], p[1]});
       }
-      std::cout << label << ": smoothing reduced energy to " << smoothed.energy << " ("
-                << smoothed.smooth_iterations << " L-BFGS iters, " << smoothed.vertices_removed
-                << " verts removed)\n";
     } else {
       result.smoothed_path = result.raw_path;
     }

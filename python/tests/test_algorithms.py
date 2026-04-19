@@ -22,6 +22,8 @@ class TestInterpolationSettings:
         assert s.fd_epsilon == pytest.approx(0.0)
         assert s.distortion_ratio == pytest.approx(1.5)
         assert s.growth_factor == pytest.approx(1.5)
+        assert s.force_log_direction is False
+        assert s.fd_midpoint_guard_tau == pytest.approx(0.25)
 
     def test_keyword_construction(self):
         s = geodex.InterpolationSettings(step_size=0.1, max_steps=50)
@@ -30,12 +32,23 @@ class TestInterpolationSettings:
         # Other fields keep defaults
         assert s.convergence_tol == pytest.approx(1e-4)
 
+    def test_new_fields_keyword_construction(self):
+        s = geodex.InterpolationSettings(force_log_direction=True, fd_midpoint_guard_tau=0.1)
+        assert s.force_log_direction is True
+        assert s.fd_midpoint_guard_tau == pytest.approx(0.1)
+        # Unrelated fields keep defaults
+        assert s.step_size == pytest.approx(0.5)
+
     def test_field_mutation(self):
         s = geodex.InterpolationSettings()
         s.step_size = 0.25
         s.max_steps = 200
+        s.force_log_direction = True
+        s.fd_midpoint_guard_tau = 0.05
         assert s.step_size == pytest.approx(0.25)
         assert s.max_steps == 200
+        assert s.force_log_direction is True
+        assert s.fd_midpoint_guard_tau == pytest.approx(0.05)
 
     def test_repr(self):
         s = geodex.InterpolationSettings()
@@ -401,3 +414,70 @@ class TestInterpolationStatus:
         # Final distance should match distance from last path point to target.
         expected = self.sphere.distance(r.path[-1], q)
         assert r.final_distance == pytest.approx(expected, abs=1e-6)
+
+
+# ---------------------------------------------------------------------------
+# force_log_direction: skip the FD fallback even when the metric is non-Riemannian
+# ---------------------------------------------------------------------------
+
+
+class TestForceLogDirection:
+    """``force_log_direction = True`` makes the walk always use -log as its
+    descent direction. Under a non-identity SPD metric attached to the sphere
+    (where ``is_riemannian_log`` is false), this changes the walk from the FD
+    path to the fast path."""
+
+    def setup_method(self):
+        self.sphere = geodex.Sphere()
+        self.metric = geodex.ConstantSPDMetric(np.diag([4.0, 1.0, 1.0]))
+        self.cs = geodex.ConfigurationSpace(self.sphere, self.metric)
+        self.p = np.array([0.0, 0.0, 1.0])
+        self.q = np.array([np.sin(1.0), 0.0, np.cos(1.0)])
+
+    def test_default_converges_via_fd(self):
+        settings = geodex.InterpolationSettings(step_size=0.1, max_steps=500)
+        r = geodex.discrete_geodesic(self.cs, self.p, self.q, settings)
+        assert r.status == geodex.InterpolationStatus.Converged
+        assert r.fd_midpoint_fallbacks >= 0  # field readable, value meaningful
+
+    def test_force_log_skips_fd(self):
+        """With force_log_direction=True the FD path never runs, so the
+        midpoint fallback counter stays at zero."""
+        settings = geodex.InterpolationSettings(
+            step_size=0.1, max_steps=500, force_log_direction=True
+        )
+        r = geodex.discrete_geodesic(self.cs, self.p, self.q, settings)
+        assert r.status == geodex.InterpolationStatus.Converged
+        assert r.fd_midpoint_fallbacks == 0
+
+
+# ---------------------------------------------------------------------------
+# fd_midpoint_guard_tau + InterpolationResult.fd_midpoint_fallbacks
+# ---------------------------------------------------------------------------
+
+
+class TestFdMidpointGuard:
+    def test_fallbacks_zero_on_clean_sphere_geodesic(self):
+        """Clean round sphere uses the fast path; FD never runs."""
+        sphere = geodex.Sphere()
+        p = np.array([0.0, 0.0, 1.0])
+        q = np.array([np.sin(1.0), 0.0, np.cos(1.0)])
+        r = geodex.discrete_geodesic(sphere, p, q)
+        assert isinstance(r.fd_midpoint_fallbacks, int)
+        assert r.fd_midpoint_fallbacks == 0
+
+    def test_guard_tau_zero_forces_via_log_samples(self):
+        """``fd_midpoint_guard_tau = 0`` rejects every midpoint sample, so
+        every FD basis direction falls back to |log|_R and the counter
+        increments throughout the walk."""
+        sphere = geodex.Sphere()
+        metric = geodex.ConstantSPDMetric(np.diag([4.0, 1.0, 1.0]))
+        cs = geodex.ConfigurationSpace(sphere, metric)
+        p = np.array([0.0, 0.0, 1.0])
+        q = np.array([np.sin(1.0), 0.0, np.cos(1.0)])
+        settings = geodex.InterpolationSettings(
+            step_size=0.1, max_steps=500, fd_midpoint_guard_tau=0.0
+        )
+        r = geodex.discrete_geodesic(cs, p, q, settings)
+        assert r.status == geodex.InterpolationStatus.Converged
+        assert r.fd_midpoint_fallbacks > 0

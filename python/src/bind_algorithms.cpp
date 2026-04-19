@@ -74,17 +74,27 @@ void bind_algorithms(nb::module_& m) {
           "__init__",
           [](InterpolationSettings* s, double step_size, double convergence_tol,
              double convergence_rel, int max_steps, double fd_epsilon, double distortion_ratio,
-             double growth_factor, double min_step_size, double gradient_eps,
-             double cut_locus_eps) {
-            new (s) InterpolationSettings{
-                step_size,        convergence_tol, convergence_rel, max_steps,    fd_epsilon,
-                distortion_ratio, growth_factor,   min_step_size,   gradient_eps, cut_locus_eps};
+             double growth_factor, double min_step_size, double gradient_eps, double cut_locus_eps,
+             bool force_log_direction, double fd_midpoint_guard_tau) {
+            new (s) InterpolationSettings{step_size,
+                                          convergence_tol,
+                                          convergence_rel,
+                                          max_steps,
+                                          fd_epsilon,
+                                          distortion_ratio,
+                                          growth_factor,
+                                          min_step_size,
+                                          gradient_eps,
+                                          cut_locus_eps,
+                                          force_log_direction,
+                                          fd_midpoint_guard_tau};
           },
           nb::arg("step_size") = 0.5, nb::arg("convergence_tol") = 1e-4,
           nb::arg("convergence_rel") = 1e-3, nb::arg("max_steps") = 100,
           nb::arg("fd_epsilon") = 0.0, nb::arg("distortion_ratio") = 1.5,
           nb::arg("growth_factor") = 1.5, nb::arg("min_step_size") = 1e-12,
           nb::arg("gradient_eps") = 1e-12, nb::arg("cut_locus_eps") = 1e-10,
+          nb::arg("force_log_direction") = false, nb::arg("fd_midpoint_guard_tau") = 0.25,
           "Create interpolation settings.\n\n"
           "Args:\n"
           "    step_size: Max Riemannian step per iteration (also effective path resolution).\n"
@@ -97,7 +107,15 @@ void bind_algorithms(nb::module_& m) {
           "    growth_factor: After a successful step, regrow the step cap by this factor.\n"
           "    min_step_size: Failure threshold after repeated distortion halvings.\n"
           "    gradient_eps: Gradient norm threshold for GradientVanished status.\n"
-          "    cut_locus_eps: |log|_R threshold that flags a cut-locus situation.")
+          "    cut_locus_eps: |log|_R threshold that flags a cut-locus situation.\n"
+          "    force_log_direction: If True, always use -log(current, target) as the descent\n"
+          "        direction and skip the FD fallback. Produces smoother paths at the cost\n"
+          "        of following the base retraction's geodesic instead of the true\n"
+          "        Riemannian geodesic of the configured metric.\n"
+          "    fd_midpoint_guard_tau: Relative-error threshold above which the midpoint\n"
+          "        distance surrogate used inside the FD gradient is rejected and the sample\n"
+          "        falls back to |log|_R for that basis direction. Set to 0 to force\n"
+          "        via-log sampling every time.")
       .def_rw("step_size", &InterpolationSettings::step_size,
               "Max Riemannian step per iteration; also the effective path resolution.")
       .def_rw("convergence_tol", &InterpolationSettings::convergence_tol,
@@ -118,6 +136,15 @@ void bind_algorithms(nb::module_& m) {
               "Gradient Riemannian-norm threshold for GradientVanished status.")
       .def_rw("cut_locus_eps", &InterpolationSettings::cut_locus_eps,
               "|log|_R threshold that flags CutLocus.")
+      .def_rw("force_log_direction", &InterpolationSettings::force_log_direction,
+              "If True, always use -log(current, target) as the descent direction and skip "
+              "the FD fallback. Produces smoother paths at the cost of following the base "
+              "retraction's geodesic rather than the true Riemannian geodesic of the "
+              "configured metric.")
+      .def_rw("fd_midpoint_guard_tau", &InterpolationSettings::fd_midpoint_guard_tau,
+              "Relative-error threshold above which the midpoint distance surrogate used "
+              "inside the FD gradient is rejected and the sample falls back to |log|_R for "
+              "that basis direction.")
       .def("__repr__", [](const InterpolationSettings& s) {
         return "InterpolationSettings(step_size=" + std::to_string(s.step_size) +
                ", convergence_tol=" + std::to_string(s.convergence_tol) +
@@ -139,6 +166,11 @@ void bind_algorithms(nb::module_& m) {
               "Number of successful gradient steps taken (distortion retries do not count).")
       .def_ro("distortion_halvings", &PyResult::distortion_halvings,
               "Number of times the step cap was halved due to progress failure.")
+      .def_ro("fd_midpoint_fallbacks", &PyResult::fd_midpoint_fallbacks,
+              "Number of FD basis samples whose midpoint distance surrogate was rejected "
+              "by the runtime guard and replaced with |log|_R. A nonzero value flags a "
+              "non-Riemannian retraction, a cut-locus crossing, or a non-smooth metric "
+              "feature within the FD neighbourhood.")
       .def_ro("initial_distance", &PyResult::initial_distance,
               "Riemannian distance from start to target at entry.")
       .def_ro("final_distance", &PyResult::final_distance,
@@ -195,7 +227,7 @@ void bind_algorithms(nb::module_& m) {
       "    settings: InterpolationSettings (optional, uses defaults if omitted).\n"
       "Returns:\n"
       "    InterpolationResult with fields path, status, iterations, distortion_halvings,\n"
-      "    initial_distance, final_distance.");
+      "    fd_midpoint_fallbacks, initial_distance, final_distance.");
 
   // --- EuclideanHeuristic ---
   nb::class_<geodex::EuclideanHeuristic>(

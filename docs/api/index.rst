@@ -134,11 +134,11 @@ Batched inner product
 OMPL Integration
 ----------------
 
-.. doxygenclass:: geodex::ompl_integration::GeodexStateSpace
+.. doxygenclass:: geodex::integration::ompl::GeodexStateSpace
    :members:
 
-.. doxygenclass:: geodex::ompl_integration::GeodexState
+.. doxygenclass:: geodex::integration::ompl::GeodexState
    :members:
 
-.. doxygenclass:: geodex::ompl_integration::GeodexStateSampler
+.. doxygenclass:: geodex::integration::ompl::GeodexStateSampler
    :members:

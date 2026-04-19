@@ -474,6 +474,15 @@ class InterpolationSettings:
     """Gradient Riemannian-norm threshold for ``GradientVanished``."""
     cut_locus_eps: float
     """``|log|_R`` threshold flagging ``CutLocus``."""
+    force_log_direction: bool
+    """If True, always use ``-log(current, target)`` as the descent direction and skip
+    the FD fallback. Produces smoother paths at the cost of following the base
+    retraction's geodesic rather than the true Riemannian geodesic of the configured
+    metric."""
+    fd_midpoint_guard_tau: float
+    """Relative-error threshold above which the midpoint distance surrogate used inside
+    the FD gradient is rejected and the sample falls back to ``|log|_R`` for that basis
+    direction."""
 
     def __init__(
         self,
@@ -487,6 +496,8 @@ class InterpolationSettings:
         min_step_size: float = 1e-12,
         gradient_eps: float = 1e-12,
         cut_locus_eps: float = 1e-10,
+        force_log_direction: bool = False,
+        fd_midpoint_guard_tau: float = 0.25,
     ) -> None:
         """Create interpolation settings.
 
@@ -501,6 +512,10 @@ class InterpolationSettings:
             min_step_size: Failure threshold after repeated distortion halvings.
             gradient_eps: Gradient norm threshold for ``GradientVanished``.
             cut_locus_eps: ``|log|_R`` threshold flagging ``CutLocus``.
+            force_log_direction: If True, always use ``-log`` as the descent direction and
+                skip the FD fallback.
+            fd_midpoint_guard_tau: Relative-error threshold for the FD midpoint surrogate
+                (set to 0 to force via-log sampling every time).
         """
         ...
 
@@ -530,6 +545,14 @@ class InterpolationResult:
     @property
     def distortion_halvings(self) -> int:
         """Number of times the step cap was halved due to progress failure."""
+        ...
+
+    @property
+    def fd_midpoint_fallbacks(self) -> int:
+        """Number of FD basis samples whose midpoint distance surrogate was rejected
+        by the runtime guard and replaced with ``|log|_R``. A nonzero value flags a
+        non-Riemannian retraction, a cut-locus crossing, or a non-smooth metric
+        feature within the FD neighbourhood."""
         ...
 
     @property
@@ -592,7 +615,8 @@ def discrete_geodesic(
 
     Returns:
         InterpolationResult with fields ``path``, ``status``, ``iterations``,
-        ``distortion_halvings``, ``initial_distance``, ``final_distance``.
+        ``distortion_halvings``, ``fd_midpoint_fallbacks``, ``initial_distance``,
+        ``final_distance``.
     """
     ...
 
