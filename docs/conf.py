@@ -14,6 +14,28 @@ extensions = [
     "sphinxcontrib.bibtex",
 ]
 
+# MathJax: render math with TeX Gyre Termes (Times family). MathJax's default
+# TeX font diverges from what the project's LaTeX manuscripts render, most
+# visibly on the calligraphic alphabets. Termes is the closest match we found
+# across body italics, digits, and the script letters.
+#
+# Alternate fonts ship only in MathJax v4 (v3 carries the TeX font alone), and
+# we vendor both the core bundle and the active font package under
+# ``docs/_static/mathjax/`` so offline builds work without hitting jsdelivr.
+# To swap fonts: run ``python3 docs/scripts/vendor_mathjax.py <name>`` and
+# change the three ``termes`` occurrences below to the new name. The
+# ``[mathjax]`` marker in ``loader.paths`` is a MathJax built-in that resolves
+# to the directory of the main JS at runtime, so it works from every page.
+mathjax_path = "mathjax/tex-mml-chtml.js"
+mathjax3_config = {
+    "loader": {
+        "paths": {
+            "mathjax-termes": "[mathjax]/fonts/termes",
+        },
+    },
+    "chtml": {"font": "mathjax-termes"},
+}
+
 # Bibliography
 bibtex_bibfiles = ["refs.bib"]
 bibtex_default_style = "alpha"
