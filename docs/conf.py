@@ -1,7 +1,9 @@
 """Sphinx configuration for geodex documentation."""
 
 project = "geodex"
-copyright = "2026, geodex contributors"
+copyright = (
+    "2026, Space and Terrestrial Autonomous Robotic Systems (STARS) Lab"
+)
 author = "geodex contributors"
 
 extensions = [
@@ -85,7 +87,7 @@ mermaid_init_config = {
 
 # HTML theme
 html_theme = "sphinx_rtd_theme"
-
+html_show_sphinx = True
 html_theme_options = {
     'navigation_depth': 3,
     'collapse_navigation': True

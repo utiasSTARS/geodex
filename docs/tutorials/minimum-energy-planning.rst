@@ -366,6 +366,19 @@ The resulting path safely avoids configurations where the arm would fight gravit
 This tutorial demonstrates how the choice of Riemannian metric elegantly encodes physics directly into the planning objective.
 The Euclidean metric ignores physics, the kinetic energy metric respects inertial coupling, and the Jacobi metric accounts for both inertia and gravitational potential simultaneously.
 
+Seeing the Arm in Motion
+------------------------
+
+The animation below traces the two-link arm along all three solutions side by side.
+
+.. figure:: figs/minimum_energy_arm.gif
+   :align: center
+   :width: 95%
+   :alt: Two-link planar arm under the Euclidean, kinetic-energy, and Jacobi metrics.
+
+   Figure: Planar arm sweeping along the Euclidean, kinetic-energy, and Jacobi
+   minimum-energy paths.
+
 Reproducing the figures:
 
 .. toggle::
