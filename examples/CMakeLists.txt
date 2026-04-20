@@ -6,3 +6,11 @@ target_link_libraries(sphere_distance PRIVATE geodex)
 
 add_executable(minimum_energy_grid minimum_energy_grid.cpp)
 target_link_libraries(minimum_energy_grid PRIVATE geodex)
+
+install(TARGETS
+  sphere_basics
+  sphere_distance
+  sphere_interpolation
+  minimum_energy_grid
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)

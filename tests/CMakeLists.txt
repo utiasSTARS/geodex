@@ -6,6 +6,7 @@ FetchContent_Declare(
   GIT_TAG v1.14.0
   GIT_SHALLOW TRUE
 )
+set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 add_executable(test_concepts test_concepts.cpp)

@@ -16,16 +16,10 @@ FetchContent_Declare(
   GIT_TAG 5.0.0
   GIT_SHALLOW TRUE
 )
-set(EIGEN_BUILD_DOC OFF CACHE BOOL "" FORCE)
-set(EIGEN_BUILD_TESTING OFF CACHE BOOL "" FORCE)
-set(BUILD_TESTING_SAVE ${BUILD_TESTING})
-set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 FetchContent_GetProperties(eigen)
 if(NOT eigen_POPULATED)
   FetchContent_Populate(eigen)
-  add_subdirectory(${eigen_SOURCE_DIR} ${eigen_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
-set(BUILD_TESTING ${BUILD_TESTING_SAVE} CACHE BOOL "" FORCE)
 
 # Header-only interface library
 add_library(geodex INTERFACE)
@@ -89,9 +83,6 @@ install(DIRECTORY include/
 )
 
 install(DIRECTORY ${eigen_SOURCE_DIR}/Eigen
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
-install(DIRECTORY ${eigen_SOURCE_DIR}/unsupported
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
