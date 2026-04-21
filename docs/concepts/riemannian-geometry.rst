@@ -14,7 +14,7 @@ vector space of all instantaneous velocities passing through :math:`p`. Tangent 
 :math:`v \in \mathcal{T}_p\mathcal{M}` are the directions in which you can move on the
 manifold.
 
-.. image:: ../tutorials/figs/manifold.svg
+.. image:: figs/manifold.svg
    :class: responsive-img
    :align: center
 

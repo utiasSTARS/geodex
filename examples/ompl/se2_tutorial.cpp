@@ -72,6 +72,19 @@ struct RunResult {
 
 using PlannerFactory = std::function<ob::PlannerPtr(const ob::SpaceInformationPtr&)>;
 
+// Default StateSpace interpolation settings used during OMPL tree expansion.
+// Scenarios can override this per-experiment by passing a custom value as the
+// last argument to run_planner.
+inline geodex::InterpolationSettings default_state_interp() {
+  geodex::InterpolationSettings s;
+  s.step_size = 1.0;
+  s.convergence_tol = 1e-2;
+  s.convergence_rel = 1e-2;
+  s.max_steps = 20;
+  s.force_log_direction = true;
+  return s;
+}
+
 template <typename ManifoldT, typename ValidityFn>
 RunResult run_planner(ManifoldT manifold, const std::string& label, const std::string& metric_info,
                       const PlannerFactory& make_planner, const double solve_time,
@@ -79,7 +92,9 @@ RunResult run_planner(ManifoldT manifold, const std::string& label, const std::s
                       const std::array<double, 3>& start_pose,
                       const std::array<double, 3>& goal_pose, ValidityFn validity,
                       geodex::algorithm::PathSmoothingSettings smooth_settings = {},
-                      const double range = 0.0, const double collision_resolution = 0.1) {
+                      const double range = 0.0, const double collision_resolution = 0.1,
+                      geodex::InterpolationSettings state_space_interp = default_state_interp(),
+                      const double rewire_factor = 0.5) {
   using StateSpace = geodex::integration::ompl::GeodexStateSpace<ManifoldT>;
   using StateType = geodex::integration::ompl::GeodexState<ManifoldT>;
 
@@ -89,15 +104,7 @@ RunResult run_planner(ManifoldT manifold, const std::string& label, const std::s
 
   auto space = std::make_shared<StateSpace>(manifold, bounds);
   space->setCollisionResolution(collision_resolution);
-
-  // Force log direction for stable interpolation with anisotropic/clearance metrics.
-  geodex::InterpolationSettings fast_interp;
-  fast_interp.step_size = 1.0;
-  fast_interp.convergence_tol = 1e-2;
-  fast_interp.convergence_rel = 1e-2;
-  fast_interp.max_steps = 20;
-  fast_interp.force_log_direction = true;
-  space->setInterpolationSettings(fast_interp);
+  space->setInterpolationSettings(state_space_interp);
 
   og::SimpleSetup ss(space);
   ss.setStateValidityChecker(geodex::integration::ompl::make_validity_checker<ManifoldT>(
@@ -127,7 +134,7 @@ RunResult run_planner(ManifoldT manifold, const std::string& label, const std::s
   if (range > 0.0) {
     planner->params().setParam("range", std::to_string(range));
   }
-  planner->params().setParam("rewire_factor", "0.5");
+  planner->params().setParam("rewire_factor", std::to_string(rewire_factor));
   ss.setPlanner(planner);
 
   // --- Planning ---
@@ -422,31 +429,46 @@ PlannerFactory make_rrt() {
 TutorialOutput run_holonomic(const DistanceGrid& grid, const std::string& map_file,
                              const double solve_time) {
   constexpr double robot_radius = 0.3;
+  // Safety margin beyond the robot radius. Pushes the tree (and the raw path)
+  // away from walls so L-BFGS has room to round corners.
+  constexpr double safety_margin = 0.10;
   const double world_w = grid.width() * grid.resolution();
   const double world_h = grid.height() * grid.resolution();
 
   TutorialOutput out;
   out.scenario = "holonomic";
   out.start = {2.0, 5.0, 0.0};
-  out.goal = {13.0, 3.0, -std::numbers::pi / 2.0};
+  out.goal = {12.0, 6.0, -std::numbers::pi / 2.0};
   out.robot_type = "circle";
   out.robot_radius = robot_radius;
   out.grid = &grid;
   out.map_file = map_file;
 
   auto validity = [&grid, robot_radius](const auto& q) {
-    return grid.distance_at(q[0], q[1]) > robot_radius;
+    return grid.distance_at(q[0], q[1]) > robot_radius + safety_margin;
   };
 
-  geodex::SE2LeftInvariantMetric metric{1.0, 1.0, 0.5};
+  geodex::SE2LeftInvariantMetric metric{1.0, 1.0, 1.0};
   geodex::SE2<> manifold{metric, geodex::SE2ExponentialMap{},
                          Eigen::Vector3d(0.0, 0.0, -std::numbers::pi),
                          Eigen::Vector3d(world_w, world_h, std::numbers::pi)};
 
+  // Per-scenario StateSpace interp. Fine step_size gives OMPL metric-consistent
+  // distances during tree growth so the raw path already tracks the geodesic.
+  geodex::InterpolationSettings state_interp;
+  state_interp.step_size = 0.2;
+  state_interp.convergence_tol = 1e-3;
+  state_interp.convergence_rel = 1e-3;
+  state_interp.max_steps = 80;
+  state_interp.force_log_direction = true;
+
+  constexpr double planner_range = 4;
+  constexpr double rewire_factor = 1.1;
+
   auto bounds = make_bounds(world_w, world_h);
-  out.runs.push_back(run_planner(manifold, "Holonomic (isotropic)", "w=(1,1,0.5)", make_irrt(),
-                                 solve_time, bounds, out.start, out.goal, validity, {}, 3.0,
-                                 grid.resolution()));
+  out.runs.push_back(run_planner(manifold, "Holonomic (isotropic)", "w=(1,1,1)", make_irrt(),
+                                 solve_time, bounds, out.start, out.goal, validity, {},
+                                 planner_range, grid.resolution(), state_interp, rewire_factor));
   return out;
 }
 
@@ -457,24 +479,25 @@ TutorialOutput run_holonomic(const DistanceGrid& grid, const std::string& map_fi
 TutorialOutput run_holo_clearance(const DistanceGrid& grid, const std::string& map_file,
                                   const double solve_time) {
   constexpr double robot_radius = 0.3;
-  constexpr double kappa = 3.0, beta = 2.0;
+  constexpr double safety_margin = 0.10;
+  constexpr double kappa = 1.5, beta = 1.5;
   const double world_w = grid.width() * grid.resolution();
   const double world_h = grid.height() * grid.resolution();
 
   TutorialOutput out;
   out.scenario = "holo_clearance";
   out.start = {2.0, 5.0, 0.0};
-  out.goal = {13.0, 3.0, -std::numbers::pi / 2.0};
+  out.goal = {12.0, 6.0, -std::numbers::pi / 2.0};
   out.robot_type = "circle";
   out.robot_radius = robot_radius;
   out.grid = &grid;
   out.map_file = map_file;
 
   auto validity = [&grid, robot_radius](const auto& q) {
-    return grid.distance_at(q[0], q[1]) > robot_radius;
+    return grid.distance_at(q[0], q[1]) > robot_radius + safety_margin;
   };
 
-  geodex::SE2LeftInvariantMetric base_metric{1.0, 1.0, 0.5};
+  geodex::SE2LeftInvariantMetric base_metric{1.0, 1.0, 1.0};
   geodex::collision::InflatedSDF inflated_sdf{GridSDF{&grid}, robot_radius};
   geodex::SDFConformalMetric clearance_metric{base_metric, inflated_sdf, kappa, beta};
 
@@ -483,10 +506,22 @@ TutorialOutput run_holo_clearance(const DistanceGrid& grid, const std::string& m
                     Eigen::Vector3d(world_w, world_h, std::numbers::pi)};
   geodex::ConfigurationSpace cspace{se2, clearance_metric};
 
+  // Per-scenario StateSpace interp. Clearance metric inflates distance near
+  // walls so we need fine geodesic stepping to track the warped geometry.
+  geodex::InterpolationSettings state_interp;
+  state_interp.step_size = 0.2;
+  state_interp.convergence_tol = 1e-3;
+  state_interp.convergence_rel = 1e-3;
+  state_interp.max_steps = 80;
+  state_interp.force_log_direction = true;
+
+  constexpr double planner_range = 3.0;
+  constexpr double rewire_factor = 1.1;
+
   auto bounds = make_bounds(world_w, world_h);
-  out.runs.push_back(run_planner(cspace, "Holonomic + clearance", "k=3 b=2", make_irrt(),
-                                 solve_time, bounds, out.start, out.goal, validity, {}, 3.0,
-                                 grid.resolution()));
+  out.runs.push_back(run_planner(cspace, "Holonomic + clearance", "k=1.5 b=1.5", make_irrt(),
+                                 solve_time, bounds, out.start, out.goal, validity, {},
+                                 planner_range, grid.resolution(), state_interp, rewire_factor));
 
   // Sample conformal factor grid for heatmap visualization.
   out.conformal_w = grid.width();
@@ -506,14 +541,14 @@ TutorialOutput run_holo_clearance(const DistanceGrid& grid, const std::string& m
 TutorialOutput run_diff_drive(const DistanceGrid& grid, const std::string& map_file,
                               const double solve_time) {
   constexpr double robot_hl = 0.35, robot_hw = 0.25;
-  constexpr double safety_margin = 0.05;
+  constexpr double safety_margin = 0.10;
   const double world_w = grid.width() * grid.resolution();
   const double world_h = grid.height() * grid.resolution();
 
   TutorialOutput out;
   out.scenario = "diff_drive";
   out.start = {2.0, 5.0, 0.0};
-  out.goal = {13.0, 3.0, -std::numbers::pi / 2.0};
+  out.goal = {12.0, 6.0, -std::numbers::pi / 2.0};
   out.robot_type = "rectangle";
   out.robot_hl = robot_hl;
   out.robot_hw = robot_hw;
@@ -524,15 +559,28 @@ TutorialOutput run_diff_drive(const DistanceGrid& grid, const std::string& map_f
   geodex::collision::FootprintGridChecker checker{&grid, footprint, safety_margin};
   auto validity = [&checker](const auto& q) { return checker.is_valid(q); };
 
-  geodex::SE2LeftInvariantMetric metric{1.0, 5.0, 1.0};
+  geodex::SE2LeftInvariantMetric metric{1.0, 10.0, 1.0};
   geodex::SE2<> manifold{metric, geodex::SE2ExponentialMap{},
                          Eigen::Vector3d(0.0, 0.0, -std::numbers::pi),
                          Eigen::Vector3d(world_w, world_h, std::numbers::pi)};
 
+  // Per-scenario StateSpace interp. Anisotropic metric (w_y = 10) means a
+  // metric step of 0.3 is only ~0.095 m laterally, so finer stepping is needed
+  // to track the true geodesic during tree growth.
+  geodex::InterpolationSettings state_interp;
+  state_interp.step_size = 0.3;
+  state_interp.convergence_tol = 1e-3;
+  state_interp.convergence_rel = 1e-3;
+  state_interp.max_steps = 80;
+  state_interp.force_log_direction = true;
+
+  constexpr double planner_range = 4.0;
+  constexpr double rewire_factor = 1.1;
+
   auto bounds = make_bounds(world_w, world_h);
-  out.runs.push_back(run_planner(manifold, "Diff-drive (anisotropic)", "w=(1,5,1)", make_irrt(),
-                                 solve_time, bounds, out.start, out.goal, validity, {}, 3.0,
-                                 grid.resolution()));
+  out.runs.push_back(run_planner(manifold, "Diff-drive (anisotropic)", "w=(1,10,1)", make_irrt(),
+                                 solve_time, bounds, out.start, out.goal, validity, {},
+                                 planner_range, grid.resolution(), state_interp, rewire_factor));
   return out;
 }
 
@@ -544,14 +592,14 @@ TutorialOutput run_diff_clearance(const DistanceGrid& grid, const std::string& m
                                   const double solve_time) {
   constexpr double robot_hl = 0.35, robot_hw = 0.25;
   constexpr double safety_margin = 0.05;
-  constexpr double kappa = 3.0, beta = 2.0;
+  constexpr double kappa = 1.5, beta = 1.5;
   const double world_w = grid.width() * grid.resolution();
   const double world_h = grid.height() * grid.resolution();
 
   TutorialOutput out;
   out.scenario = "diff_clearance";
   out.start = {2.0, 5.0, 0.0};
-  out.goal = {13.0, 3.0, -std::numbers::pi / 2.0};
+  out.goal = {12.0, 6.0, -std::numbers::pi / 2.0};
   out.robot_type = "rectangle";
   out.robot_hl = robot_hl;
   out.robot_hw = robot_hw;
@@ -564,7 +612,7 @@ TutorialOutput run_diff_clearance(const DistanceGrid& grid, const std::string& m
 
   // Use FootprintGridChecker as continuous SDF for the clearance metric.
   // operator() returns min grid distance across perimeter samples minus safety margin.
-  geodex::SE2LeftInvariantMetric base_metric{1.0, 5.0, 1.0};
+  geodex::SE2LeftInvariantMetric base_metric{1.0, 10.0, 1.0};
   geodex::SDFConformalMetric clearance_metric{base_metric, checker, kappa, beta};
 
   geodex::SE2<> se2{base_metric, geodex::SE2ExponentialMap{},
@@ -572,14 +620,24 @@ TutorialOutput run_diff_clearance(const DistanceGrid& grid, const std::string& m
                     Eigen::Vector3d(world_w, world_h, std::numbers::pi)};
   geodex::ConfigurationSpace cspace{se2, clearance_metric};
 
-  geodex::algorithm::PathSmoothingSettings smooth;
-  smooth.interp.step_size = 0.02;
-  smooth.interp.max_steps = 2000;
+  // Per-scenario StateSpace interp.
+  geodex::InterpolationSettings state_interp;
+  state_interp.step_size = 0.3;
+  state_interp.convergence_tol = 1e-3;
+  state_interp.convergence_rel = 1e-3;
+  state_interp.max_steps = 60;
+  state_interp.force_log_direction = true;
 
+  constexpr double planner_range = 5.0;
+  constexpr double rewire_factor = 1.1;
+
+  // RRT* (not InformedRRT*) — informed heuristic is too loose for
+  // anisotropic+clearance on the Willow corridor.
   auto bounds = make_bounds(world_w, world_h);
-  out.runs.push_back(run_planner(cspace, "Diff-drive + clearance", "w=(1,5,1) k=3 b=2",
-                                 make_irrt(), solve_time, bounds, out.start, out.goal, validity,
-                                 smooth, 3.0, grid.resolution()));
+  out.runs.push_back(run_planner(cspace, "Diff-drive + clearance", "w=(1,10,1) k=1.5 b=1.5",
+                                 make_rrt(), solve_time, bounds, out.start, out.goal, validity,
+                                 {}, planner_range, grid.resolution(), state_interp,
+                                 rewire_factor));
   return out;
 }
 
@@ -641,9 +699,17 @@ TutorialOutput run_parking(const double solve_time) {
   car_smooth.interp.max_steps = 2000;
   car_smooth.collision_resolution = 0.1;
 
+  // Per-scenario StateSpace interp.
+  geodex::InterpolationSettings state_interp;
+  state_interp.step_size = 0.5;
+  state_interp.convergence_tol = 1e-3;
+  state_interp.convergence_rel = 1e-3;
+  state_interp.max_steps = 80;
+  state_interp.force_log_direction = true;
+
   out.runs.push_back(run_planner(cspace, "Car-like parallel parking", "r=1.5 lp=20 k=8 b=3",
                                  make_rrt(), solve_time, bounds, out.start, out.goal, validity,
-                                 car_smooth, 3.0));
+                                 car_smooth, 3.0, 0.1, state_interp, 1.1));
   return out;
 }
 

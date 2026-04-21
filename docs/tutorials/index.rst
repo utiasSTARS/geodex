@@ -9,3 +9,4 @@ Hands-on guides for using geodex. Each tutorial assumes familiarity with the
 
    geodex-basics
    minimum-energy-planning
+   se2-planning

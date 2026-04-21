@@ -224,6 +224,8 @@ def mode_result(data, map_img, output):
 # ---------------------------------------------------------------------------
 
 def mode_map(data, map_img, output):
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
+
     extent = get_extent(data, map_img)
     fig, axes = plt.subplots(1, 2, figsize=(11, 5))
 
@@ -237,16 +239,27 @@ def mode_map(data, map_img, output):
     axes[0].set_xlabel("x (m)")
     axes[0].set_ylabel("y (m)")
 
-    # Right: distance heatmap.
+    # Reserve an identically-sized colorbar slot on the left so the two image
+    # axes end up the same width after layout.
+    cax0 = make_axes_locatable(axes[0]).append_axes("right", size="4%", pad=0.12)
+    cax0.axis("off")
+
+    # Right: distance transform. Walls are rendered as a gray base layer and
+    # the distance colormap is applied only to free cells, so obstacles read
+    # as obstacles rather than as the dominant "dark = traversable" region.
     map_info = data.get("map", {})
     if map_img is not None:
-        # Compute distance transform from the image for visualization.
         from scipy.ndimage import distance_transform_edt
 
         free = map_img >= 128
         dist = distance_transform_edt(free) * map_info.get("resolution", 0.05)
-        im = axes[1].imshow(dist, cmap="inferno", extent=extent, origin="lower")
-        plt.colorbar(im, ax=axes[1], label="Distance (m)", shrink=0.8)
+        dist_masked = np.ma.masked_where(~free, dist)
+        axes[1].imshow(map_img, cmap="gray", extent=extent, origin="lower")
+        im = axes[1].imshow(
+            dist_masked, cmap="viridis", extent=extent, origin="lower"
+        )
+        cax1 = make_axes_locatable(axes[1]).append_axes("right", size="4%", pad=0.12)
+        plt.colorbar(im, cax=cax1, label="Distance (m)")
     axes[1].set_title("Distance transform", fontsize=14, fontweight="bold")
     axes[1].set_xlim(extent[0], extent[1])
     axes[1].set_ylim(extent[2], extent[3])

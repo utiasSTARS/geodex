@@ -89,6 +89,41 @@ Metrics
 .. doxygenclass:: geodex::WeightedMetric
    :members:
 
+.. doxygenclass:: geodex::SDFConformalMetric
+   :members:
+
+Collision
+---------
+
+.. doxygenclass:: geodex::collision::DistanceGrid
+   :members:
+
+.. doxygenclass:: geodex::collision::GridSDF
+   :members:
+
+.. doxygenclass:: geodex::collision::InflatedSDF
+   :members:
+
+.. doxygenclass:: geodex::collision::PolygonFootprint
+   :members:
+
+.. doxygenclass:: geodex::collision::FootprintGridChecker
+   :members:
+
+.. doxygenclass:: geodex::collision::CircleSDF
+   :members:
+
+.. doxygenclass:: geodex::collision::CircleSmoothSDF
+   :members:
+
+.. doxygenstruct:: geodex::collision::RectObstacle
+   :members:
+
+.. doxygenclass:: geodex::collision::RectSmoothSDF
+   :members:
+
+.. doxygenfunction:: geodex::collision::rects_overlap
+
 Sampling
 --------
 

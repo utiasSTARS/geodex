@@ -240,7 +240,7 @@ A physically larger ellipse indicates the metric is "looser" in that region, mea
 
 In both figures below, the background color maps the determinant of the metric tensor.
 
-.. figure:: figs/ke_metric.svg
+.. figure:: figs/minimum-energy-planning/ke_metric.svg
    :align: center
    :alt: KE metric ellipses over T²
    
@@ -250,7 +250,7 @@ The kinetic energy metric ellipses, representing the unit balls of :math:`M(q)^{
 Near :math:`q_2 = 0` (arm extended), the coupling between shoulder and elbow is strongest and the ellipses are elongated along :math:`q_1`, reflecting the shoulder's higher effective inertia.
 Near :math:`q_2 = \pm\pi` (arm folded back), the links decouple and both joints share a similar effective inertia, resulting in nearly circular ellipses.
 
-.. figure:: figs/jacobi_combined.svg
+.. figure:: figs/minimum-energy-planning/jacobi_combined.svg
    :align: center
    :alt: Jacobi metric ellipses at three energy levels
 
@@ -280,7 +280,8 @@ Reproducing the figures:
       ./build/minimum_energy_grid minimum_energy_grid.json
 
       # Render SVG figures
-      python scripts/visualize_metric_grid.py minimum_energy_grid.json
+      python scripts/visualize_metric_grid.py minimum_energy_grid.json \
+          --output-dir docs/tutorials/figs/minimum-energy-planning
 
 Planning with Asymptotically Optimal Planners
 ---------------------------------------------
@@ -345,7 +346,7 @@ The following snippet shows how to set up and solve using RRT* algorithm with ea
 
       # Python bindings do not support OMPL integration.   
 
-.. figure:: figs/minimum_energy_planning.svg
+.. figure:: figs/minimum-energy-planning/planning_result.svg
    :align: center
    :alt: RRT* under Euclidean, KE, and Jacobi metrics
 
@@ -371,7 +372,7 @@ Seeing the Arm in Motion
 
 The animation below traces the two-link arm along all three solutions side by side.
 
-.. figure:: figs/minimum_energy_arm.gif
+.. figure:: figs/minimum-energy-planning/arm.gif
    :align: center
    :width: 95%
    :alt: Two-link planar arm under the Euclidean, kinetic-energy, and Jacobi metrics.
@@ -396,8 +397,9 @@ Reproducing the figures:
       # Run the planning example
       ./build/examples/ompl/minimum_energy_planning minimum_energy_planning.json
 
-      # Render SVG figure
-      python scripts/visualize_minimum_energy_planning.py minimum_energy_planning.json
+      # Render SVG figure and animation
+      python scripts/visualize_minimum_energy_planning.py minimum_energy_planning.json \
+          --output-dir docs/tutorials/figs/minimum-energy-planning
 
 References
 ----------

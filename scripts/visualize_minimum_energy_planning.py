@@ -7,7 +7,7 @@ overlaid on the respective metric tensor determinant.
 
 Usage:
   python scripts/visualize_minimum_energy_planning.py minimum_energy_planning.json \
-      --output-dir docs/tutorials/figs
+      --output-dir docs/tutorials/figs/minimum-energy-planning
 """
 
 import argparse
@@ -489,11 +489,11 @@ def main():
     os.makedirs(args.output_dir, exist_ok=True)
 
     if not args.no_svg:
-        svg_path = os.path.join(args.output_dir, "minimum_energy_planning.svg")
+        svg_path = os.path.join(args.output_dir, "planning_result.svg")
         plot_planning(data, svg_path)
 
     if not args.no_gif:
-        gif_path = os.path.join(args.output_dir, "minimum_energy_arm.gif")
+        gif_path = os.path.join(args.output_dir, "arm.gif")
         animate_arm(data, gif_path, fps=args.gif_fps)
 
 

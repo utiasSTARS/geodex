@@ -1,15 +1,62 @@
 geodex
 ======
 
-A general-purpose software framework for planning on Riemannian manifolds.
+**geodex** is a general-purpose software framework for motion planning on Riemannian manifolds.
 
-geodex provides:
+We ship ready-to-use manifolds (:math:`\mathbb{R}^n`, :math:`S^n`, :math:`T^n`, and :math:`\mathrm{SE}(2)`), all built from swappable metric, retraction, and sampler policies, along with efficient algorithms for geodesic distance and interpolation.
 
-- **C++20 concepts** for manifolds, metrics, retractions, and geodesics
-- **Concrete manifold implementations**: sphere :math:`S^2`, Euclidean :math:`\mathbb{R}^n`, flat torus :math:`T^n`, SE(2)
-- **Policy-based design**: manifolds parameterized by interchangeable metric and retraction policies
-- **Algorithms**: geodesic distance approximation via midpoint method
-- **Python bindings**: First-class support for Python (``pip install geodex``)
+The core engine of geodex is written purely in C++20 for performance, with first-class Python support (``pip install geodex``).
+We also provide integrations with popular motion planning frameworks (OMPL, VAMP) and robotics stacks (Nav2, MoveIt 2) through ROS 2.
+
+.. raw:: html
+
+   <div class="landing-grid">
+
+     <a class="landing-card" href="getting-started/index.html">
+       <div class="landing-card-thumb landing-card-thumb-text">
+   <pre><code>cmake -B build \
+     -DBUILD_TESTING=ON
+   cmake --build build
+   ctest --test-dir build</code></pre>
+       </div>
+       <div class="landing-card-body">
+         <h3>Getting started</h3>
+         <p>Build the library, run the tests, and wire up the OMPL and Nav2 integrations.</p>
+       </div>
+     </a>
+
+     <a class="landing-card" href="concepts/index.html">
+       <div class="landing-card-thumb">
+         <img src="_static/landing/manifold.svg" alt="" />
+       </div>
+       <div class="landing-card-body">
+         <h3>Core concepts</h3>
+         <p>Riemannian geometry, design principles, and algorithms.</p>
+       </div>
+     </a>
+
+     <a class="landing-card" href="tutorials/se2-planning.html">
+       <div class="landing-card-thumb">
+         <img src="_static/landing/se2_willow_corridor.svg" alt="" />
+       </div>
+       <div class="landing-card-body">
+         <h3>SE(2) planning</h3>
+         <p>Plan paths for holonomic and non-holonomic robots on a real costmap with OMPL.</p>
+       </div>
+     </a>
+
+     <a class="landing-card" href="tutorials/minimum-energy-planning.html">
+       <div class="landing-card-thumb">
+         <img src="_static/landing/minimum_energy_arm.gif"
+              alt="Two-link planar arm sweeping along a minimum-energy geodesic" />
+       </div>
+       <div class="landing-card-body">
+         <h3>Minimum-energy planning</h3>
+         <p>Compute minimum-energy motions for a two-link planar manipulator under kinetic energy and Jacobi Riemannian metrics.</p>
+       </div>
+     </a>
+
+   </div>
 
 Roadmap
 -------
@@ -50,7 +97,6 @@ If you use geodex in your research, consider citing:
    }
 
 .. toctree::
-   :maxdepth: 2
    :hidden:
 
    getting-started/index

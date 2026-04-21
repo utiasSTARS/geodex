@@ -52,6 +52,24 @@ pre.mermaid > svg,
     overflow: visible;
 }
 
+/* Opt-in horizontal scroll for tables with `:class: scroll-table`. The
+   table becomes its own scroll container (via display: block), cells keep
+   their intrinsic width, and identifiers don't break. Use this for tables
+   whose cells contain class names or function calls that must stay on one
+   line. */
+.rst-content table.docutils.scroll-table {
+    display: block;
+    overflow-x: auto;
+    width: 100%;
+    table-layout: auto;
+}
+.rst-content table.docutils.scroll-table td,
+.rst-content table.docutils.scroll-table th {
+    white-space: nowrap !important;
+    word-wrap: normal;
+    overflow-wrap: normal;
+}
+
 /* Default for Desktop: 50% width */
 .responsive-img {
     width: 40%;
@@ -63,4 +81,120 @@ pre.mermaid > svg,
     .responsive-img {
         width: 90%;
     }
+}
+
+/* -------------------------------------------------------------------------
+   Landing page (docs/index.rst)
+   Hero image + 2x2 quick-links card grid. Colors match the geodex blue
+   palette used by mermaid/graphviz diagrams (#e7f0fa / #2980b9).
+   ------------------------------------------------------------------------- */
+
+.landing-hero {
+    text-align: center;
+    margin: 1.5em 0 2em 0;
+}
+.landing-hero img {
+    max-width: 85%;
+    height: auto;
+    border-radius: 6px;
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.08);
+}
+
+.landing-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25em;
+    margin: 2em 0 1em 0;
+}
+@media screen and (max-width: 768px) {
+    .landing-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.landing-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #dfe4ea;
+    border-radius: 8px;
+    overflow: hidden;
+    text-decoration: none !important;
+    color: inherit;
+    background: #fff;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+}
+.landing-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    border-color: #2980b9;
+}
+
+.landing-card-thumb {
+    background: #f7fbfe;
+    border-bottom: 1px solid #e7f0fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 190px;
+    overflow: hidden;
+    padding: 0.9em;
+    box-sizing: border-box;
+}
+.landing-card-thumb img {
+    max-width: 100%;
+    max-height: 100%;
+    height: auto;
+    width: auto;
+    object-fit: contain;
+}
+
+.landing-card-thumb-text {
+    background: #f4f7fa;
+}
+.landing-card-thumb-text pre {
+    background: transparent;
+    border: none;
+    margin: 0;
+    padding: 0;
+    font-size: 0.82em;
+    line-height: 1.55;
+    color: #2c3e50;
+    white-space: pre;
+    text-align: left;
+}
+
+.landing-card-thumb-placeholder {
+    background:
+        repeating-linear-gradient(
+            45deg,
+            #f7fbfe,
+            #f7fbfe 10px,
+            #eef4fb 10px,
+            #eef4fb 20px
+        );
+    color: #6c7a89;
+    font-size: 0.9em;
+    line-height: 1.5;
+    text-align: center;
+    padding: 1em;
+}
+.landing-card-thumb-placeholder em {
+    color: #2980b9;
+    font-style: normal;
+}
+
+.landing-card-body {
+    padding: 0.9em 1.15em 1.05em 1.15em;
+}
+.landing-card-body h3 {
+    margin: 0 0 0.35em 0;
+    font-size: 1.08em;
+    color: #2980b9;
+    font-weight: 600;
+}
+.landing-card-body p {
+    margin: 0;
+    color: #444;
+    font-size: 0.93em;
+    line-height: 1.5;
 }
