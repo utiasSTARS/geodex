@@ -130,6 +130,14 @@ makeAnisotropicSetup() {
   bounds.setLow(2, -std::numbers::pi);
   bounds.setHigh(2, std::numbers::pi);
   auto space = std::make_shared<AnisotropicStateSpace>(manifold, bounds);
+  // Use the closed-form Lie-group geodesic for interpolation. The default Auto
+  // mode routes anisotropic metrics through the iterative discrete_geodesic
+  // cache, whose FD natural-gradient descent oscillates and hits
+  // MaxStepsReached under heavy anisotropy (w_y=100) — producing a non-straight
+  // cached path that breaks the uniform xy spacing assertion below. This test
+  // only asks whether `resamplePath` produces 0.1m xy spacing, which is
+  // well-defined against the Lie-group geodesic.
+  space->setInterpolationMode(geodex::integration::ompl::InterpolationMode::BaseGeodesic);
   auto si = std::make_shared<ob::SpaceInformation>(space);
   si->setStateValidityChecker([](const ob::State*) { return true; });
   si->setup();

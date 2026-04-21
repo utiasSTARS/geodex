@@ -462,8 +462,8 @@ TutorialOutput run_holonomic(const DistanceGrid& grid, const std::string& map_fi
   state_interp.max_steps = 80;
   state_interp.force_log_direction = true;
 
-  constexpr double planner_range = 4;
-  constexpr double rewire_factor = 1.1;
+  constexpr double planner_range = 4.5;
+  constexpr double rewire_factor = 0.5;
 
   auto bounds = make_bounds(world_w, world_h);
   out.runs.push_back(run_planner(manifold, "Holonomic (isotropic)", "w=(1,1,1)", make_irrt(),
@@ -515,8 +515,8 @@ TutorialOutput run_holo_clearance(const DistanceGrid& grid, const std::string& m
   state_interp.max_steps = 80;
   state_interp.force_log_direction = true;
 
-  constexpr double planner_range = 3.0;
-  constexpr double rewire_factor = 1.1;
+  constexpr double planner_range = 3.5;
+  constexpr double rewire_factor = 0.5;
 
   auto bounds = make_bounds(world_w, world_h);
   out.runs.push_back(run_planner(cspace, "Holonomic + clearance", "k=1.5 b=1.5", make_irrt(),
@@ -574,7 +574,7 @@ TutorialOutput run_diff_drive(const DistanceGrid& grid, const std::string& map_f
   state_interp.max_steps = 80;
   state_interp.force_log_direction = true;
 
-  constexpr double planner_range = 4.0;
+  constexpr double planner_range = 7.0;
   constexpr double rewire_factor = 1.1;
 
   auto bounds = make_bounds(world_w, world_h);
@@ -591,7 +591,7 @@ TutorialOutput run_diff_drive(const DistanceGrid& grid, const std::string& map_f
 TutorialOutput run_diff_clearance(const DistanceGrid& grid, const std::string& map_file,
                                   const double solve_time) {
   constexpr double robot_hl = 0.35, robot_hw = 0.25;
-  constexpr double safety_margin = 0.05;
+  constexpr double safety_margin = 0.01;
   constexpr double kappa = 1.5, beta = 1.5;
   const double world_w = grid.width() * grid.resolution();
   const double world_h = grid.height() * grid.resolution();
@@ -625,11 +625,11 @@ TutorialOutput run_diff_clearance(const DistanceGrid& grid, const std::string& m
   state_interp.step_size = 0.3;
   state_interp.convergence_tol = 1e-3;
   state_interp.convergence_rel = 1e-3;
-  state_interp.max_steps = 60;
+  state_interp.max_steps = 100;
   state_interp.force_log_direction = true;
 
-  constexpr double planner_range = 5.0;
-  constexpr double rewire_factor = 1.1;
+  constexpr double planner_range = 5.5;
+  constexpr double rewire_factor = 0.5;
 
   // RRT* (not InformedRRT*) — informed heuristic is too loose for
   // anisotropic+clearance on the Willow corridor.
@@ -709,7 +709,7 @@ TutorialOutput run_parking(const double solve_time) {
 
   out.runs.push_back(run_planner(cspace, "Car-like parallel parking", "r=1.5 lp=20 k=8 b=3",
                                  make_rrt(), solve_time, bounds, out.start, out.goal, validity,
-                                 car_smooth, 3.0, 0.1, state_interp, 1.1));
+                                 car_smooth, 4.0, 0.1, state_interp, 0.5));
   return out;
 }
 

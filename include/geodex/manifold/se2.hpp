@@ -313,7 +313,6 @@ auto distance_midpoint_se2_impl(const M& m, const Eigen::Vector3d& a, const Eige
   const double dtheta = utils::wrap_to_pi(b[2] - a[2]);
   const double half_dt = 0.5 * dtheta;
   const double quarter_dt = 0.25 * dtheta;
-  const double abs_dt = std::abs(dtheta);
   const double abs_hdt = std::abs(half_dt);
 
   // === sincos #1: a.θ ===
@@ -327,21 +326,15 @@ auto distance_midpoint_se2_impl(const M& m, const Eigen::Vector3d& a, const Eige
   double sh, ch;
   utils::sincos(half_dt, &sh, &ch);
 
-  const double s_dt = 2.0 * sh * ch;
-  const double c_dt = std::fma(ch, ch, -(sh * sh));
+  // --- log(a, b): V⁻¹(dθ) = [[(dθ/2) cot(dθ/2), dθ/2], [-dθ/2, (dθ/2) cot(dθ/2)]] ---
+  const bool hgeneral = abs_hdt > 1e-10;
+  const double half_cot_h = hgeneral ? (half_dt * ch / sh) : 1.0;
 
-  // --- log(a, b): V⁻¹(dθ) — branchless ---
-  const bool general = abs_dt > 1e-10;
-  const double inv_dt = general ? (1.0 / dtheta) : 1.0;
-  const double s_o = general ? (s_dt * inv_dt) : 1.0;
-  const double cm1_o = general ? ((1.0 - c_dt) * inv_dt) : 0.0;
-
-  const double vx_ab = std::fma(s_o, dx, cm1_o * dy);
-  const double vy_ab = std::fma(s_o, dy, -cm1_o * dx);
+  const double vx_ab = std::fma(half_cot_h, dx, half_dt * dy);
+  const double vy_ab = std::fma(half_cot_h, dy, -half_dt * dx);
 
   // --- exp(a, 0.5·v_ab): V(dθ/2) ---
   const double hvx = 0.5 * vx_ab, hvy = 0.5 * vy_ab;
-  const bool hgeneral = abs_hdt > 1e-10;
   const double inv_hdt = hgeneral ? (1.0 / half_dt) : 1.0;
   const double sho = hgeneral ? (sh * inv_hdt) : 1.0;
   const double chm1o = hgeneral ? ((1.0 - ch) * inv_hdt) : 0.0;
