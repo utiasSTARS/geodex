@@ -1,10 +1,14 @@
 /// @file geodex.hpp
 /// @brief Umbrella header for the geodex library.
+///
 /// @details Includes all core concepts, manifold implementations, and algorithms.
+/// For OMPL integration, include `geodex/integration/ompl/geodex_state_space.hpp` separately.
 
 #pragma once
 
 #include "algorithm/distance.hpp"
+#include "algorithm/heuristics.hpp"
+#include "algorithm/interpolation.hpp"
 #include "core/concepts.hpp"
 #include "core/distance.hpp"
 #include "core/interpolation.hpp"
