@@ -1,5 +1,5 @@
-#include <nanobind/nanobind.h>
 #include <nanobind/eigen/dense.h>
+#include <nanobind/nanobind.h>
 #include <nanobind/stl/string.h>
 
 #include "wrappers/dynamic_manifold.hpp"
@@ -17,14 +17,11 @@ namespace {
 
 /// Extract a DynamicManifold from any known Python manifold type.
 DynamicManifold extract_dynamic_manifold(nb::object obj) {
-  if (nb::isinstance<PyTorus>(obj))
-    return nb::cast<const PyTorus&>(obj).to_dynamic_manifold();
+  if (nb::isinstance<PyTorus>(obj)) return nb::cast<const PyTorus&>(obj).to_dynamic_manifold();
   if (nb::isinstance<PyEuclidean>(obj))
     return nb::cast<const PyEuclidean&>(obj).to_dynamic_manifold();
-  if (nb::isinstance<PySphere>(obj))
-    return nb::cast<const PySphere&>(obj).to_dynamic_manifold();
-  if (nb::isinstance<PySE2>(obj))
-    return nb::cast<const PySE2&>(obj).to_dynamic_manifold();
+  if (nb::isinstance<PySphere>(obj)) return nb::cast<const PySphere&>(obj).to_dynamic_manifold();
+  if (nb::isinstance<PySE2>(obj)) return nb::cast<const PySE2&>(obj).to_dynamic_manifold();
   if (nb::isinstance<PyConfigurationSpace>(obj))
     return nb::cast<const PyConfigurationSpace&>(obj).to_dynamic_manifold();
   throw std::invalid_argument(
@@ -51,24 +48,26 @@ DynamicMetric extract_dynamic_metric(nb::object obj) {
 }  // namespace
 
 void bind_config_space(nb::module_& m) {
-  nb::class_<PyConfigurationSpace>(m, "ConfigurationSpace",
+  nb::class_<PyConfigurationSpace>(
+      m, "ConfigurationSpace",
       "A configuration space combining a base manifold's topology with a custom metric.\n\n"
       "Topology operations (exp, log, dim, random_point) come from the base manifold.\n"
       "Geometry operations (inner, norm, distance) come from the custom metric.")
-      .def("__init__",
-           [](PyConfigurationSpace* self, nb::object base, nb::object metric) {
-             auto dm = extract_dynamic_manifold(base);
-             auto dmet = extract_dynamic_metric(metric);
-             std::string base_name = nb::repr(base).c_str();
-             std::string metric_name = nb::repr(metric).c_str();
-             new (self) PyConfigurationSpace(std::move(dm), std::move(dmet),
-                                            std::move(base_name), std::move(metric_name));
-           },
-           nb::arg("base_manifold"), nb::arg("metric"),
-           "Create a configuration space.\n\n"
-           "Args:\n"
-           "    base_manifold: Base manifold (Sphere, Euclidean, Torus, SE2, etc.).\n"
-           "    metric: Custom metric (KineticEnergyMetric, ConstantSPDMetric, etc.).")
+      .def(
+          "__init__",
+          [](PyConfigurationSpace* self, nb::object base, nb::object metric) {
+            auto dm = extract_dynamic_manifold(base);
+            auto dmet = extract_dynamic_metric(metric);
+            std::string base_name = nb::repr(base).c_str();
+            std::string metric_name = nb::repr(metric).c_str();
+            new (self) PyConfigurationSpace(std::move(dm), std::move(dmet), std::move(base_name),
+                                            std::move(metric_name));
+          },
+          nb::arg("base_manifold"), nb::arg("metric"),
+          "Create a configuration space.\n\n"
+          "Args:\n"
+          "    base_manifold: Base manifold (Sphere, Euclidean, Torus, SE2, etc.).\n"
+          "    metric: Custom metric (KineticEnergyMetric, ConstantSPDMetric, etc.).")
       .def("dim", &PyConfigurationSpace::dim, "Return the intrinsic dimension.")
       .def("random_point", &PyConfigurationSpace::random_point,
            "Sample a random point from the base manifold.")
@@ -82,8 +81,7 @@ void bind_config_space(nb::module_& m) {
            "Logarithmic map from the base manifold.")
       .def("distance", &PyConfigurationSpace::distance, nb::arg("p"), nb::arg("q"),
            "Geodesic distance using the midpoint approximation with the custom metric.")
-      .def("geodesic", &PyConfigurationSpace::geodesic,
-           nb::arg("p"), nb::arg("q"), nb::arg("t"),
+      .def("geodesic", &PyConfigurationSpace::geodesic, nb::arg("p"), nb::arg("q"), nb::arg("t"),
            "Geodesic interpolation at parameter t in [0, 1].")
       .def("__repr__", &PyConfigurationSpace::repr);
 }

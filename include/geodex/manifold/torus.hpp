@@ -3,49 +3,32 @@
 
 #pragma once
 
-#include <Eigen/Core>
 #include <cmath>
-#include <geodex/algorithm/distance.hpp>
-#include <geodex/core/angle.hpp>
-#include <geodex/core/concepts.hpp>
+
 #include <numbers>
-#include <random>
+#include <type_traits>
+
+#include <Eigen/Core>
+
+#include "geodex/algorithm/distance.hpp"
+#include "geodex/core/concepts.hpp"
+#include "geodex/core/sampler.hpp"
+#include "geodex/metrics/constant_spd.hpp"
+#include "geodex/metrics/identity.hpp"
+#include "geodex/utils/angle.hpp"
 
 namespace geodex {
 
 // ---------------------------------------------------------------------------
-// Metric
+// Metric alias
 // ---------------------------------------------------------------------------
 
 /// @brief Standard flat metric on \f$ T^n \f$.
 ///
 /// @details The inner product is the standard dot product:
-/// \f$ \langle u, v \rangle = u \cdot v \f$.
-/// The injectivity radius is \f$ \pi \f$ (half the period).
-///
-/// @tparam Dim Compile-time dimension, or `Eigen::Dynamic`.
+/// \f$ \langle u, v \rangle = u \cdot v \f$. Zero-storage stateless metric.
 template <int Dim = Eigen::Dynamic>
-struct TorusFlatMetric {
-  /// @brief Compute the inner product \f$ \langle u, v \rangle = u \cdot v \f$.
-  /// @param u First tangent vector.
-  /// @param v Second tangent vector.
-  /// @return The inner product value.
-  double inner(const Eigen::Vector<double, Dim>& /*p*/, const Eigen::Vector<double, Dim>& u,
-               const Eigen::Vector<double, Dim>& v) const {
-    return u.dot(v);
-  }
-
-  /// @brief Compute the flat norm \f$ \|v\| = \sqrt{v \cdot v} \f$.
-  /// @param p Base point.
-  /// @param v Tangent vector.
-  /// @return The norm value.
-  double norm(const Eigen::Vector<double, Dim>& p, const Eigen::Vector<double, Dim>& v) const {
-    return std::sqrt(inner(p, v, v));
-  }
-
-  /// @brief Return the injectivity radius \f$ \pi \f$.
-  double injectivity_radius() const { return std::numbers::pi; }
-};
+using TorusFlatMetric = IdentityMetric<Dim>;
 
 // ---------------------------------------------------------------------------
 // Torus manifold
@@ -59,39 +42,56 @@ struct TorusFlatMetric {
 ///
 /// @tparam Dim Compile-time dimension, or `Eigen::Dynamic`.
 /// @tparam MetricT Metric policy (default: TorusFlatMetric).
-template <int Dim = Eigen::Dynamic, typename MetricT = TorusFlatMetric<Dim>>
+/// @tparam SamplerT Sampler policy for `random_point()` (default: `StochasticSampler`).
+template <int Dim = Eigen::Dynamic, typename MetricT = TorusFlatMetric<Dim>,
+          typename SamplerT = StochasticSampler>
 class Torus {
-  MetricT metric_;
-  int dim_;
-
  public:
   using Scalar = double;                       ///< Scalar type.
   using Point = Eigen::Vector<double, Dim>;    ///< Point type (angles in \f$ [0, 2\pi)^n \f$).
   using Tangent = Eigen::Vector<double, Dim>;  ///< Tangent vector type.
 
+  /// @brief Runtime query: is `log` the Riemannian logarithm of the metric?
+  ///
+  /// @details Torus topology has trivial exp/log (addition/wrapping), which is
+  /// the Riemannian log exactly when the metric is the identity (standard flat
+  /// metric). Anisotropic SPDs are still flat in the mathematical sense but
+  /// their geodesics are reparameterized, so we mark them as not log-compatible
+  /// and `discrete_geodesic` uses finite differences.
+  bool has_riemannian_log_runtime() const {
+    if constexpr (std::is_same_v<MetricT, IdentityMetric<Dim>>) {
+      return true;
+    } else if constexpr (std::is_same_v<MetricT, ConstantSPDMetric<Dim>>) {
+      return metric_.weight_matrix().isApprox(
+          Eigen::Matrix<double, Dim, Dim>::Identity(dim_, dim_));
+    } else {
+      return false;
+    }
+  }
+
   /// @brief Fixed-dimension constructor.
   Torus()
     requires(Dim != Eigen::Dynamic)
-      : dim_(Dim) {}
+      : dim_(Dim), sample_buf_(Dim) {}
 
   /// @brief Fixed-dimension constructor with custom metric.
   /// @param metric The metric policy instance.
   explicit Torus(MetricT metric)
     requires(Dim != Eigen::Dynamic)
-      : metric_(std::move(metric)), dim_(Dim) {}
+      : metric_(std::move(metric)), dim_(Dim), sample_buf_(Dim) {}
 
   /// @brief Dynamic-dimension constructor.
   /// @param n The dimension of the torus.
   explicit Torus(int n)
     requires(Dim == Eigen::Dynamic)
-      : dim_(n) {}
+      : metric_(make_default_metric(n)), dim_(n), sample_buf_(n) {}
 
   /// @brief Dynamic-dimension constructor with custom metric.
   /// @param n The dimension of the torus.
   /// @param metric The metric policy instance.
   Torus(int n, MetricT metric)
     requires(Dim == Eigen::Dynamic)
-      : metric_(std::move(metric)), dim_(n) {}
+      : metric_(std::move(metric)), dim_(n), sample_buf_(n) {}
 
   /// @brief Return the dimension of the torus.
   int dim() const { return dim_; }
@@ -99,14 +99,13 @@ class Torus {
   /// @brief Sample a uniformly random point in \f$ [0, 2\pi)^n \f$.
   /// @return A random point on the torus.
   Point random_point() const {
-    thread_local std::mt19937 gen{std::random_device{}()};
-    std::uniform_real_distribution<double> dist(0.0, 2.0 * std::numbers::pi);
+    sampler_.sample_box(dim_, sample_buf_);
     Point p;
     if constexpr (Dim == Eigen::Dynamic) {
       p.resize(dim_);
     }
     for (int i = 0; i < dim_; ++i) {
-      p[i] = dist(gen);
+      p[i] = sample_buf_[i] * 2.0 * std::numbers::pi;
     }
     return p;
   }
@@ -128,6 +127,14 @@ class Torus {
   /// @brief Riemannian norm at \f$ p \f$.
   Scalar norm(const Point& p, const Tangent& v) const { return metric_.norm(p, v); }
 
+  /// @brief Batched inner product \f$U^\top M(p)\, V\f$ when the metric provides it.
+  Eigen::MatrixXd inner_matrix(const Point& p, const Eigen::MatrixXd& U,
+                               const Eigen::MatrixXd& V) const
+    requires MetricHasInnerMatrix<MetricT, Point>
+  {
+    return metric_.inner_matrix(p, U, V);
+  }
+
   /// @}
 
   /// @name Exp / Log
@@ -137,13 +144,13 @@ class Torus {
   /// @param p Base point.
   /// @param v Tangent vector.
   /// @return The resulting point, wrapped to \f$ [0, 2\pi)^n \f$.
-  Point exp(const Point& p, const Tangent& v) const { return wrap_point<Dim>(p + v); }
+  Point exp(const Point& p, const Tangent& v) const { return utils::wrap_point<Dim>(p + v); }
 
   /// @brief Logarithmic map: shortest-path tangent vector from \f$ p \f$ to \f$ q \f$.
   /// @param p Base point.
   /// @param q Target point.
   /// @return The wrapped difference in \f$ [-\pi, \pi)^n \f$.
-  Tangent log(const Point& p, const Point& q) const { return wrap_delta<Dim>(q - p); }
+  Tangent log(const Point& p, const Point& q) const { return utils::wrap_delta<Dim>(q - p); }
 
   /// @}
 
@@ -156,12 +163,13 @@ class Torus {
   /// @return The distance \f$ d(p, q) \f$.
   Scalar distance(const Point& p, const Point& q) const { return distance_midpoint(*this, p, q); }
 
-  /// @brief Injectivity radius — only available when the metric provides it.
-  Scalar injectivity_radius() const
-    requires requires { metric_.injectivity_radius(); }
-  {
-    return metric_.injectivity_radius();
-  }
+  /// @brief Injectivity radius of \f$ T^n \f$: \f$ \pi \f$ (half the period).
+  ///
+  /// @details Returns the topological value for the default identity metric and
+  /// period \f$ 2\pi \f$. For anisotropic custom metrics the effective radius is
+  /// \f$ \pi / \sqrt{\lambda_{\max}(A)} \f$. This value is an upper bound;
+  /// `discrete_geodesic` may take extra retries if the true radius is smaller.
+  Scalar injectivity_radius() const { return std::numbers::pi; }
 
   /// @brief Geodesic interpolation between \f$ p \f$ and \f$ q \f$ at parameter \f$ t \f$.
   /// @param p Start point.
@@ -171,6 +179,21 @@ class Torus {
   Point geodesic(const Point& p, const Point& q, Scalar t) const { return exp(p, t * log(p, q)); }
 
   /// @}
+
+ private:
+  /// @brief Build the default metric for dynamic Torus.
+  static MetricT make_default_metric(int n) {
+    if constexpr (std::is_constructible_v<MetricT, int>) {
+      return MetricT(n);
+    } else {
+      return MetricT{};
+    }
+  }
+
+  MetricT metric_;
+  int dim_;
+  mutable SamplerT sampler_;
+  mutable Eigen::VectorXd sample_buf_;  ///< Preallocated buffer for sampler output.
 };
 
 // Verify the default types satisfy RiemannianManifold.

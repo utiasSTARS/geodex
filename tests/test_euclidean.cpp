@@ -1,11 +1,13 @@
-#include <gtest/gtest.h>
+#include <cmath>
+
+#include <limits>
+#include <planar_manipulator_metric.hpp>
 
 #include <Eigen/Core>
 #include <Eigen/Eigenvalues>
-#include <cmath>
-#include <geodex/geodex.hpp>
-#include <limits>
-#include <planar_manipulator_metric.hpp>
+#include <gtest/gtest.h>
+
+#include "geodex/geodex.hpp"
 
 using namespace geodex;
 

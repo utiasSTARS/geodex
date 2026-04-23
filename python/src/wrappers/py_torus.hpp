@@ -3,10 +3,12 @@
 
 #pragma once
 
-#include <Eigen/Core>
-#include <geodex/manifold/torus.hpp>
 #include <memory>
 #include <string>
+
+#include <Eigen/Core>
+
+#include "geodex/manifold/torus.hpp"
 
 #include "dynamic_manifold.hpp"
 
@@ -22,14 +24,11 @@ class PyTorus {
 
   Eigen::VectorXd random_point() const { return impl_.random_point(); }
 
-  double inner(const Eigen::VectorXd& p, const Eigen::VectorXd& u,
-               const Eigen::VectorXd& v) const {
+  double inner(const Eigen::VectorXd& p, const Eigen::VectorXd& u, const Eigen::VectorXd& v) const {
     return impl_.inner(p, u, v);
   }
 
-  double norm(const Eigen::VectorXd& p, const Eigen::VectorXd& v) const {
-    return impl_.norm(p, v);
-  }
+  double norm(const Eigen::VectorXd& p, const Eigen::VectorXd& v) const { return impl_.norm(p, v); }
 
   Eigen::VectorXd exp(const Eigen::VectorXd& p, const Eigen::VectorXd& v) const {
     return impl_.exp(p, v);
@@ -43,8 +42,7 @@ class PyTorus {
     return impl_.distance(p, q);
   }
 
-  Eigen::VectorXd geodesic(const Eigen::VectorXd& p, const Eigen::VectorXd& q,
-                           double t) const {
+  Eigen::VectorXd geodesic(const Eigen::VectorXd& p, const Eigen::VectorXd& q, double t) const {
     return impl_.geodesic(p, q, t);
   }
 
@@ -59,18 +57,15 @@ class PyTorus {
         [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& q) -> Eigen::VectorXd {
           return shared->log(p, q);
         },
-        [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& u,
-                 const Eigen::VectorXd& v) { return shared->inner(p, u, v); },
-        [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& v) {
-          return shared->norm(p, v);
+        [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& u, const Eigen::VectorXd& v) {
+          return shared->inner(p, u, v);
         },
+        [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& v) { return shared->norm(p, v); },
         // Torus tangent space = ambient R^n (angle parameterization); projection is identity.
         [](const Eigen::VectorXd& /*p*/, const Eigen::VectorXd& v) { return v; }};
   }
 
-  std::string repr() const {
-    return "Torus(dim=" + std::to_string(impl_.dim()) + ")";
-  }
+  std::string repr() const { return "Torus(dim=" + std::to_string(impl_.dim()) + ")"; }
 
  private:
   Impl impl_;

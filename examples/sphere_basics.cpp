@@ -7,12 +7,15 @@
 ///   - Geodesic distance and interpolation
 ///   - Swapping metrics (ConstantSPDMetric) and retractions (projection retraction)
 
-#include <Eigen/Core>
 #include <cmath>
-#include <geodex/geodex.hpp>
+
 #include <iomanip>
 #include <iostream>
 #include <numbers>
+
+#include <Eigen/Core>
+
+#include "geodex/geodex.hpp"
 
 using namespace geodex;
 
@@ -55,7 +58,7 @@ int main() {
   std::cout << "\n=== Sphere (anisotropic metric A=diag(4,1,1)) ===\n";
 
   Eigen::Matrix3d A = Eigen::Vector3d(4.0, 1.0, 1.0).asDiagonal();
-  Sphere<ConstantSPDMetric<3>> aniso_sphere{ConstantSPDMetric<3>{A}};
+  Sphere<2, ConstantSPDMetric<3>> aniso_sphere{ConstantSPDMetric<3>{A}};
 
   // The anisotropic metric changes norms and distances
   Eigen::Vector3d u{1.0, 0.0, 0.0};
@@ -71,7 +74,7 @@ int main() {
   // --- 3. Projection retraction ---
   std::cout << "\n=== Sphere (round metric, projection retraction) ===\n";
 
-  Sphere<SphereRoundMetric, SphereProjectionRetraction> proj_sphere;
+  Sphere<2, SphereRoundMetric, SphereProjectionRetraction> proj_sphere;
 
   // Projection retraction: cheaper but approximate
   Eigen::Vector3d v_proj = proj_sphere.log(p, q);

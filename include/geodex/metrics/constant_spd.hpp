@@ -4,7 +4,8 @@
 #pragma once
 
 #include <Eigen/Core>
-#include <cmath>
+
+#include "geodex/core/metric.hpp"
 
 namespace geodex {
 
@@ -20,8 +21,23 @@ namespace geodex {
 ///
 /// @tparam Dim Compile-time dimension, or `Eigen::Dynamic`.
 template <int Dim = Eigen::Dynamic>
-struct ConstantSPDMetric {
-  Eigen::Matrix<double, Dim, Dim> A_;  ///< The SPD weight matrix.
+class ConstantSPDMetric {
+ public:
+  /// @brief Default: identity weight matrix (only for static Dim).
+  ///
+  /// @details The default metric is the standard ambient inner product, which
+  /// is the "natural" choice for every built-in manifold (Sphere/Euclidean/Torus).
+  /// For `Dim == Eigen::Dynamic` the size is unknown at compile time, so use the
+  /// `int n` constructor below instead.
+  ConstantSPDMetric()
+    requires(Dim != Eigen::Dynamic)
+      : A_(Eigen::Matrix<double, Dim, Dim>::Identity()) {}
+
+  /// @brief Dynamic-size identity factory (size n×n).
+  /// @param n Dimension of the SPD matrix.
+  explicit ConstantSPDMetric(int n)
+    requires(Dim == Eigen::Dynamic)
+      : A_(Eigen::MatrixXd::Identity(n, n)) {}
 
   /// @brief Construct with a given SPD weight matrix.
   /// @param A Symmetric positive-definite matrix defining the metric.
@@ -41,8 +57,27 @@ struct ConstantSPDMetric {
   /// @param v Tangent vector.
   /// @return The norm value.
   double norm(const Eigen::Vector<double, Dim>& p, const Eigen::Vector<double, Dim>& v) const {
-    return std::sqrt(inner(p, v, v));
+    return riemannian_norm(*this, p, v);
   }
+
+  /// @brief Batched inner product: \f$U^\top A\, V\f$ in a single matrix multiply.
+  ///
+  /// @details Provides the `HasBatchInnerMatrix` fast path for algorithms that
+  /// evaluate a tangent-metric tensor in a basis (e.g., `natural_gradient_fd`).
+  /// For `ConstantSPDMetric` this is a simple linear-algebra shortcut; the
+  /// bigger win is for point-dependent metrics like `KineticEnergyMetric`
+  /// where the expensive mass matrix is evaluated once instead of \f$d^2\f$
+  /// times.
+  Eigen::MatrixXd inner_matrix(const Eigen::Vector<double, Dim>& /*p*/, const Eigen::MatrixXd& U,
+                               const Eigen::MatrixXd& V) const {
+    return U.transpose() * A_ * V;
+  }
+
+  /// @brief Access the weight matrix.
+  const Eigen::Matrix<double, Dim, Dim>& weight_matrix() const { return A_; }
+
+ private:
+  Eigen::Matrix<double, Dim, Dim> A_;  ///< The SPD weight matrix.
 };
 
 }  // namespace geodex

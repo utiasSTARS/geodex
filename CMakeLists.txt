@@ -1,10 +1,12 @@
 cmake_minimum_required(VERSION 3.20)
-project(geodex VERSION 0.1.0 LANGUAGES CXX)
+project(geodex VERSION 0.1.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
 include(FetchContent)
 
 # Eigen3
@@ -14,24 +16,19 @@ FetchContent_Declare(
   GIT_TAG 5.0.0
   GIT_SHALLOW TRUE
 )
-set(EIGEN_BUILD_DOC OFF CACHE BOOL "" FORCE)
-set(EIGEN_BUILD_TESTING OFF CACHE BOOL "" FORCE)
-set(BUILD_TESTING_SAVE ${BUILD_TESTING})
-set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 FetchContent_GetProperties(eigen)
 if(NOT eigen_POPULATED)
   FetchContent_Populate(eigen)
-  add_subdirectory(${eigen_SOURCE_DIR} ${eigen_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
-set(BUILD_TESTING ${BUILD_TESTING_SAVE} CACHE BOOL "" FORCE)
 
 # Header-only interface library
 add_library(geodex INTERFACE)
+add_library(geodex::geodex ALIAS geodex)
 target_include_directories(geodex INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
+  $<BUILD_INTERFACE:${eigen_SOURCE_DIR}>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
-target_link_libraries(geodex INTERFACE Eigen3::Eigen)
 target_compile_features(geodex INTERFACE cxx_std_20)
 
 # Tests
@@ -75,3 +72,40 @@ if(BUILD_DOCS)
       VERBATIM)
   endif()
 endif()
+
+# Install
+install(TARGETS geodex
+  EXPORT geodexTargets
+)
+
+install(DIRECTORY include/
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(DIRECTORY ${eigen_SOURCE_DIR}/Eigen
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(EXPORT geodexTargets
+  FILE geodexTargets.cmake
+  NAMESPACE geodex::
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/geodex
+)
+
+configure_package_config_file(
+  cmake/geodexConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/geodexConfig.cmake
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/geodex
+)
+
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/geodexConfigVersion.cmake
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
+
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/geodexConfig.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/geodexConfigVersion.cmake
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/geodex
+)

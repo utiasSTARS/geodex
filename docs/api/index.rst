@@ -28,8 +28,7 @@ Sphere
 .. doxygenclass:: geodex::Sphere
    :members:
 
-.. doxygenstruct:: geodex::SphereRoundMetric
-   :members:
+.. doxygentypedef:: geodex::SphereRoundMetric
 
 .. doxygenstruct:: geodex::SphereExponentialMap
    :members:
@@ -43,8 +42,7 @@ Euclidean
 .. doxygenclass:: geodex::Euclidean
    :members:
 
-.. doxygenstruct:: geodex::EuclideanStandardMetric
-   :members:
+.. doxygentypedef:: geodex::EuclideanStandardMetric
 
 
 Torus
@@ -53,8 +51,7 @@ Torus
 .. doxygenclass:: geodex::Torus
    :members:
 
-.. doxygenstruct:: geodex::TorusFlatMetric
-   :members:
+.. doxygentypedef:: geodex::TorusFlatMetric
 
 SE(2)
 ^^^^^
@@ -71,28 +68,112 @@ Configuration Space
 Metrics
 -------
 
-.. doxygenstruct:: geodex::ConstantSPDMetric
+.. doxygenclass:: geodex::IdentityMetric
    :members:
 
-.. doxygenstruct:: geodex::SE2LeftInvariantMetric
+.. doxygenclass:: geodex::ConstantSPDMetric
    :members:
 
-.. doxygenstruct:: geodex::KineticEnergyMetric
+.. doxygenclass:: geodex::SE2LeftInvariantMetric
    :members:
 
-.. doxygenstruct:: geodex::JacobiMetric
+.. doxygenclass:: geodex::KineticEnergyMetric
    :members:
 
-.. doxygenstruct:: geodex::PullbackMetric
+.. doxygenclass:: geodex::JacobiMetric
    :members:
 
-.. doxygenstruct:: geodex::IdentityTaskMetric
+.. doxygenclass:: geodex::PullbackMetric
    :members:
 
-.. doxygenstruct:: geodex::WeightedMetric
+.. doxygenclass:: geodex::WeightedMetric
+   :members:
+
+.. doxygenclass:: geodex::SDFConformalMetric
+   :members:
+
+Collision
+---------
+
+.. doxygenclass:: geodex::collision::DistanceGrid
+   :members:
+
+.. doxygenclass:: geodex::collision::GridSDF
+   :members:
+
+.. doxygenclass:: geodex::collision::InflatedSDF
+   :members:
+
+.. doxygenclass:: geodex::collision::PolygonFootprint
+   :members:
+
+.. doxygenclass:: geodex::collision::FootprintGridChecker
+   :members:
+
+.. doxygenclass:: geodex::collision::CircleSDF
+   :members:
+
+.. doxygenclass:: geodex::collision::CircleSmoothSDF
+   :members:
+
+.. doxygenstruct:: geodex::collision::RectObstacle
+   :members:
+
+.. doxygenclass:: geodex::collision::RectSmoothSDF
+   :members:
+
+.. doxygenfunction:: geodex::collision::rects_overlap
+
+Sampling
+--------
+
+.. doxygenclass:: geodex::StochasticSampler
+   :members:
+
+.. doxygenclass:: geodex::HaltonSampler
+   :members:
+
+.. doxygenconcept:: geodex::Sampler
+
+.. doxygenconcept:: geodex::SeedableSampler
+
+Heuristics
+----------
+
+.. doxygenstruct:: geodex::EuclideanHeuristic
    :members:
 
 Algorithms
 ----------
 
 .. doxygenfunction:: geodex::distance_midpoint
+
+.. doxygenstruct:: geodex::InterpolationSettings
+   :members:
+
+.. doxygenenum:: geodex::InterpolationStatus
+
+.. doxygenstruct:: geodex::InterpolationResult
+   :members:
+
+.. doxygenstruct:: geodex::InterpolationCache
+   :members:
+
+.. doxygenfunction:: geodex::discrete_geodesic
+
+Batched inner product
+~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenconcept:: geodex::HasBatchInnerMatrix
+
+OMPL Integration
+----------------
+
+.. doxygenclass:: geodex::integration::ompl::GeodexStateSpace
+   :members:
+
+.. doxygenclass:: geodex::integration::ompl::GeodexState
+   :members:
+
+.. doxygenclass:: geodex::integration::ompl::GeodexStateSampler
+   :members:

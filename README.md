@@ -29,14 +29,20 @@ All installation instructions, C++/Python tutorials, and API references are avai
 
 geodex accompanies the paper "[Geometry-Aware Sampling-Based Motion Planning on Riemannian Manifolds](https://arxiv.org/abs/2602.00992)" accepted to [WAFR 2026](https://algorithmic-robotics.org/):
 ```bibtex
-@article{kyaw2026geometry,
-  title={Geometry-Aware Sampling-Based Motion Planning on Riemannian Manifolds},
-  author={Kyaw, Phone Thiha and Kelly, Jonathan},
-  journal={arXiv preprint arXiv:2602.00992},
-  year={2026}
+@inproceedings{kyaw2026geometry,
+  address = {Oulu, Finland},
+  author = {Phone Thiha Kyaw and Jonathan Kelly},
+  booktitle = {Proceedings of the 17th World Symposium on the Algorithmic Foundations of Robotics {(WAFR)}},
+  date = {2026-06-15/2026-06-17},
+  month = {Jun. 15--17},
+  title = {Geometry-Aware Sampling-Based Motion Planning on {Riemannian} Manifolds},
+  url = {https://arxiv.org/abs/2602.00992},
+  year = {2026}
 }
 ```
 
 ## License
+
+Copyright © 2026 Space and Terrestrial Autonomous Robotic Systems (STARS) Lab.
 
 geodex is licensed under the [Apache License 2.0](LICENSE).

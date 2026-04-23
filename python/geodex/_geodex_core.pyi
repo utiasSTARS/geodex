@@ -1,5 +1,6 @@
 """Type stubs for geodex._geodex_core."""
 
+import enum
 from typing import Callable
 
 import numpy as np
@@ -425,6 +426,146 @@ class WeightedMetric:
 # Algorithms
 # ---------------------------------------------------------------------------
 
+class InterpolationStatus(enum.Enum):
+    """Termination status for the discrete geodesic walk."""
+
+    Converged = 0
+    """Distance to target fell below convergence tolerance."""
+    MaxStepsReached = 1
+    """Iteration budget exhausted without reaching tolerance."""
+    GradientVanished = 2
+    """Riemannian gradient norm is ~0 at a non-target point."""
+    CutLocus = 3
+    """``log`` collapsed to ~0 while start and target are distinct (e.g. antipodal)."""
+    StepShrunkToZero = 4
+    """Distortion halving drove the step size below ``min_step_size``."""
+    DegenerateInput = 5
+    """``start == target`` on entry; returned a single-point path."""
+
+
+class InterpolationSettings:
+    """Settings for the discrete geodesic walk.
+
+    Walk semantics: each iteration takes a Riemannian step of length
+    ``min(step_size, remaining_distance)`` in the descent direction. Iteration
+    count and returned-path size therefore scale as
+    ``~initial_distance / step_size``, so ``step_size`` also serves as the
+    effective path resolution (max Riemannian distance between consecutive
+    returned points).
+    """
+
+    step_size: float
+    """Max Riemannian step per iteration; also the effective path resolution."""
+    convergence_tol: float
+    """Absolute stop threshold on ``|log(current, target)|_R``."""
+    convergence_rel: float
+    """Relative stop threshold (``distance < rel * initial_distance``)."""
+    max_steps: int
+    """Maximum number of successful gradient-descent steps."""
+    fd_epsilon: float
+    """Central FD step for the fallback gradient; 0 means auto-select."""
+    distortion_ratio: float
+    """Progress-check tolerance; 1.5 requires ≥50% of intended-step progress."""
+    growth_factor: float
+    """Factor by which the step cap grows back after each successful iteration."""
+    min_step_size: float
+    """Failure threshold after repeated distortion halvings."""
+    gradient_eps: float
+    """Gradient Riemannian-norm threshold for ``GradientVanished``."""
+    cut_locus_eps: float
+    """``|log|_R`` threshold flagging ``CutLocus``."""
+    force_log_direction: bool
+    """If True, always use ``-log(current, target)`` as the descent direction and skip
+    the FD fallback. Produces smoother paths at the cost of following the base
+    retraction's geodesic rather than the true Riemannian geodesic of the configured
+    metric."""
+    fd_midpoint_guard_tau: float
+    """Relative-error threshold above which the midpoint distance surrogate used inside
+    the FD gradient is rejected and the sample falls back to ``|log|_R`` for that basis
+    direction."""
+
+    def __init__(
+        self,
+        step_size: float = 0.5,
+        convergence_tol: float = 1e-4,
+        convergence_rel: float = 1e-3,
+        max_steps: int = 100,
+        fd_epsilon: float = 0.0,
+        distortion_ratio: float = 1.5,
+        growth_factor: float = 1.5,
+        min_step_size: float = 1e-12,
+        gradient_eps: float = 1e-12,
+        cut_locus_eps: float = 1e-10,
+        force_log_direction: bool = False,
+        fd_midpoint_guard_tau: float = 0.25,
+    ) -> None:
+        """Create interpolation settings.
+
+        Args:
+            step_size: Max Riemannian step per iteration (also effective path resolution).
+            convergence_tol: Absolute stop threshold on ``|log(current, target)|_R``.
+            convergence_rel: Relative stop threshold (``distance < rel * initial_distance``).
+            max_steps: Maximum number of successful gradient-descent steps.
+            fd_epsilon: Central FD step for the fallback gradient; 0 means auto-select.
+            distortion_ratio: Progress-check tolerance (1.5 requires ≥50% progress).
+            growth_factor: Factor by which the step cap grows after a successful step.
+            min_step_size: Failure threshold after repeated distortion halvings.
+            gradient_eps: Gradient norm threshold for ``GradientVanished``.
+            cut_locus_eps: ``|log|_R`` threshold flagging ``CutLocus``.
+            force_log_direction: If True, always use ``-log`` as the descent direction and
+                skip the FD fallback.
+            fd_midpoint_guard_tau: Relative-error threshold for the FD midpoint surrogate
+                (set to 0 to force via-log sampling every time).
+        """
+        ...
+
+
+class InterpolationResult:
+    """Output of :func:`discrete_geodesic`.
+
+    Carries the discretised path, a termination :class:`InterpolationStatus`,
+    iteration count, and the initial/final Riemannian distances to target.
+    """
+
+    @property
+    def path(self) -> list[_Point]:
+        """Sequence of points traced from start toward target (always starts with ``start``)."""
+        ...
+
+    @property
+    def status(self) -> InterpolationStatus:
+        """Termination reason — always check before using ``path``."""
+        ...
+
+    @property
+    def iterations(self) -> int:
+        """Number of successful gradient steps taken (distortion retries do not count)."""
+        ...
+
+    @property
+    def distortion_halvings(self) -> int:
+        """Number of times the step cap was halved due to progress failure."""
+        ...
+
+    @property
+    def fd_midpoint_fallbacks(self) -> int:
+        """Number of FD basis samples whose midpoint distance surrogate was rejected
+        by the runtime guard and replaced with ``|log|_R``. A nonzero value flags a
+        non-Riemannian retraction, a cut-locus crossing, or a non-smooth metric
+        feature within the FD neighbourhood."""
+        ...
+
+    @property
+    def initial_distance(self) -> float:
+        """Riemannian distance from ``start`` to ``target`` at entry."""
+        ...
+
+    @property
+    def final_distance(self) -> float:
+        """Riemannian distance from the final iterate to ``target`` at exit."""
+        ...
+
+
 def distance_midpoint(
     manifold: "Sphere | Euclidean | Torus | SE2 | ConfigurationSpace",
     a: _Point,
@@ -446,3 +587,51 @@ def distance_midpoint(
     ...
 
 
+def discrete_geodesic(
+    manifold: "Sphere | Euclidean | Torus | SE2 | ConfigurationSpace",
+    start: _Point,
+    goal: _Point,
+    settings: InterpolationSettings = ...,
+) -> InterpolationResult:
+    """Walk from *start* toward *goal* via Riemannian natural gradient descent.
+
+    Each iteration first tries the Riemannian logarithm direction (exploiting
+    the identity ``grad((1/2) d²) = -log`` at points inside the injectivity
+    radius) and verifies via a progress check. When the check fails (e.g., the
+    retraction is not a true exponential map or the metric does not match the
+    retraction), the algorithm falls back **for that step only** to a central
+    finite-difference natural gradient computed from the manifold's ``inner``
+    product.
+
+    Walk semantics: iteration count and path size both scale as
+    ``~initial_distance / settings.step_size``; reduce ``step_size`` for
+    higher path resolution.
+
+    Args:
+        manifold: Any geodex manifold (Sphere, Euclidean, Torus, SE2, ConfigurationSpace).
+        start: Starting point.
+        goal: Target point.
+        settings: Algorithm settings (uses defaults if omitted).
+
+    Returns:
+        InterpolationResult with fields ``path``, ``status``, ``iterations``,
+        ``distortion_halvings``, ``fd_midpoint_fallbacks``, ``initial_distance``,
+        ``final_distance``.
+    """
+    ...
+
+
+class EuclideanHeuristic:
+    """Euclidean (L2) heuristic between coordinate vectors.
+
+    Computes the chord distance ‖a − b‖₂. Admissible for any manifold
+    where geodesic distance ≥ chord distance.
+    """
+
+    def __init__(self) -> None:
+        """Create a Euclidean heuristic."""
+        ...
+
+    def __call__(self, a: _Point, b: _Point) -> float:
+        """Compute ‖a − b‖₂."""
+        ...

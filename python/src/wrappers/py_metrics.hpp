@@ -3,16 +3,20 @@
 
 #pragma once
 
-#include <Eigen/Core>
 #include <cmath>
+
 #include <functional>
-#include <geodex/metrics/constant_spd.hpp>
-#include <geodex/metrics/jacobi.hpp>
-#include <geodex/metrics/kinetic_energy.hpp>
-#include <geodex/metrics/pullback.hpp>
-#include <geodex/metrics/weighted.hpp>
 #include <memory>
 #include <string>
+
+#include <Eigen/Core>
+
+#include "geodex/metrics/clearance.hpp"
+#include "geodex/metrics/constant_spd.hpp"
+#include "geodex/metrics/jacobi.hpp"
+#include "geodex/metrics/kinetic_energy.hpp"
+#include "geodex/metrics/pullback.hpp"
+#include "geodex/metrics/weighted.hpp"
 
 #include "dynamic_manifold.hpp"
 
@@ -32,23 +36,19 @@ class PyKineticEnergyMetric {
 
   explicit PyKineticEnergyMetric(MassMatrixFn fn) : impl_(std::move(fn)) {}
 
-  double inner(const Eigen::VectorXd& p, const Eigen::VectorXd& u,
-               const Eigen::VectorXd& v) const {
+  double inner(const Eigen::VectorXd& p, const Eigen::VectorXd& u, const Eigen::VectorXd& v) const {
     return impl_.inner(p, u, v);
   }
 
-  double norm(const Eigen::VectorXd& p, const Eigen::VectorXd& v) const {
-    return impl_.norm(p, v);
-  }
+  double norm(const Eigen::VectorXd& p, const Eigen::VectorXd& v) const { return impl_.norm(p, v); }
 
   DynamicMetric to_dynamic_metric() const {
     auto shared = std::make_shared<Impl>(impl_);
-    return DynamicMetric{
-        [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& u,
-                 const Eigen::VectorXd& v) { return shared->inner(p, u, v); },
-        [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& v) {
-          return shared->norm(p, v);
-        }};
+    return DynamicMetric{[shared](const Eigen::VectorXd& p, const Eigen::VectorXd& u,
+                                  const Eigen::VectorXd& v) { return shared->inner(p, u, v); },
+                         [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& v) {
+                           return shared->norm(p, v);
+                         }};
   }
 
   std::string repr() const { return "KineticEnergyMetric()"; }
@@ -66,26 +66,24 @@ class PyJacobiMetric {
   PyJacobiMetric(MassMatrixFn mass_fn, PotentialFn pot_fn, double H)
       : impl_(std::move(mass_fn), std::move(pot_fn), H) {}
 
-  double inner(const Eigen::VectorXd& p, const Eigen::VectorXd& u,
-               const Eigen::VectorXd& v) const {
+  double inner(const Eigen::VectorXd& p, const Eigen::VectorXd& u, const Eigen::VectorXd& v) const {
     return impl_.inner(p, u, v);
   }
 
-  double norm(const Eigen::VectorXd& p, const Eigen::VectorXd& v) const {
-    return impl_.norm(p, v);
-  }
+  double norm(const Eigen::VectorXd& p, const Eigen::VectorXd& v) const { return impl_.norm(p, v); }
 
   DynamicMetric to_dynamic_metric() const {
     auto shared = std::make_shared<Impl>(impl_);
-    return DynamicMetric{
-        [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& u,
-                 const Eigen::VectorXd& v) { return shared->inner(p, u, v); },
-        [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& v) {
-          return shared->norm(p, v);
-        }};
+    return DynamicMetric{[shared](const Eigen::VectorXd& p, const Eigen::VectorXd& u,
+                                  const Eigen::VectorXd& v) { return shared->inner(p, u, v); },
+                         [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& v) {
+                           return shared->norm(p, v);
+                         }};
   }
 
-  std::string repr() const { return "JacobiMetric(H=" + std::to_string(impl_.total_energy_) + ")"; }
+  std::string repr() const {
+    return "JacobiMetric(H=" + std::to_string(impl_.total_energy()) + ")";
+  }
 
  private:
   Impl impl_;
@@ -100,27 +98,23 @@ class PyPullbackMetric {
   PyPullbackMetric(JacobianFn jac_fn, TaskMetricFn task_fn, double lambda = 0.0)
       : impl_(std::move(jac_fn), std::move(task_fn), lambda) {}
 
-  double inner(const Eigen::VectorXd& p, const Eigen::VectorXd& u,
-               const Eigen::VectorXd& v) const {
+  double inner(const Eigen::VectorXd& p, const Eigen::VectorXd& u, const Eigen::VectorXd& v) const {
     return impl_.inner(p, u, v);
   }
 
-  double norm(const Eigen::VectorXd& p, const Eigen::VectorXd& v) const {
-    return impl_.norm(p, v);
-  }
+  double norm(const Eigen::VectorXd& p, const Eigen::VectorXd& v) const { return impl_.norm(p, v); }
 
   DynamicMetric to_dynamic_metric() const {
     auto shared = std::make_shared<Impl>(impl_);
-    return DynamicMetric{
-        [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& u,
-                 const Eigen::VectorXd& v) { return shared->inner(p, u, v); },
-        [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& v) {
-          return shared->norm(p, v);
-        }};
+    return DynamicMetric{[shared](const Eigen::VectorXd& p, const Eigen::VectorXd& u,
+                                  const Eigen::VectorXd& v) { return shared->inner(p, u, v); },
+                         [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& v) {
+                           return shared->norm(p, v);
+                         }};
   }
 
   std::string repr() const {
-    return "PullbackMetric(lambda=" + std::to_string(impl_.lambda_) + ")";
+    return "PullbackMetric(lambda=" + std::to_string(impl_.lambda()) + ")";
   }
 
  private:
@@ -135,27 +129,23 @@ class PyConstantSPDMetric {
 
   explicit PyConstantSPDMetric(const Eigen::MatrixXd& A) : impl_(A) {}
 
-  double inner(const Eigen::VectorXd& p, const Eigen::VectorXd& u,
-               const Eigen::VectorXd& v) const {
+  double inner(const Eigen::VectorXd& p, const Eigen::VectorXd& u, const Eigen::VectorXd& v) const {
     return impl_.inner(p, u, v);
   }
 
-  double norm(const Eigen::VectorXd& p, const Eigen::VectorXd& v) const {
-    return impl_.norm(p, v);
-  }
+  double norm(const Eigen::VectorXd& p, const Eigen::VectorXd& v) const { return impl_.norm(p, v); }
 
   DynamicMetric to_dynamic_metric() const {
     auto shared = std::make_shared<Impl>(impl_);
-    return DynamicMetric{
-        [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& u,
-                 const Eigen::VectorXd& v) { return shared->inner(p, u, v); },
-        [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& v) {
-          return shared->norm(p, v);
-        }};
+    return DynamicMetric{[shared](const Eigen::VectorXd& p, const Eigen::VectorXd& u,
+                                  const Eigen::VectorXd& v) { return shared->inner(p, u, v); },
+                         [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& v) {
+                           return shared->norm(p, v);
+                         }};
   }
 
   std::string repr() const {
-    return "ConstantSPDMetric(dim=" + std::to_string(impl_.A_.rows()) + ")";
+    return "ConstantSPDMetric(dim=" + std::to_string(impl_.weight_matrix().rows()) + ")";
   }
 
  private:
@@ -167,11 +157,9 @@ class PyConstantSPDMetric {
 /// WeightedMetric wraps a type-erased DynamicMetric and uniformly scales it.
 class PyWeightedMetric {
  public:
-  PyWeightedMetric(DynamicMetric base, double alpha)
-      : base_(std::move(base)), alpha_(alpha) {}
+  PyWeightedMetric(DynamicMetric base, double alpha) : base_(std::move(base)), alpha_(alpha) {}
 
-  double inner(const Eigen::VectorXd& p, const Eigen::VectorXd& u,
-               const Eigen::VectorXd& v) const {
+  double inner(const Eigen::VectorXd& p, const Eigen::VectorXd& u, const Eigen::VectorXd& v) const {
     return alpha_ * base_.inner(p, u, v);
   }
 
@@ -184,9 +172,7 @@ class PyWeightedMetric {
     double a = alpha_;
     return DynamicMetric{
         [shared_base, a](const Eigen::VectorXd& p, const Eigen::VectorXd& u,
-                         const Eigen::VectorXd& v) {
-          return a * shared_base->inner(p, u, v);
-        },
+                         const Eigen::VectorXd& v) { return a * shared_base->inner(p, u, v); },
         [shared_base, a](const Eigen::VectorXd& p, const Eigen::VectorXd& v) {
           return std::sqrt(a * shared_base->inner(p, v, v));
         }};
@@ -199,6 +185,46 @@ class PyWeightedMetric {
  private:
   DynamicMetric base_;
   double alpha_;
+};
+
+// --- ClearanceMetric ---
+
+using SDFFn = std::function<double(const Eigen::VectorXd&)>;
+
+/// ClearanceMetric wraps SDFConformalMetric with DynamicMetric base and callable SDF.
+class PyClearanceMetric {
+ public:
+  using Impl = SDFConformalMetric<DynamicMetric, SDFFn>;
+
+  PyClearanceMetric(DynamicMetric base, SDFFn sdf, const double kappa = 5.0,
+                    const double beta = 3.0)
+      : impl_(std::move(base), std::move(sdf), kappa, beta) {}
+
+  double inner(const Eigen::VectorXd& p, const Eigen::VectorXd& u, const Eigen::VectorXd& v) const {
+    return impl_.inner(p, u, v);
+  }
+
+  double norm(const Eigen::VectorXd& p, const Eigen::VectorXd& v) const { return impl_.norm(p, v); }
+
+  double kappa() const { return impl_.kappa(); }
+  double beta() const { return impl_.beta(); }
+
+  DynamicMetric to_dynamic_metric() const {
+    auto shared = std::make_shared<Impl>(impl_);
+    return DynamicMetric{[shared](const Eigen::VectorXd& p, const Eigen::VectorXd& u,
+                                  const Eigen::VectorXd& v) { return shared->inner(p, u, v); },
+                         [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& v) {
+                           return shared->norm(p, v);
+                         }};
+  }
+
+  std::string repr() const {
+    return "ClearanceMetric(kappa=" + std::to_string(impl_.kappa()) +
+           ", beta=" + std::to_string(impl_.beta()) + ")";
+  }
+
+ private:
+  Impl impl_;
 };
 
 }  // namespace geodex::python

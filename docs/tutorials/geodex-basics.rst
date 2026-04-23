@@ -34,7 +34,8 @@ The simplest way to get started is with the 2-sphere, defined as the set of unit
 
    \mathbb{S}^2 = \bigl\{ p \in \mathbb{R}^3 : \|p\| = 1 \bigr\}.
 
-In geodex, the ``Sphere<>`` class models :math:`\mathbb{S}^2`.
+In geodex, the ``Sphere<Dim>`` class template models :math:`\mathbb{S}^n` for any
+:math:`n \geq 1`. ``Sphere<>`` is shorthand for ``Sphere<2>`` — the default 2-sphere.
 Creating one is straightforward:
 
 .. tabs::
@@ -49,17 +50,25 @@ Creating one is straightforward:
       sphere = geodex.Sphere()
       print("dim =", sphere.dim())  # 2
 
-The empty angle brackets ``<>`` mean we are using the default **metric** (``SphereRoundMetric``) and the default **retraction** (``SphereExponentialMap``).
-Writing ``Sphere<>`` is equivalent to writing the fully-qualified type:
+The empty angle brackets ``<>`` mean we are using the default intrinsic dimension
+(``2``), the default **metric** (``SphereRoundMetric``), and the default **retraction**
+(``SphereExponentialMap``). Writing ``Sphere<>`` is equivalent to writing the
+fully-qualified type:
 
 .. code-block:: cpp
 
-   geodex::Sphere<geodex::SphereRoundMetric, geodex::SphereExponentialMap> sphere;
+   geodex::Sphere<2, geodex::SphereRoundMetric, geodex::SphereExponentialMap> sphere;
+
+The default names ``SphereRoundMetric``, ``EuclideanStandardMetric<N>``, and
+``TorusFlatMetric<N>`` are type aliases for ``ConstantSPDMetric<K>`` with an identity
+matrix — the ambient identity inner product.
 
 This is the **policy-based design** at the heart of geodex: the manifold is parameterized by a metric policy (what "length" means) and a retraction policy (how to move along the manifold).
 We will explore both in later sections.
 
-Points on the sphere are ``Eigen::Vector3d`` unit vectors, and tangent vectors are also ``Eigen::Vector3d`` (orthogonal to the base point).
+Points on :math:`\mathbb{S}^n` are ``Eigen::Vector<double, n+1>`` unit vectors, and
+tangent vectors share the same type (orthogonal to the base point). For the default
+``Sphere<>`` (:math:`\mathbb{S}^2`), both are ``Eigen::Vector3d``.
 
 Manifolds at a Glance
 ^^^^^^^^^^^^^^^^^^^^^
@@ -76,10 +85,10 @@ The table below summarises their essential properties:
      - Point type
      - dim
      - Default metric
-   * - ``Sphere<>``
-     - :math:`\mathbb{S}^2`
-     - ``Eigen::Vector3d``
-     - 2
+   * - ``Sphere<N>``
+     - :math:`\mathbb{S}^N`
+     - ``Eigen::Vector<double, N+1>``
+     - N
      - ``SphereRoundMetric``
    * - ``Euclidean<N>``
      - :math:`\mathbb{R}^N`
@@ -502,9 +511,9 @@ The distribution depends on the manifold:
       geodex::SE2<>        se2;
 
       auto p1 = sphere.random_point();  // uniform on S²
-      auto p2 = R3.random_point();      // standard normal in R³
+      auto p2 = R3.random_point();      // uniform in [-1, 1]³
       auto p3 = T2.random_point();      // uniform in [0, 2π)²
-      auto p4 = se2.random_point();     // uniform in workspace bounds
+      auto p4 = se2.random_point();     // uniform in sampling bounds
 
    .. code-tab:: py
 
@@ -514,17 +523,30 @@ The distribution depends on the manifold:
       se2       = geodex.SE2()
 
       p1 = sphere.random_point()     # uniform on S²
-      p2 = euclidean.random_point()  # standard normal in R³
+      p2 = euclidean.random_point()  # uniform in [-1, 1]³
       p3 = torus.random_point()      # uniform in [0, 2π)²
-      p4 = se2.random_point()        # uniform in workspace bounds
+      p4 = se2.random_point()        # uniform in sampling bounds
 
-The sphere uses the standard technique of normalizing a Gaussian vector to obtain a uniform distribution on :math:`\mathbb{S}^2`.
-Euclidean space draws each coordinate from a standard normal distribution.
+The sphere uses the standard technique of normalizing a Gaussian vector to obtain a
+uniform distribution on :math:`\mathbb{S}^n`. Euclidean space draws each coordinate
+uniformly from :math:`[-1, 1]`; call ``set_sampling_bounds(lo, hi)`` to change the box.
 The torus samples each angle uniformly from :math:`[0, 2\pi)`.
 
 .. note::
 
-   For SE(2), ``random_point()`` samples the position :math:`(x, y)` uniformly within workspace bounds (default: :math:`[0, 10]^2`) and the heading :math:`\theta` uniformly from :math:`[-\pi, \pi)`.
+   ``Euclidean``, ``Torus``, and ``SE2`` take a ``SamplerT`` policy template parameter
+   that drives ``random_point()``. The default is ``StochasticSampler`` (``mt19937``).
+   Swap in ``HaltonSampler`` for deterministic low-discrepancy quasi-random sampling —
+   useful for reproducible benchmarks and for planners that benefit from better
+   space coverage than pseudo-random draws.
+
+   .. code-block:: cpp
+
+      geodex::Euclidean<3, geodex::EuclideanStandardMetric<3>, geodex::HaltonSampler> R3_halton;
+
+.. note::
+
+   For SE(2), ``random_point()`` samples the position :math:`(x, y)` uniformly within the configured sampling bounds (default: :math:`[0, 10]^2`) and the heading :math:`\theta` uniformly from :math:`[-\pi, \pi)`.
    The bounds can be configured via the constructor.
 
 
@@ -768,7 +790,7 @@ Here we use it on the sphere:
       Eigen::Matrix3d A = Eigen::Vector3d(4, 1, 1).asDiagonal();
       geodex::ConstantSPDMetric<3> weighted{A};
 
-      geodex::Sphere<geodex::ConstantSPDMetric<3>> sphere_weighted{weighted};
+      geodex::Sphere<2, geodex::ConstantSPDMetric<3>> sphere_weighted{weighted};
 
       Eigen::Vector3d p{0, 0, 1};
       Eigen::Vector3d u{1, 0, 0};
@@ -817,7 +839,7 @@ This is cheaper than the true exponential map (no trigonometric functions) but o
 
    .. code-tab:: c++
 
-      using ProjSphere = geodex::Sphere<geodex::SphereRoundMetric,
+      using ProjSphere = geodex::Sphere<2, geodex::SphereRoundMetric,
                                         geodex::SphereProjectionRetraction>;
       ProjSphere sphere;
 

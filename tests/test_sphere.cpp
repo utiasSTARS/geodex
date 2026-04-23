@@ -1,22 +1,25 @@
-#include <gtest/gtest.h>
+#include <cmath>
+
+#include <numbers>
 
 #include <Eigen/Core>
-#include <cmath>
-#include <geodex/geodex.hpp>
-#include <numbers>
+#include <gtest/gtest.h>
+
+#include "geodex/geodex.hpp"
 
 using namespace geodex;
 
 // Compile-time concept checks
 static_assert(RiemannianManifold<Sphere<>>);
-static_assert(RiemannianManifold<Sphere<ConstantSPDMetric<3>>>);
-static_assert(RiemannianManifold<Sphere<SphereRoundMetric, SphereProjectionRetraction>>);
+static_assert(RiemannianManifold<Sphere<2, ConstantSPDMetric<3>>>);
+static_assert(RiemannianManifold<Sphere<2, SphereRoundMetric, SphereProjectionRetraction>>);
 static_assert(Retraction<SphereExponentialMap, Eigen::Vector3d, Eigen::Vector3d>);
 static_assert(Retraction<SphereProjectionRetraction, Eigen::Vector3d, Eigen::Vector3d>);
 
-// HasInjectivityRadius checks
+// HasInjectivityRadius is now unconditional on Sphere (topological).
+// The default metric (ConstantSPDMetric<3> identity) gives the canonical π.
 static_assert(HasInjectivityRadius<Sphere<>>);
-static_assert(!HasInjectivityRadius<Sphere<ConstantSPDMetric<3>>>);
+static_assert(HasInjectivityRadius<Sphere<2, SphereRoundMetric, SphereProjectionRetraction>>);
 
 // Helper: create a known point pair with known geodesic distance.
 // North pole to a point at latitude θ on the great circle through x-axis.
@@ -117,7 +120,7 @@ TEST_F(SphereRoundTest, MidpointDistanceVariousAngles) {
 // ---------------------------------------------------------------------------
 
 TEST(SphereProjection, RetractionReturnsSpherePoint) {
-  Sphere<SphereRoundMetric, SphereProjectionRetraction> sphere;
+  Sphere<2, SphereRoundMetric, SphereProjectionRetraction> sphere;
   Eigen::Vector3d p(0.0, 0.0, 1.0);
   Eigen::Vector3d v(0.3, 0.4, 0.0);
 
@@ -126,7 +129,7 @@ TEST(SphereProjection, RetractionReturnsSpherePoint) {
 }
 
 TEST(SphereProjection, InverseRetractIsTangent) {
-  Sphere<SphereRoundMetric, SphereProjectionRetraction> sphere;
+  Sphere<2, SphereRoundMetric, SphereProjectionRetraction> sphere;
   Eigen::Vector3d p(0.0, 0.0, 1.0);
   Eigen::Vector3d q = point_at_theta(0.5);
 
@@ -136,7 +139,7 @@ TEST(SphereProjection, InverseRetractIsTangent) {
 }
 
 TEST(SphereProjection, AntipodalReturnsZero) {
-  Sphere<SphereRoundMetric, SphereProjectionRetraction> sphere;
+  Sphere<2, SphereRoundMetric, SphereProjectionRetraction> sphere;
   Eigen::Vector3d p(0.0, 0.0, 1.0);
   Eigen::Vector3d south(0.0, 0.0, -1.0);
 
@@ -151,7 +154,7 @@ TEST(SphereProjection, AntipodalReturnsZero) {
 TEST(SphereAnisotropic, ConceptSatisfied) {
   Eigen::Matrix3d A = Eigen::Matrix3d::Identity();
   A(0, 0) = 2.0;
-  Sphere<ConstantSPDMetric<3>> sphere{ConstantSPDMetric<3>{A}};
+  Sphere<2, ConstantSPDMetric<3>> sphere{ConstantSPDMetric<3>{A}};
   EXPECT_EQ(sphere.dim(), 2);
 }
 
@@ -160,7 +163,7 @@ TEST(SphereAnisotropic, DistanceDiffersFromRound) {
   A(0, 0) = 4.0;  // stretch x-direction
 
   Sphere<> round_sphere;
-  Sphere<ConstantSPDMetric<3>> aniso_sphere{ConstantSPDMetric<3>{A}};
+  Sphere<2, ConstantSPDMetric<3>> aniso_sphere{ConstantSPDMetric<3>{A}};
 
   Eigen::Vector3d p(0.0, 0.0, 1.0);
   auto q = point_at_theta(0.5);
@@ -176,7 +179,7 @@ TEST(SphereAnisotropic, MidpointDistance) {
   Eigen::Matrix3d A = Eigen::Matrix3d::Identity();
   A(0, 0) = 2.0;
 
-  Sphere<ConstantSPDMetric<3>> sphere{ConstantSPDMetric<3>{A}};
+  Sphere<2, ConstantSPDMetric<3>> sphere{ConstantSPDMetric<3>{A}};
 
   Eigen::Vector3d p(0.0, 0.0, 1.0);
   auto q = point_at_theta(0.5);
@@ -195,7 +198,7 @@ TEST(SphereAnisotropic, DistanceAntipodal) {
   Eigen::Matrix3d A = Eigen::Matrix3d::Identity();
   A(0, 0) = 2.0;
 
-  Sphere<ConstantSPDMetric<3>> sphere{ConstantSPDMetric<3>{A}};
+  Sphere<2, ConstantSPDMetric<3>> sphere{ConstantSPDMetric<3>{A}};
 
   Eigen::Vector3d north(0.0, 0.0, 1.0);
   Eigen::Vector3d south(0.0, 0.0, -1.0);

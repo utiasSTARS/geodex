@@ -25,27 +25,25 @@ class PyConfigurationSpace {
         [dm]() { return dm.random_point(); },
         [dm](const Eigen::VectorXd& p, const Eigen::VectorXd& v) { return dm.exp(p, v); },
         [dm](const Eigen::VectorXd& p, const Eigen::VectorXd& q) { return dm.log(p, q); },
-        [dmet](const Eigen::VectorXd& p, const Eigen::VectorXd& u,
-               const Eigen::VectorXd& v) { return dmet.inner(p, u, v); },
+        [dmet](const Eigen::VectorXd& p, const Eigen::VectorXd& u, const Eigen::VectorXd& v) {
+          return dmet.inner(p, u, v);
+        },
         [dmet](const Eigen::VectorXd& p, const Eigen::VectorXd& v) { return dmet.norm(p, v); },
-        dm.has_project() ? DynamicManifold::ProjectFn{[dm](const Eigen::VectorXd& p,
-                                                           const Eigen::VectorXd& v) {
-                             return dm.project(p, v);
-                           }}
-                         : nullptr};
+        dm.has_project()
+            ? DynamicManifold::ProjectFn{[dm](const Eigen::VectorXd& p, const Eigen::VectorXd& v) {
+                return dm.project(p, v);
+              }}
+            : nullptr};
   }
 
   int dim() const { return impl_.dim(); }
   Eigen::VectorXd random_point() const { return impl_.random_point(); }
 
-  double inner(const Eigen::VectorXd& p, const Eigen::VectorXd& u,
-               const Eigen::VectorXd& v) const {
+  double inner(const Eigen::VectorXd& p, const Eigen::VectorXd& u, const Eigen::VectorXd& v) const {
     return impl_.inner(p, u, v);
   }
 
-  double norm(const Eigen::VectorXd& p, const Eigen::VectorXd& v) const {
-    return impl_.norm(p, v);
-  }
+  double norm(const Eigen::VectorXd& p, const Eigen::VectorXd& v) const { return impl_.norm(p, v); }
 
   Eigen::VectorXd exp(const Eigen::VectorXd& p, const Eigen::VectorXd& v) const {
     return impl_.exp(p, v);
@@ -59,8 +57,7 @@ class PyConfigurationSpace {
     return impl_.distance(p, q);
   }
 
-  Eigen::VectorXd geodesic(const Eigen::VectorXd& p, const Eigen::VectorXd& q,
-                            double t) const {
+  Eigen::VectorXd geodesic(const Eigen::VectorXd& p, const Eigen::VectorXd& q, double t) const {
     return impl_.geodesic(p, q, t);
   }
 

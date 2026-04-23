@@ -3,9 +3,11 @@
 
 #pragma once
 
-#include <Eigen/Core>
-#include <cmath>
 #include <limits>
+
+#include <Eigen/Core>
+
+#include "geodex/core/metric.hpp"
 
 namespace geodex {
 
@@ -20,9 +22,8 @@ namespace geodex {
 /// @tparam MassMatrixFn A callable type with signature
 ///   `auto operator()(const Point& q) -> Eigen::MatrixXd` (or fixed-size matrix).
 template <typename MassMatrixFn>
-struct KineticEnergyMetric {
-  MassMatrixFn mass_matrix_fn_;  ///< Callable returning M(q).
-
+class KineticEnergyMetric {
+ public:
   /// @brief Construct with a mass matrix function.
   /// @param fn Callable returning the SPD mass matrix at a given configuration.
   explicit KineticEnergyMetric(MassMatrixFn fn) : mass_matrix_fn_(std::move(fn)) {}
@@ -43,11 +44,28 @@ struct KineticEnergyMetric {
   /// @return The norm value.
   template <typename Point, typename Tangent>
   double norm(const Point& q, const Tangent& v) const {
-    return std::sqrt(inner(q, v, v));
+    return riemannian_norm(*this, q, v);
+  }
+
+  /// @brief Batched inner product: \f$U^\top M(q)\, V\f$ computed with a single
+  /// call to the mass-matrix function.
+  ///
+  /// @details This is the performance-critical path for `natural_gradient_fd`
+  /// when the mass matrix is expensive to compute (e.g., forward kinematics for
+  /// a manipulator): instead of calling `mass_matrix_fn_(q)` for every scalar
+  /// \f$G_{ij} = \langle e_i, e_j\rangle_q\f$, we call it once and form the
+  /// entire \f$d\times d\f$ tensor in a single matmul.
+  template <typename Point>
+  Eigen::MatrixXd inner_matrix(const Point& q, const Eigen::MatrixXd& U,
+                               const Eigen::MatrixXd& V) const {
+    return U.transpose() * mass_matrix_fn_(q) * V;
   }
 
   /// @brief Return the injectivity radius \f$ \infty \f$ (assumes flat topology).
   double injectivity_radius() const { return std::numeric_limits<double>::infinity(); }
+
+ private:
+  MassMatrixFn mass_matrix_fn_;  ///< Callable returning M(q).
 };
 
 }  // namespace geodex

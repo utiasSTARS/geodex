@@ -1,8 +1,10 @@
 #pragma once
 
-#include <Eigen/Core>
 #include <cmath>
+
 #include <limits>
+
+#include <Eigen/Core>
 
 namespace geodex {
 

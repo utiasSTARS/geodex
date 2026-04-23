@@ -7,7 +7,7 @@ Reads a JSON file produced by minimum_energy_grid and writes two SVG figures:
 
 Usage:
   python scripts/visualize_metric_grid.py minimum_energy_grid.json \\
-      --output-dir docs/tutorials/figs
+      --output-dir docs/tutorials/figs/minimum-energy-planning
 """
 
 import argparse

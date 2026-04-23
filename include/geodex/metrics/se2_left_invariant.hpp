@@ -1,10 +1,12 @@
 /// @file se2_left_invariant.hpp
-/// @brief Left-invariant metric on SE(2).
+/// @brief Left-invariant metric on SE(2) — thin wrapper over ConstantSPDMetric<3>.
 
 #pragma once
 
 #include <Eigen/Core>
-#include <cmath>
+
+#include "geodex/core/metric.hpp"
+#include "geodex/metrics/constant_spd.hpp"
 
 namespace geodex {
 
@@ -14,25 +16,63 @@ namespace geodex {
 /// \f$ \langle u, v \rangle = w_x u_x v_x + w_y u_y v_y + w_\theta u_\theta v_\theta \f$.
 /// The weights \f$ (w_x, w_y, w_\theta) \f$ allow anisotropic cost, e.g. penalizing
 /// lateral motion for car-like robots.
-struct SE2LeftInvariantMetric {
-  Eigen::Vector3d weights_;  ///< Diagonal weight vector \f$ (w_x, w_y, w_\theta) \f$.
-
+///
+/// Implementation: this is `ConstantSPDMetric<3>` with `A = diag(w_x, w_y, w_\theta)`.
+/// The `weights_` field is preserved alongside the base metric so that
+/// `SE2::has_riemannian_log_runtime()` can quickly check unit weights without
+/// inspecting the full SPD matrix.
+class SE2LeftInvariantMetric {
+ public:
   /// @brief Construct with unit weights (isotropic).
-  SE2LeftInvariantMetric() : weights_(1.0, 1.0, 1.0) {}
+  SE2LeftInvariantMetric() : SE2LeftInvariantMetric(1.0, 1.0, 1.0) {}
+
+  /// @brief Create a car-like metric with a specified effective turning radius.
+  ///
+  /// @details The metric \f$ g = \mathrm{diag}(w_x, w_y, w_\theta) \f$ with high
+  /// \f$ w_y \f$ suppresses lateral motion. The effective minimum turning radius
+  /// of the resulting geodesic is approximately
+  /// \f$ r_{\mathrm{eff}} \approx \sqrt{w_\theta / w_x} \f$.
+  ///
+  /// @param turning_radius Desired effective turning radius.
+  /// @param lateral_penalty Weight for lateral (y) motion — higher values more
+  ///        strongly suppress sideslip (default 100.0).
+  /// @return An SE2LeftInvariantMetric configured for car-like behavior.
+  /// @note Soft constraint only: the metric penalizes but does not forbid motions
+  /// violating the turning radius. Near start/goal the planner may produce in-place
+  /// rotations.
+  static SE2LeftInvariantMetric car_like(const double turning_radius,
+                                         const double lateral_penalty = 100.0) {
+    return SE2LeftInvariantMetric(1.0, lateral_penalty, turning_radius * turning_radius);
+  }
 
   /// @brief Construct with explicit weights.
   /// @param wx Translational weight in x.
   /// @param wy Translational weight in y.
   /// @param wtheta Rotational weight.
-  SE2LeftInvariantMetric(double wx, double wy, double wtheta) : weights_(wx, wy, wtheta) {}
+  SE2LeftInvariantMetric(double wx, double wy, double wtheta)
+      : weights_(wx, wy, wtheta),
+        base_(Eigen::Vector3d(wx, wy, wtheta).asDiagonal().toDenseMatrix()) {}
 
-  /// @brief Compute the inner product \f$ \langle u, v \rangle = \sum_i w_i u_i v_i \f$.
+  /// @brief Access the diagonal weight vector \f$ (w_x, w_y, w_\theta) \f$.
+  const Eigen::Vector3d& weights() const { return weights_; }
+
+  /// @brief Compute the inner product via the wrapped ConstantSPDMetric.
+  /// @param p Base point (unused for a constant metric).
   /// @param u First tangent vector.
   /// @param v Second tangent vector.
   /// @return The inner product value.
-  double inner(const Eigen::Vector3d& /*p*/, const Eigen::Vector3d& u,
-               const Eigen::Vector3d& v) const {
-    return weights_[0] * u[0] * v[0] + weights_[1] * u[1] * v[1] + weights_[2] * u[2] * v[2];
+  double inner(const Eigen::Vector3d& p, const Eigen::Vector3d& u, const Eigen::Vector3d& v) const {
+    return base_.inner(p, u, v);
+  }
+
+  /// @brief Batched inner product via the wrapped ConstantSPDMetric.
+  /// @param p Base point.
+  /// @param U Matrix whose columns are tangent vectors.
+  /// @param V Matrix whose columns are tangent vectors.
+  /// @return \f$ U^\top A \, V \f$.
+  Eigen::MatrixXd inner_matrix(const Eigen::Vector3d& p, const Eigen::MatrixXd& U,
+                               const Eigen::MatrixXd& V) const {
+    return base_.inner_matrix(p, U, V);
   }
 
   /// @brief Compute the norm \f$ \|v\| = \sqrt{\langle v, v \rangle} \f$.
@@ -40,8 +80,12 @@ struct SE2LeftInvariantMetric {
   /// @param v Tangent vector.
   /// @return The norm value.
   double norm(const Eigen::Vector3d& p, const Eigen::Vector3d& v) const {
-    return std::sqrt(inner(p, v, v));
+    return riemannian_norm(*this, p, v);
   }
+
+ private:
+  Eigen::Vector3d weights_;    ///< Diagonal weight vector \f$ (w_x, w_y, w_\theta) \f$.
+  ConstantSPDMetric<3> base_;  ///< Wrapped SPD metric with `A = diag(weights_)`.
 };
 
 }  // namespace geodex

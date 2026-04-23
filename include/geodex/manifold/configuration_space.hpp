@@ -3,8 +3,9 @@
 
 #pragma once
 
-#include <geodex/algorithm/distance.hpp>
-#include <geodex/core/concepts.hpp>
+#include "geodex/algorithm/distance.hpp"
+#include "geodex/core/concepts.hpp"
+#include "geodex/core/metric.hpp"
 
 namespace geodex {
 
@@ -20,13 +21,24 @@ namespace geodex {
 /// @tparam MetricT The metric policy type (must provide `inner` and `norm`).
 template <typename BaseManifoldT, typename MetricT>
 class ConfigurationSpace {
-  BaseManifoldT base_;
-  MetricT metric_;
-
  public:
-  using Scalar = typename BaseManifoldT::Scalar;   ///< Scalar type from the base manifold.
-  using Point = typename BaseManifoldT::Point;     ///< Point type from the base manifold.
-  using Tangent = typename BaseManifoldT::Tangent; ///< Tangent vector type from the base manifold.
+  using Scalar = typename BaseManifoldT::Scalar;    ///< Scalar type from the base manifold.
+  using Point = typename BaseManifoldT::Point;      ///< Point type from the base manifold.
+  using Tangent = typename BaseManifoldT::Tangent;  ///< Tangent vector type from the base manifold.
+
+  /// @brief Runtime query: is `log` the Riemannian logarithm of the custom metric?
+  ///
+  /// @details Always returns `false`. The whole purpose of `ConfigurationSpace`
+  /// is to overlay a custom metric on a base manifold — the base's `log` is the
+  /// Riemannian log of the base's native metric, not of the custom metric.
+  /// This forces `discrete_geodesic` to use the finite-difference natural
+  /// gradient, which correctly follows the energy-minimizing curve under the
+  /// custom metric.
+  /// @warning Setting `InterpolationSettings::force_log_direction = true` on a
+  /// ConfigurationSpace bypasses this and uses the base manifold's log for direction.
+  /// The resulting path follows the base metric's geodesic, not the custom metric's.
+  /// Only use when the base log is a reasonable approximation.
+  bool has_riemannian_log_runtime() const { return false; }
 
   /// @brief Construct with a base manifold and a metric.
   /// @param base The base manifold instance.
@@ -73,27 +85,40 @@ class ConfigurationSpace {
   /// @brief Riemannian norm from the custom metric.
   Scalar norm(const Point& p, const Tangent& v) const { return metric_.norm(p, v); }
 
+  /// @brief Batched inner product \f$U^\top M(p)\, V\f$ when the custom metric provides it.
+  ///
+  /// @details Forwards to the metric's `inner_matrix`. This is the main
+  /// performance hook for kinetic-energy configuration spaces, where the
+  /// expensive mass matrix evaluation is amortized over all \f$d^2\f$ entries
+  /// of the tangent-metric tensor in a single call.
+  Eigen::MatrixXd inner_matrix(const Point& p, const Eigen::MatrixXd& U,
+                               const Eigen::MatrixXd& V) const
+    requires requires(const MetricT& m, const Point& q, const Eigen::MatrixXd& A) {
+      { m.inner_matrix(q, A, A) } -> std::convertible_to<Eigen::MatrixXd>;
+    }
+  {
+    return metric_.inner_matrix(p, U, V);
+  }
+
   /// @}
 
   /// @name Derived operations
   /// @{
 
   /// @brief Geodesic distance via the midpoint approximation.
-  Scalar distance(const Point& p, const Point& q) const {
-    return distance_midpoint(*this, p, q);
-  }
+  Scalar distance(const Point& p, const Point& q) const { return distance_midpoint(*this, p, q); }
 
   /// @brief Injectivity radius — forwarded from the metric if available.
   Scalar injectivity_radius() const
-    requires requires { metric_.injectivity_radius(); }
+    requires requires(const MetricT& m) {
+      { m.injectivity_radius() };
+    }
   {
     return metric_.injectivity_radius();
   }
 
   /// @brief Geodesic interpolation between two points.
-  Point geodesic(const Point& p, const Point& q, Scalar t) const {
-    return exp(p, t * log(p, q));
-  }
+  Point geodesic(const Point& p, const Point& q, Scalar t) const { return exp(p, t * log(p, q)); }
 
   /// @}
 
@@ -102,6 +127,10 @@ class ConfigurationSpace {
 
   /// @brief Access the metric.
   const MetricT& metric() const { return metric_; }
+
+ private:
+  BaseManifoldT base_;
+  MetricT metric_;
 };
 
 }  // namespace geodex

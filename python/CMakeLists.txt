@@ -22,6 +22,7 @@ nanobind_add_module(_geodex_core
   src/bind_metrics.cpp
   src/bind_config_space.cpp
   src/bind_algorithms.cpp
+  src/bind_collision.cpp
 )
 
 target_link_libraries(_geodex_core PRIVATE geodex)

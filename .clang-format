@@ -1,2 +1,25 @@
 BasedOnStyle: Google
 ColumnLimit: 100
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup
+IncludeCategories:
+  # 1. C system headers
+  - Regex: '^<c(assert|errno|math|stddef|stdint|stdio|stdlib|string)>'
+    Priority: 1
+    CaseSensitive: true
+  # 2. Third-party (path-based includes: Eigen/, ompl/, nanobind/, gtest/, etc.)
+  - Regex: '^<.+/'
+    Priority: 3
+  # 3. Platform / architecture headers
+  - Regex: '^<(arm_neon|immintrin|xmmintrin|emmintrin)\.h>'
+    Priority: 3
+    CaseSensitive: true
+  # 4. C++ standard library (lowercase start, catch-all for remaining <...>)
+  - Regex: '^<'
+    Priority: 2
+  # 5. Local project headers (quoted)
+  - Regex: '^"geodex/'
+    Priority: 4
+  # 6. Relative local headers (quoted, no path prefix)
+  - Regex: '^"'
+    Priority: 5

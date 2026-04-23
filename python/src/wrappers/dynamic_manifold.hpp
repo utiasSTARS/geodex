@@ -3,11 +3,13 @@
 
 #pragma once
 
-#include <Eigen/Core>
 #include <functional>
-#include <geodex/algorithm/distance.hpp>
-#include <geodex/core/concepts.hpp>
 #include <limits>
+
+#include <Eigen/Core>
+
+#include "geodex/algorithm/distance.hpp"
+#include "geodex/core/concepts.hpp"
 
 namespace geodex::python {
 
@@ -22,14 +24,11 @@ struct DynamicMetric {
   InnerFn inner_fn;
   NormFn norm_fn;
 
-  double inner(const Eigen::VectorXd& p, const Eigen::VectorXd& u,
-               const Eigen::VectorXd& v) const {
+  double inner(const Eigen::VectorXd& p, const Eigen::VectorXd& u, const Eigen::VectorXd& v) const {
     return inner_fn(p, u, v);
   }
 
-  double norm(const Eigen::VectorXd& p, const Eigen::VectorXd& v) const {
-    return norm_fn(p, v);
-  }
+  double norm(const Eigen::VectorXd& p, const Eigen::VectorXd& v) const { return norm_fn(p, v); }
 
   double injectivity_radius() const { return std::numeric_limits<double>::infinity(); }
 };
@@ -75,13 +74,9 @@ class DynamicManifold {
 
   Scalar norm(const Point& p, const Tangent& v) const { return norm_fn_(p, v); }
 
-  Scalar distance(const Point& p, const Point& q) const {
-    return distance_midpoint(*this, p, q);
-  }
+  Scalar distance(const Point& p, const Point& q) const { return distance_midpoint(*this, p, q); }
 
-  Point geodesic(const Point& p, const Point& q, Scalar t) const {
-    return exp(p, t * log(p, q));
-  }
+  Point geodesic(const Point& p, const Point& q, Scalar t) const { return exp(p, t * log(p, q)); }
 
   Tangent project(const Point& p, const Tangent& v) const {
     if (project_fn_) return project_fn_(p, v);
