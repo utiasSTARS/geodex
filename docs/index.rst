@@ -6,7 +6,7 @@ geodex
 We ship ready-to-use manifolds (:math:`\mathbb{R}^n`, :math:`S^n`, :math:`T^n`, and :math:`\mathrm{SE}(2)`), all built from swappable metric, retraction, and sampler policies, along with efficient algorithms for geodesic distance and interpolation.
 
 The core engine of geodex is written purely in C++20 for performance, with first-class Python support (``pip install geodex``).
-We also provide integrations with popular motion planning frameworks (OMPL, VAMP) and robotics stacks (Nav2, MoveIt 2) through ROS 2.
+We are also actively working on integrating popular motion planning frameworks (OMPL, VAMP) and ROS 2 stacks (Nav2, MoveIt 2) into geodex.
 
 .. raw:: html
 
@@ -63,38 +63,41 @@ Roadmap
 
 .. list-table::
    :header-rows: 1
+   :widths: 40 55 20
 
    * - Integration
      - Description
      - Status
    * - `OMPL <https://ompl.kavrakilab.org/>`_ and
        `VAMP <https://github.com/KavrakiLab/vamp>`_ integrations
-     - | Planning on Riemannian manifolds with
-       | state-of-the-art sampling-based planners
+     - Planning on Riemannian manifolds with state-of-the-art sampling-based planners
      - In progress
    * - `Nav2 <https://nav2.org/>`_ and
        `MoveIt 2 <https://moveit.ai/>`_ plugins
-     - | Geometry-aware planning for ROS 2
-       | mobile robots and manipulators
+     - Geometry-aware planning for ROS 2 mobile robots and manipulators
      - Planned
 
 Citation
 --------
 
-   geodex accompanies the paper
-   `Geometry-Aware Sampling-Based Motion Planning on Riemannian Manifolds <https://arxiv.org/abs/2602.00992>`_,
-   accepted to `WAFR 2026 <https://algorithmic-robotics.org/>`_.
+geodex accompanies the paper
+`Geometry-Aware Sampling-Based Motion Planning on Riemannian Manifolds <https://arxiv.org/abs/2602.00992>`_,
+accepted to `WAFR 2026 <https://algorithmic-robotics.org/>`_.
 
 If you use geodex in your research, consider citing:
 
 .. code-block:: bibtex
 
-   @article{kyaw2026geometry,
-      title={Geometry-Aware Sampling-Based Motion Planning on Riemannian Manifolds},
-      author={Kyaw, Phone Thiha and Kelly, Jonathan},
-      journal={arXiv preprint arXiv:2602.00992},
-      year={2026}
-   }
+  @inproceedings{kyaw2026geometry,
+    address = {Oulu, Finland},
+    author = {Phone Thiha Kyaw and Jonathan Kelly},
+    booktitle = {Proceedings of the 17th World Symposium on the Algorithmic Foundations of Robotics {(WAFR)}},
+    date = {2026-06-15/2026-06-17},
+    month = {Jun. 15--17},
+    title = {Geometry-Aware Sampling-Based Motion Planning on {Riemannian} Manifolds},
+    url = {https://arxiv.org/abs/2602.00992},
+    year = {2026}
+  }
 
 .. toctree::
    :hidden:
