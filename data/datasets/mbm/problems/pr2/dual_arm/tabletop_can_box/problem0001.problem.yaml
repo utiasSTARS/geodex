@@ -1,0 +1,43 @@
+id: mbm/pr2/dual_arm/tabletop_can_box/problem0001
+dataset: mbm
+robot: pr2
+planning_group: dual_arm
+scene: ../../../../scenes/pr2/tabletop_can_box/scene0001.scene.yaml
+
+allowed_planning_time: 60
+num_planning_attempts: 2
+
+start:
+  joints:
+    l_shoulder_pan_joint: 0.9117
+    l_shoulder_lift_joint: 0.4768
+    l_upper_arm_roll_joint: 1.5995
+    l_elbow_flex_joint: -1.4905
+    l_forearm_roll_joint: 0.0992
+    l_wrist_flex_joint: -0.2865
+    l_wrist_roll_joint: 1.4881
+    r_shoulder_pan_joint: -0.9117
+    r_shoulder_lift_joint: 0.4768
+    r_upper_arm_roll_joint: -1.5995
+    r_elbow_flex_joint: -1.4905
+    r_forearm_roll_joint: -0.0992
+    r_wrist_flex_joint: -0.2865
+    r_wrist_roll_joint: -1.4881
+
+goal:
+  type: joint_state
+  joints:
+    l_shoulder_pan_joint: 0.9275
+    l_shoulder_lift_joint: -0.3114
+    l_upper_arm_roll_joint: 1.7232
+    l_elbow_flex_joint: -1.7349
+    l_forearm_roll_joint: 0.0992
+    l_wrist_flex_joint: -0.2865
+    l_wrist_roll_joint: 1.4881
+    r_shoulder_pan_joint: -0.9275
+    r_shoulder_lift_joint: -0.3114
+    r_upper_arm_roll_joint: -1.7232
+    r_elbow_flex_joint: -1.7349
+    r_forearm_roll_joint: -0.0992
+    r_wrist_flex_joint: -0.2865
+    r_wrist_roll_joint: -1.4881

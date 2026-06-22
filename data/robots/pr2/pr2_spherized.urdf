@@ -1,0 +1,3019 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot name="pr2">
+  <link name="base_link">
+    <inertial>
+      <origin xyz="-0.061 0.0 0.1465" rpy="0.0 -0.0 0.0" />
+      <mass value="116.0" />
+      <inertia ixx="5.652232699207" ixy="-0.009719934438" ixz="1.293988226423" iyy="5.669473158652" iyz="-0.007379583694" izz="3.683196351726" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/base_v0/base.dae" />
+        </geometry>
+      <material name="White">
+        <color rgba="1. 1. 1. 1." />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    <collision name="link_name_coll_0">
+      <geometry>
+        <sphere radius="0.3706543743610382" />
+        </geometry>
+      <origin xyz="-0.16398537158966064 0.001980295896283819 0.1330092295695019" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_1">
+      <geometry>
+        <sphere radius="0.2719455659389496" />
+        </geometry>
+      <origin xyz="-0.2962232232093811 -0.015075595118105412 0.467686265707016" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_2">
+      <geometry>
+        <sphere radius="0.26297464966773987" />
+        </geometry>
+      <origin xyz="0.14854826033115387 -0.16706572473049164 0.11227823048830032" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_3">
+      <geometry>
+        <sphere radius="0.2632770836353302" />
+        </geometry>
+      <origin xyz="0.1383775770664215 0.14951737225055695 0.1409500688314438" rpy="0.0 -0.0 0.0" />
+      </collision>
+    </link>
+  <link name="base_footprint">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="1.0" />
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+      </inertial>
+    <visual>
+      <geometry>
+        <box size="0.01 0.01 0.01" />
+        </geometry>
+      <material name="White">
+        <color rgba="1. 1. 1. 1." />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    </link>
+  <link name="base_bellow_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="1.0" />
+      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01" />
+      </inertial>
+    <visual>
+      <geometry>
+        <box size="0.05 0.37 0.3 " />
+        </geometry>
+      <material name="Black">
+        <color rgba="0.1 0.1 0.1 1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    </link>
+  <link name="base_laser_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <mass value="0.001" />
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0" iyy="1e-06" iyz="0.0" izz="0.0001" />
+      </inertial>
+    </link>
+  <link name="torso_lift_link">
+    <inertial>
+      <origin xyz="-0.1 0.0 -0.0885" rpy="0.0 -0.0 0.0" />
+      <mass value="36.248046" />
+      <inertia ixx="2.771653750257" ixy="0.004284522609" ixz="-0.160418504506" iyy="2.510019507959" iyz="0.029664468704" izz="0.526432355569" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/torso_v0/torso_lift.dae" />
+        </geometry>
+      <material name="Grey2">
+        <color rgba="0.9 0.9 0.9 1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    <collision name="link_name_coll_0">
+      <geometry>
+        <sphere radius="0.1942698210477829" />
+        </geometry>
+      <origin xyz="-0.175038680434227 -0.010261135175824165 -0.39161092042922974" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_1">
+      <geometry>
+        <sphere radius="0.22273068130016327" />
+        </geometry>
+      <origin xyz="-0.19810107350349426 0.020467011258006096 -0.10609979182481766" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_2">
+      <geometry>
+        <sphere radius="0.2407943159341812" />
+        </geometry>
+      <origin xyz="-0.11400002241134644 -0.09575977921485901 0.15417857468128204" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_3">
+      <geometry>
+        <sphere radius="0.24226287007331848" />
+        </geometry>
+      <origin xyz="-0.11427399516105652 0.07437416911125183 0.15334579348564148" rpy="0.0 -0.0 0.0" />
+      </collision>
+    </link>
+  <link name="l_torso_lift_side_plate_link">
+    <inertial>
+      <origin xyz="-0.0625 0.0 0.05" rpy="0.0 -0.0 0.0" />
+      <mass value="0.1" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001" />
+      </inertial>
+    </link>
+  <link name="r_torso_lift_side_plate_link">
+    <inertial>
+      <origin xyz="-0.0625 0.0 0.05" rpy="0.0 -0.0 0.0" />
+      <mass value="0.1" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001" />
+      </inertial>
+    </link>
+  <link name="torso_lift_motor_screw_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <mass value="1.0" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001" />
+      </inertial>
+    </link>
+  <link name="imu_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <mass value="0.001" />
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0" iyy="1e-06" iyz="0.0" izz="0.0001" />
+      </inertial>
+    </link>
+  <link name="head_pan_link">
+    <inertial>
+      <origin xyz="0.010907 0.031693 0.090507" rpy="0.0 0.0 0.0" />
+      <mass value="6.339" />
+      <inertia ixx="0.032497592" ixy="0.00063604088" ixz="0.0025851534" iyy="0.046545627" iyz="-0.0024534295" izz="0.057652724" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/head_v0/head_pan.dae" />
+        </geometry>
+      <material name="Blue">
+        <color rgba="0.  0.  0.8 1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    <collision name="link_name_coll_0">
+      <geometry>
+        <sphere radius="0.1051211729645729" />
+        </geometry>
+      <origin xyz="-0.03642147779464722 -0.07325528562068939 -0.005678620655089617" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_1">
+      <geometry>
+        <sphere radius="0.1067715659737587" />
+        </geometry>
+      <origin xyz="0.06520532071590424 -0.07628071308135986 -0.0035178177058696747" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_2">
+      <geometry>
+        <sphere radius="0.1051211729645729" />
+        </geometry>
+      <origin xyz="-0.030999096110463142 0.07780353724956512 -0.007060765754431486" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_3">
+      <geometry>
+        <sphere radius="0.1067715659737587" />
+        </geometry>
+      <origin xyz="0.0705844834446907 0.07357420027256012 -0.004888947121798992" rpy="0.0 -0.0 0.0" />
+      </collision>
+    </link>
+  <link name="head_tilt_link">
+    <inertial>
+      <origin xyz="0.001716 -0.019556 0.055002" rpy="0.0 0.0 0.0" />
+      <mass value="4.479" />
+      <inertia ixx="0.024223222" ixy="0.00062063507" ixz="-9.6909696e-05" iyy="0.054723086" iyz="0.002797024" izz="0.067306377" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/head_v0/head_tilt.dae" />
+        </geometry>
+      <material name="Green">
+        <color rgba="0.  0.8 0.  1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    <collision name="link_name_coll_0">
+      <geometry>
+        <sphere radius="0.14942696690559387" />
+        </geometry>
+      <origin xyz="-0.04339101165533066 -0.06693783402442932 0.10125353932380676" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_1">
+      <geometry>
+        <sphere radius="0.14942696690559387" />
+        </geometry>
+      <origin xyz="-0.04104635864496231 0.0650629773736 0.10140437632799149" rpy="0.0 -0.0 0.0" />
+      </collision>
+    </link>
+  <link name="head_plate_frame">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <mass value="0.01" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001" />
+      </inertial>
+    <visual>
+      <geometry>
+        <box size="0.01 0.01 0.01" />
+        </geometry>
+      <material name="Blue">
+        <color rgba="0.  0.  0.8 1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    <collision name="link_name_coll_0">
+      <geometry>
+        <sphere radius="0.008152786642313004" />
+        </geometry>
+      <origin xyz="0.0004328357463236898 0.00039662065682932734 0.00040788986370898783" rpy="0.0 -0.0 0.0" />
+      </collision>
+    </link>
+  <link name="sensor_mount_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <mass value="0.05" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.01" />
+      </inertial>
+    </link>
+  <link name="high_def_frame">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <mass value="0.01" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001" />
+      </inertial>
+    </link>
+  <link name="high_def_optical_frame">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <mass value="0.01" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001" />
+      </inertial>
+    </link>
+  <link name="double_stereo_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <mass value="0.1" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.01" />
+      </inertial>
+    </link>
+  <link name="wide_stereo_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <mass value="0.1" />
+      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01" />
+      </inertial>
+    </link>
+  <link name="wide_stereo_optical_frame">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="1.0" />
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+      </inertial>
+    </link>
+  <link name="wide_stereo_l_stereo_camera_frame">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="0.01" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001" />
+      </inertial>
+    </link>
+  <link name="wide_stereo_l_stereo_camera_optical_frame">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="1.0" />
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+      </inertial>
+    </link>
+  <link name="wide_stereo_r_stereo_camera_frame">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="0.01" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001" />
+      </inertial>
+    </link>
+  <link name="wide_stereo_r_stereo_camera_optical_frame">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="1.0" />
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+      </inertial>
+    </link>
+  <link name="narrow_stereo_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <mass value="0.1" />
+      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01" />
+      </inertial>
+    </link>
+  <link name="narrow_stereo_optical_frame">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="1.0" />
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+      </inertial>
+    </link>
+  <link name="narrow_stereo_l_stereo_camera_frame">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="0.01" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001" />
+      </inertial>
+    </link>
+  <link name="narrow_stereo_l_stereo_camera_optical_frame">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="1.0" />
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+      </inertial>
+    </link>
+  <link name="narrow_stereo_r_stereo_camera_frame">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="0.01" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001" />
+      </inertial>
+    </link>
+  <link name="narrow_stereo_r_stereo_camera_optical_frame">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="1.0" />
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+      </inertial>
+    </link>
+  <link name="projector_wg6802418_frame">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <mass value="0.01" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001" />
+      </inertial>
+    </link>
+  <link name="projector_wg6802418_child_frame">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <mass value="0.01" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001" />
+      </inertial>
+    </link>
+  <link name="laser_tilt_mount_link">
+    <inertial>
+      <origin xyz="-0.001136 0.00167 -0.00713" rpy="0.0 0.0 0.0" />
+      <mass value="0.591" />
+      <inertia ixx="0.001195273" ixy="2.3087e-05" ixz="3.7467e-05" iyy="0.001083956" iyz="3.4906e-05" izz="0.000795014" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/tilting_laser_v0/tilting_hokuyo.dae" />
+        </geometry>
+      <material name="Red">
+        <color rgba="0.8 0.  0.  1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    </link>
+  <link name="laser_tilt_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <mass value="0.001" />
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0" iyy="1e-06" iyz="0.0" izz="0.0001" />
+      </inertial>
+    </link>
+  <link name="r_shoulder_pan_link">
+    <inertial>
+      <origin xyz="-0.001201 0.024513 -0.098231" rpy="0.0 0.0 0.0" />
+      <mass value="25.799322" />
+      <inertia ixx="0.86617914248" ixy="-0.06086507933" ixz="-0.12118061183" iyy="0.87421714893" iyz="-0.05886609911" izz="0.27353821674" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/shoulder_v0/shoulder_pan.dae" />
+        </geometry>
+      <material name="Blue">
+        <color rgba="0.  0.  0.8 1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    <collision name="link_name_coll_0">
+      <geometry>
+        <sphere radius="0.15179254114627838" />
+        </geometry>
+      <origin xyz="0.0013208468444645405 -0.007390378974378109 -0.4049173593521118" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_1">
+      <geometry>
+        <sphere radius="0.15947358310222626" />
+        </geometry>
+      <origin xyz="-0.0045356228947639465 0.010885218158364296 -0.22995935380458832" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_2">
+      <geometry>
+        <sphere radius="0.16" />
+        </geometry>
+      <origin xyz="-0.01334024965763092 0.010732591152191162 0.008928578346967697" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_3">
+      <geometry>
+        <sphere radius="0.17584918439388275" />
+        </geometry>
+      <origin xyz="0.09522633999586105 -0.007872147485613823 -0.01252945140004158" rpy="0.0 -0.0 0.0" />
+      </collision>
+    </link>
+  <link name="r_shoulder_lift_link">
+    <inertial>
+      <origin xyz="0.02195 -0.02664 -0.03127" rpy="0.0 0.0 0.0" />
+      <mass value="2.74988" />
+      <inertia ixx="0.02105584615" ixy="0.00496704022" ixz="-0.00194808955" iyy="0.02127223737" iyz="0.0011042549" izz="0.01975753814" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/shoulder_v0/shoulder_lift.dae" />
+        </geometry>
+      <material name="Grey">
+        <color rgba="0.7 0.7 0.7 1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    </link>
+  <link name="r_upper_arm_roll_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <mass value="0.1" />
+      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/shoulder_v0/upper_arm_roll.stl" />
+        </geometry>
+      <material name="RollLinks" />
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    </link>
+  <link name="r_upper_arm_link">
+    <inertial>
+      <origin xyz="0.21398 -0.01621 -0.0002" rpy="0.0 -0.0 0.0" />
+      <mass value="6.01769" />
+      <inertia ixx="0.01537748957" ixy="0.00375711247" ixz="-0.00070852914" iyy="0.0747367044" iyz="-0.0001793645" izz="0.07608763307" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/upper_arm_v0/upper_arm.dae" />
+        </geometry>
+      <material name="Green">
+        <color rgba="0.  0.8 0.  1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    <collision name="link_name_coll_0">
+      <geometry>
+        <sphere radius="0.11420346796512604" />
+        </geometry>
+      <origin xyz="0.04850209504365921 0.0003772544441744685 -7.935669418657199e-05" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_1">
+      <geometry>
+        <sphere radius="0.10762671381235123" />
+        </geometry>
+      <origin xyz="0.2052300125360489 -0.007317032665014267 -0.012512391433119774" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_2">
+      <geometry>
+        <sphere radius="0.10288514196872711" />
+        </geometry>
+      <origin xyz="0.3316443860530853 0.0024006434250622988 -0.002870778553187847" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_3">
+      <geometry>
+        <sphere radius="0.09719552844762802" />
+        </geometry>
+      <origin xyz="0.4096810221672058 0.0036509321071207523 0.004561564885079861" rpy="0.0 -0.0 0.0" />
+      </collision>
+    </link>
+  <link name="r_forearm_roll_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="0.1" />
+      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/upper_arm_v0/forearm_roll.stl" />
+        </geometry>
+      <material name="RollLinks" />
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    </link>
+  <link name="r_elbow_flex_link">
+    <inertial>
+      <origin xyz="0.01014 0.00032 -0.01211" rpy="0.0 -0.0 0.0" />
+      <mass value="1.90327" />
+      <inertia ixx="0.00346541989" ixy="4.066825e-05" ixz="0.00043171614" iyy="0.00441606455" iyz="-3.968914e-05" izz="0.00359156824" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/upper_arm_v0/elbow_flex.dae" />
+        </geometry>
+      <material name="Grey">
+        <color rgba="0.7 0.7 0.7 1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    </link>
+  <link name="r_forearm_link">
+    <inertial>
+      <origin xyz="0.18791 -0.00017 -0.00912" rpy="0.0 -0.0 0.0" />
+      <mass value="2.57968" />
+      <inertia ixx="0.00364857222" ixy="5.215877e-05" ixz="0.00071534842" iyy="0.01507736897" iyz="-1.31077e-05" izz="0.01659310749" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/forearm_v0/forearm.dae" />
+        </geometry>
+      <material name="Grey">
+        <color rgba="0.7 0.7 0.7 1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    <collision name="link_name_coll_0">
+      <geometry>
+        <sphere radius="0.06401005387306213" />
+        </geometry>
+      <origin xyz="0.11805389076471329 -0.01987893134355545 0.010373333469033241" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_1">
+      <geometry>
+        <sphere radius="0.05953102931380272" />
+        </geometry>
+      <origin xyz="0.1816810816526413 -0.028005626052618027 0.0011597193079069257" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_2">
+      <geometry>
+        <sphere radius="0.0643274337053299" />
+        </geometry>
+      <origin xyz="0.11834761500358582 0.021044664084911346 0.01125937607139349" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_3">
+      <geometry>
+        <sphere radius="0.05867241695523262" />
+        </geometry>
+      <origin xyz="0.18053339421749115 0.026934605091810226 0.0013252702774479985" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_4">
+      <geometry>
+        <sphere radius="0.05225127190351486" />
+        </geometry>
+      <origin xyz="0.25232934951782227 -0.023761246353387833 -0.009452767670154572" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_5">
+      <geometry>
+        <sphere radius="0.045754704624414444" />
+        </geometry>
+      <origin xyz="0.31651413440704346 -0.03141040354967117 -0.008180627599358559" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_6">
+      <geometry>
+        <sphere radius="0.05101114511489868" />
+        </geometry>
+      <origin xyz="0.25350072979927063 0.027144649997353554 -0.011849961243569851" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_7">
+      <geometry>
+        <sphere radius="0.04663785547018051" />
+        </geometry>
+      <origin xyz="0.3195396065711975 0.02990954928100109 -0.009252054616808891" rpy="0.0 -0.0 0.0" />
+      </collision>
+    </link>
+  <link name="r_wrist_flex_link">
+    <inertial>
+      <origin xyz="-0.00157 0.0 -0.00075" rpy="0.0 -0.0 0.0" />
+      <mass value="0.61402" />
+      <inertia ixx="0.00065165722" ixy="2.8864e-07" ixz="3.03477e-06" iyy="0.00019824443" iyz="-2.2645e-07" izz="0.00064450498" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/forearm_v0/wrist_flex.dae" />
+        </geometry>
+      <material name="Grey">
+        <color rgba="0.7 0.7 0.7 1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    </link>
+  <link name="r_wrist_roll_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="0.1" />
+      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/forearm_v0/wrist_roll.stl" />
+        </geometry>
+      <material name="RollLinks" />
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    </link>
+  <link name="r_gripper_palm_link">
+    <inertial>
+      <origin xyz="0.06623 0.00053 -0.00119" rpy="0.0 0.0 0.0" />
+      <mass value="0.58007" />
+      <inertia ixx="0.00035223921" ixy="-1.580476e-05" ixz="-9.175e-07" iyy="0.00067741312" iyz="-5.9554e-07" izz="0.00086563316" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/gripper_v0/gripper_palm.dae" />
+        </geometry>
+      <material name="Red">
+        <color rgba="0.8 0.  0.  1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    <collision name="link_name_coll_0">
+      <geometry>
+        <sphere radius="0.05360984057188034" />
+        </geometry>
+      <origin xyz="0.06273076683282852 0.004156854934990406 -0.002119014272466302" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_1">
+      <geometry>
+        <sphere radius="0.037377167493104935" />
+        </geometry>
+      <origin xyz="0.0982092022895813 -0.02462693490087986 -0.002132534747943282" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_2">
+      <geometry>
+        <sphere radius="0.03712496906518936" />
+        </geometry>
+      <origin xyz="0.09791258722543716 0.023958662524819374 0.00048187910579144955" rpy="0.0 -0.0 0.0" />
+      </collision>
+    </link>
+  <link name="r_gripper_led_frame">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="1.0" />
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+      </inertial>
+    </link>
+  <link name="r_gripper_motor_accelerometer_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <mass value="0.001" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001" />
+      </inertial>
+    <visual>
+      <geometry>
+        <box size="0.001 0.001 0.001" />
+        </geometry>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    </link>
+  <link name="r_gripper_tool_frame">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="1.0" />
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+      </inertial>
+    </link>
+  <link name="r_gripper_motor_slider_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <mass value="0.01" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001" />
+      </inertial>
+    </link>
+  <link name="r_gripper_motor_screw_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <mass value="0.01" />
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0" iyy="0.0001" iyz="0.0" izz="0.0001" />
+      </inertial>
+    </link>
+  <link name="r_gripper_l_finger_link">
+    <inertial>
+      <origin xyz="0.03598 0.0173 -0.00164" rpy="0.0 0.0 0.0" />
+      <mass value="0.17126" />
+      <inertia ixx="7.756198e-05" ixy="1.49095e-06" ixz="-9.83385e-06" iyy="0.00019708305" iyz="-3.06125e-06" izz="0.00018105446" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/gripper_v0/l_finger.dae" />
+        </geometry>
+      <material name="Grey">
+        <color rgba="0.7 0.7 0.7 1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    <collision name="link_name_coll_0">
+      <geometry>
+        <sphere radius="0.03385380655527115" />
+        </geometry>
+      <origin xyz="0.015406283549964428 0.01892969384789467 -0.010610692203044891" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_1">
+      <geometry>
+        <sphere radius="0.032326921820640564" />
+        </geometry>
+      <origin xyz="0.01350821740925312 0.01797664538025856 0.013262605294585228" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_2">
+      <geometry>
+        <sphere radius="0.030978744849562645" />
+        </geometry>
+      <origin xyz="0.04496058076620102 0.018659982830286026 -0.001862239558249712" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_3">
+      <geometry>
+        <sphere radius="0.023999899625778198" />
+        </geometry>
+      <origin xyz="0.07805456221103668 0.01721453294157982 0.0007579728844575584" rpy="0.0 -0.0 0.0" />
+      </collision>
+    </link>
+  <link name="r_gripper_r_finger_link">
+    <inertial>
+      <origin xyz="0.03576 -0.01736 -0.00095" rpy="0.0 0.0 0.0" />
+      <mass value="0.17389" />
+      <inertia ixx="7.73841e-05" ixy="-2.09309e-06" ixz="-8.36228e-06" iyy="0.00019847383" iyz="2.4611e-06" izz="0.00018106988" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/gripper_v0/l_finger.dae" />
+        </geometry>
+      <material name="Grey">
+        <color rgba="0.7 0.7 0.7 1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="3.141592653589793 0.0 0.0" />
+      </visual>
+    <collision name="link_name_coll_0">
+      <geometry>
+        <sphere radius="0.03306806460022926" />
+        </geometry>
+      <origin xyz="0.014589008875191212 -0.018752237781882286 -0.012372491881251335" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_1">
+      <geometry>
+        <sphere radius="0.032304245978593826" />
+        </geometry>
+      <origin xyz="0.013774466700851917 -0.01784656196832657 0.01302080787718296" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_2">
+      <geometry>
+        <sphere radius="0.031241603195667267" />
+        </geometry>
+      <origin xyz="0.04505093768239021 -0.018768176436424255 0.0005918321548961103" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_3">
+      <geometry>
+        <sphere radius="0.023840565234422684" />
+        </geometry>
+      <origin xyz="0.07790306210517883 -0.016976933926343918 0.0008419252117164433" rpy="0.0 -0.0 0.0" />
+      </collision>
+    </link>
+  <link name="r_gripper_l_finger_tip_link">
+    <inertial>
+      <origin xyz="0.00423 0.00284 0.0" rpy="0.0 0.0 0.0" />
+      <mass value="0.04419" />
+      <inertia ixx="8.37047e-06" ixy="5.83632e-06" ixz="0.0" iyy="9.87067e-06" iyz="0.0" izz="1.541768e-05" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/gripper_v0/l_finger_tip.dae" />
+        </geometry>
+      <material name="Green">
+        <color rgba="0.  0.8 0.  1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    <collision name="link_name_coll_0">
+      <geometry>
+        <sphere radius="0.024725358933210373" />
+        </geometry>
+      <origin xyz="-0.008706830441951752 0.0078047229908406734 0.0005195796838961542" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_1">
+      <geometry>
+        <sphere radius="0.02020077221095562" />
+        </geometry>
+      <origin xyz="0.015045708976686 -0.002012397861108184 -0.00042201459291391075" rpy="0.0 -0.0 0.0" />
+      </collision>
+    </link>
+  <link name="r_gripper_r_finger_tip_link">
+    <inertial>
+      <origin xyz="0.00423 -0.00284 0.0" rpy="0.0 0.0 0.0" />
+      <mass value="0.04419" />
+      <inertia ixx="8.37047e-06" ixy="-5.83632e-06" ixz="0.0" iyy="9.87067e-06" iyz="0.0" izz="1.541768e-05" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/gripper_v0/l_finger_tip.dae" />
+        </geometry>
+      <material name="Green">
+        <color rgba="0.  0.8 0.  1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="3.141592653589793 0.0 0.0" />
+      </visual>
+    <collision name="link_name_coll_0">
+      <geometry>
+        <sphere radius="0.02467222325503826" />
+        </geometry>
+      <origin xyz="-0.008936411701142788 -0.00791871640831232 -0.00046379657578654587" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_1">
+      <geometry>
+        <sphere radius="0.020607272163033485" />
+        </geometry>
+      <origin xyz="0.014865050092339516 0.002130643231794238 9.481012966716662e-05" rpy="0.0 -0.0 0.0" />
+      </collision>
+    </link>
+  <link name="r_gripper_l_finger_tip_frame">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="1.0" />
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+      </inertial>
+    </link>
+  <link name="l_shoulder_pan_link">
+    <inertial>
+      <origin xyz="-0.001201 0.024513 -0.098231" rpy="0.0 0.0 0.0" />
+      <mass value="25.799322" />
+      <inertia ixx="0.86617914248" ixy="-0.06086507933" ixz="-0.12118061183" iyy="0.87421714893" iyz="-0.05886609911" izz="0.27353821674" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/shoulder_v0/shoulder_pan.dae" />
+        </geometry>
+      <material name="Blue">
+        <color rgba="0.  0.  0.8 1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    <collision name="link_name_coll_0">
+      <geometry>
+        <sphere radius="0.15275709331035614" />
+        </geometry>
+      <origin xyz="-0.001494856784120202 -0.008038715459406376 -0.4015675485134125" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_1">
+      <geometry>
+        <sphere radius="0.16201899945735931" />
+        </geometry>
+      <origin xyz="0.0002942380669992417 0.008979128673672676 -0.22015434503555298" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_2">
+      <geometry>
+        <sphere radius="0.16" />
+        </geometry>
+      <origin xyz="-0.007388124708086252 -0.009470787830650806 -0.009755978360772133" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_3">
+      <geometry>
+        <sphere radius="0.17724305391311646" />
+        </geometry>
+      <origin xyz="0.09480031579732895 0.012219008058309555 -0.008253531530499458" rpy="0.0 -0.0 0.0" />
+      </collision>
+    </link>
+  <link name="l_shoulder_lift_link">
+    <inertial>
+      <origin xyz="0.02195 -0.02664 -0.03127" rpy="0.0 0.0 0.0" />
+      <mass value="2.74988" />
+      <inertia ixx="0.02105584615" ixy="0.00496704022" ixz="-0.00194808955" iyy="0.02127223737" iyz="0.0011042549" izz="0.01975753814" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/shoulder_v0/shoulder_lift.dae" />
+        </geometry>
+      <material name="Grey">
+        <color rgba="0.7 0.7 0.7 1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    </link>
+  <link name="l_upper_arm_roll_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <mass value="0.1" />
+      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/shoulder_v0/upper_arm_roll.stl" />
+        </geometry>
+      <material name="RollLinks" />
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    </link>
+  <link name="l_upper_arm_link">
+    <inertial>
+      <origin xyz="0.21405 0.01658 -0.00057" rpy="0.0 -0.0 0.0" />
+      <mass value="6.01769" />
+      <inertia ixx="0.01530603856" ixy="-0.00339324862" ixz="0.00060765455" iyy="0.07473694455" iyz="-0.00019953729" izz="0.07601594191" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/upper_arm_v0/upper_arm.dae" />
+        </geometry>
+      <material name="Green">
+        <color rgba="0.  0.8 0.  1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    <collision name="link_name_coll_0">
+      <geometry>
+        <sphere radius="0.11257071048021317" />
+        </geometry>
+      <origin xyz="0.049332499504089355 -0.0007525399560108781 -0.0011347451945766807" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_1">
+      <geometry>
+        <sphere radius="0.10570187866687775" />
+        </geometry>
+      <origin xyz="0.20473937690258026 0.003204566426575184 -0.010720044374465942" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_2">
+      <geometry>
+        <sphere radius="0.1018822118639946" />
+        </geometry>
+      <origin xyz="0.3296004831790924 -0.003219640115275979 -0.004016578197479248" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_3">
+      <geometry>
+        <sphere radius="0.0983099564909935" />
+        </geometry>
+      <origin xyz="0.4055022895336151 0.0017867143033072352 -0.00783558376133442" rpy="0.0 -0.0 0.0" />
+      </collision>
+    </link>
+  <link name="l_forearm_roll_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="0.1" />
+      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/upper_arm_v0/forearm_roll.stl" />
+        </geometry>
+      <material name="RollLinks" />
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    </link>
+  <link name="l_elbow_flex_link">
+    <inertial>
+      <origin xyz="0.01014 0.00032 -0.01211" rpy="0.0 -0.0 0.0" />
+      <mass value="1.90327" />
+      <inertia ixx="0.00346541989" ixy="4.066825e-05" ixz="0.00043171614" iyy="0.00441606455" iyz="-3.968914e-05" izz="0.00359156824" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/upper_arm_v0/elbow_flex.dae" />
+        </geometry>
+      <material name="Grey">
+        <color rgba="0.7 0.7 0.7 1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    </link>
+  <link name="l_forearm_link">
+    <inertial>
+      <origin xyz="0.18791 -0.00017 -0.00912" rpy="0.0 -0.0 0.0" />
+      <mass value="2.57968" />
+      <inertia ixx="0.00364857222" ixy="5.215877e-05" ixz="0.00071534842" iyy="0.01507736897" iyz="-1.31077e-05" izz="0.01659310749" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/forearm_v0/forearm.dae" />
+        </geometry>
+      <material name="Grey">
+        <color rgba="0.7 0.7 0.7 1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    <collision name="link_name_coll_0">
+      <geometry>
+        <sphere radius="0.06452096998691559" />
+        </geometry>
+      <origin xyz="0.11927802115678787 -0.02094685472548008 0.011891081929206848" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_1">
+      <geometry>
+        <sphere radius="0.059748031198978424" />
+        </geometry>
+      <origin xyz="0.18077737092971802 -0.023837700486183167 0.00256904074922204" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_2">
+      <geometry>
+        <sphere radius="0.06512951105833054" />
+        </geometry>
+      <origin xyz="0.12248590588569641 0.02155005745589733 0.012098543345928192" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_3">
+      <geometry>
+        <sphere radius="0.05809420347213745" />
+        </geometry>
+      <origin xyz="0.18235518038272858 0.025454066693782806 0.0008013575570657849" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_4">
+      <geometry>
+        <sphere radius="0.05152543634176254" />
+        </geometry>
+      <origin xyz="0.25136154890060425 -0.028373852372169495 -0.010523631237447262" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_5">
+      <geometry>
+        <sphere radius="0.04649829864501953" />
+        </geometry>
+      <origin xyz="0.3161793351173401 -0.030340278521180153 -0.00821362528949976" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_6">
+      <geometry>
+        <sphere radius="0.05122390016913414" />
+        </geometry>
+      <origin xyz="0.25476813316345215 0.02805466018617153 -0.016947485506534576" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_7">
+      <geometry>
+        <sphere radius="0.04615110158920288" />
+        </geometry>
+      <origin xyz="0.3186893165111542 0.030801381915807724 -0.00984561163932085" rpy="0.0 -0.0 0.0" />
+      </collision>
+    </link>
+  <link name="l_wrist_flex_link">
+    <inertial>
+      <origin xyz="-0.00157 0.0 -0.00075" rpy="0.0 -0.0 0.0" />
+      <mass value="0.61402" />
+      <inertia ixx="0.00065165722" ixy="2.8864e-07" ixz="3.03477e-06" iyy="0.00019824443" iyz="-2.2645e-07" izz="0.00064450498" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/forearm_v0/wrist_flex.dae" />
+        </geometry>
+      <material name="Grey">
+        <color rgba="0.7 0.7 0.7 1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    </link>
+  <link name="l_wrist_roll_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="0.1" />
+      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/forearm_v0/wrist_roll.stl" />
+        </geometry>
+      <material name="RollLinks" />
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    </link>
+  <link name="l_gripper_palm_link">
+    <inertial>
+      <origin xyz="0.06623 0.00053 -0.00119" rpy="0.0 0.0 0.0" />
+      <mass value="0.58007" />
+      <inertia ixx="0.00035223921" ixy="-1.580476e-05" ixz="-9.175e-07" iyy="0.00067741312" iyz="-5.9554e-07" izz="0.00086563316" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/gripper_v0/gripper_palm.dae" />
+        </geometry>
+      <material name="Red">
+        <color rgba="0.8 0.  0.  1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    <collision name="link_name_coll_0">
+      <geometry>
+        <sphere radius="0.03821451961994171" />
+        </geometry>
+      <origin xyz="0.055826880037784576 -0.027149781584739685 0.0011724365176633" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_1">
+      <geometry>
+        <sphere radius="0.03649834543466568" />
+        </geometry>
+      <origin xyz="0.10215279459953308 -0.02392861247062683 -0.001387140597216785" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_2">
+      <geometry>
+        <sphere radius="0.05198145657777786" />
+        </geometry>
+      <origin xyz="0.07467522472143173 0.015441220253705978 -0.0018537146970629692" rpy="0.0 -0.0 0.0" />
+      </collision>
+    </link>
+  <link name="l_gripper_led_frame">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="1.0" />
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+      </inertial>
+    </link>
+  <link name="l_gripper_motor_accelerometer_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <mass value="0.001" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001" />
+      </inertial>
+    <visual>
+      <geometry>
+        <box size="0.001 0.001 0.001" />
+        </geometry>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    </link>
+  <link name="l_gripper_tool_frame">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="1.0" />
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+      </inertial>
+    </link>
+  <link name="l_gripper_motor_slider_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <mass value="0.01" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001" />
+      </inertial>
+    </link>
+  <link name="l_gripper_motor_screw_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <mass value="0.01" />
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0" iyy="0.0001" iyz="0.0" izz="0.0001" />
+      </inertial>
+    </link>
+  <link name="l_gripper_l_finger_link">
+    <inertial>
+      <origin xyz="0.03598 0.0173 -0.00164" rpy="0.0 0.0 0.0" />
+      <mass value="0.17126" />
+      <inertia ixx="7.756198e-05" ixy="1.49095e-06" ixz="-9.83385e-06" iyy="0.00019708305" iyz="-3.06125e-06" izz="0.00018105446" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/gripper_v0/l_finger.dae" />
+        </geometry>
+      <material name="Grey">
+        <color rgba="0.7 0.7 0.7 1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    <collision name="link_name_coll_0">
+      <geometry>
+        <sphere radius="0.033439427614212036" />
+        </geometry>
+      <origin xyz="0.015038769692182541 0.01915556564927101 -0.013213138096034527" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_1">
+      <geometry>
+        <sphere radius="0.033102378249168396" />
+        </geometry>
+      <origin xyz="0.014572222717106342 0.01910603977739811 0.01357296109199524" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_2">
+      <geometry>
+        <sphere radius="0.030818725004792213" />
+        </geometry>
+      <origin xyz="0.045468565076589584 0.018952330574393272 0.0009210225543938577" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_3">
+      <geometry>
+        <sphere radius="0.02377939224243164" />
+        </geometry>
+      <origin xyz="0.07799672335386276 0.016607409343123436 0.0013517229817807674" rpy="0.0 -0.0 0.0" />
+      </collision>
+    </link>
+  <link name="l_gripper_r_finger_link">
+    <inertial>
+      <origin xyz="0.03576 -0.01736 -0.00095" rpy="0.0 0.0 0.0" />
+      <mass value="0.17389" />
+      <inertia ixx="7.73841e-05" ixy="-2.09309e-06" ixz="-8.36228e-06" iyy="0.00019847383" iyz="2.4611e-06" izz="0.00018106988" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/gripper_v0/l_finger.dae" />
+        </geometry>
+      <material name="Grey">
+        <color rgba="0.7 0.7 0.7 1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="3.141592653589793 0.0 0.0" />
+      </visual>
+    <collision name="link_name_coll_0">
+      <geometry>
+        <sphere radius="0.033439427614212036" />
+        </geometry>
+      <origin xyz="0.015038769692182541 -0.01915556564927101 0.013213138096034527" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_1">
+      <geometry>
+        <sphere radius="0.033102378249168396" />
+        </geometry>
+      <origin xyz="0.014572222717106342 -0.01910603977739811 -0.01357296109199524" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_2">
+      <geometry>
+        <sphere radius="0.030818725004792213" />
+        </geometry>
+      <origin xyz="0.045468565076589584 -0.018952330574393272 -0.0009210225543938577" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_3">
+      <geometry>
+        <sphere radius="0.02377939224243164" />
+        </geometry>
+      <origin xyz="0.07799672335386276 -0.016607409343123436 -0.0013517229817807674" rpy="0.0 -0.0 0.0" />
+      </collision>
+    </link>
+  <link name="l_gripper_l_finger_tip_link">
+    <inertial>
+      <origin xyz="0.00423 0.00284 0.0" rpy="0.0 0.0 0.0" />
+      <mass value="0.04419" />
+      <inertia ixx="8.37047e-06" ixy="5.83632e-06" ixz="0.0" iyy="9.87067e-06" iyz="0.0" izz="1.541768e-05" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/gripper_v0/l_finger_tip.dae" />
+        </geometry>
+      <material name="Green">
+        <color rgba="0.  0.8 0.  1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </visual>
+    <collision name="link_name_coll_0">
+      <geometry>
+        <sphere radius="0.024944763630628586" />
+        </geometry>
+      <origin xyz="-0.008894692175090313 0.007990548387169838 0.0004921584622934461" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_1">
+      <geometry>
+        <sphere radius="0.020578710362315178" />
+        </geometry>
+      <origin xyz="0.015103291720151901 -0.002235289430245757 0.0005586675251834095" rpy="0.0 -0.0 0.0" />
+      </collision>
+    </link>
+  <link name="l_gripper_r_finger_tip_link">
+    <inertial>
+      <origin xyz="0.00423 -0.00284 0.0" rpy="0.0 0.0 0.0" />
+      <mass value="0.04419" />
+      <inertia ixx="8.37047e-06" ixy="-5.83632e-06" ixz="0.0" iyy="9.87067e-06" iyz="0.0" izz="1.541768e-05" />
+      </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="meshes/gripper_v0/l_finger_tip.dae" />
+        </geometry>
+      <material name="Green">
+        <color rgba="0.  0.8 0.  1. " />
+        </material>
+      <origin xyz="0.0 0.0 0.0" rpy="3.141592653589793 0.0 0.0" />
+      </visual>
+    <collision name="link_name_coll_0">
+      <geometry>
+        <sphere radius="0.024944763630628586" />
+        </geometry>
+      <origin xyz="-0.008894692175090313 -0.007990548387169838 -0.0004921584622934461" rpy="0.0 -0.0 0.0" />
+      </collision>
+    <collision name="link_name_coll_1">
+      <geometry>
+        <sphere radius="0.020578710362315178" />
+        </geometry>
+      <origin xyz="0.015103291720151901 0.002235289430245757 -0.0005586675251834095" rpy="0.0 -0.0 0.0" />
+      </collision>
+    </link>
+  <link name="l_gripper_l_finger_tip_frame">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="1.0" />
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+      </inertial>
+    </link>
+  <link name="l_forearm_cam_frame">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="0.01" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001" />
+      </inertial>
+    </link>
+  <link name="l_forearm_cam_optical_frame">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="1.0" />
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+      </inertial>
+    </link>
+  <link name="r_forearm_cam_frame">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="0.01" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001" />
+      </inertial>
+    </link>
+  <link name="r_forearm_cam_optical_frame">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+      <mass value="1.0" />
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+      </inertial>
+    </link>
+  <joint name="base_footprint_joint" type="fixed">
+    <parent link="base_footprint" />
+    <child link="base_link" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.051" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="base_bellow_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="base_bellow_link" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="-0.29 0.0 0.8" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="base_laser_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="base_laser_link" />
+    <axis xyz="0. 1. 0." />
+    <origin xyz="0.275 0.0 0.252" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="torso_lift_joint" type="fixed">
+    <dynamics damping="20000.0" />
+    <limit effort="10000.0" velocity="0.013" lower="0.0" upper="0.33" />
+    <safety_controller k_velocity="2000000.0" k_position="100.0" soft_lower_limit="0.0115" soft_upper_limit="0.325" />
+    <calibration falling="0.00475" />
+    <parent link="base_link" />
+    <child link="torso_lift_link" />
+    <axis xyz="0. 0. 1." />
+    <origin xyz="-0.05 0.0 0.739675" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="l_torso_lift_side_plate_joint" type="fixed">
+    <parent link="torso_lift_link" />
+    <child link="l_torso_lift_side_plate_link" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0535 0.209285 0.176625" rpy="0.0 -0.0 0.0" />
+    </joint>
+  <joint name="r_torso_lift_side_plate_joint" type="fixed">
+    <parent link="torso_lift_link" />
+    <child link="r_torso_lift_side_plate_link" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0535 -0.209285 0.176625" rpy="0.0 -0.0 0.0" />
+    </joint>
+  <joint name="torso_lift_motor_screw_joint" type="fixed">
+    <dynamics damping="0.0001" />
+    <parent link="base_link" />
+    <child link="torso_lift_motor_screw_link" />
+    <axis xyz="0. 0. 1." />
+    <origin xyz="-0.15 0.0 0.7" rpy="0.0 -0.0 0.0" />
+    </joint>
+  <joint name="imu_joint" type="fixed">
+    <parent link="torso_lift_link" />
+    <child link="imu_link" />
+    <axis xyz="0. 1. 0." />
+    <origin xyz="-0.02977 -0.1497 0.164" rpy="-3.141592653589793 1.2246467991473532e-16 -3.141592653589793" />
+    </joint>
+  <joint name="head_pan_joint" type="fixed">
+    <dynamics damping="0.5" />
+    <limit effort="2.645" velocity="6.0" lower="-3.007" upper="3.007" />
+    <safety_controller k_velocity="1.5" k_position="100.0" soft_lower_limit="-2.857" soft_upper_limit="2.857" />
+    <calibration rising="0.0" />
+    <parent link="torso_lift_link" />
+    <child link="head_pan_link" />
+    <axis xyz="0. 0. 1." />
+    <origin xyz="-0.01707 0.0 0.38145" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="head_tilt_joint" type="fixed">
+    <dynamics damping="10.0" />
+    <limit effort="18.0" velocity="5.0" lower="-0.471238" upper="1.39626" />
+    <safety_controller k_velocity="3.0" k_position="100.0" soft_lower_limit="-0.3712" soft_upper_limit="1.29626" />
+    <calibration falling="0.0" />
+    <parent link="head_pan_link" />
+    <child link="head_tilt_link" />
+    <axis xyz="0. 1. 0." />
+    <origin xyz="0.068 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="head_plate_frame_joint" type="fixed">
+    <parent link="head_tilt_link" />
+    <child link="head_plate_frame" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0232 0.0 0.0645" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="sensor_mount_frame_joint" type="fixed">
+    <parent link="head_plate_frame" />
+    <child link="sensor_mount_link" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="high_def_frame_joint" type="fixed">
+    <parent link="sensor_mount_link" />
+    <child link="high_def_frame" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.046457 -0.11 0.0546" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="high_def_optical_frame_joint" type="fixed">
+    <parent link="high_def_frame" />
+    <child link="high_def_optical_frame" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="-1.5707963267948966 0.0 -1.5707963267948966" />
+    </joint>
+  <joint name="double_stereo_frame_joint" type="fixed">
+    <parent link="sensor_mount_link" />
+    <child link="double_stereo_link" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="wide_stereo_frame_joint" type="fixed">
+    <parent link="double_stereo_link" />
+    <child link="wide_stereo_link" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.045 0.03 0.0501" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="wide_stereo_optical_frame_joint" type="fixed">
+    <parent link="wide_stereo_link" />
+    <child link="wide_stereo_optical_frame" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="-1.5707963267948966 0.0 -1.5707963267948966" />
+    </joint>
+  <joint name="wide_stereo_l_stereo_camera_frame_joint" type="fixed">
+    <parent link="wide_stereo_link" />
+    <child link="wide_stereo_l_stereo_camera_frame" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="wide_stereo_l_stereo_camera_optical_frame_joint" type="fixed">
+    <parent link="wide_stereo_l_stereo_camera_frame" />
+    <child link="wide_stereo_l_stereo_camera_optical_frame" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="-1.5707963267948966 0.0 -1.5707963267948966" />
+    </joint>
+  <joint name="wide_stereo_r_stereo_camera_frame_joint" type="fixed">
+    <parent link="wide_stereo_l_stereo_camera_frame" />
+    <child link="wide_stereo_r_stereo_camera_frame" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 -0.09 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="wide_stereo_r_stereo_camera_optical_frame_joint" type="fixed">
+    <parent link="wide_stereo_r_stereo_camera_frame" />
+    <child link="wide_stereo_r_stereo_camera_optical_frame" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="-1.5707963267948966 0.0 -1.5707963267948966" />
+    </joint>
+  <joint name="narrow_stereo_frame_joint" type="fixed">
+    <parent link="double_stereo_link" />
+    <child link="narrow_stereo_link" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.045 0.06 0.0501" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="narrow_stereo_optical_frame_joint" type="fixed">
+    <parent link="narrow_stereo_link" />
+    <child link="narrow_stereo_optical_frame" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="-1.5707963267948966 0.0 -1.5707963267948966" />
+    </joint>
+  <joint name="narrow_stereo_l_stereo_camera_frame_joint" type="fixed">
+    <parent link="narrow_stereo_link" />
+    <child link="narrow_stereo_l_stereo_camera_frame" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="narrow_stereo_l_stereo_camera_optical_frame_joint" type="fixed">
+    <parent link="narrow_stereo_l_stereo_camera_frame" />
+    <child link="narrow_stereo_l_stereo_camera_optical_frame" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="-1.5707963267948966 0.0 -1.5707963267948966" />
+    </joint>
+  <joint name="narrow_stereo_r_stereo_camera_frame_joint" type="fixed">
+    <parent link="narrow_stereo_l_stereo_camera_frame" />
+    <child link="narrow_stereo_r_stereo_camera_frame" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 -0.09 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="narrow_stereo_r_stereo_camera_optical_frame_joint" type="fixed">
+    <parent link="narrow_stereo_r_stereo_camera_frame" />
+    <child link="narrow_stereo_r_stereo_camera_optical_frame" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="-1.5707963267948966 0.0 -1.5707963267948966" />
+    </joint>
+  <joint name="projector_wg6802418_frame_joint" type="fixed">
+    <parent link="head_plate_frame" />
+    <child link="projector_wg6802418_frame" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.11 0.0546" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="projector_wg6802418_child_frame_joint" type="fixed">
+    <parent link="projector_wg6802418_frame" />
+    <child link="projector_wg6802418_child_frame" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 -1.5707963267948966 0.0" />
+    </joint>
+  <joint name="laser_tilt_mount_joint" type="fixed">
+    <dynamics damping="0.008" />
+    <limit effort="0.65" velocity="10.0" lower="-0.7854" upper="1.48353" />
+    <safety_controller k_velocity="0.05" k_position="100.0" soft_lower_limit="-0.7353999999999999" soft_upper_limit="1.43353" />
+    <calibration falling="0.0" />
+    <parent link="torso_lift_link" />
+    <child link="laser_tilt_mount_link" />
+    <axis xyz="0. 1. 0." />
+    <origin xyz="0.09893 0.0 0.227" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="laser_tilt_joint" type="fixed">
+    <parent link="laser_tilt_mount_link" />
+    <child link="laser_tilt_link" />
+    <axis xyz="0. 1. 0." />
+    <origin xyz="0.0 0.0 0.03" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="r_shoulder_pan_joint" type="revolute">
+    <dynamics damping="10.0" />
+    <limit effort="30.0" velocity="2.088" lower="-2.2853981633974483" upper="0.7146018366025517" />
+    <safety_controller k_velocity="10.0" k_position="100.0" soft_lower_limit="-2.1353981633974484" soft_upper_limit="0.5646018366025517" />
+    <calibration rising="-0.7853981633974483" />
+    <parent link="torso_lift_link" />
+    <child link="r_shoulder_pan_link" />
+    <axis xyz="0. 0. 1." />
+    <origin xyz="0.0 -0.188 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="r_shoulder_lift_joint" type="revolute">
+    <dynamics damping="10.0" />
+    <limit effort="30.0" velocity="2.082" lower="-0.5236" upper="1.3963" />
+    <safety_controller k_velocity="10.0" k_position="100.0" soft_lower_limit="-0.3535999999999999" soft_upper_limit="1.2963" />
+    <calibration falling="0.0" />
+    <parent link="r_shoulder_pan_link" />
+    <child link="r_shoulder_lift_link" />
+    <axis xyz="0. 1. 0." />
+    <origin xyz="0.1 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="r_upper_arm_roll_joint" type="revolute">
+    <dynamics damping="0.1" />
+    <limit effort="30.0" velocity="3.27" lower="-3.9000000000000004" upper="0.8" />
+    <safety_controller k_velocity="2.0" k_position="100.0" soft_lower_limit="-3.7500000000000004" soft_upper_limit="0.65" />
+    <calibration rising="-1.5707963267948966" />
+    <parent link="r_shoulder_lift_link" />
+    <child link="r_upper_arm_roll_link" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="r_upper_arm_joint" type="fixed">
+    <parent link="r_upper_arm_roll_link" />
+    <child link="r_upper_arm_link" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="r_forearm_roll_joint" type="revolute">
+    <dynamics damping="0.1" />
+    <limit effort="30.0" velocity="3.5999999999999996" lower="-3.14159" upper="3.14159" />
+    <safety_controller k_velocity="1.0" k_position="0.0" soft_lower_limit="0.0" soft_upper_limit="0.0" />
+    <calibration rising="0.0" />
+    <parent link="r_elbow_flex_link" />
+    <child link="r_forearm_roll_link" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="r_elbow_flex_joint" type="revolute">
+    <dynamics damping="1.0" />
+    <limit effort="30.0" velocity="3.3" lower="-2.3213" upper="0.0" />
+    <safety_controller k_velocity="3.0" k_position="100.0" soft_lower_limit="-2.1212999999999997" soft_upper_limit="-0.15" />
+    <calibration falling="-1.1606" />
+    <parent link="r_upper_arm_link" />
+    <child link="r_elbow_flex_link" />
+    <axis xyz="0. 1. 0." />
+    <origin xyz="0.4 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="r_forearm_joint" type="fixed">
+    <parent link="r_forearm_roll_link" />
+    <child link="r_forearm_link" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="r_wrist_flex_joint" type="revolute">
+    <dynamics damping="0.1" />
+    <limit effort="10.0" velocity="3.078" lower="-2.18" upper="0.0" />
+    <safety_controller k_velocity="4.0" k_position="20.0" soft_lower_limit="-2.0" soft_upper_limit="-0.1" />
+    <calibration falling="-0.5410521" />
+    <parent link="r_forearm_link" />
+    <child link="r_wrist_flex_link" />
+    <axis xyz="0. 1. 0." />
+    <origin xyz="0.321 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="r_wrist_roll_joint" type="revolute">
+    <dynamics damping="0.1" />
+    <limit effort="10.0" velocity="3.5999999999999996" lower="-3.14159" upper="3.14159" />
+    <safety_controller k_velocity="2.0" k_position="0.0" soft_lower_limit="0.0" soft_upper_limit="0.0" />
+    <calibration rising="-1.5707963267948966" />
+    <parent link="r_wrist_flex_link" />
+    <child link="r_wrist_roll_link" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="r_gripper_palm_joint" type="fixed">
+    <parent link="r_wrist_roll_link" />
+    <child link="r_gripper_palm_link" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="r_gripper_led_joint" type="fixed">
+    <parent link="r_gripper_palm_link" />
+    <child link="r_gripper_led_frame" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0513 0.0 0.0244" rpy="0.0 -0.0 0.0" />
+    </joint>
+  <joint name="r_gripper_motor_accelerometer_joint" type="fixed">
+    <parent link="r_gripper_palm_link" />
+    <child link="r_gripper_motor_accelerometer_link" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="r_gripper_tool_joint" type="fixed">
+    <parent link="r_gripper_palm_link" />
+    <child link="r_gripper_tool_frame" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.18 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="r_gripper_motor_slider_joint" type="fixed">
+    <limit effort="1000.0" velocity="0.2" lower="-0.1" upper="0.1" />
+    <parent link="r_gripper_palm_link" />
+    <child link="r_gripper_motor_slider_link" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.16828 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="r_gripper_motor_screw_joint" type="fixed">
+    <dynamics damping="0.0001" />
+    <parent link="r_gripper_motor_slider_link" />
+    <child link="r_gripper_motor_screw_link" />
+    <axis xyz="0. 1. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="r_gripper_l_finger_joint" type="fixed">
+    <dynamics damping="0.02" />
+    <limit effort="1000.0" velocity="0.5" lower="0.0" upper="0.548" />
+    <parent link="r_gripper_palm_link" />
+    <child link="r_gripper_l_finger_link" />
+    <axis xyz="0. 0. 1." />
+    <origin xyz="0.07691 0.01 0.0" rpy="0.0 0.0 0.548" />
+    </joint>
+  <joint name="r_gripper_r_finger_joint" type="fixed">
+    <dynamics damping="0.02" />
+    <limit effort="1000.0" velocity="0.5" lower="0.0" upper="0.548" />
+    <mimic joint="r_gripper_l_finger_joint" multiplier="1.0" offset="0.0" />
+    <parent link="r_gripper_palm_link" />
+    <child link="r_gripper_r_finger_link" />
+    <axis xyz=" 0.  0. -1." />
+    <origin xyz="0.07691 -0.01 0.0" rpy="0.0 0.0 -0.548" />
+    </joint>
+  <joint name="r_gripper_l_finger_tip_joint" type="fixed">
+    <dynamics damping="0.001" />
+    <limit effort="1000.0" velocity="0.5" lower="0.0" upper="0.548" />
+    <mimic joint="r_gripper_l_finger_joint" multiplier="1.0" offset="0.0" />
+    <parent link="r_gripper_l_finger_link" />
+    <child link="r_gripper_l_finger_tip_link" />
+    <axis xyz=" 0.  0. -1." />
+    <origin xyz="0.09137 0.00495 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="r_gripper_r_finger_tip_joint" type="fixed">
+    <dynamics damping="0.001" />
+    <limit effort="1000.0" velocity="0.5" lower="0.0" upper="0.548" />
+    <mimic joint="r_gripper_l_finger_joint" multiplier="1.0" offset="0.0" />
+    <parent link="r_gripper_r_finger_link" />
+    <child link="r_gripper_r_finger_tip_link" />
+    <axis xyz="0. 0. 1." />
+    <origin xyz="0.09137 -0.00495 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="r_gripper_joint" type="fixed">
+    <dynamics damping="10.0" />
+    <limit effort="1000.0" velocity="0.2" lower="0.0" upper="0.09" />
+    <safety_controller k_velocity="5000.0" k_position="20.0" soft_lower_limit="-0.01" soft_upper_limit="0.088" />
+    <parent link="r_gripper_r_finger_tip_link" />
+    <child link="r_gripper_l_finger_tip_frame" />
+    <axis xyz="0. 1. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+    </joint>
+  <joint name="l_shoulder_pan_joint" type="revolute">
+    <dynamics damping="10.0" />
+    <limit effort="30.0" velocity="2.088" lower="-0.7146018366025517" upper="2.2853981633974483" />
+    <safety_controller k_velocity="10.0" k_position="100.0" soft_lower_limit="-0.5646018366025517" soft_upper_limit="2.1353981633974484" />
+    <calibration rising="0.7853981633974483" />
+    <parent link="torso_lift_link" />
+    <child link="l_shoulder_pan_link" />
+    <axis xyz="0. 0. 1." />
+    <origin xyz="0.0 0.188 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="l_shoulder_lift_joint" type="revolute">
+    <dynamics damping="10.0" />
+    <limit effort="30.0" velocity="2.082" lower="-0.5236" upper="1.3963" />
+    <safety_controller k_velocity="10.0" k_position="100.0" soft_lower_limit="-0.3535999999999999" soft_upper_limit="1.2963" />
+    <calibration falling="0.0" />
+    <parent link="l_shoulder_pan_link" />
+    <child link="l_shoulder_lift_link" />
+    <axis xyz="0. 1. 0." />
+    <origin xyz="0.1 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="l_upper_arm_roll_joint" type="revolute">
+    <dynamics damping="0.1" />
+    <limit effort="30.0" velocity="3.27" lower="-0.8" upper="3.9000000000000004" />
+    <safety_controller k_velocity="2.0" k_position="100.0" soft_lower_limit="-0.65" soft_upper_limit="3.7500000000000004" />
+    <calibration rising="1.5707963267948966" />
+    <parent link="l_shoulder_lift_link" />
+    <child link="l_upper_arm_roll_link" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="l_upper_arm_joint" type="fixed">
+    <parent link="l_upper_arm_roll_link" />
+    <child link="l_upper_arm_link" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="l_forearm_roll_joint" type="revolute">
+    <dynamics damping="0.1" />
+    <limit effort="30.0" velocity="3.5999999999999996" lower="-3.14159" upper="3.14159" />
+    <safety_controller k_velocity="1.0" k_position="0.0" soft_lower_limit="0.0" soft_upper_limit="0.0" />
+    <calibration rising="0.0" />
+    <parent link="l_elbow_flex_link" />
+    <child link="l_forearm_roll_link" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="l_elbow_flex_joint" type="revolute">
+    <dynamics damping="1.0" />
+    <limit effort="30.0" velocity="3.3" lower="-2.3213" upper="0.0" />
+    <safety_controller k_velocity="3.0" k_position="100.0" soft_lower_limit="-2.1212999999999997" soft_upper_limit="-0.15" />
+    <calibration falling="-1.1606" />
+    <parent link="l_upper_arm_link" />
+    <child link="l_elbow_flex_link" />
+    <axis xyz="0. 1. 0." />
+    <origin xyz="0.4 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="l_forearm_joint" type="fixed">
+    <parent link="l_forearm_roll_link" />
+    <child link="l_forearm_link" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="l_wrist_flex_joint" type="revolute">
+    <dynamics damping="0.1" />
+    <limit effort="10.0" velocity="3.078" lower="-2.18" upper="0.0" />
+    <safety_controller k_velocity="4.0" k_position="20.0" soft_lower_limit="-2.0" soft_upper_limit="-0.1" />
+    <calibration falling="-0.5410521" />
+    <parent link="l_forearm_link" />
+    <child link="l_wrist_flex_link" />
+    <axis xyz="0. 1. 0." />
+    <origin xyz="0.321 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="l_wrist_roll_joint" type="revolute">
+    <dynamics damping="0.1" />
+    <limit effort="10.0" velocity="3.5999999999999996" lower="-3.14159" upper="3.14159" />
+    <safety_controller k_velocity="2.0" k_position="0.0" soft_lower_limit="0.0" soft_upper_limit="0.0" />
+    <calibration rising="-1.5707963267948966" />
+    <parent link="l_wrist_flex_link" />
+    <child link="l_wrist_roll_link" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="l_gripper_palm_joint" type="fixed">
+    <parent link="l_wrist_roll_link" />
+    <child link="l_gripper_palm_link" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="l_gripper_led_joint" type="fixed">
+    <parent link="l_gripper_palm_link" />
+    <child link="l_gripper_led_frame" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0513 0.0 0.0244" rpy="0.0 -0.0 0.0" />
+    </joint>
+  <joint name="l_gripper_motor_accelerometer_joint" type="fixed">
+    <parent link="l_gripper_palm_link" />
+    <child link="l_gripper_motor_accelerometer_link" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="l_gripper_tool_joint" type="fixed">
+    <parent link="l_gripper_palm_link" />
+    <child link="l_gripper_tool_frame" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.18 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="l_gripper_motor_slider_joint" type="fixed">
+    <limit effort="1000.0" velocity="0.2" lower="-0.1" upper="0.1" />
+    <parent link="l_gripper_palm_link" />
+    <child link="l_gripper_motor_slider_link" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.16828 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="l_gripper_motor_screw_joint" type="fixed">
+    <dynamics damping="0.0001" />
+    <parent link="l_gripper_motor_slider_link" />
+    <child link="l_gripper_motor_screw_link" />
+    <axis xyz="0. 1. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="l_gripper_l_finger_joint" type="fixed">
+    <dynamics damping="0.02" />
+    <limit effort="1000.0" velocity="0.5" lower="0.0" upper="0.548" />
+    <parent link="l_gripper_palm_link" />
+    <child link="l_gripper_l_finger_link" />
+    <axis xyz="0. 0. 1." />
+    <origin xyz="0.07691 0.01 0.0" rpy="0.0 0.0 0.548" />
+    </joint>
+  <joint name="l_gripper_r_finger_joint" type="fixed">
+    <dynamics damping="0.02" />
+    <limit effort="1000.0" velocity="0.5" lower="0.0" upper="0.548" />
+    <mimic joint="l_gripper_l_finger_joint" multiplier="1.0" offset="0.0" />
+    <parent link="l_gripper_palm_link" />
+    <child link="l_gripper_r_finger_link" />
+    <axis xyz=" 0.  0. -1." />
+    <origin xyz="0.07691 -0.01 0.0" rpy="0.0 0.0 -0.548" />
+    </joint>
+  <joint name="l_gripper_l_finger_tip_joint" type="fixed">
+    <dynamics damping="0.001" />
+    <limit effort="1000.0" velocity="0.5" lower="0.0" upper="0.548" />
+    <mimic joint="l_gripper_l_finger_joint" multiplier="1.0" offset="0.0" />
+    <parent link="l_gripper_l_finger_link" />
+    <child link="l_gripper_l_finger_tip_link" />
+    <axis xyz=" 0.  0. -1." />
+    <origin xyz="0.09137 0.00495 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="l_gripper_r_finger_tip_joint" type="fixed">
+    <dynamics damping="0.001" />
+    <limit effort="1000.0" velocity="0.5" lower="0.0" upper="0.548" />
+    <mimic joint="l_gripper_l_finger_joint" multiplier="1.0" offset="0.0" />
+    <parent link="l_gripper_r_finger_link" />
+    <child link="l_gripper_r_finger_tip_link" />
+    <axis xyz="0. 0. 1." />
+    <origin xyz="0.09137 -0.00495 0.0" rpy="0.0 0.0 0.0" />
+    </joint>
+  <joint name="l_gripper_joint" type="fixed">
+    <dynamics damping="10.0" />
+    <limit effort="1000.0" velocity="0.2" lower="0.0" upper="0.09" />
+    <safety_controller k_velocity="5000.0" k_position="20.0" soft_lower_limit="-0.01" soft_upper_limit="0.088" />
+    <parent link="l_gripper_r_finger_tip_link" />
+    <child link="l_gripper_l_finger_tip_frame" />
+    <axis xyz="0. 1. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 -0.0 0.0" />
+    </joint>
+  <joint name="l_forearm_cam_frame_joint" type="fixed">
+    <parent link="l_forearm_roll_link" />
+    <child link="l_forearm_cam_frame" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.135 0.0 0.044" rpy="-1.5707963267948966 -0.5628686837681712 0.0" />
+    </joint>
+  <joint name="l_forearm_cam_optical_frame_joint" type="fixed">
+    <parent link="l_forearm_cam_frame" />
+    <child link="l_forearm_cam_optical_frame" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="-1.5707963267948966 0.0 -1.5707963267948966" />
+    </joint>
+  <joint name="r_forearm_cam_frame_joint" type="fixed">
+    <parent link="r_forearm_roll_link" />
+    <child link="r_forearm_cam_frame" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.135 0.0 0.044" rpy="1.5707963267948966 -0.5628686837681712 0.0" />
+    </joint>
+  <joint name="r_forearm_cam_optical_frame_joint" type="fixed">
+    <parent link="r_forearm_cam_frame" />
+    <child link="r_forearm_cam_optical_frame" />
+    <axis xyz="1. 0. 0." />
+    <origin xyz="0.0 0.0 0.0" rpy="-1.5707963267948966 0.0 -1.5707963267948966" />
+    </joint>
+  <transmission name="torso_lift_trans">
+    <joint name="torso_lift_joint" />
+    <actuator name="torso_lift_motor" />
+    <type>pr2_mechanism_model/SimpleTransmission</type>
+    </transmission>
+  <transmission name="head_pan_trans">
+    <joint name="head_pan_joint" />
+    <actuator name="head_pan_motor" />
+    <type>pr2_mechanism_model/SimpleTransmission</type>
+    </transmission>
+  <transmission name="head_tilt_trans">
+    <joint name="head_tilt_joint" />
+    <actuator name="head_tilt_motor" />
+    <type>pr2_mechanism_model/SimpleTransmission</type>
+    </transmission>
+  <transmission name="laser_tilt_mount_trans">
+    <joint name="laser_tilt_mount_joint" />
+    <actuator name="laser_tilt_mount_motor" />
+    <type>pr2_mechanism_model/SimpleTransmission</type>
+    </transmission>
+  <transmission name="r_upper_arm_roll_trans">
+    <joint name="r_upper_arm_roll_joint" />
+    <actuator name="r_upper_arm_roll_motor" />
+    <type>pr2_mechanism_model/SimpleTransmission</type>
+    </transmission>
+  <transmission name="r_shoulder_pan_trans">
+    <joint name="r_shoulder_pan_joint" />
+    <actuator name="r_shoulder_pan_motor" />
+    <type>pr2_mechanism_model/SimpleTransmission</type>
+    </transmission>
+  <transmission name="r_shoulder_lift_trans">
+    <joint name="r_shoulder_lift_joint" />
+    <actuator name="r_shoulder_lift_motor" />
+    <type>pr2_mechanism_model/SimpleTransmission</type>
+    </transmission>
+  <transmission name="r_forearm_roll_trans">
+    <joint name="r_forearm_roll_joint" />
+    <actuator name="r_forearm_roll_motor" />
+    <type>pr2_mechanism_model/SimpleTransmission</type>
+    </transmission>
+  <transmission name="r_elbow_flex_trans">
+    <joint name="r_elbow_flex_joint" />
+    <actuator name="r_elbow_flex_motor" />
+    <type>pr2_mechanism_model/SimpleTransmission</type>
+    </transmission>
+  <transmission name="l_upper_arm_roll_trans">
+    <joint name="l_upper_arm_roll_joint" />
+    <actuator name="l_upper_arm_roll_motor" />
+    <type>pr2_mechanism_model/SimpleTransmission</type>
+    </transmission>
+  <transmission name="l_shoulder_pan_trans">
+    <joint name="l_shoulder_pan_joint" />
+    <actuator name="l_shoulder_pan_motor" />
+    <type>pr2_mechanism_model/SimpleTransmission</type>
+    </transmission>
+  <transmission name="l_shoulder_lift_trans">
+    <joint name="l_shoulder_lift_joint" />
+    <actuator name="l_shoulder_lift_motor" />
+    <type>pr2_mechanism_model/SimpleTransmission</type>
+    </transmission>
+  <transmission name="l_forearm_roll_trans">
+    <joint name="l_forearm_roll_joint" />
+    <actuator name="l_forearm_roll_motor" />
+    <type>pr2_mechanism_model/SimpleTransmission</type>
+    </transmission>
+  <transmission name="l_elbow_flex_trans">
+    <joint name="l_elbow_flex_joint" />
+    <actuator name="l_elbow_flex_motor" />
+    <type>pr2_mechanism_model/SimpleTransmission</type>
+    </transmission>
+  <material name="Blue">
+    <color rgba="0.  0.  0.8 1. " />
+    </material>
+  <material name="Green">
+    <color rgba="0.  0.8 0.  1. " />
+    </material>
+  <material name="Grey">
+    <color rgba="0.7 0.7 0.7 1. " />
+    </material>
+  <material name="Grey2">
+    <color rgba="0.9 0.9 0.9 1. " />
+    </material>
+  <material name="Red">
+    <color rgba="0.8 0.  0.  1. " />
+    </material>
+  <material name="White">
+    <color rgba="1. 1. 1. 1." />
+    </material>
+  <material name="Black">
+    <color rgba="0.1 0.1 0.1 1. " />
+    </material>
+  <material name="LightGrey">
+    <color rgba="0.6 0.6 0.6 1. " />
+    </material>
+  <material name="Wheel_l">
+    <texture filename="materials/textures/pr2_wheel_left.png" />
+    </material>
+  <material name="Wheel_r">
+    <texture filename="materials/textures/pr2_wheel_right.png" />
+    </material>
+  <material name="RollLinks">
+    <texture filename="materials/textures/pr2_wheel_left.png" />
+    </material>
+  <gazebo>
+    <plugin filename="libgazebo_ros_controller_manager.so" name="gazebo_ros_controller_manager">
+      <alwaysOn>true</alwaysOn>
+      <updateRate>1000.0</updateRate>
+      </plugin>
+    <plugin filename="libgazebo_ros_power_monitor.so" name="gazebo_ros_power_monitor_controller">
+      <alwaysOn>true</alwaysOn>
+      <updateRate>1.0</updateRate>
+      <timeout>5</timeout>
+      <powerStateTopic>power_state</powerStateTopic>
+      <powerStateRate>10.0</powerStateRate>
+      <fullChargeCapacity>87.78</fullChargeCapacity>
+      <dischargeRate>-474</dischargeRate>
+      <chargeRate>525</chargeRate>
+      <dischargeVoltage>15.52</dischargeVoltage>
+      <chargeVoltage>16.41</chargeVoltage>
+      </plugin>
+    </gazebo>
+  <gazebo reference="base_laser_link">
+    <sensor name="base_laser" type="ray">
+      <always_on>true</always_on>
+      <update_rate>20</update_rate>
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>false</visualize>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>640</samples>
+            <resolution>1</resolution>
+            <min_angle>-2.2689</min_angle>
+            <max_angle>2.2689</max_angle>
+            </horizontal>
+          </scan>
+        <range>
+          <min>0.08</min>
+          <max>10.0</max>
+          <resolution>0.01</resolution>
+          </range>
+        </ray>
+      <plugin filename="libgazebo_ros_laser.so" name="gazebo_ros_base_laser_controller">
+        <gaussianNoise>0.005</gaussianNoise>
+        <alwaysOn>true</alwaysOn>
+        <updateRate>20</updateRate>
+        <topicName>base_scan</topicName>
+        <frameName>base_laser_link</frameName>
+        <hokuyoMinIntensity>101</hokuyoMinIntensity>
+        </plugin>
+      </sensor>
+    </gazebo>
+  <gazebo reference="base_link">
+    <selfCollide>false</selfCollide>
+    <sensor name="base_contact_sensor" type="contact">
+      <always_on>true</always_on>
+      <update_rate>100.0</update_rate>
+      <contact>
+        <collision>base_link_collision</collision>
+        </contact>
+      <plugin filename="libgazebo_ros_bumper.so" name="base_gazebo_ros_bumper_controller">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>100.0</updateRate>
+        <bumperTopicName>base_bumper</bumperTopicName>
+        <frameName>world</frameName>
+        </plugin>
+      </sensor>
+    </gazebo>
+  <gazebo reference="base_bellow_link">
+    <material value="PR2/Black" />
+    </gazebo>
+  <gazebo>
+    <plugin filename="libgazebo_ros_p3d.so" name="p3d_base_controller">
+      <alwaysOn>true</alwaysOn>
+      <updateRate>100.0</updateRate>
+      <bodyName>base_link</bodyName>
+      <topicName>base_pose_ground_truth</topicName>
+      <gaussianNoise>0.01</gaussianNoise>
+      <frameName>map</frameName>
+      <xyzOffsets>0 0 0</xyzOffsets>
+      <rpyOffsets>0 0 0</rpyOffsets>
+      </plugin>
+    </gazebo>
+  <gazebo reference="torso_lift_link">
+    <sensor name="torso_lift_contact_sensor" type="contact">
+      <contact>
+        <collision>torso_lift_link_collision</collision>
+        </contact>
+      <update_rate>100.0</update_rate>
+      <plugin filename="libgazebo_ros_bumper.so" name="torso_lift_gazebo_ros_bumper_controller">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>100.0</updateRate>
+        <bumperTopicName>torso_lift_bumper</bumperTopicName>
+        <frameName>world</frameName>
+        </plugin>
+      </sensor>
+    </gazebo>
+  <gazebo>
+    <joint name="torso_lift_screw_torso_lift_joint" type="screw">
+      <parent>torso_lift_link</parent>
+      <child>torso_lift_motor_screw_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        </axis>
+      <thread_pitch>3141.6</thread_pitch>
+      </joint>
+    </gazebo>
+  <gazebo>
+    <plugin filename="libgazebo_ros_imu.so" name="imu_controller">
+      <alwaysOn>true</alwaysOn>
+      <updateRate>100.0</updateRate>
+      <bodyName>imu_link</bodyName>
+      <topicName>torso_lift_imu/data</topicName>
+      <gaussianNoise>2.8900000000000004e-08</gaussianNoise>
+      <xyzOffset>0 0 0</xyzOffset>
+      <rpyOffset>0 -180.0 0</rpyOffset>
+      <serviceName>/default_imu</serviceName>
+      </plugin>
+    </gazebo>
+  <gazebo reference="head_plate_frame">
+    <material value="Gazebo/Grey" />
+    </gazebo>
+  <gazebo reference="high_def_frame">
+    <sensor name="high_def_sensor" type="camera">
+      <always_on>true</always_on>
+      <update_rate>20.0</update_rate>
+      <camera>
+        <horizontal_fov>0.7853981633974483</horizontal_fov>
+        <image>
+          <format>R8G8B8</format>
+          <width>2448</width>
+          <height>2050</height>
+          </image>
+        <clip>
+          <near>0.1</near>
+          <far>100</far>
+          </clip>
+        </camera>
+      <plugin filename="libgazebo_ros_prosilica.so" name="high_def_controller">
+        <updateRate>20.0</updateRate>
+        <cameraName>prosilica</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <pollServiceName>request_image</pollServiceName>
+        <frameName>high_def_optical_frame</frameName>
+        <CxPrime>1224.5</CxPrime>
+        <Cx>1224.5</Cx>
+        <Cy>1025.5</Cy>
+        <focalLength>2954.998083</focalLength>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+        </plugin>
+      </sensor>
+    <material value="Gazebo/Black" />
+    </gazebo>
+  <gazebo reference="wide_stereo_l_stereo_camera_frame">
+    <sensor name="wide_stereo_l_stereo_camera_sensor" type="camera">
+      <always_on>true</always_on>
+      <update_rate>25.0</update_rate>
+      <camera>
+        <horizontal_fov>1.5707963267948966</horizontal_fov>
+        <image>
+          <format>BAYER_BGGR8</format>
+          <width>640</width>
+          <height>480</height>
+          </image>
+        <clip>
+          <near>0.1</near>
+          <far>100</far>
+          </clip>
+        </camera>
+      <plugin filename="libgazebo_ros_camera.so" name="wide_stereo_l_stereo_camera_controller">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>25.0</updateRate>
+        <cameraName>wide_stereo/left</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>wide_stereo_optical_frame</frameName>
+        <hackBaseline>0</hackBaseline>
+        <CxPrime>320.5</CxPrime>
+        <Cx>320.5</Cx>
+        <Cy>240.5</Cy>
+        <focalLength>320.000105</focalLength>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+        </plugin>
+      </sensor>
+    <turnGravityOff>true</turnGravityOff>
+    <material>PR2/Blue</material>
+    </gazebo>
+  <gazebo reference="wide_stereo_r_stereo_camera_frame">
+    <sensor name="wide_stereo_r_stereo_camera_sensor" type="camera">
+      <always_on>true</always_on>
+      <update_rate>25.0</update_rate>
+      <camera>
+        <horizontal_fov>1.5707963267948966</horizontal_fov>
+        <image>
+          <format>BAYER_BGGR8</format>
+          <width>640</width>
+          <height>480</height>
+          </image>
+        <clip>
+          <near>0.1</near>
+          <far>100</far>
+          </clip>
+        </camera>
+      <plugin filename="libgazebo_ros_camera.so" name="wide_stereo_r_stereo_camera_controller">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>25.0</updateRate>
+        <cameraName>wide_stereo/right</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>wide_stereo_optical_frame</frameName>
+        <hackBaseline>0.09</hackBaseline>
+        <CxPrime>320.5</CxPrime>
+        <Cx>320.5</Cx>
+        <Cy>240.5</Cy>
+        <focalLength>320.000105</focalLength>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+        </plugin>
+      </sensor>
+    <turnGravityOff>true</turnGravityOff>
+    <material>PR2/Blue</material>
+    </gazebo>
+  <gazebo reference="wide_stereo_link">
+    <material value="PR2/Blue" />
+    <turnGravityOff value="true" />
+    </gazebo>
+  <gazebo reference="wide_stereo_optical_frame">
+    <material value="Gazebo/White" />
+    <turnGravityOff value="true" />
+    </gazebo>
+  <gazebo reference="narrow_stereo_l_stereo_camera_frame">
+    <sensor name="narrow_stereo_l_stereo_camera_sensor" type="camera">
+      <always_on>true</always_on>
+      <update_rate>25.0</update_rate>
+      <camera>
+        <horizontal_fov>0.7853981633974483</horizontal_fov>
+        <image>
+          <format>L8</format>
+          <width>640</width>
+          <height>480</height>
+          </image>
+        <clip>
+          <near>0.1</near>
+          <far>100</far>
+          </clip>
+        </camera>
+      <plugin filename="libgazebo_ros_camera.so" name="narrow_stereo_l_stereo_camera_controller">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>25.0</updateRate>
+        <cameraName>narrow_stereo/left</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>narrow_stereo_optical_frame</frameName>
+        <hackBaseline>0</hackBaseline>
+        <CxPrime>320.5</CxPrime>
+        <Cx>320.5</Cx>
+        <Cy>240.5</Cy>
+        <focalLength>772.548518</focalLength>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+        </plugin>
+      </sensor>
+    <turnGravityOff>true</turnGravityOff>
+    <material>PR2/Blue</material>
+    </gazebo>
+  <gazebo reference="narrow_stereo_r_stereo_camera_frame">
+    <sensor name="narrow_stereo_r_stereo_camera_sensor" type="camera">
+      <always_on>true</always_on>
+      <update_rate>25.0</update_rate>
+      <camera>
+        <horizontal_fov>0.7853981633974483</horizontal_fov>
+        <image>
+          <format>L8</format>
+          <width>640</width>
+          <height>480</height>
+          </image>
+        <clip>
+          <near>0.1</near>
+          <far>100</far>
+          </clip>
+        </camera>
+      <plugin filename="libgazebo_ros_camera.so" name="narrow_stereo_r_stereo_camera_controller">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>25.0</updateRate>
+        <cameraName>narrow_stereo/right</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>narrow_stereo_optical_frame</frameName>
+        <hackBaseline>0.09</hackBaseline>
+        <CxPrime>320.5</CxPrime>
+        <Cx>320.5</Cx>
+        <Cy>240.5</Cy>
+        <focalLength>772.548518</focalLength>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+        </plugin>
+      </sensor>
+    <turnGravityOff>true</turnGravityOff>
+    <material>PR2/Blue</material>
+    </gazebo>
+  <gazebo reference="narrow_stereo_link">
+    <material value="PR2/Blue" />
+    <turnGravityOff value="true" />
+    </gazebo>
+  <gazebo reference="narrow_stereo_optical_frame">
+    <material value="Gazebo/White" />
+    <turnGravityOff value="true" />
+    </gazebo>
+  <gazebo reference="double_stereo_double_stereo_link">
+    <material value="PR2/Blue" />
+    </gazebo>
+  <gazebo reference="sensor_mount_sensor_link">
+    <material value="PR2/Blue" />
+    </gazebo>
+  <gazebo reference="projector_wg6802418_child_frame">
+    <projector name="projector_wg6802418_projector_wg6802418">
+      <pose>0 0 0 0 -1.5707 0</pose>
+      <texture>stereo_projection_pattern_high_res_red.png</texture>
+      <fov>0.9599310885968813</fov>
+      <near_clip>0.1</near_clip>
+      <far_clip>10</far_clip>
+      </projector>
+    </gazebo>
+  <gazebo>
+    <plugin filename="libgazebo_ros_projector.so" name="projector_wg6802418_controller">
+      <projector>projector_wg6802418_child_frame/projector_wg6802418_projector_wg6802418</projector>
+      <alwaysOn>true</alwaysOn>
+      <updateRate>15.0</updateRate>
+      <textureName>stereo_projection_pattern_high_res_red.png</textureName>
+      <filterTextureName>stereo_projection_pattern_filter.png</filterTextureName>
+      <textureTopicName>projector_wg6802418_controller/image</textureTopicName>
+      <projectorTopicName>projector_wg6802418_controller/projector</projectorTopicName>
+      </plugin>
+    </gazebo>
+  <gazebo reference="laser_tilt_link">
+    <sensor name="laser_tilt" type="ray">
+      <always_on>true</always_on>
+      <update_rate>40</update_rate>
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>false</visualize>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>640</samples>
+            <resolution>1</resolution>
+            <min_angle>-1.3962634</min_angle>
+            <max_angle>1.3962634</max_angle>
+            </horizontal>
+          </scan>
+        <range>
+          <min>0.08</min>
+          <max>10.0</max>
+          <resolution>0.01</resolution>
+          </range>
+        </ray>
+      <plugin filename="libgazebo_ros_laser.so" name="gazebo_ros_laser_tilt_controller">
+        <gaussianNoise>0.005</gaussianNoise>
+        <alwaysOn>true</alwaysOn>
+        <updateRate>40</updateRate>
+        <topicName>tilt_scan</topicName>
+        <frameName>laser_tilt_link</frameName>
+        <hokuyoMinIntensity>101</hokuyoMinIntensity>
+        </plugin>
+      </sensor>
+    </gazebo>
+  <gazebo reference="laser_tilt_mount_link">
+    </gazebo>
+  <gazebo reference="r_upper_arm_roll_link">
+    <material value="PR2/RollLinks" />
+    <turnGravityOff>true</turnGravityOff>
+    </gazebo>
+  <gazebo reference="r_upper_arm_roll_joint">
+    <stopKd value="1.0" />
+    <stopKp value="1000000.0" />
+    <fudgeFactor value="0.5" />
+    </gazebo>
+  <gazebo reference="r_shoulder_pan_link">
+    <turnGravityOff>true</turnGravityOff>
+    </gazebo>
+  <gazebo reference="r_shoulder_pan_joint">
+    <stopKd value="1.0" />
+    <stopKp value="1000000.0" />
+    </gazebo>
+  <gazebo reference="r_shoulder_lift_link">
+    <turnGravityOff>true</turnGravityOff>
+    </gazebo>
+  <gazebo reference="r_shoulder_lift_joint">
+    <stopKd value="1.0" />
+    <stopKp value="1000000.0" />
+    </gazebo>
+  <gazebo reference="r_upper_arm_link">
+    <turnGravityOff>true</turnGravityOff>
+    </gazebo>
+  <gazebo reference="r_forearm_roll_link">
+    <material value="PR2/RollLinks" />
+    <turnGravityOff>true</turnGravityOff>
+    </gazebo>
+  <gazebo reference="r_forearm_roll_joint">
+    <fudgeFactor value="0.5" />
+    </gazebo>
+  <gazebo reference="r_elbow_flex_link">
+    <turnGravityOff>true</turnGravityOff>
+    </gazebo>
+  <gazebo reference="r_elbow_flex_joint">
+    <stopKd value="1.0" />
+    <stopKp value="1000000.0" />
+    </gazebo>
+  <gazebo reference="r_forearm_link">
+    <turnGravityOff>true</turnGravityOff>
+    </gazebo>
+  <gazebo reference="r_wrist_flex_link">
+    <turnGravityOff>true</turnGravityOff>
+    </gazebo>
+  <gazebo reference="r_wrist_flex_joint">
+    <stopKd value="1.0" />
+    <stopKp value="1000000.0" />
+    </gazebo>
+  <gazebo reference="r_wrist_roll_link">
+    <turnGravityOff>true</turnGravityOff>
+    <material value="PR2/RollLinks" />
+    </gazebo>
+  <gazebo reference="r_wrist_roll_joint">
+    <fudgeFactor value="0.5" />
+    </gazebo>
+  <gazebo reference="r_gripper_l_finger_link">
+    <turnGravityOff>true</turnGravityOff>
+    <mu1 value="500.0" />
+    <mu2 value="500.0" />
+    <kp value="1000000.0" />
+    <kd value="1.0" />
+    </gazebo>
+  <gazebo reference="r_gripper_l_finger_joint">
+    <stopKd value="1.0" />
+    <stopKp value="10000000.0" />
+    <fudgeFactor value="1.0" />
+    <provideFeedback value="true" />
+    </gazebo>
+  <gazebo reference="r_gripper_r_finger_link">
+    <turnGravityOff>true</turnGravityOff>
+    <mu1 value="500.0" />
+    <mu2 value="500.0" />
+    <kp value="1000000.0" />
+    <kd value="1.0" />
+    </gazebo>
+  <gazebo reference="r_gripper_r_finger_joint">
+    <stopKd value="1.0" />
+    <stopKp value="10000000.0" />
+    <fudgeFactor value="1.0" />
+    <provideFeedback value="true" />
+    </gazebo>
+  <gazebo reference="r_gripper_l_finger_tip_link">
+    <turnGravityOff>true</turnGravityOff>
+    <selfCollide>false</selfCollide>
+    <sensor name="r_gripper_l_finger_tip_contact_sensor" type="contact">
+      <update_rate>100.0</update_rate>
+      <contact>
+        <collision>r_gripper_l_finger_tip_link_collision</collision>
+        </contact>
+      <plugin filename="libgazebo_ros_bumper.so" name="r_gripper_l_finger_tip_gazebo_ros_bumper_controller">
+        <alwaysOn>true</alwaysOn>
+        <frameName>r_gripper_l_finger_tip_link</frameName>
+        <updateRate>100.0</updateRate>
+        <bumperTopicName>r_gripper_l_finger_tip_bumper</bumperTopicName>
+        </plugin>
+      </sensor>
+    <mu1 value="500.0" />
+    <mu2 value="500.0" />
+    <kp value="10000000.0" />
+    <kd value="1.0" />
+    </gazebo>
+  <gazebo reference="r_gripper_l_finger_tip_joint">
+    <stopKd value="1.0" />
+    <stopKp value="10000000.0" />
+    <fudgeFactor value="1.0" />
+    <provideFeedback value="true" />
+    </gazebo>
+  <gazebo reference="r_gripper_r_finger_tip_link">
+    <turnGravityOff>true</turnGravityOff>
+    <selfCollide>false</selfCollide>
+    <sensor name="r_gripper_r_finger_tip_contact_sensor" type="contact">
+      <update_rate>100.0</update_rate>
+      <contact>
+        <collision>r_gripper_r_finger_tip_link_collision</collision>
+        </contact>
+      <plugin filename="libgazebo_ros_bumper.so" name="r_gripper_r_finger_tip_gazebo_ros_bumper_controller">
+        <alwaysOn>true</alwaysOn>
+        <frameName>r_gripper_r_finger_tip_link</frameName>
+        <updateRate>100.0</updateRate>
+        <bumperTopicName>r_gripper_r_finger_tip_bumper</bumperTopicName>
+        </plugin>
+      </sensor>
+    <mu1 value="500.0" />
+    <mu2 value="500.0" />
+    <kp value="10000000.0" />
+    <kd value="1.0" />
+    </gazebo>
+  <gazebo>
+    <plugin filename="libgazebo_ros_p3d.so" name="p3d_r_gripper_l_finger_controller">
+      <alwaysOn>true</alwaysOn>
+      <updateRate>100.0</updateRate>
+      <bodyName>r_gripper_l_finger_link</bodyName>
+      <topicName>r_gripper_l_finger_pose_ground_truth</topicName>
+      <gaussianNoise>0.0</gaussianNoise>
+      <frameName>base_link</frameName>
+      </plugin>
+    <plugin filename="libgazebo_ros_f3d.so" name="f3d_r_gripper_l_finger_controller">
+      <alwaysOn>true</alwaysOn>
+      <updateRate>100.0</updateRate>
+      <bodyName>r_gripper_l_finger_link</bodyName>
+      <topicName>r_gripper_l_finger_force_ground_truth</topicName>
+      </plugin>
+    </gazebo>
+  <gazebo reference="r_gripper_r_finger_tip_joint">
+    <stopKd value="1.0" />
+    <stopKp value="10000000.0" />
+    <fudgeFactor value="1.0" />
+    <provideFeedback value="true" />
+    </gazebo>
+  <gazebo>
+    <link name="r_gripper_l_parallel_link">
+      <inertial>
+        <mass>0.17126</mass>
+        <inertia>
+          <ixx>7.7562e-05</ixx>
+          <ixy>1.49095e-06</ixy>
+          <ixz>-9.83385e-06</ixz>
+          <iyy>0.000197083</iyy>
+          <iyz>-3.06125e-06</iyz>
+          <izz>0.000181054</izz>
+          </inertia>
+        <pose>0.03598 0.0173 -0.00164 0 0 0</pose>
+        </inertial>
+      <pose>0.82991 -0.157 0.790675 0 -0 0</pose>
+      <gravity>false</gravity>
+      </link>
+    <link name="r_gripper_r_parallel_link">
+      <inertial>
+        <mass>0.17389</mass>
+        <inertia>
+          <ixx>7.73841e-05</ixx>
+          <ixy>-2.09309e-06</ixy>
+          <ixz>-8.36228e-06</ixz>
+          <iyy>0.000198474</iyy>
+          <iyz>2.4611e-06</iyz>
+          <izz>0.00018107</izz>
+          </inertia>
+        <pose>0.03576 -0.01736 -0.00095 0 0 0</pose>
+        </inertial>
+      <pose>0.82991 -0.219 0.790675 0 0 0</pose>
+      <gravity>false</gravity>
+      </link>
+    </gazebo>
+  <gazebo>
+    <joint name="r_gripper_r_screw_screw_joint" type="fixed">
+      <child>r_gripper_motor_screw_link</child>
+      <parent>r_gripper_r_finger_tip_link</parent>
+      <thread_pitch>-3141.6</thread_pitch>
+      <axis>
+        <xyz>0 1 0</xyz>
+        </axis>
+      </joint>
+    <joint name="r_gripper_l_screw_screw_joint" type="fixed">
+      <parent>r_gripper_l_finger_tip_link</parent>
+      <child>r_gripper_motor_screw_link</child>
+      <thread_pitch>3141.6</thread_pitch>
+      <axis>
+        <xyz>0 1 0</xyz>
+        </axis>
+      </joint>
+    </gazebo>
+  <gazebo>
+    <joint name="r_gripper_r_parallel_root_joint" type="revolute">
+      <parent>r_gripper_r_parallel_link</parent>
+      <child>r_gripper_palm_link</child>
+      <axis>
+        <xyz>0 0 -1</xyz>
+        <dynamics>
+          <damping>0.2</damping>
+          </dynamics>
+        </axis>
+      <pose>0.058910000000000004 -0.031 0 0 0 0</pose>
+      </joint>
+    <joint name="r_gripper_l_parallel_root_joint" type="revolute">
+      <parent>r_gripper_l_parallel_link</parent>
+      <child>r_gripper_palm_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <dynamics>
+          <damping>0.2</damping>
+          </dynamics>
+        </axis>
+      <pose>0.058910000000000004 0.031 0 0 0 0</pose>
+      </joint>
+    <joint name="r_gripper_r_parallel_tip_joint" type="fixed">
+      <parent>r_gripper_r_parallel_link</parent>
+      <child>r_gripper_r_finger_tip_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        </axis>
+      <pose>-0.018 -0.021 0 0 0 0</pose>
+      </joint>
+    <joint name="r_gripper_l_parallel_tip_joint" type="fixed">
+      <parent>r_gripper_l_parallel_link</parent>
+      <child>r_gripper_l_finger_tip_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        </axis>
+      <pose>-0.018 0.021 0 0 0 0</pose>
+      </joint>
+    <joint name="r_gripper_joint" type="fixed">
+      <parent>r_gripper_r_finger_tip_link</parent>
+      <child>r_gripper_l_finger_tip_link</child>
+      <axis>
+        <xyz>0 1 0</xyz>
+        </axis>
+      </joint>
+    </gazebo>
+  <gazebo reference="r_gripper_motor_slider_link">
+    <turnGravityOff>true</turnGravityOff>
+    <material value="PR2/Red" />
+    </gazebo>
+  <gazebo reference="r_gripper_motor_screw_link">
+    <turnGravityOff>true</turnGravityOff>
+    <material value="PR2/Red" />
+    </gazebo>
+  <gazebo reference="r_gripper_l_parallel_link">
+    <turnGravityOff>true</turnGravityOff>
+    <material value="PR2/Red" />
+    </gazebo>
+  <gazebo reference="r_gripper_r_parallel_link">
+    <turnGravityOff>true</turnGravityOff>
+    <material value="PR2/Red" />
+    </gazebo>
+  <gazebo reference="r_gripper_palm_link">
+    <turnGravityOff>true</turnGravityOff>
+    </gazebo>
+  <gazebo>
+    <plugin filename="libgazebo_ros_p3d.so" name="p3d_r_gripper_palm_controller">
+      <alwaysOn>true</alwaysOn>
+      <updateRate>100.0</updateRate>
+      <bodyName>r_gripper_palm_link</bodyName>
+      <topicName>r_gripper_palm_pose_ground_truth</topicName>
+      <xyzOffsets>0 0 0</xyzOffsets>
+      <rpyOffsets>0 0 0</rpyOffsets>
+      <gaussianNoise>0.0</gaussianNoise>
+      <frameName>map</frameName>
+      </plugin>
+    <gripper name="r_grasp_hack">
+      <grasp_check>
+        <attach_steps>20</attach_steps>
+        <detach_steps>40</detach_steps>
+        <min_contact_count>2</min_contact_count>
+        </grasp_check>
+      <gripper_link>r_gripper_r_finger_tip_link</gripper_link>
+      <gripper_link>r_gripper_l_finger_tip_link</gripper_link>
+      <palm_link>r_gripper_palm_link</palm_link>
+      </gripper>
+    </gazebo>
+  <gazebo reference="l_upper_arm_roll_link">
+    <material value="PR2/RollLinks" />
+    <turnGravityOff>true</turnGravityOff>
+    </gazebo>
+  <gazebo reference="l_upper_arm_roll_joint">
+    <stopKd value="1.0" />
+    <stopKp value="1000000.0" />
+    <fudgeFactor value="0.5" />
+    </gazebo>
+  <gazebo reference="l_shoulder_pan_link">
+    <turnGravityOff>true</turnGravityOff>
+    </gazebo>
+  <gazebo reference="l_shoulder_pan_joint">
+    <stopKd value="1.0" />
+    <stopKp value="1000000.0" />
+    </gazebo>
+  <gazebo reference="l_shoulder_lift_link">
+    <turnGravityOff>true</turnGravityOff>
+    </gazebo>
+  <gazebo reference="l_shoulder_lift_joint">
+    <stopKd value="1.0" />
+    <stopKp value="1000000.0" />
+    </gazebo>
+  <gazebo reference="l_upper_arm_link">
+    <turnGravityOff>true</turnGravityOff>
+    </gazebo>
+  <gazebo reference="l_forearm_roll_link">
+    <material value="PR2/RollLinks" />
+    <turnGravityOff>true</turnGravityOff>
+    </gazebo>
+  <gazebo reference="l_forearm_roll_joint">
+    <fudgeFactor value="0.5" />
+    </gazebo>
+  <gazebo reference="l_elbow_flex_link">
+    <turnGravityOff>true</turnGravityOff>
+    </gazebo>
+  <gazebo reference="l_elbow_flex_joint">
+    <stopKd value="1.0" />
+    <stopKp value="1000000.0" />
+    </gazebo>
+  <gazebo reference="l_forearm_link">
+    <turnGravityOff>true</turnGravityOff>
+    </gazebo>
+  <gazebo reference="l_wrist_flex_link">
+    <turnGravityOff>true</turnGravityOff>
+    </gazebo>
+  <gazebo reference="l_wrist_flex_joint">
+    <stopKd value="1.0" />
+    <stopKp value="1000000.0" />
+    </gazebo>
+  <gazebo reference="l_wrist_roll_link">
+    <turnGravityOff>true</turnGravityOff>
+    <material value="PR2/RollLinks" />
+    </gazebo>
+  <gazebo reference="l_wrist_roll_joint">
+    <fudgeFactor value="0.5" />
+    </gazebo>
+  <gazebo reference="l_gripper_l_finger_link">
+    <turnGravityOff>true</turnGravityOff>
+    <mu1 value="500.0" />
+    <mu2 value="500.0" />
+    <kp value="1000000.0" />
+    <kd value="1.0" />
+    </gazebo>
+  <gazebo reference="l_gripper_l_finger_joint">
+    <stopKd value="1.0" />
+    <stopKp value="10000000.0" />
+    <fudgeFactor value="1.0" />
+    <provideFeedback value="true" />
+    </gazebo>
+  <gazebo reference="l_gripper_r_finger_link">
+    <turnGravityOff>true</turnGravityOff>
+    <mu1 value="500.0" />
+    <mu2 value="500.0" />
+    <kp value="1000000.0" />
+    <kd value="1.0" />
+    </gazebo>
+  <gazebo reference="l_gripper_r_finger_joint">
+    <stopKd value="1.0" />
+    <stopKp value="10000000.0" />
+    <fudgeFactor value="1.0" />
+    <provideFeedback value="true" />
+    </gazebo>
+  <gazebo reference="l_gripper_l_finger_tip_link">
+    <turnGravityOff>true</turnGravityOff>
+    <selfCollide>false</selfCollide>
+    <sensor name="l_gripper_l_finger_tip_contact_sensor" type="contact">
+      <update_rate>100.0</update_rate>
+      <contact>
+        <collision>l_gripper_l_finger_tip_link_collision</collision>
+        </contact>
+      <plugin filename="libgazebo_ros_bumper.so" name="l_gripper_l_finger_tip_gazebo_ros_bumper_controller">
+        <alwaysOn>true</alwaysOn>
+        <frameName>l_gripper_l_finger_tip_link</frameName>
+        <updateRate>100.0</updateRate>
+        <bumperTopicName>l_gripper_l_finger_tip_bumper</bumperTopicName>
+        </plugin>
+      </sensor>
+    <mu1 value="500.0" />
+    <mu2 value="500.0" />
+    <kp value="10000000.0" />
+    <kd value="1.0" />
+    </gazebo>
+  <gazebo reference="l_gripper_l_finger_tip_joint">
+    <stopKd value="1.0" />
+    <stopKp value="10000000.0" />
+    <fudgeFactor value="1.0" />
+    <provideFeedback value="true" />
+    </gazebo>
+  <gazebo reference="l_gripper_r_finger_tip_link">
+    <turnGravityOff>true</turnGravityOff>
+    <selfCollide>false</selfCollide>
+    <sensor name="l_gripper_r_finger_tip_contact_sensor" type="contact">
+      <update_rate>100.0</update_rate>
+      <contact>
+        <collision>l_gripper_r_finger_tip_link_collision</collision>
+        </contact>
+      <plugin filename="libgazebo_ros_bumper.so" name="l_gripper_r_finger_tip_gazebo_ros_bumper_controller">
+        <alwaysOn>true</alwaysOn>
+        <frameName>l_gripper_r_finger_tip_link</frameName>
+        <updateRate>100.0</updateRate>
+        <bumperTopicName>l_gripper_r_finger_tip_bumper</bumperTopicName>
+        </plugin>
+      </sensor>
+    <mu1 value="500.0" />
+    <mu2 value="500.0" />
+    <kp value="10000000.0" />
+    <kd value="1.0" />
+    </gazebo>
+  <gazebo>
+    <plugin filename="libgazebo_ros_p3d.so" name="p3d_l_gripper_l_finger_controller">
+      <alwaysOn>true</alwaysOn>
+      <updateRate>100.0</updateRate>
+      <bodyName>l_gripper_l_finger_link</bodyName>
+      <topicName>l_gripper_l_finger_pose_ground_truth</topicName>
+      <gaussianNoise>0.0</gaussianNoise>
+      <frameName>base_link</frameName>
+      </plugin>
+    <plugin filename="libgazebo_ros_f3d.so" name="f3d_l_gripper_l_finger_controller">
+      <alwaysOn>true</alwaysOn>
+      <updateRate>100.0</updateRate>
+      <bodyName>l_gripper_l_finger_link</bodyName>
+      <topicName>l_gripper_l_finger_force_ground_truth</topicName>
+      </plugin>
+    </gazebo>
+  <gazebo reference="l_gripper_r_finger_tip_joint">
+    <stopKd value="1.0" />
+    <stopKp value="10000000.0" />
+    <fudgeFactor value="1.0" />
+    <provideFeedback value="true" />
+    </gazebo>
+  <gazebo>
+    <link name="l_gripper_l_parallel_link">
+      <inertial>
+        <mass>0.17126</mass>
+        <inertia>
+          <ixx>7.7562e-05</ixx>
+          <ixy>1.49095e-06</ixy>
+          <ixz>-9.83385e-06</ixz>
+          <iyy>0.000197083</iyy>
+          <iyz>-3.06125e-06</iyz>
+          <izz>0.000181054</izz>
+          </inertia>
+        <pose>0.03598 0.0173 -0.00164 0 0 0</pose>
+        </inertial>
+      <pose>0.82991 0.219 0.790675 0 -0 0</pose>
+      <gravity>false</gravity>
+      </link>
+    <link name="l_gripper_r_parallel_link">
+      <inertial>
+        <mass>0.17389</mass>
+        <inertia>
+          <ixx>7.73841e-05</ixx>
+          <ixy>-2.09309e-06</ixy>
+          <ixz>-8.36228e-06</ixz>
+          <iyy>0.000198474</iyy>
+          <iyz>2.4611e-06</iyz>
+          <izz>0.00018107</izz>
+          </inertia>
+        <pose>0.03576 -0.01736 -0.00095 0 0 0</pose>
+        </inertial>
+      <pose>0.82991 0.157 0.790675 0 0 0</pose>
+      <gravity>false</gravity>
+      </link>
+    </gazebo>
+  <gazebo>
+    <joint name="l_gripper_r_screw_screw_joint" type="screw">
+      <child>l_gripper_motor_screw_link</child>
+      <parent>l_gripper_r_finger_tip_link</parent>
+      <thread_pitch>-3141.6</thread_pitch>
+      <axis>
+        <xyz>0 1 0</xyz>
+        </axis>
+      </joint>
+    <joint name="l_gripper_l_screw_screw_joint" type="screw">
+      <parent>l_gripper_l_finger_tip_link</parent>
+      <child>l_gripper_motor_screw_link</child>
+      <thread_pitch>3141.6</thread_pitch>
+      <axis>
+        <xyz>0 1 0</xyz>
+        </axis>
+      </joint>
+    </gazebo>
+  <gazebo>
+    <joint name="l_gripper_r_parallel_root_joint" type="fixed">
+      <parent>l_gripper_r_parallel_link</parent>
+      <child>l_gripper_palm_link</child>
+      <axis>
+        <xyz>0 0 -1</xyz>
+        <dynamics>
+          <damping>0.2</damping>
+          </dynamics>
+        </axis>
+      <pose>0.058910000000000004 -0.031 0 0 0 0</pose>
+      </joint>
+    <joint name="l_gripper_l_parallel_root_joint" type="revolute">
+      <parent>l_gripper_l_parallel_link</parent>
+      <child>l_gripper_palm_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <dynamics>
+          <damping>0.2</damping>
+          </dynamics>
+        </axis>
+      <pose>0.058910000000000004 0.031 0 0 0 0</pose>
+      </joint>
+    <joint name="l_gripper_r_parallel_tip_joint" type="fixed">
+      <parent>l_gripper_r_parallel_link</parent>
+      <child>l_gripper_r_finger_tip_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        </axis>
+      <pose>-0.018 -0.021 0 0 0 0</pose>
+      </joint>
+    <joint name="l_gripper_l_parallel_tip_joint" type="fixed">
+      <parent>l_gripper_l_parallel_link</parent>
+      <child>l_gripper_l_finger_tip_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        </axis>
+      <pose>-0.018 0.021 0 0 0 0</pose>
+      </joint>
+    <joint name="l_gripper_joint" type="fixed">
+      <parent>l_gripper_r_finger_tip_link</parent>
+      <child>l_gripper_l_finger_tip_link</child>
+      <axis>
+        <xyz>0 1 0</xyz>
+        </axis>
+      </joint>
+    </gazebo>
+  <gazebo reference="l_gripper_motor_slider_link">
+    <turnGravityOff>true</turnGravityOff>
+    <material value="PR2/Red" />
+    </gazebo>
+  <gazebo reference="l_gripper_motor_screw_link">
+    <turnGravityOff>true</turnGravityOff>
+    <material value="PR2/Red" />
+    </gazebo>
+  <gazebo reference="l_gripper_l_parallel_link">
+    <turnGravityOff>true</turnGravityOff>
+    <material value="PR2/Red" />
+    </gazebo>
+  <gazebo reference="l_gripper_r_parallel_link">
+    <turnGravityOff>true</turnGravityOff>
+    <material value="PR2/Red" />
+    </gazebo>
+  <gazebo reference="l_gripper_palm_link">
+    <turnGravityOff>true</turnGravityOff>
+    </gazebo>
+  <gazebo>
+    <plugin filename="libgazebo_ros_p3d.so" name="p3d_l_gripper_palm_controller">
+      <alwaysOn>true</alwaysOn>
+      <updateRate>100.0</updateRate>
+      <bodyName>l_gripper_palm_link</bodyName>
+      <topicName>l_gripper_palm_pose_ground_truth</topicName>
+      <xyzOffsets>0 0 0</xyzOffsets>
+      <rpyOffsets>0 0 0</rpyOffsets>
+      <gaussianNoise>0.0</gaussianNoise>
+      <frameName>map</frameName>
+      </plugin>
+    <gripper name="l_grasp_hack">
+      <grasp_check>
+        <attach_steps>20</attach_steps>
+        <detach_steps>40</detach_steps>
+        <min_contact_count>2</min_contact_count>
+        </grasp_check>
+      <gripper_link>l_gripper_r_finger_tip_link</gripper_link>
+      <gripper_link>l_gripper_l_finger_tip_link</gripper_link>
+      <palm_link>l_gripper_palm_link</palm_link>
+      </gripper>
+    </gazebo>
+  <gazebo reference="l_forearm_cam_frame">
+    <sensor name="l_forearm_cam_sensor" type="camera">
+      <always_on>true</always_on>
+      <update_rate>25.0</update_rate>
+      <camera>
+        <horizontal_fov>1.5707963267948966</horizontal_fov>
+        <image>
+          <format>R8G8B8</format>
+          <width>640</width>
+          <height>480</height>
+          </image>
+        <clip>
+          <near>0.1</near>
+          <far>100</far>
+          </clip>
+        </camera>
+      <plugin filename="libgazebo_ros_camera.so" name="l_forearm_cam_controller">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>25.0</updateRate>
+        <cameraName>l_forearm_cam</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>l_forearm_cam_optical_frame</frameName>
+        <hackBaseline>0</hackBaseline>
+        <CxPrime>320.5</CxPrime>
+        <Cx>320.5</Cx>
+        <Cy>240.5</Cy>
+        <focalLength>320.000105</focalLength>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+        </plugin>
+      </sensor>
+    <turnGravityOff>true</turnGravityOff>
+    <material>PR2/Blue</material>
+    </gazebo>
+  <gazebo reference="r_forearm_cam_frame">
+    <sensor name="r_forearm_cam_sensor" type="camera">
+      <always_on>true</always_on>
+      <update_rate>25.0</update_rate>
+      <camera>
+        <horizontal_fov>1.5707963267948966</horizontal_fov>
+        <image>
+          <format>R8G8B8</format>
+          <width>640</width>
+          <height>480</height>
+          </image>
+        <clip>
+          <near>0.1</near>
+          <far>100</far>
+          </clip>
+        </camera>
+      <plugin filename="libgazebo_ros_camera.so" name="r_forearm_cam_controller">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>25.0</updateRate>
+        <cameraName>r_forearm_cam</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>r_forearm_cam_optical_frame</frameName>
+        <hackBaseline>0</hackBaseline>
+        <CxPrime>320.5</CxPrime>
+        <Cx>320.5</Cx>
+        <Cy>240.5</Cy>
+        <focalLength>320.000105</focalLength>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+        </plugin>
+      </sensor>
+    <turnGravityOff>true</turnGravityOff>
+    <material>PR2/Blue</material>
+    </gazebo>
+  </robot>
