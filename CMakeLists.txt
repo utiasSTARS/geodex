@@ -60,6 +60,7 @@ endif()
 # OMPL integration examples
 if(BUILD_OMPL_EXAMPLES)
   add_subdirectory(examples/ompl)
+  add_subdirectory(examples/manipulator_planning)
 endif()
 
 # Python bindings
