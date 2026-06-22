@@ -9,6 +9,7 @@
 #include "algorithm/distance.hpp"
 #include "algorithm/interpolation.hpp"
 #include "algorithm/path_smoothing.hpp"
+#include "algorithm/precompute_matrix_lower_bound.hpp"
 #include "algorithm/simplify_path.hpp"
 #include "heuristics/heuristics.hpp"
 #include "core/concepts.hpp"

@@ -72,6 +72,10 @@ add_executable(test_simplify_path test_simplify_path.cpp)
 target_link_libraries(test_simplify_path PRIVATE geodex GTest::gtest_main)
 gtest_discover_tests(test_simplify_path)
 
+add_executable(test_precompute_matrix_lower_bound test_precompute_matrix_lower_bound.cpp)
+target_link_libraries(test_precompute_matrix_lower_bound PRIVATE geodex GTest::gtest_main)
+gtest_discover_tests(test_precompute_matrix_lower_bound)
+
 if(BUILD_OMPL_EXAMPLES)
   add_executable(test_geodex_state_space test_geodex_state_space.cpp)
   # GTest must come before ompl::ompl so FetchContent headers take priority
