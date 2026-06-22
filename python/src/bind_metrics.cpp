@@ -2,6 +2,7 @@
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/function.h>
 #include <nanobind/stl/string.h>
+#include <nanobind/stl/vector.h>
 
 #include "wrappers/py_metrics.hpp"
 
@@ -22,11 +23,14 @@ DynamicMetric extract_dynamic_metric(nb::object obj) {
     return nb::cast<const PyConstantSPDMetric&>(obj).to_dynamic_metric();
   if (nb::isinstance<PyWeightedMetric>(obj))
     return nb::cast<const PyWeightedMetric&>(obj).to_dynamic_metric();
+  if (nb::isinstance<PyAffineCombinedMetric>(obj))
+    return nb::cast<const PyAffineCombinedMetric&>(obj).to_dynamic_metric();
   if (nb::isinstance<PyClearanceMetric>(obj))
     return nb::cast<const PyClearanceMetric&>(obj).to_dynamic_metric();
   throw std::invalid_argument(
       "Unknown metric type. Expected KineticEnergyMetric, JacobiMetric, "
-      "PullbackMetric, ConstantSPDMetric, WeightedMetric, or ClearanceMetric.");
+      "PullbackMetric, ConstantSPDMetric, WeightedMetric, AffineCombinedMetric, "
+      "or ClearanceMetric.");
 }
 
 }  // namespace
@@ -116,6 +120,36 @@ void bind_metrics(nb::module_& m) {
       .def("norm", &PyWeightedMetric::norm, nb::arg("p"), nb::arg("v"), "Scaled Riemannian norm.")
       .def_prop_ro("alpha", &PyWeightedMetric::alpha, "The scaling factor.")
       .def("__repr__", &PyWeightedMetric::repr);
+
+  // --- AffineCombinedMetric (dynamic-arity) ---
+  nb::class_<PyAffineCombinedMetric>(
+      m, "AffineCombinedMetric",
+      "Positive linear combination of N Riemannian metric policies.\n\n"
+      "Composes N metric policies g_1, ..., g_N with non-negative coefficients\n"
+      "c_1, ..., c_N into the metric <u, v>_p = sum_k c_k <u, v>_p^{g_k}.\n"
+      "Useful for composite metrics like 'pullback + beta * kinetic-energy'.\n\n"
+      "Preconditions: at least one summand, all coefficients non-negative,\n"
+      "at least one coefficient > 0.")
+      .def(
+          "__init__",
+          [](PyAffineCombinedMetric* self, nb::list metrics, std::vector<double> coeffs) {
+            std::vector<DynamicMetric> bases;
+            bases.reserve(nb::len(metrics));
+            for (auto handle : metrics) {
+              bases.push_back(extract_dynamic_metric(nb::borrow<nb::object>(handle)));
+            }
+            new (self) PyAffineCombinedMetric(std::move(bases), std::move(coeffs));
+          },
+          nb::arg("metrics"), nb::arg("coeffs"),
+          "Create an AffineCombinedMetric from a list of metrics and a list of\n"
+          "non-negative coefficients (matching length, at least one > 0).")
+      .def("inner", &PyAffineCombinedMetric::inner, nb::arg("p"), nb::arg("u"), nb::arg("v"),
+           "Combined inner product sum_k c_k <u, v>_p^{g_k}.")
+      .def("norm", &PyAffineCombinedMetric::norm, nb::arg("p"), nb::arg("v"),
+           "Combined Riemannian norm.")
+      .def_prop_ro("coeffs", &PyAffineCombinedMetric::coeffs, "The coefficient list.")
+      .def_prop_ro("size", &PyAffineCombinedMetric::size, "Number of summands.")
+      .def("__repr__", &PyAffineCombinedMetric::repr);
 
   // --- ClearanceMetric ---
   nb::class_<PyClearanceMetric>(

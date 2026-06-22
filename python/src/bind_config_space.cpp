@@ -40,9 +40,14 @@ DynamicMetric extract_dynamic_metric(nb::object obj) {
     return nb::cast<const PyConstantSPDMetric&>(obj).to_dynamic_metric();
   if (nb::isinstance<PyWeightedMetric>(obj))
     return nb::cast<const PyWeightedMetric&>(obj).to_dynamic_metric();
+  if (nb::isinstance<PyAffineCombinedMetric>(obj))
+    return nb::cast<const PyAffineCombinedMetric&>(obj).to_dynamic_metric();
+  if (nb::isinstance<PyClearanceMetric>(obj))
+    return nb::cast<const PyClearanceMetric&>(obj).to_dynamic_metric();
   throw std::invalid_argument(
       "Unknown metric type. Expected KineticEnergyMetric, JacobiMetric, "
-      "PullbackMetric, ConstantSPDMetric, or WeightedMetric.");
+      "PullbackMetric, ConstantSPDMetric, WeightedMetric, AffineCombinedMetric, "
+      "or ClearanceMetric.");
 }
 
 }  // namespace

@@ -1,5 +1,5 @@
 find_package(Python 3.9
-  REQUIRED COMPONENTS Interpreter Development.Module
+  REQUIRED COMPONENTS Interpreter Development.Module Development
   OPTIONAL_COMPONENTS Development.SABIModule)
 
 # Fetch nanobind
@@ -22,10 +22,21 @@ nanobind_add_module(_geodex_core
   src/bind_metrics.cpp
   src/bind_config_space.cpp
   src/bind_algorithms.cpp
+  src/bind_heuristics.cpp
   src/bind_collision.cpp
 )
 
 target_link_libraries(_geodex_core PRIVATE geodex)
 target_include_directories(_geodex_core PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+if(GEODEX_PINOCCHIO)
+  target_sources(_geodex_core PRIVATE src/bind_pinocchio.cpp)
+  target_compile_definitions(_geodex_core PRIVATE GEODEX_PYTHON_HAS_PINOCCHIO)
+endif()
+
+if(GEODEX_VAMP)
+  target_sources(_geodex_core PRIVATE src/bind_vamp.cpp)
+  target_compile_definitions(_geodex_core PRIVATE GEODEX_PYTHON_HAS_VAMP)
+endif()
 
 install(TARGETS _geodex_core LIBRARY DESTINATION geodex)

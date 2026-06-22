@@ -1,5 +1,5 @@
-"""Tests for M5 algorithm bindings: InterpolationSettings, distance_midpoint,
-discrete_geodesic, EuclideanHeuristic."""
+"""Tests for algorithm bindings: InterpolationSettings, distance_midpoint,
+discrete_geodesic, simplify_path, precompute_matrix_lower_bound."""
 
 import numpy as np
 import pytest
@@ -55,38 +55,6 @@ class TestInterpolationSettings:
         r = repr(s)
         assert "InterpolationSettings" in r
         assert "step_size" in r
-
-
-# ---------------------------------------------------------------------------
-# EuclideanHeuristic
-# ---------------------------------------------------------------------------
-
-
-class TestEuclideanHeuristic:
-    def test_zero_distance(self):
-        h = geodex.EuclideanHeuristic()
-        a = np.array([1.0, 2.0, 3.0])
-        assert h(a, a) == pytest.approx(0.0)
-
-    def test_known_distance(self):
-        h = geodex.EuclideanHeuristic()
-        a = np.zeros(3)
-        b = np.array([3.0, 4.0, 0.0])
-        assert h(a, b) == pytest.approx(5.0)
-
-    def test_symmetry(self):
-        h = geodex.EuclideanHeuristic()
-        a = np.array([1.0, 2.0])
-        b = np.array([4.0, 6.0])
-        assert h(a, b) == pytest.approx(h(b, a))
-
-    def test_agrees_with_numpy(self):
-        h = geodex.EuclideanHeuristic()
-        rng = np.random.default_rng(42)
-        for _ in range(10):
-            a = rng.standard_normal(5)
-            b = rng.standard_normal(5)
-            assert h(a, b) == pytest.approx(np.linalg.norm(a - b))
 
 
 # ---------------------------------------------------------------------------
@@ -481,3 +449,154 @@ class TestFdMidpointGuard:
         r = geodex.discrete_geodesic(cs, p, q, settings)
         assert r.status == geodex.InterpolationStatus.Converged
         assert r.fd_midpoint_fallbacks > 0
+
+
+# ---------------------------------------------------------------------------
+# simplify_path
+# ---------------------------------------------------------------------------
+
+
+class TestSimplifyPathSettings:
+    def test_defaults(self):
+        s = geodex.SimplifyPathSettings()
+        assert s.max_shortcut_attempts == 200
+        assert s.smooth_target_segments == 128
+        assert s.max_displacement == pytest.approx(0.0)
+
+
+class TestSimplifyPathEuclidean:
+    def setup_method(self):
+        self.euc = geodex.Euclidean(2)
+        self.cs = geodex.ConfigurationSpace(self.euc, geodex.ConstantSPDMetric(np.eye(2)))
+
+    def test_collinear_path_collapses(self):
+        # Three points along the x-axis, middle redundant.
+        path = [np.array([0.0, 0.0]), np.array([0.5, 0.0]), np.array([1.0, 0.0])]
+        settings = geodex.SimplifyPathSettings()
+        settings.max_shortcut_attempts = 50
+        settings.smooth_target_segments = 4
+        settings.max_iter_per_level = 50
+        r = geodex.simplify_path(self.cs, lambda q: True, path, settings)
+        assert isinstance(r, geodex.SimplifyPathResult)
+        assert r.collision_free is True
+        assert r.distance == pytest.approx(1.0, abs=2e-2)
+
+    def test_validity_fn_respected(self):
+        # Block any q with x in [0.45, 0.55]: shortcut from (0,0) to (1,0)
+        # passes through that band, so the middle vertex must survive.
+        def validity(q):
+            return not (0.45 <= q[0] <= 0.55 and abs(q[1]) < 0.1)
+
+        path = [
+            np.array([0.0, 0.0]),
+            np.array([0.5, -0.5]),  # detour avoiding the band
+            np.array([1.0, 0.0]),
+        ]
+        settings = geodex.SimplifyPathSettings()
+        settings.max_shortcut_attempts = 100
+        settings.smooth_target_segments = 4
+        settings.max_iter_per_level = 50
+        r = geodex.simplify_path(self.cs, validity, path, settings)
+        # Result must remain collision-free under the same predicate.
+        for q in r.path:
+            assert validity(q)
+
+    def test_endpoints_preserved(self):
+        path = [
+            np.array([0.0, 0.0]),
+            np.array([0.5, 0.5]),
+            np.array([1.0, 1.0]),
+        ]
+        settings = geodex.SimplifyPathSettings()
+        settings.smooth_target_segments = 4
+        r = geodex.simplify_path(self.cs, lambda q: True, path, settings)
+        np.testing.assert_allclose(r.path[0], path[0], atol=1e-12)
+        np.testing.assert_allclose(r.path[-1], path[-1], atol=1e-12)
+
+
+# ---------------------------------------------------------------------------
+# precompute_matrix_lower_bound
+# ---------------------------------------------------------------------------
+
+
+class TestPrecomputeMatrixLowerBoundSettings:
+    def test_defaults(self):
+        s = geodex.PrecomputeMatrixLowerBoundSettings()
+        assert s.max_outer == 50
+        assert s.tol == pytest.approx(1e-6)
+        assert s.n_starts_per_iter == 0  # auto
+        assert s.seed == 42
+
+
+class TestPrecomputeMatrixLowerBound:
+    def test_constant_identity_metric_certifies_immediately(self):
+        result = geodex.precompute_matrix_lower_bound(
+            metric_fn=lambda q: np.eye(3),
+            lo=np.array([-1.0, -1.0, -1.0]),
+            hi=np.array([1.0, 1.0, 1.0]),
+        )
+        np.testing.assert_allclose(result.M_lower, np.eye(3), atol=1e-12)
+        assert result.lambda_min_certificate == pytest.approx(1.0, abs=1e-6)
+        assert result.converged is True
+
+    def test_constant_anisotropic_metric_recovers_matrix(self):
+        M = np.diag([4.0, 1.0])
+        result = geodex.precompute_matrix_lower_bound(
+            metric_fn=lambda q: M,
+            lo=np.array([-1.0, -1.0]),
+            hi=np.array([1.0, 1.0]),
+        )
+        np.testing.assert_allclose(result.M_lower, M, atol=1e-8)
+        assert result.converged is True
+
+    def test_deterministic_with_seed(self):
+        def metric(q):
+            # q-dependent SPD: 1 + q² * I
+            scale = 1.0 + q[0] ** 2 + q[1] ** 2
+            return scale * np.eye(2)
+
+        s = geodex.PrecomputeMatrixLowerBoundSettings()
+        s.seed = 13
+        s.max_outer = 5
+        a = geodex.precompute_matrix_lower_bound(
+            metric, np.array([-1.0, -1.0]), np.array([1.0, 1.0]), s
+        )
+        b = geodex.precompute_matrix_lower_bound(
+            metric, np.array([-1.0, -1.0]), np.array([1.0, 1.0]), s
+        )
+        np.testing.assert_allclose(a.M_lower, b.M_lower, atol=1e-12)
+        assert a.lambda_min_certificate == pytest.approx(b.lambda_min_certificate, abs=1e-12)
+
+    def test_dimension_mismatch_raises(self):
+        with pytest.raises(Exception):
+            geodex.precompute_matrix_lower_bound(
+                metric_fn=lambda q: np.eye(2),
+                lo=np.array([-1.0, -1.0]),
+                hi=np.array([1.0]),  # wrong size
+            )
+
+    def test_lo_greater_than_hi_raises(self):
+        with pytest.raises(Exception):
+            geodex.precompute_matrix_lower_bound(
+                metric_fn=lambda q: np.eye(2),
+                lo=np.array([1.0, 1.0]),
+                hi=np.array([-1.0, -1.0]),
+            )
+
+    def test_bound_is_loewner_dominated_by_metric(self):
+        rng = np.random.default_rng(0)
+
+        # Position-dependent metric: M(q) = (1 + ||q||²) * I_2
+        def metric(q):
+            return (1.0 + q.dot(q)) * np.eye(2)
+
+        result = geodex.precompute_matrix_lower_bound(
+            metric_fn=metric,
+            lo=np.array([-1.0, -1.0]),
+            hi=np.array([1.0, 1.0]),
+        )
+        for _ in range(20):
+            q = rng.uniform(-1.0, 1.0, size=2)
+            diff = metric(q) - result.M_lower
+            evals = np.linalg.eigvalsh(diff)
+            assert evals.min() > -1e-6  # M(q) - M_lower ⪰ 0 (Loewner)

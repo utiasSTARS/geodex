@@ -2,3 +2,8 @@ numpy>=1.21
 scikit-build-core>=0.10
 nanobind>=2.4
 pytest
+
+# viser visualizer (examples/manipulator_planning/manipulator_planning.py)
+viser>=1.0
+yourdfpy>=0.0.50
+pyyaml>=6.0

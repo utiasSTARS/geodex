@@ -1,7 +1,18 @@
 /// @file bind_algorithms.cpp
 /// @brief Python bindings for geodex algorithms: InterpolationSettings,
 /// InterpolationStatus, InterpolationResult, distance_midpoint, discrete_geodesic,
-/// EuclideanHeuristic.
+/// PathSmoothingSettings, PathSmoothingResult, smooth_path,
+/// SimplifyPathSettings, SimplifyPathResult, simplify_path,
+/// PrecomputeMatrixLowerBoundSettings, PrecomputeMatrixLowerBoundResult,
+/// precompute_matrix_lower_bound.
+
+#include <cmath>
+
+#include <limits>
+#include <stdexcept>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include <nanobind/eigen/dense.h>
 #include <nanobind/nanobind.h>
@@ -10,9 +21,12 @@
 #include <nanobind/stl/vector.h>
 
 #include "geodex/algorithm/distance.hpp"
-#include "geodex/algorithm/heuristics.hpp"
 #include "geodex/algorithm/interpolation.hpp"
 #include "geodex/algorithm/path_smoothing.hpp"
+#include "geodex/algorithm/precompute_matrix_lower_bound.hpp"
+#include "geodex/algorithm/simplify_path.hpp"
+#include "geodex/core/concepts.hpp"
+#include "geodex/core/metric.hpp"
 
 #include "wrappers/dynamic_manifold.hpp"
 #include "wrappers/py_config_space.hpp"
@@ -38,6 +52,68 @@ DynamicManifold extract_algo_manifold(nb::object obj) {
   throw std::invalid_argument(
       "Unknown manifold type. Expected Sphere, Euclidean, Torus, SE2, or ConfigurationSpace.");
 }
+
+/// Lightweight RiemannianManifold wrapper exposing inner_matrix + lo/hi as
+/// required by `precompute_matrix_lower_bound`. Backed by a Python callable
+/// `q -> M(q)` plus per-dimension bounds. Not a Python-visible class; lives
+/// only as the call-site bridge for `precompute_matrix_lower_bound` below.
+class PrecomputeManifold {
+ public:
+  using Scalar = double;
+  using Point = Eigen::VectorXd;
+  using Tangent = Eigen::VectorXd;
+  using MetricFn = std::function<Eigen::MatrixXd(const Eigen::VectorXd&)>;
+
+  PrecomputeManifold(MetricFn fn, Eigen::VectorXd lo, Eigen::VectorXd hi)
+      : fn_(std::move(fn)), lo_(std::move(lo)), hi_(std::move(hi)) {
+    if (lo_.size() != hi_.size()) {
+      throw std::invalid_argument("precompute_matrix_lower_bound: lo and hi must match in size.");
+    }
+    for (int i = 0; i < lo_.size(); ++i) {
+      if (!(lo_[i] <= hi_[i])) {
+        throw std::invalid_argument(
+            "precompute_matrix_lower_bound: each lo[i] must be <= hi[i].");
+      }
+    }
+  }
+
+  int dim() const { return static_cast<int>(lo_.size()); }
+  const Eigen::VectorXd& lo() const { return lo_; }
+  const Eigen::VectorXd& hi() const { return hi_; }
+
+  Eigen::VectorXd random_point() const { return 0.5 * (lo_ + hi_); }
+
+  Eigen::VectorXd exp(const Eigen::VectorXd& p, const Eigen::VectorXd& v) const { return p + v; }
+  Eigen::VectorXd log(const Eigen::VectorXd& p, const Eigen::VectorXd& q) const { return q - p; }
+
+  double inner(const Eigen::VectorXd& p, const Eigen::VectorXd& u,
+               const Eigen::VectorXd& v) const {
+    return u.dot(fn_(p) * v);
+  }
+  double norm(const Eigen::VectorXd& p, const Eigen::VectorXd& v) const {
+    return std::sqrt(inner(p, v, v));
+  }
+  double distance(const Eigen::VectorXd& p, const Eigen::VectorXd& q) const {
+    return norm(p, q - p);
+  }
+  Eigen::VectorXd geodesic(const Eigen::VectorXd& p, const Eigen::VectorXd& q, double t) const {
+    return p + t * (q - p);
+  }
+  double injectivity_radius() const { return std::numeric_limits<double>::infinity(); }
+
+  Eigen::MatrixXd inner_matrix(const Eigen::VectorXd& p, const Eigen::MatrixXd& U,
+                               const Eigen::MatrixXd& V) const {
+    return U.transpose() * fn_(p) * V;
+  }
+
+ private:
+  MetricFn fn_;
+  Eigen::VectorXd lo_;
+  Eigen::VectorXd hi_;
+};
+
+static_assert(geodex::RiemannianManifold<PrecomputeManifold>);
+static_assert(geodex::HasBatchInnerMatrix<PrecomputeManifold>);
 
 }  // namespace
 
@@ -229,19 +305,6 @@ void bind_algorithms(nb::module_& m) {
       "    InterpolationResult with fields path, status, iterations, distortion_halvings,\n"
       "    fd_midpoint_fallbacks, initial_distance, final_distance.");
 
-  // --- EuclideanHeuristic ---
-  nb::class_<geodex::EuclideanHeuristic>(
-      m, "EuclideanHeuristic",
-      "Euclidean (L2) heuristic between coordinate vectors.\n\n"
-      "Computes the chord distance ||a - b||_2. Admissible for any manifold where\n"
-      "geodesic distance >= chord distance (e.g., convex subsets of Euclidean space).")
-      .def(nb::init<>(), "Create a Euclidean heuristic.")
-      .def(
-          "__call__",
-          [](const geodex::EuclideanHeuristic& h, const Eigen::VectorXd& a,
-             const Eigen::VectorXd& b) { return h(a, b); },
-          nb::arg("a"), nb::arg("b"), "Compute ||a - b||_2.");
-
   // --- PathSmoothingSettings ---
   using PSS = geodex::algorithm::PathSmoothingSettings;
   nb::class_<PSS>(m, "PathSmoothingSettings", "Settings for metric-aware path smoothing.")
@@ -285,4 +348,127 @@ void bind_algorithms(nb::module_& m) {
       "    validity_fn: Callable(q) -> bool, returns True if collision-free.\n"
       "    path: List of waypoints (numpy arrays).\n"
       "    settings: PathSmoothingSettings (optional).");
+
+  // --- SimplifyPathSettings ---
+  using SPS = geodex::algorithm::SimplifyPathSettings;
+  nb::class_<SPS>(
+      m, "SimplifyPathSettings",
+      "Settings for energy-aware shortcutting + collision-constrained L-BFGS smoothing.")
+      .def(nb::init<>(), "Create default simplify-path settings.")
+      .def_rw("max_shortcut_attempts", &SPS::max_shortcut_attempts,
+              "Random shortcut attempts in phase 1.")
+      .def_rw("edge_collision_samples", &SPS::edge_collision_samples,
+              "Geodesic samples per edge for collision checks.")
+      .def_rw("shortcut_seed", &SPS::shortcut_seed, "RNG seed for shortcut sampling.")
+      .def_rw("smooth_target_segments", &SPS::smooth_target_segments,
+              "Upsample resolution for the L-BFGS smoothing phase.")
+      .def_rw("max_iter_per_level", &SPS::max_iter_per_level, "Max L-BFGS iterations per level.")
+      .def_rw("grad_tol", &SPS::grad_tol, "Gradient infinity-norm convergence threshold.")
+      .def_rw("energy_tol", &SPS::energy_tol, "Relative energy-change convergence threshold.")
+      .def_rw("fd_epsilon", &SPS::fd_epsilon, "Finite-difference step for the gradient.")
+      .def_rw("lbfgs_memory", &SPS::lbfgs_memory, "L-BFGS history size.")
+      .def_rw("armijo_c", &SPS::armijo_c, "Armijo sufficient-decrease parameter.")
+      .def_rw("max_displacement", &SPS::max_displacement,
+              "Trust-region radius per waypoint (0 disables).")
+      .def_rw("verbose", &SPS::verbose, "Print per-iteration info to stderr.");
+
+  // --- SimplifyPathResult ---
+  using SPR = geodex::algorithm::SimplifyPathResult<Eigen::VectorXd>;
+  nb::class_<SPR>(m, "SimplifyPathResult", "Result of geodex.simplify_path.")
+      .def_ro("path", &SPR::path, "Simplified path including endpoints.")
+      .def_ro("energy", &SPR::energy, "Discrete energy of the result.")
+      .def_ro("distance", &SPR::distance, "Geodesic distance estimate sqrt(energy).")
+      .def_ro("vertices_removed", &SPR::vertices_removed,
+              "Vertices removed in the shortcutting phase.")
+      .def_ro("smooth_iterations", &SPR::smooth_iterations,
+              "L-BFGS iterations in the smoothing phase.")
+      .def_ro("collision_free", &SPR::collision_free,
+              "Whether the final path passed end-to-end collision validation.")
+      .def("__repr__", [](const SPR& r) {
+        return "SimplifyPathResult(distance=" + std::to_string(r.distance) +
+               ", path_size=" + std::to_string(r.path.size()) +
+               ", vertices_removed=" + std::to_string(r.vertices_removed) +
+               ", smooth_iterations=" + std::to_string(r.smooth_iterations) +
+               ", collision_free=" +
+               (r.collision_free ? std::string{"True"} : std::string{"False"}) + ")";
+      });
+
+  // --- simplify_path ---
+  m.def(
+      "simplify_path",
+      [](nb::object manifold_obj, ValidityFn validity_fn,
+         const std::vector<Eigen::VectorXd>& initial_path, SPS settings) {
+        const DynamicManifold manifold = extract_algo_manifold(manifold_obj);
+        return geodex::algorithm::simplify_path(manifold, validity_fn, initial_path, settings);
+      },
+      nb::arg("manifold"), nb::arg("validity_fn"), nb::arg("initial_path"),
+      nb::arg("settings") = SPS{},
+      "Simplify a collision-free path via energy-aware shortcutting + collision-constrained "
+      "L-BFGS smoothing.\n\n"
+      "Args:\n"
+      "    manifold: Any geodex manifold.\n"
+      "    validity_fn: Callable(q) -> bool, returns True if collision-free.\n"
+      "    initial_path: Collision-free path (>= 2 waypoints).\n"
+      "    settings: SimplifyPathSettings (optional).");
+
+  // --- PrecomputeMatrixLowerBoundSettings ---
+  using PMLBS = geodex::algorithm::PrecomputeMatrixLowerBoundSettings;
+  nb::class_<PMLBS>(
+      m, "PrecomputeMatrixLowerBoundSettings",
+      "Settings for `precompute_matrix_lower_bound` (Loewner-meet certificate via "
+      "constraint generation).")
+      .def(nb::init<>(), "Create default precompute settings.")
+      .def_rw("max_outer", &PMLBS::max_outer,
+              "Maximum outer constraint-generation iterations.")
+      .def_rw("tol", &PMLBS::tol, "Stop when lambda_min >= 1 - tol over the configuration space.")
+      .def_rw("n_starts_per_iter", &PMLBS::n_starts_per_iter,
+              "Multi-start seeds per outer iter (0 = auto: max(20, 10 * dim)).")
+      .def_rw("max_iters_per_start", &PMLBS::max_iters_per_start,
+              "Max gradient-descent iterations per start.")
+      .def_rw("grad_tol", &PMLBS::grad_tol,
+              "Gradient-norm convergence for inner gradient descent.")
+      .def_rw("fd_eps", &PMLBS::fd_eps,
+              "Finite-difference step for the lambda_min gradient.")
+      .def_rw("seed", &PMLBS::seed, "RNG seed for multi-start initial points.")
+      .def_rw("verbose", &PMLBS::verbose, "Print outer-iteration diagnostics to stderr.");
+
+  // --- PrecomputeMatrixLowerBoundResult ---
+  using PMLBR = geodex::algorithm::PrecomputeMatrixLowerBoundResult;
+  nb::class_<PMLBR>(m, "PrecomputeMatrixLowerBoundResult",
+                    "Result of `precompute_matrix_lower_bound`.")
+      .def_ro("M_lower", &PMLBR::M_lower, "Certified Loewner lower bound on M(q).")
+      .def_ro("lambda_min_certificate", &PMLBR::lambda_min_certificate,
+              "Final worst-case lambda_min(L^-1 M(q) L^-T).")
+      .def_ro("n_outer_iters", &PMLBR::n_outer_iters,
+              "Outer constraint-generation iterations executed.")
+      .def_ro("n_metric_evals", &PMLBR::n_metric_evals,
+              "Total M(q) evaluations across the precompute.")
+      .def_ro("converged", &PMLBR::converged,
+              "True when lambda_min_certificate >= 1 - tol.")
+      .def_ro("elapsed_ms", &PMLBR::elapsed_ms, "Wall-clock duration of the precompute (ms).")
+      .def("__repr__", [](const PMLBR& r) {
+        return "PrecomputeMatrixLowerBoundResult(lambda_min_certificate=" +
+               std::to_string(r.lambda_min_certificate) +
+               ", n_outer_iters=" + std::to_string(r.n_outer_iters) +
+               ", n_metric_evals=" + std::to_string(r.n_metric_evals) +
+               ", converged=" + (r.converged ? std::string{"True"} : std::string{"False"}) + ")";
+      });
+
+  // --- precompute_matrix_lower_bound ---
+  m.def(
+      "precompute_matrix_lower_bound",
+      [](PrecomputeManifold::MetricFn metric_fn, const Eigen::VectorXd& lo,
+         const Eigen::VectorXd& hi, PMLBS settings) {
+        const PrecomputeManifold manifold(std::move(metric_fn), lo, hi);
+        return geodex::algorithm::precompute_matrix_lower_bound(manifold, settings);
+      },
+      nb::arg("metric_fn"), nb::arg("lo"), nb::arg("hi"), nb::arg("settings") = PMLBS{},
+      "Compute a constant SPD Loewner lower bound on M(q) via constraint generation.\n\n"
+      "Args:\n"
+      "    metric_fn: Callable(q) -> np.ndarray returning the SPD metric tensor M(q).\n"
+      "    lo: Per-dimension lower bounds on the configuration space (np.ndarray, shape (d,)).\n"
+      "    hi: Per-dimension upper bounds on the configuration space (np.ndarray, shape (d,)).\n"
+      "    settings: PrecomputeMatrixLowerBoundSettings (optional).\n"
+      "Returns:\n"
+      "    PrecomputeMatrixLowerBoundResult with the certified bound and diagnostics.");
 }
