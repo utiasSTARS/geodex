@@ -20,6 +20,7 @@
 #include "manifold/se2.hpp"
 #include "manifold/sphere.hpp"
 #include "manifold/torus.hpp"
+#include "metrics/affine_combined.hpp"
 #include "metrics/constant_spd.hpp"
 #include "metrics/identity.hpp"
 #include "metrics/jacobi.hpp"
