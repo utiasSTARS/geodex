@@ -7,8 +7,8 @@
 #pragma once
 
 #include "algorithm/distance.hpp"
-#include "algorithm/heuristics.hpp"
 #include "algorithm/interpolation.hpp"
+#include "heuristics/heuristics.hpp"
 #include "core/concepts.hpp"
 #include "core/distance.hpp"
 #include "core/interpolation.hpp"
