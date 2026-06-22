@@ -40,6 +40,9 @@ endif()
 # Always-on built-in robot dynamics (precompiled CRBA mass matrices).
 include(cmake/robots.cmake)
 
+# Optional integrations
+include(cmake/integrations/pinocchio.cmake)
+
 # Tests
 option(BUILD_TESTING "Build tests" OFF)
 if(BUILD_TESTING)

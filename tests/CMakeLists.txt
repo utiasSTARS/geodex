@@ -9,6 +9,12 @@ FetchContent_Declare(
 set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
+# Canonical Panda / PR2 URDFs consumed by the Pinocchio and robots tests.
+set(GEODEX_PANDA_URDF_PATH
+    "${CMAKE_SOURCE_DIR}/data/robots/panda/urdf/panda.urdf")
+set(GEODEX_PR2_URDF_PATH
+    "${CMAKE_SOURCE_DIR}/data/robots/pr2/pr2.urdf")
+
 add_executable(test_concepts test_concepts.cpp)
 target_link_libraries(test_concepts PRIVATE geodex GTest::gtest_main)
 
@@ -96,4 +102,42 @@ if(BUILD_OMPL_EXAMPLES)
   add_executable(test_geodex_informed_sampling test_geodex_informed_sampling.cpp)
   target_link_libraries(test_geodex_informed_sampling PRIVATE geodex GTest::gtest_main ompl::ompl)
   gtest_discover_tests(test_geodex_informed_sampling)
+endif()
+
+if(GEODEX_PINOCCHIO)
+  add_executable(test_pinocchio_mass_matrix test_pinocchio_mass_matrix.cpp)
+  target_link_libraries(test_pinocchio_mass_matrix
+    PRIVATE geodex geodex_pinocchio GTest::gtest_main)
+  target_compile_definitions(test_pinocchio_mass_matrix PRIVATE
+    GEODEX_TEST_FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
+    GEODEX_PANDA_URDF="${GEODEX_PANDA_URDF_PATH}")
+  gtest_discover_tests(test_pinocchio_mass_matrix)
+
+  add_executable(test_pinocchio_jacobian test_pinocchio_jacobian.cpp)
+  target_link_libraries(test_pinocchio_jacobian
+    PRIVATE geodex geodex_pinocchio GTest::gtest_main)
+  target_compile_definitions(test_pinocchio_jacobian PRIVATE
+    GEODEX_TEST_FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
+    GEODEX_PANDA_URDF="${GEODEX_PANDA_URDF_PATH}")
+  gtest_discover_tests(test_pinocchio_jacobian)
+
+  add_executable(test_pinocchio_pullback test_pinocchio_pullback.cpp)
+  target_link_libraries(test_pinocchio_pullback
+    PRIVATE geodex geodex_pinocchio GTest::gtest_main)
+  target_compile_definitions(test_pinocchio_pullback PRIVATE
+    GEODEX_TEST_FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
+    GEODEX_PANDA_URDF="${GEODEX_PANDA_URDF_PATH}")
+  gtest_discover_tests(test_pinocchio_pullback)
+endif()
+
+if(GEODEX_PINOCCHIO)
+  # Parity test for geodex::robots::MassMatrix uses pinocchio::crba as oracle.
+  add_executable(test_robots_panda test_robots_panda.cpp)
+  target_link_libraries(test_robots_panda
+    PRIVATE geodex geodex_pinocchio GTest::gtest_main)
+  target_compile_definitions(test_robots_panda PRIVATE
+    GEODEX_TEST_FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
+    GEODEX_PANDA_URDF="${GEODEX_PANDA_URDF_PATH}"
+    GEODEX_PR2_URDF="${GEODEX_PR2_URDF_PATH}")
+  gtest_discover_tests(test_robots_panda)
 endif()
