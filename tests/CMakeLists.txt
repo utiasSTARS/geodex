@@ -68,6 +68,10 @@ add_executable(test_affine_combined_metric test_affine_combined_metric.cpp)
 target_link_libraries(test_affine_combined_metric PRIVATE geodex GTest::gtest_main)
 gtest_discover_tests(test_affine_combined_metric)
 
+add_executable(test_simplify_path test_simplify_path.cpp)
+target_link_libraries(test_simplify_path PRIVATE geodex GTest::gtest_main)
+gtest_discover_tests(test_simplify_path)
+
 if(BUILD_OMPL_EXAMPLES)
   add_executable(test_geodex_state_space test_geodex_state_space.cpp)
   # GTest must come before ompl::ompl so FetchContent headers take priority
