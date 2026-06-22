@@ -76,6 +76,12 @@ add_executable(test_precompute_matrix_lower_bound test_precompute_matrix_lower_b
 target_link_libraries(test_precompute_matrix_lower_bound PRIVATE geodex GTest::gtest_main)
 gtest_discover_tests(test_precompute_matrix_lower_bound)
 
+# Admissibility of the precompiled per-robot Loewner bounds vs the generated CRBA.
+# Links only geodex (geodex_robots comes transitively); no Pinocchio needed.
+add_executable(test_robots_mass_lower_bound test_robots_mass_lower_bound.cpp)
+target_link_libraries(test_robots_mass_lower_bound PRIVATE geodex GTest::gtest_main)
+gtest_discover_tests(test_robots_mass_lower_bound)
+
 if(BUILD_OMPL_EXAMPLES)
   add_executable(test_geodex_state_space test_geodex_state_space.cpp)
   # GTest must come before ompl::ompl so FetchContent headers take priority

@@ -37,6 +37,9 @@ if(BUILD_OMPL_EXAMPLES)
   find_package(ompl REQUIRED)
 endif()
 
+# Always-on built-in robot dynamics (precompiled CRBA mass matrices).
+include(cmake/robots.cmake)
+
 # Tests
 option(BUILD_TESTING "Build tests" OFF)
 if(BUILD_TESTING)
