@@ -1,0 +1,10 @@
+# Box enveloping the UR5 workspace; any pose collides.
+world:
+  collision_objects:
+    - id: enclosure
+      primitive_poses:
+        - position: [0.0, 0.0, 0.5]
+          orientation: [0.0, 0.0, 0.0, 1.0]
+      primitives:
+        - type: box
+          dimensions: [4.0, 4.0, 2.0]

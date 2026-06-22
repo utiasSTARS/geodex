@@ -141,3 +141,21 @@ if(GEODEX_PINOCCHIO)
     GEODEX_PR2_URDF="${GEODEX_PR2_URDF_PATH}")
   gtest_discover_tests(test_robots_panda)
 endif()
+
+if(GEODEX_VAMP)
+  foreach(_robot panda ur5 baxter fetch pr2)
+    add_executable(test_vamp_${_robot} test_vamp_${_robot}.cpp)
+    target_link_libraries(test_vamp_${_robot} PRIVATE geodex GTest::gtest_main)
+    target_compile_definitions(test_vamp_${_robot} PRIVATE
+      GEODEX_TEST_FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+    gtest_discover_tests(test_vamp_${_robot})
+  endforeach()
+
+  # Only test_vamp_panda needs the canonical Panda URDF.
+  target_compile_definitions(test_vamp_panda PRIVATE
+    GEODEX_PANDA_URDF="${GEODEX_PANDA_URDF_PATH}")
+
+  if(GEODEX_PINOCCHIO)
+    target_compile_definitions(test_vamp_panda PRIVATE GEODEX_TEST_HAS_PINOCCHIO)
+  endif()
+endif()

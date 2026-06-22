@@ -42,6 +42,7 @@ include(cmake/robots.cmake)
 
 # Optional integrations
 include(cmake/integrations/pinocchio.cmake)
+include(cmake/integrations/vamp.cmake)
 
 # Tests
 option(BUILD_TESTING "Build tests" OFF)

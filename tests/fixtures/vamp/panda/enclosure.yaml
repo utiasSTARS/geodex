@@ -1,0 +1,11 @@
+# Huge box centered at the robot base, large enough to envelop the entire
+# Panda workspace. Any configuration must collide with this box.
+world:
+  collision_objects:
+    - id: enclosure
+      primitive_poses:
+        - position: [0.0, 0.0, 0.5]
+          orientation: [0.0, 0.0, 0.0, 1.0]
+      primitives:
+        - type: box
+          dimensions: [4.0, 4.0, 2.0]

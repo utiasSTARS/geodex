@@ -1,0 +1,11 @@
+# Huge box centered at the PR2 base, large enough to envelop the dual-arm
+# workspace. Any configuration must collide with this box.
+world:
+  collision_objects:
+    - id: enclosure
+      primitive_poses:
+        - position: [0.0, 0.0, 0.9]
+          orientation: [0.0, 0.0, 0.0, 1.0]
+      primitives:
+        - type: box
+          dimensions: [4.0, 4.0, 2.8]
