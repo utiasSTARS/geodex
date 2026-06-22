@@ -3,18 +3,24 @@
 
 #pragma once
 
+#include <atomic>
+#include <cstdint>
+#include <limits>
+#include <memory>
 #include <optional>
+#include <vector>
 
 #include <ompl/base/OptimizationObjective.h>
 #include <ompl/base/SpaceInformation.h>
+#include <ompl/base/spaces/RealVectorBounds.h>
 
-#include "geodex/algorithm/heuristics.hpp"
+#include "geodex/heuristics/euclidean.hpp"
+#include "geodex/integration/ompl/cost_bound_feedback.hpp"
 #include "geodex/integration/ompl/geodex_informed_sampler.hpp"
 #include "geodex/integration/ompl/geodex_state_space.hpp"
 
 namespace geodex::integration::ompl {
 
-using geodex::EuclideanHeuristic;
 using geodex::RiemannianManifold;
 
 namespace ob = ::ompl::base;
@@ -36,8 +42,8 @@ namespace ob = ::ompl::base;
 ///
 /// @tparam ManifoldT A type satisfying `geodex::RiemannianManifold`.
 /// @tparam HeuristicT Callable with signature `double(Point, Point)`. Defaults to
-///         `EuclideanHeuristic` which computes \f$ \|a - b\|_2 \f$.
-template <typename ManifoldT, typename HeuristicT = EuclideanHeuristic>
+///         `geodex::heuristics::Euclidean` which computes \f$ \|a - b\|_2 \f$.
+template <typename ManifoldT, typename HeuristicT = geodex::heuristics::Euclidean>
 class GeodexOptimizationObjective : public ob::OptimizationObjective {
  public:
   using Point = typename ManifoldT::Point;   ///< Manifold point type.
@@ -49,7 +55,10 @@ class GeodexOptimizationObjective : public ob::OptimizationObjective {
   /// @param heuristic Admissible heuristic functor.
   GeodexOptimizationObjective(const ob::SpaceInformationPtr& si, const Point& goal_coords,
                               HeuristicT heuristic = HeuristicT{})
-      : ob::OptimizationObjective(si), goal_coords_(goal_coords), heuristic_(std::move(heuristic)) {
+      : ob::OptimizationObjective(si),
+        goal_coords_(goal_coords),
+        heuristic_(std::move(heuristic)),
+        feedback_(std::make_shared<CostBoundFeedback>()) {
     description_ = "Geodex geodesic distance with admissible heuristic";
     setCostToGoHeuristic(
         [this](const ob::State* s, const ob::Goal*) { return this->costToGoHeuristic(s); });
@@ -67,11 +76,30 @@ class GeodexOptimizationObjective : public ob::OptimizationObjective {
   /// @brief Whether integrated-arc cost is enabled.
   bool usesIntegratedArcCost() const { return integrated_arc_cost_; }
 
+  /// @brief Enable or disable the sampler's auto-refresh of the cost-bound
+  /// channel. Defaults to enabled.
+  ///
+  /// @details When enabled (default), the sampler chains onto pdef's
+  /// intermediate-solution callback and also rechecks `pdef->getSolutionCount()`
+  /// at every `sampleUniform`, recomputing `heuristic_path_cost` and
+  /// `greedy_cost` from the latest exact solution (gated by a 5%
+  /// relative-improvement threshold). When disabled, the sampler installs no
+  /// callback and skips the count check; the caller is responsible for keeping
+  /// the bounds up-to-date via `setHeuristicPathCost` / `setGreedyCost`.
+  /// Call this *before* the planner allocates its sampler (i.e. before `ss.solve()`).
+  void setSelfRefreshEnabled(const bool enabled) const {
+    feedback_->self_refresh_enabled = enabled;
+  }
+
+  /// @brief Whether the sampler will auto-refresh the cost bounds.
+  auto getSelfRefreshEnabled() const -> bool { return feedback_->self_refresh_enabled; }
+
   /// @brief State cost (zero for path-length objectives).
   ob::Cost stateCost(const ob::State* /*s*/) const override { return ob::Cost(0.0); }
 
   /// @brief Motion cost: endpoint distance by default, arc cost when enabled.
   ob::Cost motionCost(const ob::State* s1, const ob::State* s2) const override {
+    motion_cost_calls_.fetch_add(1, std::memory_order_relaxed);
     if (integrated_arc_cost_) {
       if (auto cost = tryArcCost(s1, s2); cost.has_value()) {
         return ob::Cost(*cost);
@@ -79,6 +107,117 @@ class GeodexOptimizationObjective : public ob::OptimizationObjective {
     }
     return ob::Cost(si_->distance(s1, s2));
   }
+
+  /// @brief Total number of `motionCost` invocations since construction.
+  auto getMotionCostCallCount() const -> std::uint64_t {
+    return motion_cost_calls_.load(std::memory_order_relaxed);
+  }
+
+  /// @brief Sampling stats from the most recently allocated informed sampler.
+  /// @details Returns a default-constructed `SamplingStats` if the sampler has
+  /// been deallocated by OMPL or no sampler has yet been allocated.
+  auto getLastSamplerStats() const -> SamplingStats {
+    if (auto sampler = last_sampler_.lock()) {
+      return sampler->getSamplingStats();
+    }
+    return {};
+  }
+
+  /// @name Greedy informed sampling
+  /// @{
+  ///
+  /// @details Tightening of the informed-set cost bound using the
+  /// "maximum heuristic cost along the current solution path" rule
+  /// from the G-RRT* algorithm.
+  ///
+  /// `setGreedyBiasingRatio(r)` sets the mixture probability between the full
+  /// PHS and the tighter greedy ellipsoid (`r = 0` disables, `r = 1` always
+  /// uses the greedy bound). `setGreedyCost(c)` injects the per-iteration
+  /// bound; `computeGreedyCost(path)` is the convenience that produces it
+  /// from a sequence of solution-path states.
+  ///
+  /// @see Phone Thiha Kyaw, Anh Vu Le, Rajesh Elara Mohan, Jonathan Kelly.
+  ///   "Greedy Heuristics for Sampling-Based Motion Planning in
+  ///   High-Dimensional State Spaces." arXiv:2405.03411 (2024).
+
+  /// @brief Set the fraction of samples drawn from the greedy ellipsoid.
+  /// @param ratio Value in `[0, 1]`. `0` disables greedy biasing.
+  void setGreedyBiasingRatio(const double ratio) const {
+    feedback_->greedy_biasing_ratio = ratio;
+  }
+
+  /// @brief Get the current greedy biasing ratio.
+  auto getGreedyBiasingRatio() const -> double { return feedback_->greedy_biasing_ratio; }
+
+  /// @brief Set the greedy cost bound.
+  /// @details Typically the maximum heuristic cost along the current solution
+  /// path: \f$ \max_{p \in \text{path}} [h(s, p) + h(p, g)] \f$. Visible to
+  /// the next `sampleUniform` call on every sampler the objective has
+  /// allocated.
+  void setGreedyCost(const double cost) const { feedback_->greedy_cost = cost; }
+
+  /// @brief Get the current greedy cost bound.
+  auto getGreedyCost() const -> double { return feedback_->greedy_cost; }
+
+  /// @brief Compute the greedy cost from a sequence of solution-path states.
+  /// @details Returns \f$ \max_{p \in \text{path}} [h(s_0, p) + h(p, s_g)] \f$
+  /// where \f$ s_0 \f$ is the first state and \f$ s_g \f$ the last.
+  /// Returns `+inf` for an empty path.
+  template <typename StatePtr>
+  auto computeGreedyCost(const std::vector<StatePtr>& path_states) const -> double {
+    if (path_states.empty()) return std::numeric_limits<double>::infinity();
+    // Materialize copies of the endpoints (used in every loop iteration); inner
+    // points stay as Eigen::Map views since they're consumed once per iter.
+    const Point start_pt = path_states.front()->template as<StateType>()->asEigen();
+    const Point goal_pt = path_states.back()->template as<StateType>()->asEigen();
+    double c_max = -std::numeric_limits<double>::infinity();
+    for (const auto& sp : path_states) {
+      const auto pt = sp->template as<StateType>()->asEigen();  // view, no copy
+      const double cost = heuristic_(start_pt, pt) + heuristic_(pt, goal_pt);
+      if (cost > c_max) c_max = cost;
+    }
+    return c_max;
+  }
+
+  /// @}
+  /// @name Heuristic-path-cost tightening
+  /// @{
+  ///
+  /// @details Tightening of the informed-set cost bound using the
+  /// admissibility identity \f$ \sum_i h(p_i, p_{i+1}) \le c_{\text{best}} \f$,
+  /// which holds for any admissible \f$ h \f$.
+  /// `setHeuristicPathCost(c)` injects that sum;
+  /// `computeHeuristicPathCost(path)` produces it from a state sequence. The
+  /// sampler consumes the value via `CostBoundFeedback` in subsequent
+  /// `sampleUniform` calls and uses it as the effective cost bound when finite.
+
+  /// @brief Set the heuristic-path-cost bound.
+  /// @details \f$ \sum_i h(p_i, p_{i+1}) \f$ along the current solution path,
+  /// always \f$ \le c_{\text{best}} \f$ for admissible \f$ h \f$. The sampler
+  /// uses this as the effective cost bound when finite.
+  void setHeuristicPathCost(const double cost) const {
+    feedback_->heuristic_path_cost = cost;
+  }
+
+  /// @brief Get the current heuristic-path-cost bound.
+  auto getHeuristicPathCost() const -> double { return feedback_->heuristic_path_cost; }
+
+  /// @brief Compute the heuristic path cost from a sequence of states.
+  /// @details Returns \f$ \sum_i h(p_i, p_{i+1}) \f$. Returns `+inf` for paths
+  /// with fewer than two states.
+  template <typename StatePtr>
+  auto computeHeuristicPathCost(const std::vector<StatePtr>& path_states) const -> double {
+    if (path_states.size() < 2) return std::numeric_limits<double>::infinity();
+    double total = 0.0;
+    for (std::size_t i = 0; i + 1 < path_states.size(); ++i) {
+      const auto a = path_states[i]->template as<StateType>()->asEigen();      // view
+      const auto b = path_states[i + 1]->template as<StateType>()->asEigen();  // view
+      total += heuristic_(a, b);
+    }
+    return total;
+  }
+
+  /// @}
 
   /// @brief Admissible heuristic for motion cost between two states.
   ob::Cost motionCostHeuristic(const ob::State* s1, const ob::State* s2) const override {
@@ -88,10 +227,22 @@ class GeodexOptimizationObjective : public ob::OptimizationObjective {
   }
 
   /// @brief Allocate a direct informed sampler for this objective.
+  ///
+  /// @details Forwards the underlying `GeodexStateSpace`'s coordinate bounds
+  /// (when present) so the MatrixLowerBound branch can use the clipped-AABB
+  /// strategy. For other state-space types or unbounded ones, the sampler
+  /// receives empty bounds and falls back to PHS-with-rejection sampling.
   ob::InformedSamplerPtr allocInformedStateSampler(const ob::ProblemDefinitionPtr& probDefn,
                                                    unsigned int maxNumberCalls) const override {
-    return std::make_shared<GeodexDirectInfSampler<HeuristicT>>(probDefn, maxNumberCalls,
-                                                                heuristic_);
+    ob::RealVectorBounds bounds(0);
+    const auto* state_space = si_->getStateSpace().get();
+    if (const auto* gss = dynamic_cast<const GeodexStateSpace<ManifoldT>*>(state_space)) {
+      bounds = gss->getBounds();
+    }
+    auto sampler = std::make_shared<GeodexDirectInfSampler<HeuristicT>>(
+        probDefn, maxNumberCalls, heuristic_, bounds, feedback_);
+    last_sampler_ = sampler;
+    return sampler;
   }
 
  private:
@@ -119,7 +270,10 @@ class GeodexOptimizationObjective : public ob::OptimizationObjective {
 
   Point goal_coords_;
   HeuristicT heuristic_;
+  std::shared_ptr<CostBoundFeedback> feedback_;
   bool integrated_arc_cost_ = false;
+  mutable std::atomic<std::uint64_t> motion_cost_calls_{0};
+  mutable std::weak_ptr<GeodexDirectInfSampler<HeuristicT>> last_sampler_;
 };
 
 }  // namespace geodex::integration::ompl

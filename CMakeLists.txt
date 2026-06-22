@@ -31,6 +31,12 @@ target_include_directories(geodex INTERFACE
 )
 target_compile_features(geodex INTERFACE cxx_std_20)
 
+# OMPL (shared by tests and examples when BUILD_OMPL_EXAMPLES is ON)
+option(BUILD_OMPL_EXAMPLES "Build OMPL integration examples (requires OMPL)" OFF)
+if(BUILD_OMPL_EXAMPLES)
+  find_package(ompl REQUIRED)
+endif()
+
 # Tests
 option(BUILD_TESTING "Build tests" OFF)
 if(BUILD_TESTING)
@@ -42,6 +48,11 @@ endif()
 option(BUILD_EXAMPLES "Build examples" OFF)
 if(BUILD_EXAMPLES)
   add_subdirectory(examples)
+endif()
+
+# OMPL integration examples
+if(BUILD_OMPL_EXAMPLES)
+  add_subdirectory(examples/ompl)
 endif()
 
 # Python bindings

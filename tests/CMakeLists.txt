@@ -86,4 +86,8 @@ if(BUILD_OMPL_EXAMPLES)
   add_executable(test_path_resampling test_path_resampling.cpp)
   target_link_libraries(test_path_resampling PRIVATE geodex GTest::gtest_main ompl::ompl)
   gtest_discover_tests(test_path_resampling)
+
+  add_executable(test_geodex_informed_sampling test_geodex_informed_sampling.cpp)
+  target_link_libraries(test_geodex_informed_sampling PRIVATE geodex GTest::gtest_main ompl::ompl)
+  gtest_discover_tests(test_geodex_informed_sampling)
 endif()
