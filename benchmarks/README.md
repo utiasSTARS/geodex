@@ -20,6 +20,8 @@ Google Benchmark is fetched automatically via CMake FetchContent.
 ./build/benchmarks/bench_metrics
 ./build/benchmarks/bench_retractions
 ./build/benchmarks/bench_collision
+./build/benchmarks/bench_ompl_interpolation   # built when -DBUILD_OMPL_EXAMPLES=ON
+./build/benchmarks/bench_robots               # built when -DGEODEX_PINOCCHIO=ON
 
 # JSON output for regression tracking
 ./build/benchmarks/bench_manifold_ops --benchmark_format=json --benchmark_out=results/bench_manifold_ops.json
@@ -37,6 +39,7 @@ Google Benchmark is fetched automatically via CMake FetchContent.
 | `bench_metrics.cpp` | `inner` and `norm` for all 7 metric types; ConfigurationSpace overhead vs bare manifold |
 | `bench_retractions.cpp` | SE(2) and Sphere retraction speed; Sphere projection accuracy vs exponential map |
 | `bench_collision.cpp` | Collision primitives: circle/rectangle SDF eval and scaling, distance grid single/batch lookup, polygon footprint transform, footprint grid checker (early-out vs full check); fast math: `fast_exp` vs `std::exp`, `sincos` vs separate trig |
+| `bench_robots.cpp` | `geodex_robots` precompiled CRBA vs Pinocchio runtime CRBA on Panda 7-DoF; layered drill-down (raw CppAD::CG symbol, `extern "C"` wrapper, public `MassMatrix`); composite call shapes (`KineticEnergyMetric::inner`, `inner_matrix`, `distance_midpoint`) |
 | `bench_ompl_interpolation.cpp` | OMPL `GeodexStateSpace::interpolate()` with discrete geodesic cache; cache hot/cold; motion validation overhead (requires OMPL) |
 
 ## Reference Results
@@ -273,6 +276,95 @@ with strong anisotropy should increase `max_steps` via `setInterpolationSettings
 - Any manifold with identity metric and matching retraction
 - Flat spaces (Euclidean, Torus) with constant metrics — geodesics are straight lines
 
+### Robot CRBA — `geodex_robots` (precompiled) vs Pinocchio (Panda 7-DoF)
+
+Benchmark: `bench_robots` — compares the precompiled-CRBA hot path against
+Pinocchio's runtime CRBA for the manipulator planning
+(single CRBA eval, `KineticEnergyMetric::inner`, `KineticEnergyMetric::inner_matrix`, `distance_midpoint`).
+
+Machine: Apple M2 (8-core, arm64), macOS 15.3.1, Apple clang, `-O2` (Release).
+SIMD trig: Apple Accelerate `vvsincos` (NEON via vMathLib).
+Storage: `MassMatrix<Robot::Panda>` — fully fixed-size `Eigen::Matrix<double, 7, 7>` storage, compile-time templated by the `Robot` enum.
+Date: 2026-05-08.
+Run flags: `--benchmark_min_time=2s --benchmark_repetitions=3 --benchmark_report_aggregates_only=true`. CPU time medians reported.
+
+**Single CRBA call** (mass matrix evaluation):
+
+| Benchmark | Pinocchio | geodex_robots | Speedup |
+|-----------|:---:|:---:|:---:|
+| `BM_CRBA_Panda` | 785 ns | **345 ns** | 2.28× |
+
+**Layered drill-down** on geodex_robots (each layer adds one more level of
+overhead on top of the raw symbolic math):
+
+| Layer | Time |
+|---|:---:|
+| `BM_CRBA_Panda_RawForwardZero` (CppAD::CG-generated symbol, no wrapper) | 327 ns |
+| `BM_CRBA_Panda_ExternCWrapper` (`extern "C" panda_crba` with pointer arrays) | 325 ns |
+| `BM_CRBA_Panda_Robots` (public `MassMatrix::operator()`, mirrors into Eigen) | 345 ns |
+
+The raw forward_zero is the actual CppAD::CG-generated math (NEON-vectorized
+trig prelude via Accelerate `vvsincos`). The extern-C wrapper adds essentially
+zero overhead — same-TU direct call. The public `MassMatrix` layer adds
+~20 ns for the upper-triangle → fixed-size `Matrix<double, 7, 7>` mirror.
+
+**Composite call shapes** (what the planner pipeline actually invokes):
+
+| Benchmark | Pinocchio | geodex_robots | Speedup |
+|---|:---:|:---:|:---:|
+| `BM_KineticInner_Panda` (one CRBA + dot product) | 908 ns | **350 ns** | 2.59× |
+| `BM_KineticInnerMatrix_Panda` (one CRBA + matmul) | 1,655 ns | **979 ns** | 1.69× |
+| `BM_DistanceMidpoint_Panda` (1 exp + 3 log under KineticEnergy) | 823 ns | **342 ns** | 2.41× |
+
+With fixed-size storage end-to-end, `KineticInner` lands within 5 ns of the
+public CRBA call itself — Eigen's compile-time-unrolled 7×7 matvec + dot
+collapses to ~10 cycles on NEON, essentially free on top of the CRBA cost.
+This is the hot path for Panda motion validation under the kinetic-energy
+metric in G-RRT*: the 2.41× `distance_midpoint` speedup compounds across
+every rewire iteration inside the planner's time budget.
+
+#### Linux x86_64 reference
+
+Machine: Intel Core i7-10875H (8-core / 16-thread, x86_64), Linux 6.17, GCC 13.3, `-O2` (Release).
+SIMD trig: glibc libmvec (`_ZGVdN4v_sin` / `_ZGVdN4v_cos`, AVX2).
+Date: 2026-05-08.
+Run flags: same as M2 (`--benchmark_min_time=2s --benchmark_repetitions=3 --benchmark_report_aggregates_only=true`). CPU time medians reported (CPU scaling was enabled; CV ≤ 1.4% across all rows).
+
+**Single CRBA call** (mass matrix evaluation):
+
+| Benchmark | Pinocchio | geodex_robots | Speedup |
+|-----------|:---:|:---:|:---:|
+| `BM_CRBA_Panda` | 592 ns | **198 ns** | 2.99× |
+
+**Layered drill-down** on geodex_robots:
+
+| Layer | Time |
+|---|:---:|
+| `BM_CRBA_Panda_RawForwardZero` (CppAD::CG-generated symbol, no wrapper) | 194 ns |
+| `BM_CRBA_Panda_ExternCWrapper` (`extern "C" panda_crba` with pointer arrays) | 192 ns |
+| `BM_CRBA_Panda_Robots` (public `MassMatrix::operator()`, mirrors into Eigen) | 198 ns |
+
+The first two layers are within the noise floor of each other (CV ≤ 1.4%); the
+public `MassMatrix` layer adds only ~4 ns over the raw symbol on x86 (vs ~20 ns
+on M2), because Eigen's 7×7 mirror unrolls into AVX2 stores.
+
+**Composite call shapes** (what the planner pipeline actually invokes):
+
+| Benchmark | Pinocchio | geodex_robots | Speedup |
+|---|:---:|:---:|:---:|
+| `BM_KineticInner_Panda` (one CRBA + dot product) | 610 ns | **206 ns** | 2.96× |
+| `BM_KineticInnerMatrix_Panda` (one CRBA + matmul) | 1,071 ns | **491 ns** | 2.18× |
+| `BM_DistanceMidpoint_Panda` (1 exp + 3 log under KineticEnergy) | 610 ns | **223 ns** | 2.74× |
+
+`KineticInner` lands within 8 ns of the public CRBA call — same story as M2:
+Eigen's compile-time-unrolled 7×7 matvec + dot is essentially free on top of
+the CRBA cost on AVX2. The `distance_midpoint` 2.74× speedup is the hot path
+for Panda motion validation under the kinetic-energy metric in G-RRT*.
+
+Confirmed: M2 `RawForwardZero` (327 ns) is ~70% above the x86 figure (194 ns)
+— the gap is in Apple clang's NEON codegen of the straight-line CppAD::CG
+output relative to GCC + libmvec.
+
 ### Collision Primitives and Fast Math (ns per call)
 
 Benchmark: `bench_collision` — measures all collision SDF evaluation, distance grid
@@ -411,6 +503,16 @@ SIMD efficiency issue — the vectorization code itself is equally efficient on 
 
 ## Key Findings
 
+- **Precompiled CRBA + NEON `vvsincos` + fixed-size storage is 2.4× faster
+  than Pinocchio runtime on M2.** The CppAD::CG-generated panda symbol's trig
+  prelude routes through Apple Accelerate `vvsincos` (NEON 2-wide), and
+  `MassMatrix<Robot::Panda>` keeps everything in `Eigen::Matrix<double, 7, 7>`
+  — no `MatrixXd` allocations, Eigen specializes the 7×7 matvec/dot at compile
+  time. Public `MassMatrix::operator()` clocks 345 ns vs Pinocchio's 785 ns
+  (2.28×); `distance_midpoint` hits 342 ns (2.41× over Pinocchio); `KineticInner`
+  is essentially free on top of the CRBA call (350 vs 345 ns — the matvec
+  collapses to ~10 cycles). Use these as the budget for any planner inner
+  loop that calls into the kinetic-energy metric on Panda.
 - **OMPL discrete geodesic interpolation is a net win for anisotropic
   metrics.** The 2.1x overhead on per-edge motion validation (3.8 µs vs 1.8 µs)
   is negligible compared to the path quality improvement: 2.9x shorter paths and

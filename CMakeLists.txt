@@ -63,6 +63,12 @@ if(BUILD_OMPL_EXAMPLES)
   add_subdirectory(examples/manipulator_planning)
 endif()
 
+# Benchmarks
+option(BUILD_BENCHMARKS "Build performance benchmarks" OFF)
+if(BUILD_BENCHMARKS)
+  add_subdirectory(benchmarks)
+endif()
+
 # Python bindings
 option(BUILD_PYTHON_BINDINGS "Build Python bindings via nanobind" OFF)
 if(BUILD_PYTHON_BINDINGS)
