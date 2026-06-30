@@ -189,19 +189,21 @@ template <typename ManifoldT>
 class GeodexState : public ob::State {
  public:
   double* values = nullptr;  ///< Raw coordinate array (owned by the state space).
+  unsigned int dim = 0;      ///< Runtime ambient dimension; required for dynamic-size Point types.
 
   /// @brief Read-only Eigen map of the state coordinates.
+  /// @details Returns an `Eigen::Map<const Vector>` view onto `values`. The
+  /// view is non-owning and read-only by construction; mutation must go
+  /// through the raw `values` array (or an explicitly-constructed
+  /// `Eigen::Map<Vector>`) at the call site that needs it.
   auto asEigen() const {
     using Point = typename ManifoldT::Point;
     constexpr int Dim = Point::SizeAtCompileTime;
-    return Eigen::Map<const Eigen::Vector<double, Dim>>(values);
-  }
-
-  /// @brief Mutable Eigen map of the state coordinates.
-  auto asEigen() {
-    using Point = typename ManifoldT::Point;
-    constexpr int Dim = Point::SizeAtCompileTime;
-    return Eigen::Map<Eigen::Vector<double, Dim>>(values);
+    if constexpr (Dim == Eigen::Dynamic) {
+      return Eigen::Map<const Eigen::Vector<double, Dim>>(values, dim);
+    } else {
+      return Eigen::Map<const Eigen::Vector<double, Dim>>(values);
+    }
   }
 };
 
@@ -546,6 +548,7 @@ class GeodexStateSpace : public ob::StateSpace {
   ob::State* allocState() const override {
     auto* s = new StateType();
     s->values = new double[ambient_dim_];
+    s->dim = ambient_dim_;
     return s;
   }
 

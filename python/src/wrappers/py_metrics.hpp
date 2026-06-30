@@ -187,6 +187,70 @@ class PyWeightedMetric {
   double alpha_;
 };
 
+// --- AffineCombinedMetric (dynamic-arity) ---
+
+/// Dynamic-arity positive linear combination of metric policies. Mirrors the
+/// semantics of the C++ `geodex::AffineCombinedMetric<Ms...>` (variadic) but
+/// dispatches at runtime over a vector of type-erased `DynamicMetric` summands
+/// — the only form expressible from Python without per-arity binding.
+class PyAffineCombinedMetric {
+ public:
+  PyAffineCombinedMetric(std::vector<DynamicMetric> bases, std::vector<double> coeffs)
+      : bases_(std::move(bases)), coeffs_(std::move(coeffs)) {
+    if (bases_.size() != coeffs_.size()) {
+      throw std::invalid_argument(
+          "AffineCombinedMetric: metrics and coeffs must have matching length.");
+    }
+    if (bases_.empty()) {
+      throw std::invalid_argument("AffineCombinedMetric: requires at least one summand.");
+    }
+    bool any_positive = false;
+    for (const double c : coeffs_) {
+      if (c < 0.0) {
+        throw std::invalid_argument(
+            "AffineCombinedMetric: coefficients must be non-negative.");
+      }
+      if (c > 0.0) any_positive = true;
+    }
+    if (!any_positive) {
+      throw std::invalid_argument(
+          "AffineCombinedMetric: at least one coefficient must be > 0.");
+    }
+  }
+
+  double inner(const Eigen::VectorXd& p, const Eigen::VectorXd& u, const Eigen::VectorXd& v) const {
+    double sum = 0.0;
+    for (std::size_t k = 0; k < bases_.size(); ++k) {
+      sum += coeffs_[k] * bases_[k].inner(p, u, v);
+    }
+    return sum;
+  }
+
+  double norm(const Eigen::VectorXd& p, const Eigen::VectorXd& v) const {
+    return std::sqrt(inner(p, v, v));
+  }
+
+  std::size_t size() const { return bases_.size(); }
+  const std::vector<double>& coeffs() const { return coeffs_; }
+
+  DynamicMetric to_dynamic_metric() const {
+    auto shared = std::make_shared<PyAffineCombinedMetric>(*this);
+    return DynamicMetric{[shared](const Eigen::VectorXd& p, const Eigen::VectorXd& u,
+                                  const Eigen::VectorXd& v) { return shared->inner(p, u, v); },
+                         [shared](const Eigen::VectorXd& p, const Eigen::VectorXd& v) {
+                           return shared->norm(p, v);
+                         }};
+  }
+
+  std::string repr() const {
+    return "AffineCombinedMetric(arity=" + std::to_string(bases_.size()) + ")";
+  }
+
+ private:
+  std::vector<DynamicMetric> bases_;
+  std::vector<double> coeffs_;
+};
+
 // --- ClearanceMetric ---
 
 using SDFFn = std::function<double(const Eigen::VectorXd&)>;

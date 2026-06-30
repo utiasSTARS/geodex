@@ -114,6 +114,12 @@ class Euclidean {
     hi_ = hi;
   }
 
+  /// @brief Lower per-dimension sampling bound.
+  const Eigen::VectorXd& lo() const { return lo_; }
+
+  /// @brief Upper per-dimension sampling bound.
+  const Eigen::VectorXd& hi() const { return hi_; }
+
   /// @brief Return the dimension of the space.
   int dim() const { return dim_; }
 

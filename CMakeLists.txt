@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(geodex VERSION 0.1.1 LANGUAGES CXX)
+project(geodex VERSION 0.2.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -31,6 +31,19 @@ target_include_directories(geodex INTERFACE
 )
 target_compile_features(geodex INTERFACE cxx_std_20)
 
+# OMPL (shared by tests and examples when BUILD_OMPL_EXAMPLES is ON)
+option(BUILD_OMPL_EXAMPLES "Build OMPL integration examples (requires OMPL)" OFF)
+if(BUILD_OMPL_EXAMPLES)
+  find_package(ompl REQUIRED)
+endif()
+
+# Always-on built-in robot dynamics (precompiled CRBA mass matrices).
+include(cmake/robots.cmake)
+
+# Optional integrations
+include(cmake/integrations/pinocchio.cmake)
+include(cmake/integrations/vamp.cmake)
+
 # Tests
 option(BUILD_TESTING "Build tests" OFF)
 if(BUILD_TESTING)
@@ -42,6 +55,18 @@ endif()
 option(BUILD_EXAMPLES "Build examples" OFF)
 if(BUILD_EXAMPLES)
   add_subdirectory(examples)
+endif()
+
+# OMPL integration examples
+if(BUILD_OMPL_EXAMPLES)
+  add_subdirectory(examples/ompl)
+  add_subdirectory(examples/manipulator_planning)
+endif()
+
+# Benchmarks
+option(BUILD_BENCHMARKS "Build performance benchmarks" OFF)
+if(BUILD_BENCHMARKS)
+  add_subdirectory(benchmarks)
 endif()
 
 # Python bindings

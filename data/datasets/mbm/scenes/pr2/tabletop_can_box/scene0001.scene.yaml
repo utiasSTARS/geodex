@@ -1,0 +1,72 @@
+id: mbm/pr2/tabletop_can_box/scene0001
+name: tabletop_can_box_0001
+robot_model_name: pr2
+frame_id: world
+world:
+  collision_objects:
+  - id: table
+    primitives:
+    - type: box
+      dimensions:
+      - 0.8
+      - 1.0
+      - 0.04
+    primitive_poses:
+    - position:
+      - 0.7
+      - 0.0
+      - 0.73
+      orientation:
+      - 0
+      - 0
+      - 0
+      - 1
+  - id: can_right
+    primitives:
+    - type: cylinder
+      dimensions:
+      - 0.12
+      - 0.03
+    primitive_poses:
+    - position:
+      - 0.55
+      - -0.2
+      - 0.81
+      orientation:
+      - 0
+      - 0
+      - 0
+      - 1
+  - id: can_left
+    primitives:
+    - type: cylinder
+      dimensions:
+      - 0.12
+      - 0.03
+    primitive_poses:
+    - position:
+      - 0.55
+      - 0.2
+      - 0.81
+      orientation:
+      - 0
+      - 0
+      - 0
+      - 1
+  - id: box_center
+    primitives:
+    - type: box
+      dimensions:
+      - 0.06
+      - 0.06
+      - 0.06
+    primitive_poses:
+    - position:
+      - 0.75
+      - 0.0
+      - 0.78
+      orientation:
+      - 0
+      - 0
+      - 0
+      - 1

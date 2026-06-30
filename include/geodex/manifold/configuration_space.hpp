@@ -128,6 +128,20 @@ class ConfigurationSpace {
   /// @brief Access the metric.
   const MetricT& metric() const { return metric_; }
 
+  /// @brief Forward the base manifold's lower sampling bound when available.
+  template <typename B = BaseManifoldT>
+    requires requires(const B& b) { b.lo(); }
+  auto lo() const {
+    return base_.lo();
+  }
+
+  /// @brief Forward the base manifold's upper sampling bound when available.
+  template <typename B = BaseManifoldT>
+    requires requires(const B& b) { b.hi(); }
+  auto hi() const {
+    return base_.hi();
+  }
+
  private:
   BaseManifoldT base_;
   MetricT metric_;

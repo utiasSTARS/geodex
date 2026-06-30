@@ -1,0 +1,30 @@
+id: mbm/panda/panda_arm/table_pick/problem0002
+dataset: mbm
+generated_by: geodex_mbm_import
+source:
+  request: raw/panda/table_pick_panda/request0002.yaml
+  scene: raw/panda/table_pick_panda/scene0002.yaml
+robot: panda
+planning_group: panda_arm
+scene: ../../../../scenes/panda/table_pick/scene0002.scene.yaml
+allowed_planning_time: 60
+num_planning_attempts: 2
+start:
+  joints:
+    panda_joint1: 0.0
+    panda_joint2: -0.785
+    panda_joint3: 0.0
+    panda_joint4: -2.356
+    panda_joint5: 0.0
+    panda_joint6: 1.571
+    panda_joint7: 0.785
+goal:
+  type: joint_state
+  joints:
+    panda_joint1: -0.7480065113979498
+    panda_joint2: 0.8225046849154473
+    panda_joint3: -0.654985911742204
+    panda_joint4: -1.159712591787603
+    panda_joint5: -2.897291912672851
+    panda_joint6: 2.871339150695875
+    panda_joint7: 1.016584960649328

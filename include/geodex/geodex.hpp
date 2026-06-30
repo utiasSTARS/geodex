@@ -7,8 +7,11 @@
 #pragma once
 
 #include "algorithm/distance.hpp"
-#include "algorithm/heuristics.hpp"
 #include "algorithm/interpolation.hpp"
+#include "algorithm/path_smoothing.hpp"
+#include "algorithm/precompute_matrix_lower_bound.hpp"
+#include "algorithm/simplify_path.hpp"
+#include "heuristics/heuristics.hpp"
 #include "core/concepts.hpp"
 #include "core/distance.hpp"
 #include "core/interpolation.hpp"
@@ -20,6 +23,7 @@
 #include "manifold/se2.hpp"
 #include "manifold/sphere.hpp"
 #include "manifold/torus.hpp"
+#include "metrics/affine_combined.hpp"
 #include "metrics/constant_spd.hpp"
 #include "metrics/identity.hpp"
 #include "metrics/jacobi.hpp"
@@ -27,3 +31,4 @@
 #include "metrics/pullback.hpp"
 #include "metrics/se2_left_invariant.hpp"
 #include "metrics/weighted.hpp"
+#include "robots/mass_matrix.hpp"
