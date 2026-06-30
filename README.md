@@ -10,13 +10,14 @@ Unlike traditional algorithms that operate in Euclidean space, geodex works dire
 
 ## Key Features
 
-- **Generic Manifolds** — Out-of-the-box support for $S^n$, $R^n$, $T^n$, SE(2), and custom manifolds via template policies
-- **Performance First** — Header-only C++ core with many built-in retractions and anisotropic metrics
-- **Python Bindings** — First-class support for Python (`pip install geodex`)
+- **Generic Manifolds** — Out-of-the-box support for $S^n$, $R^n$, $T^n$, and SE(2), plus custom manifolds via template policies
+- **Performance First** — C++20 core with zero-overhead generic algorithms, many built-in retractions, and anisotropic metrics
+- **Precompiled Robots** — Built-in CRBA mass-matrix metrics for five manipulators (Panda, UR5, Fetch, Baxter, PR2), plus certified admissible heuristics for informed sampling
+- **Python Bindings** — First-class Python support (`pip install geodex`)
 
 ## Roadmap
 
-- [ ] [OMPL](https://ompl.kavrakilab.org/) and [VAMP](https://github.com/KavrakiLab/vamp) integrations (Planning on Riemannian manifolds with state-of-the-art sampling-based planners)
+- [x] [OMPL](https://ompl.kavrakilab.org/) and [VAMP](https://github.com/KavrakiLab/vamp) integrations (Planning on Riemannian manifolds with state-of-the-art sampling-based planners)
 - [ ] Nav2 and MoveIt 2 plugins (Geometry-aware planning for ROS 2 mobile robots and manipulators)
 
 ## Getting Started
@@ -27,7 +28,7 @@ All installation instructions, C++/Python tutorials, and API references are avai
 
 ## Citation
 
-geodex accompanies the paper "[Geometry-Aware Sampling-Based Motion Planning on Riemannian Manifolds](https://arxiv.org/abs/2602.00992)" accepted to [WAFR 2026](https://algorithmic-robotics.org/):
+geodex accompanies the WAFR'26 paper "[Geometry-Aware Sampling-Based Motion Planning on Riemannian Manifolds](https://arxiv.org/abs/2602.00992)":
 ```bibtex
 @inproceedings{kyaw2026geometry,
   address = {Oulu, Finland},
@@ -38,6 +39,30 @@ geodex accompanies the paper "[Geometry-Aware Sampling-Based Motion Planning on 
   title = {Geometry-Aware Sampling-Based Motion Planning on {Riemannian} Manifolds},
   url = {https://arxiv.org/abs/2602.00992},
   year = {2026}
+}
+```
+
+If you use matrix lower-bound heuristic in your research, please cite:
+
+```bibtex
+@article{kyaw2026direct,
+  title={Direct Informed Sampling on Riemannian Manifolds via Loewner Order Lower Bounds},
+  author = {Phone Thiha Kyaw and Jonathan Kelly},
+  journal={arXiv preprint arXiv:2606.02879},
+  url = {https://arxiv.org/abs/2606.02879},
+  year={2026}
+}
+```
+
+If you use Greedy RRT* (G-RRT*) in your research, please cite:
+
+```bibtex
+@article{kyaw2025greedy,
+  title={Greedy heuristics for sampling-based motion planning in high-dimensional state spaces},
+  author={Kyaw, Phone Thiha and Le, Anh Vu and Elara, Mohan Rajesh and Kelly, Jonathan},
+  journal={arXiv preprint arXiv:2405.03411},
+  url = {https://arxiv.org/abs/2405.03411},
+  year={2025}
 }
 ```
 
