@@ -327,6 +327,25 @@ inline auto distance_midpoint_fd(const M& m, const typename M::Point& a,
   return d_mid;
 }
 
+/// @brief Ambient size of a tangent vector at `p` (the row count of the FD basis).
+///
+/// @details Usually equals `p.size()`, but for Lie groups with a minimal
+/// Lie-algebra tangent — e.g. SO(3) (4-vector quaternion point, 3-vector body
+/// angular-velocity tangent) or SE(3) (7-vector point, 6-vector twist) — it is
+/// strictly smaller than the point size. Fixed-size tangents report their
+/// compile-time size directly; dynamic tangents (such as the type-erased
+/// manifold behind the Python bindings) are probed at runtime via `log(p, p)`,
+/// the zero tangent at `p`, which carries the correct ambient size.
+template <RiemannianManifold M>
+inline int tangent_ambient_size(const M& m, const typename M::Point& p) {
+  using Tangent = typename M::Tangent;
+  if constexpr (Tangent::SizeAtCompileTime != Eigen::Dynamic) {
+    return static_cast<int>(Tangent::SizeAtCompileTime);
+  } else {
+    return static_cast<int>(m.log(p, p).size());
+  }
+}
+
 /// @brief Build an orthonormal tangent basis at `p` into `cache.basis_mat`.
 ///
 /// @details Seeds columns with ambient unit vectors (projected onto the tangent
@@ -338,7 +357,7 @@ int build_tangent_basis(const M& m, const typename M::Point& p, int d,
   using Tangent = typename M::Tangent;
   constexpr int N = Tangent::SizeAtCompileTime;
 
-  const int ambient_dim = static_cast<int>(p.size());
+  const int ambient_dim = tangent_ambient_size(m, p);
   cache.basis_mat.resize(ambient_dim, d);
 
   int col = 0;
@@ -552,7 +571,7 @@ auto discrete_geodesic(const M& manifold, const typename M::Point& start,
   // Cache: either the caller-supplied one or a stack-local default.
   InterpolationCache<M> stack_cache;
   InterpolationCache<M>& C = cache ? *cache : stack_cache;
-  C.reset(static_cast<int>(start.size()), manifold.dim());
+  C.reset(detail::tangent_ambient_size(manifold, start), manifold.dim());
 
   GEODEX_LOG("=== discrete_geodesic start ===");
   GEODEX_LOG("start=" << start.transpose() << "  target=" << target.transpose());
