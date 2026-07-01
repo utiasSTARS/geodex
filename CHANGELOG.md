@@ -17,6 +17,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Released
 
+### [0.2.1] - 2026-07-01
+
+#### Added - new major features
+- Lie-group manifolds with canonical metrics and group-exponential retractions:
+  - `SO2` — the circle group `S¹`; a 1-D angle in `[−π, π)` with a canonical (bi-invariant) metric.
+  - `SO3` — points are unit quaternions `[x, y, z, w]`, tangents are body angular velocities; geodesics are quaternion SLERP. Selectable `body` (left-invariant) / `world` (right-invariant) frame.
+  - `SE3` — a genuine Lie group; points are `[t, quat]` 7-vectors, tangents are `[v; ω]` twists; geodesics are coupled screw motions. Selectable `body` / `world` frame.
+- `ProductManifold<Ms...>` — the Riemannian product of several manifolds (e.g. `R^n × SE(2)` for a mobile manipulator); exposed in Python as `geodex.Product([...])`.
+- `SE2RightExponentialMap` — a world-frame (right-invariant) SE(2) retraction alongside the existing body-frame one.
+- Shared Lie-group math (`geodex/utils/lie.hpp`): quaternion algebra, `so3_exp`/`so3_log`, `se3_exp`/`se3_log`, and the SE(3) left Jacobian.
+- Python bindings for `SO2`, `SO3`, `SE3`, and `Product`.
+- `.waypoints` on `discrete_geodesic`, `smooth_path`, and `simplify_path` results — the path as the original `list[np.ndarray]`.
+- Distributed on PyPI as **`pygeodex`**: `pip install pygeodex` (imports as `geodex`) — a lean, dependency-light nanobind `abi3` wheel for CPython 3.12+.
+
+#### Changed
+- Result `.path` now returns an `(N, d)` float64 NumPy array instead of a `list[np.ndarray]`; the previous list is available unchanged as `.waypoints`.
+
+#### Fixed
+- `discrete_geodesic` sizes its finite-difference tangent basis by the tangent dimension rather than the point dimension, so it is correct on manifolds whose point representation differs from their tangent dimension (e.g. `SO3`, `SE3`).
+
 ### [0.2.0] - 2026-06-30
 
 #### Added - new major features

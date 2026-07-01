@@ -3,30 +3,14 @@
 #include <nanobind/stl/string.h>
 
 #include "wrappers/dynamic_manifold.hpp"
+#include "wrappers/extract_manifold.hpp"
 #include "wrappers/py_config_space.hpp"
-#include "wrappers/py_euclidean.hpp"
 #include "wrappers/py_metrics.hpp"
-#include "wrappers/py_se2.hpp"
-#include "wrappers/py_sphere.hpp"
-#include "wrappers/py_torus.hpp"
 
 namespace nb = nanobind;
 using namespace geodex::python;
 
 namespace {
-
-/// Extract a DynamicManifold from any known Python manifold type.
-DynamicManifold extract_dynamic_manifold(nb::object obj) {
-  if (nb::isinstance<PyTorus>(obj)) return nb::cast<const PyTorus&>(obj).to_dynamic_manifold();
-  if (nb::isinstance<PyEuclidean>(obj))
-    return nb::cast<const PyEuclidean&>(obj).to_dynamic_manifold();
-  if (nb::isinstance<PySphere>(obj)) return nb::cast<const PySphere&>(obj).to_dynamic_manifold();
-  if (nb::isinstance<PySE2>(obj)) return nb::cast<const PySE2&>(obj).to_dynamic_manifold();
-  if (nb::isinstance<PyConfigurationSpace>(obj))
-    return nb::cast<const PyConfigurationSpace&>(obj).to_dynamic_manifold();
-  throw std::invalid_argument(
-      "Unknown manifold type. Expected Sphere, Euclidean, Torus, SE2, or ConfigurationSpace.");
-}
 
 /// Extract a DynamicMetric from any known Python metric type.
 DynamicMetric extract_dynamic_metric(nb::object obj) {

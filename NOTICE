@@ -1,0 +1,13 @@
+geodex
+Copyright © 2026 Space and Terrestrial Autonomous Robotic Systems (STARS) Lab
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This product bundles the following third-party components:
+
+Eigen — https://gitlab.com/libeigen/eigen
+  Mozilla Public License 2.0 (MPL-2.0)
+
+nanobind — https://github.com/wjakob/nanobind
+  Copyright (c) Wenzel Jakob
+  BSD 3-Clause License

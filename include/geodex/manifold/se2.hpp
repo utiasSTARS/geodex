@@ -112,9 +112,62 @@ struct SE2EulerRetraction {
   }
 };
 
+// ---------------------------------------------------------------------------
+// SE(2) group helpers (used by the right/world-frame retraction)
+// ---------------------------------------------------------------------------
+
+namespace detail {
+
+/// @brief SE(2) group composition \f$ a \circ b \f$ (product of homogeneous transforms
+/// \f$ T_a\, T_b \f$).
+/// @return \f$ (a_x + \cos\theta_a\, b_x - \sin\theta_a\, b_y,\;
+///             a_y + \sin\theta_a\, b_x + \cos\theta_a\, b_y,\; \mathrm{wrap}(\theta_a+\theta_b)) \f$.
+inline Eigen::Vector3d se2_compose(const Eigen::Vector3d& a, const Eigen::Vector3d& b) {
+  const double ct = std::cos(a[2]), st = std::sin(a[2]);
+  return Eigen::Vector3d(a[0] + ct * b[0] - st * b[1], a[1] + st * b[0] + ct * b[1],
+                         utils::wrap_to_pi(a[2] + b[2]));
+}
+
+/// @brief SE(2) group inverse \f$ a^{-1} \f$ (inverse homogeneous transform \f$ T_a^{-1} \f$).
+inline Eigen::Vector3d se2_inverse(const Eigen::Vector3d& a) {
+  const double ct = std::cos(a[2]), st = std::sin(a[2]);
+  return Eigen::Vector3d(-(ct * a[0] + st * a[1]), st * a[0] - ct * a[1], utils::wrap_to_pi(-a[2]));
+}
+
+}  // namespace detail
+
+/// @brief Right (world-frame) exponential and logarithmic maps on SE(2).
+///
+/// @details Uses right translation: \f$ \exp_g(\xi) = \mathrm{Exp}(\xi)\cdot g \f$ and
+/// \f$ \log_g(h) = \mathrm{Log}(h\cdot g^{-1}) \f$, where \f$ \mathrm{Exp} \f$ and
+/// \f$ \mathrm{Log} \f$ are the Lie group exponential/logarithm at the identity (reused
+/// from SE2ExponentialMap).
+struct SE2RightExponentialMap {
+  /// @brief Right exponential map \f$ \exp_g(\xi) = \mathrm{Exp}(\xi)\cdot g \f$.
+  /// @param g Base pose \f$ (x, y, \theta) \f$.
+  /// @param xi Lie algebra velocity \f$ (v_x, v_y, \omega) \f$ in world/spatial coordinates.
+  /// @return The resulting pose on SE(2).
+  EIGEN_STRONG_INLINE
+  Eigen::Vector3d retract(const Eigen::Vector3d g, const Eigen::Vector3d xi) const {
+    const Eigen::Vector3d exp_xi = SE2ExponentialMap{}.retract(Eigen::Vector3d::Zero(), xi);
+    return detail::se2_compose(exp_xi, g);
+  }
+
+  /// @brief Right logarithmic map \f$ \log_g(h) = \mathrm{Log}(h\cdot g^{-1}) \f$.
+  /// @param g Base pose.
+  /// @param h Target pose.
+  /// @return World/spatial Lie algebra velocity \f$ \xi \f$ such that \f$ \exp_g(\xi) = h \f$.
+  EIGEN_STRONG_INLINE
+  Eigen::Vector3d inverse_retract(const Eigen::Vector3d g, const Eigen::Vector3d h) const {
+    const Eigen::Vector3d rel = detail::se2_compose(h, detail::se2_inverse(g));
+    return SE2ExponentialMap{}.inverse_retract(Eigen::Vector3d::Zero(), rel);
+  }
+};
+
 // Verify retraction concepts.
 static_assert(Retraction<SE2ExponentialMap, Eigen::Vector3d, Eigen::Vector3d>);
 static_assert(Retraction<SE2EulerRetraction, Eigen::Vector3d, Eigen::Vector3d>);
+static_assert(Retraction<SE2RightExponentialMap, Eigen::Vector3d, Eigen::Vector3d>);
 
 // ---------------------------------------------------------------------------
 // SE(2) manifold
@@ -283,6 +336,7 @@ class ConfigurationSpace;
 // Verify the composed types satisfy RiemannianManifold.
 static_assert(RiemannianManifold<SE2<>>);
 static_assert(RiemannianManifold<SE2<SE2LeftInvariantMetric, SE2EulerRetraction>>);
+static_assert(RiemannianManifold<SE2<SE2LeftInvariantMetric, SE2RightExponentialMap>>);
 
 // ---------------------------------------------------------------------------
 // distance_midpoint overloads for SE(2)
@@ -449,20 +503,37 @@ auto distance_midpoint_se2_impl(const M& m, const Eigen::Vector3d& a, const Eige
 
 }  // namespace detail
 
-/// @brief Fused distance_midpoint overload for SE2.
+namespace detail {
+
+/// @brief Trait: true only for a body-frame SE(2), i.e. one paired with the left/body
+/// SE2ExponentialMap retraction.
+template <typename T>
+struct is_se2_body_frame : std::false_type {};
+
+template <typename MetricT, typename SamplerT>
+struct is_se2_body_frame<SE2<MetricT, SE2ExponentialMap, SamplerT>> : std::true_type {};
+
+template <typename T>
+inline constexpr bool is_se2_body_frame_v = is_se2_body_frame<T>::value;
+
+}  // namespace detail
+
+/// @brief Fused distance_midpoint overload for a body-frame SE2.
 template <typename MetricT, typename RetractionT, typename SamplerT>
+  requires std::is_same_v<RetractionT, SE2ExponentialMap>
 auto distance_midpoint(const SE2<MetricT, RetractionT, SamplerT>& m, const Eigen::Vector3d& a,
                        const Eigen::Vector3d& b) -> double {
   return detail::distance_midpoint_se2_impl(m, a, b);
 }
 
-/// @brief Fused distance_midpoint overload for ConfigurationSpace wrapping an SE(2) base.
+/// @brief Fused distance_midpoint overload for ConfigurationSpace wrapping a body-frame SE(2)
+/// base.
 ///
 /// @note ConfigurationSpace is forward-declared here; the full definition is in
 ///       configuration_space.hpp. This overload is instantiated only when both
 ///       headers are included, which is the normal usage pattern.
 template <typename BaseM, typename MetricT>
-  requires std::is_same_v<typename BaseM::Point, Eigen::Vector3d>
+  requires detail::is_se2_body_frame_v<BaseM>
 auto distance_midpoint(const ConfigurationSpace<BaseM, MetricT>& m, const Eigen::Vector3d& a,
                        const Eigen::Vector3d& b) -> double {
   return detail::distance_midpoint_se2_impl(m, a, b);

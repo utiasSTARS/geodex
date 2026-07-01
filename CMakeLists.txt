@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(geodex VERSION 0.2.0 LANGUAGES CXX)
+project(geodex VERSION 0.2.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -37,8 +37,11 @@ if(BUILD_OMPL_EXAMPLES)
   find_package(ompl REQUIRED)
 endif()
 
-# Always-on built-in robot dynamics (precompiled CRBA mass matrices).
-include(cmake/robots.cmake)
+# Robot dynamics (precompiled CRBA mass matrices)
+option(GEODEX_ROBOTS "Build the built-in robot dynamics library" ON)
+if(GEODEX_ROBOTS)
+  include(cmake/robots.cmake)
+endif()
 
 # Optional integrations
 include(cmake/integrations/pinocchio.cmake)

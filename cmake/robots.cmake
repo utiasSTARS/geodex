@@ -113,6 +113,9 @@ target_compile_options(geodex_robots PRIVATE
 # straight-line CRBA expressions (worth several × on this TU). `-march=native`
 # tunes for the build host; if you cross-compile or want a portable binary,
 # override these via -DGEODEX_ROBOTS_TU_FLAGS.
+option(GEODEX_ROBOTS_NATIVE_ARCH
+  "Add -march=native to the generated robot CRBA translation units." ON)
+
 set(GEODEX_ROBOTS_TU_FLAGS ""
     CACHE STRING "Override compile flags for the per-robot generated TUs (default: arch-tuned aggressive math)")
 
@@ -122,8 +125,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
   set(_tu_flags
     -Wno-unused-variable -Wno-unused-but-set-variable -Wno-cast-function-type
     -Ofast -ffast-math -funroll-loops)
-  # -march=native is fine for self-built binaries but breaks cross-compilation.
-  if(NOT CMAKE_CROSSCOMPILING)
+  if(NOT CMAKE_CROSSCOMPILING AND GEODEX_ROBOTS_NATIVE_ARCH)
     list(APPEND _tu_flags -march=native)
   endif()
 elseif(MSVC)

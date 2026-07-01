@@ -3,6 +3,8 @@
 [![CI](https://github.com/utiasSTARS/geodex/actions/workflows/ci.yml/badge.svg)](https://github.com/utiasSTARS/geodex/actions/workflows/ci.yml)
 [![docs](https://app.readthedocs.org/projects/geodex/badge/?version=latest&style=default)](https://app.readthedocs.org/projects/geodex)
 [![codecov](https://codecov.io/github/utiasSTARS/geodex/graph/badge.svg?token=SJXNZZZQ9S)](https://codecov.io/github/utiasSTARS/geodex)
+[![PyPI](https://img.shields.io/pypi/v/pygeodex)](https://pypi.org/project/pygeodex/)
+[![Python](https://img.shields.io/pypi/pyversions/pygeodex)](https://pypi.org/project/pygeodex/)
 
 **geodex** is a general-purpose software framework for planning on Riemannian manifolds.
 
@@ -10,10 +12,10 @@ Unlike traditional algorithms that operate in Euclidean space, geodex works dire
 
 ## Key Features
 
-- **Generic Manifolds** — Out-of-the-box support for $S^n$, $R^n$, $T^n$, and SE(2), plus custom manifolds via template policies
+- **Generic Manifolds** — Out-of-the-box support for Sⁿ, Rⁿ, Tⁿ, the Lie groups SO(2)/SO(3)/SE(2)/SE(3) with group-exponential geodesics, and product manifolds (e.g. Rⁿ × SE(2)), plus custom manifolds via template policies
 - **Performance First** — C++20 core with zero-overhead generic algorithms, many built-in retractions, and anisotropic metrics
 - **Precompiled Robots** — Built-in CRBA mass-matrix metrics for five manipulators (Panda, UR5, Fetch, Baxter, PR2), plus certified admissible heuristics for informed sampling
-- **Python Bindings** — First-class Python support (`pip install geodex`)
+- **Python Bindings** — First-class Python support (`pip install pygeodex`)
 
 ## Roadmap
 

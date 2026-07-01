@@ -3,22 +3,22 @@ requires = ["scikit-build-core>=0.10", "nanobind>=2.4"]
 build-backend = "scikit_build_core.build"
 
 [project]
-name = "geodex"
-version = "0.2.0"
+name = "pygeodex"
+version = "0.2.1"
 description = "A general-purpose framework for planning on Riemannian manifolds"
 readme = "README.md"
 license = "Apache-2.0"
-requires-python = ">=3.9"
+license-files = ["LICENSE", "NOTICE"]
+requires-python = ">=3.12"
 dependencies = ["numpy>=1.21"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: C++",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Mathematics",
@@ -34,9 +34,21 @@ Repository = "https://github.com/utiasSTARS/geodex"
 Issues = "https://github.com/utiasSTARS/geodex/issues"
 
 [tool.scikit-build]
+minimum-version = "0.10"
 cmake.build-type = "Release"
-cmake.args = ["-DBUILD_PYTHON_BINDINGS=ON"]
+cmake.args = ["-DBUILD_PYTHON_BINDINGS=ON", "-DGEODEX_ROBOTS=OFF"]
 wheel.packages = ["python/geodex"]
+wheel.exclude = ["include/**", "lib/**"]
+wheel.py-api = "cp312"
 
 [tool.pytest.ini_options]
 testpaths = ["python/tests"]
+
+[tool.cibuildwheel]
+build = "cp312-*"
+build-frontend = "build"
+test-command = 'python -c "import geodex; geodex.SO3(); geodex.SE3(); geodex.Product([geodex.Euclidean(3), geodex.SE2()])"'
+
+[tool.cibuildwheel.linux]
+manylinux-x86_64-image = "manylinux_2_28"
+manylinux-aarch64-image = "manylinux_2_28"

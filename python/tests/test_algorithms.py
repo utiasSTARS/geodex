@@ -172,9 +172,10 @@ class TestDiscreteGeodesicSphere:
         q = np.array([0.0, 1.0, 0.0])
         r = geodex.discrete_geodesic(self.sphere, p, q, self.settings)
         assert isinstance(r, geodex.InterpolationResult)
-        assert isinstance(r.path, list)
-        assert len(r.path) >= 2
-        assert all(isinstance(pt, np.ndarray) for pt in r.path)
+        assert isinstance(r.path, np.ndarray)
+        assert r.path.ndim == 2 and r.path.shape[0] >= 2
+        assert isinstance(r.waypoints, list)
+        assert all(isinstance(pt, np.ndarray) for pt in r.waypoints)
 
     def test_first_point_is_start(self):
         p = np.array([0.0, 0.0, 1.0])
@@ -277,12 +278,14 @@ class TestDiscreteGeodesicSE2:
         assert len(r.path) >= 1
         np.testing.assert_allclose(r.path[0], p, atol=1e-12)
 
-    def test_returns_list(self):
+    def test_returns_ndarray_and_waypoints(self):
         p = np.array([1.0, 1.0, 0.0])
         q = np.array([2.0, 2.0, 0.0])
         r = geodex.discrete_geodesic(self.se2, p, q, self.settings)
-        assert isinstance(r.path, list)
-        assert len(r.path) >= 2
+        assert isinstance(r.path, np.ndarray)
+        assert r.path.ndim == 2 and r.path.shape[0] >= 2
+        assert isinstance(r.waypoints, list)
+        assert len(r.waypoints) == r.path.shape[0]
 
 
 class TestDiscreteGeodesicConfigSpace:

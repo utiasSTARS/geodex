@@ -29,11 +29,7 @@
 #include "geodex/core/metric.hpp"
 
 #include "wrappers/dynamic_manifold.hpp"
-#include "wrappers/py_config_space.hpp"
-#include "wrappers/py_euclidean.hpp"
-#include "wrappers/py_se2.hpp"
-#include "wrappers/py_sphere.hpp"
-#include "wrappers/py_torus.hpp"
+#include "wrappers/extract_manifold.hpp"
 
 namespace nb = nanobind;
 using namespace geodex::python;
@@ -41,16 +37,16 @@ using namespace geodex::python;
 namespace {
 
 /// Extract a DynamicManifold from any known Python manifold type.
-DynamicManifold extract_algo_manifold(nb::object obj) {
-  if (nb::isinstance<PySphere>(obj)) return nb::cast<const PySphere&>(obj).to_dynamic_manifold();
-  if (nb::isinstance<PyEuclidean>(obj))
-    return nb::cast<const PyEuclidean&>(obj).to_dynamic_manifold();
-  if (nb::isinstance<PyTorus>(obj)) return nb::cast<const PyTorus&>(obj).to_dynamic_manifold();
-  if (nb::isinstance<PySE2>(obj)) return nb::cast<const PySE2&>(obj).to_dynamic_manifold();
-  if (nb::isinstance<PyConfigurationSpace>(obj))
-    return nb::cast<const PyConfigurationSpace&>(obj).to_dynamic_manifold();
-  throw std::invalid_argument(
-      "Unknown manifold type. Expected Sphere, Euclidean, Torus, SE2, or ConfigurationSpace.");
+DynamicManifold extract_algo_manifold(nb::object obj) { return extract_dynamic_manifold(obj); }
+
+/// Pack a path (sequence of points) into an (N, d) row matrix for numpy.
+Eigen::MatrixXd path_to_matrix(const std::vector<Eigen::VectorXd>& path) {
+  if (path.empty()) return Eigen::MatrixXd(0, 0);
+  const auto n = static_cast<Eigen::Index>(path.size());
+  const Eigen::Index d = path.front().size();
+  Eigen::MatrixXd out(n, d);
+  for (Eigen::Index i = 0; i < n; ++i) out.row(i) = path[static_cast<std::size_t>(i)].transpose();
+  return out;
 }
 
 /// Lightweight RiemannianManifold wrapper exposing inner_matrix + lo/hi as
@@ -233,9 +229,11 @@ void bind_algorithms(nb::module_& m) {
                        "Output of discrete_geodesic.\n\n"
                        "Carries the discretised path, a termination status, iteration count,\n"
                        "and the initial/final Riemannian distances to target.")
-      .def_ro(
-          "path", &PyResult::path,
-          "list[np.ndarray] — points traced from start toward target (always starts with start).")
+      .def_prop_ro(
+          "path", [](const PyResult& r) { return path_to_matrix(r.path); }, nb::rv_policy::copy,
+          "(N, d) float64 ndarray — points traced from start toward target (starts with start).")
+      .def_prop_ro("waypoints", [](const PyResult& r) { return r.path; }, nb::rv_policy::copy,
+                   "list[np.ndarray] — the path as a Python list (back-compat with the old API).")
       .def_ro("status", &PyResult::status,
               "InterpolationStatus — termination reason. Always check before using `path`.")
       .def_ro("iterations", &PyResult::iterations,
@@ -325,7 +323,10 @@ void bind_algorithms(nb::module_& m) {
   // --- PathSmoothingResult ---
   using PSR = geodex::algorithm::PathSmoothingResult<Eigen::VectorXd>;
   nb::class_<PSR>(m, "PathSmoothingResult", "Result of path smoothing.")
-      .def_ro("path", &PSR::path, "Smoothed path (list of arrays).")
+      .def_prop_ro("path", [](const PSR& r) { return path_to_matrix(r.path); },
+                   nb::rv_policy::copy, "(N, d) float64 ndarray — smoothed path.")
+      .def_prop_ro("waypoints", [](const PSR& r) { return r.path; }, nb::rv_policy::copy,
+                   "list[np.ndarray] — the path as a Python list (back-compat).")
       .def_ro("energy", &PSR::energy, "Discrete energy of the result.")
       .def_ro("distance", &PSR::distance, "Geodesic distance estimate.")
       .def_ro("vertices_removed", &PSR::vertices_removed, "Vertices removed in shortcutting.")
@@ -375,7 +376,11 @@ void bind_algorithms(nb::module_& m) {
   // --- SimplifyPathResult ---
   using SPR = geodex::algorithm::SimplifyPathResult<Eigen::VectorXd>;
   nb::class_<SPR>(m, "SimplifyPathResult", "Result of geodex.simplify_path.")
-      .def_ro("path", &SPR::path, "Simplified path including endpoints.")
+      .def_prop_ro("path", [](const SPR& r) { return path_to_matrix(r.path); },
+                   nb::rv_policy::copy,
+                   "(N, d) float64 ndarray — simplified path including endpoints.")
+      .def_prop_ro("waypoints", [](const SPR& r) { return r.path; }, nb::rv_policy::copy,
+                   "list[np.ndarray] — the path as a Python list (back-compat).")
       .def_ro("energy", &SPR::energy, "Discrete energy of the result.")
       .def_ro("distance", &SPR::distance, "Geodesic distance estimate sqrt(energy).")
       .def_ro("vertices_removed", &SPR::vertices_removed,
