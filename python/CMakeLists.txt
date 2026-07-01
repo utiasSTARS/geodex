@@ -19,6 +19,10 @@ nanobind_add_module(_geodex_core
   src/bind_euclidean.cpp
   src/bind_torus.cpp
   src/bind_se2.cpp
+  src/bind_so2.cpp
+  src/bind_so3.cpp
+  src/bind_se3.cpp
+  src/bind_product.cpp
   src/bind_metrics.cpp
   src/bind_config_space.cpp
   src/bind_algorithms.cpp
