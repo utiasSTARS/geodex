@@ -46,6 +46,31 @@ add_executable(test_se2 test_se2.cpp)
 target_link_libraries(test_se2 PRIVATE geodex GTest::gtest_main)
 gtest_discover_tests(test_se2)
 
+# --- Minimal geometry: Lie-group manifolds + product ---
+add_executable(test_lie test_lie.cpp)
+target_link_libraries(test_lie PRIVATE geodex GTest::gtest_main)
+gtest_discover_tests(test_lie)
+
+add_executable(test_so2 test_so2.cpp)
+target_link_libraries(test_so2 PRIVATE geodex GTest::gtest_main)
+gtest_discover_tests(test_so2)
+
+add_executable(test_so3 test_so3.cpp)
+target_link_libraries(test_so3 PRIVATE geodex GTest::gtest_main)
+gtest_discover_tests(test_so3)
+
+add_executable(test_se3 test_se3.cpp)
+target_link_libraries(test_se3 PRIVATE geodex GTest::gtest_main)
+gtest_discover_tests(test_se3)
+
+add_executable(test_se2_right test_se2_right.cpp)
+target_link_libraries(test_se2_right PRIVATE geodex GTest::gtest_main)
+gtest_discover_tests(test_se2_right)
+
+add_executable(test_product test_product.cpp)
+target_link_libraries(test_product PRIVATE geodex GTest::gtest_main)
+gtest_discover_tests(test_product)
+
 add_executable(test_metrics test_metrics.cpp)
 target_link_libraries(test_metrics PRIVATE geodex GTest::gtest_main)
 gtest_discover_tests(test_metrics)
