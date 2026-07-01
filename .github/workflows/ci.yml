@@ -48,7 +48,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11" # matrix this if we want to test multiple versions
+          python-version: "3.12" # matrix this if we want to test multiple versions
 
       - name: Install build dependencies
         # Required because --no-build-isolation skips automatic dependency resolution for the build backend
@@ -70,7 +70,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       - name: Install System Dependencies
         run: |
