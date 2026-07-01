@@ -141,11 +141,7 @@ inline Eigen::Vector3d se2_inverse(const Eigen::Vector3d& a) {
 /// @details Uses right translation: \f$ \exp_g(\xi) = \mathrm{Exp}(\xi)\cdot g \f$ and
 /// \f$ \log_g(h) = \mathrm{Log}(h\cdot g^{-1}) \f$, where \f$ \mathrm{Exp} \f$ and
 /// \f$ \mathrm{Log} \f$ are the Lie group exponential/logarithm at the identity (reused
-/// from SE2ExponentialMap). This is the mirror of the default body-frame
-/// SE2ExponentialMap: pairing it with a constant-diagonal SE2LeftInvariantMetric yields a
-/// *right-invariant* (world-frame) Riemannian structure. A pure spatial twist
-/// \f$ \xi=(0,0,\omega) \f$ then rotates the base pose's position about the world origin,
-/// rather than spinning it in place.
+/// from SE2ExponentialMap).
 struct SE2RightExponentialMap {
   /// @brief Right exponential map \f$ \exp_g(\xi) = \mathrm{Exp}(\xi)\cdot g \f$.
   /// @param g Base pose \f$ (x, y, \theta) \f$.
@@ -511,13 +507,6 @@ namespace detail {
 
 /// @brief Trait: true only for a body-frame SE(2), i.e. one paired with the left/body
 /// SE2ExponentialMap retraction.
-///
-/// @details The fused `distance_midpoint_se2_impl` hardcodes the *body-frame* (left)
-/// SE(2) group math for the midpoint and log-difference. It is therefore only correct
-/// for an SE(2) instantiated with SE2ExponentialMap. This trait gates the fused overloads
-/// so that other retractions (SE2EulerRetraction, SE2RightExponentialMap) fall through to
-/// the generic `distance_midpoint`, which uses the manifold's own exp/log and is correct
-/// for any retraction.
 template <typename T>
 struct is_se2_body_frame : std::false_type {};
 
@@ -530,11 +519,6 @@ inline constexpr bool is_se2_body_frame_v = is_se2_body_frame<T>::value;
 }  // namespace detail
 
 /// @brief Fused distance_midpoint overload for a body-frame SE2.
-///
-/// @details Constrained to SE2ExponentialMap: `distance_midpoint_se2_impl` bakes in the
-/// left/body-frame group math, so instantiations using SE2EulerRetraction or
-/// SE2RightExponentialMap must NOT select this overload — they fall through to the generic
-/// `distance_midpoint` in algorithm/distance.hpp instead.
 template <typename MetricT, typename RetractionT, typename SamplerT>
   requires std::is_same_v<RetractionT, SE2ExponentialMap>
 auto distance_midpoint(const SE2<MetricT, RetractionT, SamplerT>& m, const Eigen::Vector3d& a,
@@ -544,12 +528,6 @@ auto distance_midpoint(const SE2<MetricT, RetractionT, SamplerT>& m, const Eigen
 
 /// @brief Fused distance_midpoint overload for ConfigurationSpace wrapping a body-frame SE(2)
 /// base.
-///
-/// @details Constrained via `is_se2_body_frame_v` to a base manifold that is an SE(2) paired
-/// with SE2ExponentialMap — the only case in which the hardcoded body-frame group math in
-/// `distance_midpoint_se2_impl` matches the base's exp/log. A ConfigurationSpace over any
-/// other Vector3d-point base (Euler/right SE(2), or a non-SE(2) manifold) correctly falls
-/// through to the generic `distance_midpoint`.
 ///
 /// @note ConfigurationSpace is forward-declared here; the full definition is in
 ///       configuration_space.hpp. This overload is instantiated only when both

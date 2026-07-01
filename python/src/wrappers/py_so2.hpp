@@ -15,13 +15,6 @@
 namespace geodex::python {
 
 /// @brief Python-facing wrapper for the abelian manifold SO(2).
-///
-/// @details SO(2) is a 1-D abelian Lie group, so a single exponential map serves as
-/// both the retraction and its inverse (no frame distinction). The underlying C++
-/// `SO2<>` uses fixed-size 1-vectors (`Eigen::Matrix<double, 1, 1>`) for points and
-/// tangents; to avoid nanobind `Matrix<1, 1>` edge cases every Python-facing method
-/// exchanges dynamically-sized `Eigen::VectorXd` of length 1 instead, converting at
-/// the boundary.
 class PySO2 {
  public:
   /// @brief The wrapped C++ manifold: canonical metric with the true exp/log map.

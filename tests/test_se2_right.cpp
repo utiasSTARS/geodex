@@ -1,11 +1,6 @@
 /// @file test_se2_right.cpp
 /// @brief Tests for the right-invariant (world-frame) SE(2) retraction
 ///        `SE2RightExponentialMap`.
-///
-/// The default body-frame retraction (`SE2ExponentialMap`) is covered by
-/// test_se2.cpp; here we exercise the world-frame convention
-/// \f$ \exp_g(\xi) = \mathrm{Exp}(\xi)\cdot g \f$, \f$ \log_g(h) = \mathrm{Log}(h\cdot g^{-1}) \f$
-/// and confirm it is genuinely distinct from the body-frame map.
 
 #include <cmath>
 
@@ -20,8 +15,7 @@
 using namespace geodex;
 using namespace geodex::utils;
 
-/// Right-invariant / world-frame SE(2). The constant-diagonal left-invariant
-/// metric doubles as the right-invariant metric when paired with this retraction.
+/// Right-invariant / world-frame SE(2).
 using SE2R = SE2<SE2LeftInvariantMetric, SE2RightExponentialMap>;
 /// Default body-frame SE(2), used for left-vs-right contrast checks.
 using SE2L = SE2<>;
@@ -33,8 +27,7 @@ static_assert(RiemannianManifold<SE2R>);
 namespace {
 
 /// @brief Generic midpoint distance mirroring algorithm/distance.hpp, computed
-/// purely from the manifold's own exp/log/norm. `SE2R::distance` must match this
-/// (it falls through to the generic overload, not the fused body-frame one).
+/// purely from the manifold's own exp/log/norm.
 template <typename M>
 double generic_midpoint_distance(const M& m, const Eigen::Vector3d& a, const Eigen::Vector3d& b) {
   const Eigen::Vector3d v_ab = m.log(a, b);
@@ -122,9 +115,8 @@ TEST(SE2LeftVsRight, DifferForGeneralTwist) {
   EXPECT_GT((qL - qR).norm(), 1e-3);
 }
 
-// A pure spatial translation is added directly in the WORLD frame, independent
-// of the base orientation (contrast with the body-frame map, which moves along
-// the heading).
+// A pure spatial translation adds directly in the world frame, independent of the
+// base orientation.
 TEST(SE2LeftVsRight, RightPureTranslationIsWorldFrame) {
   SE2R right;
   Eigen::Vector3d g(2.0, 3.0, std::numbers::pi / 3.0);  // rotated base

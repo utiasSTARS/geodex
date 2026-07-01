@@ -1,17 +1,12 @@
 /// @file py_product.hpp
 /// @brief Python wrapper for the Riemannian product of several manifolds.
 ///
-/// @details A product manifold is composed at runtime from a list of already
-/// type-erased sub-manifolds (each a `DynamicManifold`). Points and tangents are
-/// the block-concatenation of the sub-manifold points/tangents; exp/log/geodesic
-/// act block-wise and distance is the L2 combination of the block distances.
-///
-/// Point and tangent segments are tracked with *separate* offset tables, because
-/// a block's point size may differ from its tangent size (e.g. an embedded
-/// `Sphere` block: 3-vector point, 3-vector ambient tangent but intrinsic dim 2;
-/// a genuine-Lie `SO3` block: 4-vector point, 3-vector tangent). For the common
-/// mobile-manipulator products (R^n x SE2, R^3 x SO3, ...) the two tables
-/// coincide.
+/// @details Composed at runtime from a list of type-erased sub-manifolds. Points
+/// and tangents are the block-concatenation of the sub-manifold points/tangents;
+/// exp/log/geodesic act block-wise and distance is the L2 combination of the block
+/// distances. Point and tangent segments use separate offset tables, since a
+/// block's point size may differ from its tangent size (e.g. SO3: 4-vector point,
+/// 3-vector tangent).
 
 #pragma once
 
@@ -37,9 +32,7 @@ class PyProduct {
     for (const auto& b : blocks) {
       const Eigen::VectorXd rp = b.random_point();
       const int ps = static_cast<int>(rp.size());
-      // Probe the tangent ambient size via log(p, p) — the zero tangent at p,
-      // whose length is the block's tangent representation size (== dim for
-      // minimal-tangent Lie groups, > dim for embedded manifolds like Sphere).
+      // Probe the tangent ambient size via log(p, p) (the zero tangent at p).
       const int ts = static_cast<int>(b.log(rp, rp).size());
       point_off.push_back(point_dim);
       point_size.push_back(ps);

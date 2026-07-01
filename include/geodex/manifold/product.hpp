@@ -25,13 +25,6 @@ namespace detail {
 
 /// @brief True when a manifold provides a `project(p, v)` method mapping an
 /// ambient vector to the tangent space at `p`.
-///
-/// @details Named distinctly from `geodex::detail::HasProject` (defined in
-/// `algorithm/interpolation.hpp`) so both headers can be included in the same
-/// translation unit without a concept re-definition. `ProductManifold::project`
-/// dispatches on this per block: blocks that provide `project` (e.g. `Sphere`)
-/// have it applied to their tangent segment; blocks that do not (their tangent
-/// space is the whole ambient space) use the identity.
 template <typename M>
 concept ProductBlockHasProject =
     requires(const M m, const typename M::Point p, const typename M::Tangent v) {
@@ -51,33 +44,15 @@ concept ProductBlockHasProject =
 /// \f$ g = g_1 \oplus \cdots \oplus g_N \f$, so every operation decouples across
 /// blocks: the exponential/logarithmic maps and geodesics act block-wise, the
 /// inner product is a block sum, and the geodesic distance is
-/// \f$ d = \sqrt{\sum_i d_i(p_i, q_i)^2} \f$. All of these are closed-form
-/// whenever the blocks are — no numerical integration is required.
+/// \f$ d = \sqrt{\sum_i d_i(p_i, q_i)^2} \f$. A typical use is composing a mobile
+/// base with a manipulator, e.g. \f$ \mathrm{SE}(2) \times \mathbb{R}^n \f$.
 ///
-/// A typical use is composing a mobile base with a manipulator, e.g.
-/// \f$ \mathrm{SE}(2) \times \mathbb{R}^n \f$, or a base with an orientation on a
-/// sphere.
-///
-/// **Point and tangent layout.** Points are stacked ambient representations:
-/// block \f$ i \f$ occupies a contiguous segment of a single `Eigen::VectorXd`
-/// whose length is that block's ambient point size (`M_i::Point::size()`).
-/// Tangent vectors are likewise stacked in each block's *ambient* tangent
-/// representation (`M_i::Tangent::size()`, which equals the point size for every
-/// manifold in this library). This mirrors how `Sphere` itself stores a
-/// 2-dimensional tangent as a size-3 ambient vector orthogonal to the base
-/// point: the ambient representation is what the block's `exp`/`log`/`inner`/
-/// `project` consume, and it is the representation `discrete_geodesic`'s
-/// finite-difference path expects (it builds a tangent basis with `p.size()`
-/// rows and `dim()` columns).
-///
-/// Consequently `dim()` — the intrinsic dimension, the sum of the block
-/// dimensions — may be strictly smaller than the stored tangent length. For
-/// `Sphere<> x Euclidean(2)`, `dim() == 2 + 2 == 4` while the stored point and
-/// tangent vectors both have length `3 + 2 == 5`. Point offsets and tangent
-/// offsets are cached separately (per the two-representation design) even though
-/// they coincide for every block here; keeping them apart makes the slicing
-/// robust should a block ever use a tangent representation smaller than its
-/// point.
+/// Points and tangents are stacked ambient representations: block \f$ i \f$
+/// occupies a contiguous segment sized `M_i::Point::size()` (points) or
+/// `M_i::Tangent::size()` (tangents). The intrinsic `dim()` — the sum of the
+/// block dimensions — may be strictly smaller than the stored tangent length;
+/// e.g. for `Sphere<> x Euclidean(2)`, `dim() == 4` while the stored vectors have
+/// length 5. Point and tangent offsets are cached separately.
 ///
 /// @tparam Ms The sub-manifold types, each satisfying `RiemannianManifold`.
 template <typename... Ms>
@@ -125,9 +100,6 @@ class ProductManifold {
   ///
   /// @details True exactly when every block's `log` is the Riemannian logarithm
   /// of its own metric (the product log is the direct sum of the block logs).
-  /// When true, `discrete_geodesic` takes the fast log-direction natural
-  /// gradient; otherwise it falls back to finite differences, which is always
-  /// safe.
   bool has_riemannian_log_runtime() const {
     bool all = true;
     for_each_index(
@@ -300,8 +272,7 @@ auto make_product(Ms... ms) {
   return ProductManifold<Ms...>(std::move(ms)...);
 }
 
-// Verify the composed types satisfy RiemannianManifold, including the
-// point-size != dim case (Sphere contributes ambient size 3 but dim 2).
+// Verify the composed types satisfy RiemannianManifold.
 static_assert(RiemannianManifold<ProductManifold<Euclidean<Eigen::Dynamic>, SE2<>>>);
 static_assert(RiemannianManifold<ProductManifold<Sphere<>, Euclidean<Eigen::Dynamic>>>);
 

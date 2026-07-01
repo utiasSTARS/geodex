@@ -1,8 +1,5 @@
 /// @file extract_manifold.hpp
-/// @brief Single source of truth for turning any Python manifold object into a
-///        type-erased DynamicManifold. Shared by bind_config_space,
-///        bind_algorithms, and bind_product so the supported-type list lives in
-///        exactly one place.
+/// @brief Convert any known Python manifold object into a type-erased DynamicManifold.
 
 #pragma once
 

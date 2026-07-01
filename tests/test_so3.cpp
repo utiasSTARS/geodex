@@ -1,9 +1,4 @@
 // SO(3) manifold tests.
-//
-// SO(3) is the first shipped manifold whose Point (4-vector unit quaternion)
-// has a different size than its Tangent (3-vector body angular velocity). The
-// shared `discrete_geodesic` cache handles this via `tangent_ambient_size`, so
-// these tests run with Eigen's debug assertions live (no EIGEN_NO_DEBUG).
 
 #include <cmath>
 
@@ -192,9 +187,7 @@ TEST(SO3MetricTest, AnisotropicMetricIsNotRiemannianLog) {
 
 TEST(SO3MetricTest, EulerRetractionWithIsotropicMetricNotFlagged) {
   // A non-group retraction must never claim the Riemannian-log fast path, even
-  // with an isotropic metric. (Uses the right map's isotropy but the check is
-  // gated on retraction type; here we assert the left/default remains true and a
-  // mismatched metric type would be false — covered above. This documents intent.)
+  // with an isotropic metric.
   SO3<> manifold;
   EXPECT_TRUE(manifold.has_riemannian_log_runtime());
 }

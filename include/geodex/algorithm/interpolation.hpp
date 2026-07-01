@@ -329,13 +329,10 @@ inline auto distance_midpoint_fd(const M& m, const typename M::Point& a,
 
 /// @brief Ambient size of a tangent vector at `p` (the row count of the FD basis).
 ///
-/// @details Usually equals `p.size()`, but for Lie groups with a minimal
-/// Lie-algebra tangent — e.g. SO(3) (4-vector quaternion point, 3-vector body
-/// angular-velocity tangent) or SE(3) (7-vector point, 6-vector twist) — it is
-/// strictly smaller than the point size. Fixed-size tangents report their
-/// compile-time size directly; dynamic tangents (such as the type-erased
-/// manifold behind the Python bindings) are probed at runtime via `log(p, p)`,
-/// the zero tangent at `p`, which carries the correct ambient size.
+/// @details Usually `p.size()`, but for Lie groups with a minimal Lie-algebra
+/// tangent (SO(3), SE(3)) it is smaller than the point size. Fixed-size tangents
+/// report their compile-time size; dynamic tangents are probed at runtime via
+/// `log(p, p)`, the zero tangent at `p`.
 template <RiemannianManifold M>
 inline int tangent_ambient_size(const M& m, const typename M::Point& p) {
   using Tangent = typename M::Tangent;

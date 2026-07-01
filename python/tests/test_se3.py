@@ -36,7 +36,7 @@ class TestSE3:
         np.testing.assert_allclose(g1[3:7], g0[3:7], atol=1e-10)
 
     def test_body_vs_world_differ(self):
-        # SE(3) admits no bi-invariant metric, so body- and world-frame distances differ.
+        # Body- and world-frame distances differ for a general pose pair.
         g0 = np.array([1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 1.0])
         g1 = np.array([4.0, 1.0, 2.0, 0.0, 0.0, 0.70710678, 0.70710678])
         db = geodex.SE3(frame="body").distance(g0, g1)

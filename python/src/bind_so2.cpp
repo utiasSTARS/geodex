@@ -11,10 +11,9 @@ void bind_so2(nb::module_& m) {
   nb::class_<PySO2>(m, "SO2",
                     "The special orthogonal group SO(2), the circle group S^1.\n\n"
                     "A configuration is a single angle theta in [-pi, pi) with wraparound.\n"
-                    "SO(2) is a 1-D abelian Lie group, so a single exponential map serves as\n"
-                    "both the retraction and its inverse. Points and tangents are shape-(1,)\n"
-                    "arrays holding the angle and angular velocity respectively.\n"
-                    "Uses the canonical (bi-invariant) metric with a configurable weight.")
+                    "Points and tangents are shape-(1,) arrays holding the angle and angular\n"
+                    "velocity respectively. Uses the canonical (bi-invariant) metric with a\n"
+                    "configurable weight.")
       .def(nb::init<double>(), nb::arg("weight") = 1.0,
            "Create an SO(2) manifold.\n\n"
            "Args:\n"

@@ -12,9 +12,7 @@ namespace geodex {
 
 /// @brief Canonical (bi-invariant) metric on SO(2).
 ///
-/// @details SO(2) is a 1-D abelian Lie group, so up to a positive scale there is a
-/// single left- (equivalently right-, equivalently bi-) invariant metric. The inner
-/// product is constant:
+/// @details The inner product is constant:
 /// \f$ \langle u, v \rangle = w\, u\, v \f$ with a single scalar weight \f$ w > 0 \f$.
 /// The default \f$ w = 1 \f$ is the unit-speed round metric on the circle, for which
 /// the Lie-group `log` is the Riemannian logarithm.
@@ -22,8 +20,7 @@ namespace geodex {
 /// Implementation: this is `ConstantSPDMetric<1>` with `A = [[w]]`. The scalar
 /// `weight_` is preserved alongside the base metric so that
 /// `SO2::has_riemannian_log_runtime()` can quickly check unit weight without
-/// inspecting the wrapped SPD matrix. Points and tangents are 1-vectors, mirroring
-/// `SE2LeftInvariantMetric` at dimension one.
+/// inspecting the wrapped SPD matrix.
 class SO2CanonicalMetric {
  public:
   using Point = Eigen::Matrix<double, 1, 1>;    ///< Angle \f$ \theta \f$ as a 1-vector.

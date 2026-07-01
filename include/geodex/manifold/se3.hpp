@@ -1,25 +1,5 @@
 /// @file se3.hpp
 /// @brief SE(3) manifold — a genuine Lie group with coupled screw geodesics.
-///
-/// @details SE(3) is the group of rigid-body motions. A pose is stored as a
-/// translation followed by a scalar-last unit quaternion,
-/// \f$ g = [t_x, t_y, t_z,\; q_x, q_y, q_z, q_w] \in \mathbb{R}^7 \f$, and a
-/// tangent (a Lie-algebra twist) is \f$ \xi = [v;\,\omega] \in \mathbb{R}^6 \f$
-/// with the intrinsic dimension being 6. All geometry is delegated to the shared
-/// Lie-group math in `utils/lie.hpp`.
-///
-/// ### Geodesics
-/// The exponential map couples translation and rotation through the SE(3)
-/// left Jacobian \f$ V(\omega) \f$, so a geodesic traces a **screw motion** —
-/// a simultaneous rotation about, and translation along, a fixed axis. These
-/// screw curves are the one-parameter subgroups of SE(3) and are exactly the
-/// canonical Cartan–Schouten geodesics of the group (metric-independent). A
-/// left-invariant metric (`SE3InvariantMetric`) supplies the length functional:
-/// SE(3) admits no bi-invariant metric, so the metric weights are a modeling
-/// choice and the group log serves as the length-minimizing descent direction
-/// under unit weights. This mirrors the modeling convention used for SE(2).
-///
-/// Both a body/left and a world/right group-exponential retraction are provided.
 
 #pragma once
 
@@ -80,8 +60,7 @@ struct SE3LeftExponentialMap {
 /// @details Uses right translation of the group exponential:
 /// \f$ \exp_g(\xi) = \mathrm{Exp}(\xi) \cdot g \f$ and
 /// \f$ \log_g(h) = \mathrm{Log}(h\, g^{-1}) \f$. The twist \f$ \xi \f$ is
-/// expressed in the fixed world/spatial frame. For a non-central base pose the
-/// right retraction differs from the left one.
+/// expressed in the fixed world/spatial frame.
 struct SE3RightExponentialMap {
   using Point = Eigen::Matrix<double, 7, 1>;    ///< Pose \f$ [t;\,q] \f$.
   using Tangent = Eigen::Matrix<double, 6, 1>;  ///< Spatial twist \f$ [v;\,\omega] \f$.
@@ -117,12 +96,11 @@ static_assert(Retraction<SE3RightExponentialMap, Eigen::Matrix<double, 7, 1>,
 
 /// @brief The special Euclidean group \f$ \mathrm{SE}(3) = \mathbb{R}^3 \rtimes \mathrm{SO}(3) \f$.
 ///
-/// @details A genuine Lie group whose geodesics are coupled screw motions (see
-/// the file-level documentation). Poses are represented as
-/// \f$ [t_x, t_y, t_z,\; q_x, q_y, q_z, q_w] \f$ (translation + scalar-last unit
-/// quaternion) and tangents as twists \f$ [v;\,\omega] \f$. The class composes a
-/// metric policy and a retraction policy, following the same design as Sphere,
-/// Torus, and SE(2).
+/// @details A genuine Lie group whose geodesics are coupled screw motions. Poses
+/// are represented as \f$ [t_x, t_y, t_z,\; q_x, q_y, q_z, q_w] \f$ (translation +
+/// scalar-last unit quaternion) and tangents as twists \f$ [v;\,\omega] \f$. The
+/// class composes a metric policy and a retraction policy, following the same
+/// design as Sphere, Torus, and SE(2).
 ///
 /// @tparam MetricT Metric policy (default: `SE3InvariantMetric`).
 /// @tparam RetractionT Retraction policy (default: `SE3LeftExponentialMap`).
@@ -142,9 +120,8 @@ class SE3 {
   /// AND the retraction is one of the group-exponential maps (left or right). In
   /// that case `-log_x(q)` is the length-minimizing descent direction of
   /// \f$ \tfrac12 d^2(\cdot, q) \f$, so `discrete_geodesic` can take the fast
-  /// log-based step. Anisotropic weights or a non-group retraction fall through
-  /// to the finite-difference natural gradient. The weights are a runtime value,
-  /// so this cannot be a pure compile-time signal (mirrors SE(2)).
+  /// log-based step; anisotropic weights or a non-group retraction fall through to
+  /// the finite-difference natural gradient.
   bool has_riemannian_log_runtime() const {
     if constexpr (std::is_same_v<MetricT, SE3InvariantMetric> &&
                   (std::is_same_v<RetractionT, SE3LeftExponentialMap> ||

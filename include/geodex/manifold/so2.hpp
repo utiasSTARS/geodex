@@ -26,12 +26,9 @@ namespace geodex {
 
 /// @brief True exponential and logarithmic maps on SO(2) (Lie group exp/log).
 ///
-/// @details SO(2) is abelian, so the left- and right-invariant exponential maps
-/// coincide and there is no frame distinction: a single retraction suffices.
-/// Points and tangents are 1-vectors holding the angle \f$ \theta \f$ and angular
-/// velocity \f$ \omega \f$ respectively. The maps are plain angle addition and
-/// subtraction wrapped to \f$ [-\pi, \pi) \f$, which realizes the shortest-arc
-/// (constant-speed) geodesic on the circle.
+/// @details Angle addition/subtraction wrapped to \f$ [-\pi, \pi) \f$, realizing
+/// the shortest-arc geodesic on the circle. SO(2) is abelian, so a single map
+/// serves as both retraction and inverse.
 struct SO2ExponentialMap {
   /// @brief Exponential map \f$ \exp_\theta(v) = \mathrm{wrap}(\theta + v) \f$.
   /// @param theta Base angle as a 1-vector.
@@ -69,9 +66,7 @@ static_assert(
 /// @brief The special orthogonal group \f$ \mathrm{SO}(2) \cong S^1 \f$ (the circle group).
 ///
 /// @details A configuration is a single angle \f$ \theta \in [-\pi, \pi) \f$ with
-/// wraparound. SO(2) is a 1-D abelian Lie group, so left- and right-invariant
-/// structure coincide and a single exponential map serves as both retraction and
-/// its inverse. The manifold is parameterized by a metric policy and a retraction
+/// wraparound. The manifold is parameterized by a metric policy and a retraction
 /// policy, following the same design as Sphere, Torus, and SE(2).
 ///
 /// @tparam MetricT Metric policy (default: SO2CanonicalMetric).
@@ -89,10 +84,9 @@ class SO2 {
   /// round metric (unit weight on `SO2CanonicalMetric` paired with the true
   /// `SO2ExponentialMap`)?
   ///
-  /// @details Only in this case is the Lie-group `log` the Riemannian logarithm
-  /// of the metric, so `discrete_geodesic` can safely take the log direction as
-  /// the natural gradient. Because `SO2CanonicalMetric`'s weight is a runtime
-  /// value, this check cannot be made at compile time.
+  /// @details Only in this case is the Lie-group `log` the Riemannian logarithm of
+  /// the metric, so `discrete_geodesic` can take the log direction as the natural
+  /// gradient.
   bool has_riemannian_log_runtime() const {
     if constexpr (std::is_same_v<MetricT, SO2CanonicalMetric> &&
                   std::is_same_v<RetractionT, SO2ExponentialMap>) {

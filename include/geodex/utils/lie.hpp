@@ -1,45 +1,14 @@
 /// @file lie.hpp
 /// @brief Shared SO(3) / SE(3) Lie-group math (quaternions, exp/log, Jacobians).
 ///
-/// This is the foundational geometry header used by both `so3.hpp` and
-/// `se3.hpp`. It provides pure, allocation-free free functions on plain Eigen
-/// vectors so that the manifold classes can stay thin policy wrappers.
-///
-/// ## Conventions (read carefully — the whole library depends on these)
-///
-/// ### Quaternions: scalar-LAST `[x, y, z, w]`
-/// A quaternion is stored as an `Eigen::Vector4d` laid out as
-/// \f$ q = [x, y, z, w] \f$ (the vector part first, the scalar part **last**).
-/// This matches `Eigen::Quaterniond::coeffs()`, so an Eigen quaternion can be
-/// compared component-wise against these functions without reordering.
-///
-/// A *unit* quaternion represents a rotation. Products use the **Hamilton**
-/// convention with the composition property
-/// \f$ R(\mathrm{quat\_mul}(a, b)) = R(a)\,R(b) \f$, i.e. `quat_mul(a, b)`
-/// applies `b` first, then `a` — the same order as multiplying the rotation
-/// matrices. A rotation by angle \f$ \theta \f$ about a unit axis \f$ n \f$ is
-/// \f$ q = [\,\sin(\theta/2)\,n,\; \cos(\theta/2)\,] \f$.
-///
-/// ### Twists (se(3) Lie algebra): `[v; omega]`
-/// An `Eigen::Matrix<double,6,1>` twist is ordered
-/// \f$ \xi = [v_x, v_y, v_z,\; \omega_x, \omega_y, \omega_z] \f$ —
-/// translation-velocity **first**, angular-velocity **last**.
-///
-/// ### SE(3) elements: `[t; quat]`
-/// An `Eigen::Matrix<double,7,1>` group element is ordered
-/// \f$ g = [t_x, t_y, t_z,\; q_x, q_y, q_z, q_w] \f$ — a translation followed
-/// by a scalar-last unit quaternion. The identity is
-/// \f$ [0, 0, 0,\; 0, 0, 0, 1] \f$.
-///
-/// ### Small-angle handling
-/// Every trigonometric coefficient that divides by \f$ \theta \f$,
-/// \f$ \theta^2 \f$ or \f$ \theta^3 \f$ has a Taylor-series branch near
-/// \f$ \theta = 0 \f$ to stay finite and accurate (mirroring the SE(2)
-/// V-matrix pattern in `manifold/se2.hpp`). The SO(3) coefficients switch at
-/// \f$ \theta < 10^{-8} \f$; the SE(3) V-matrix coefficients switch at
-/// \f$ \theta < 10^{-3} \f$ where catastrophic cancellation in
-/// \f$ (1-\cos\theta) \f$ / \f$ (\theta-\sin\theta) \f$ would otherwise degrade
-/// the direct formula.
+/// Storage conventions:
+///   - Quaternions are scalar-last \f$ [x, y, z, w] \f$ (matches
+///     `Eigen::Quaterniond::coeffs()`); products use the Hamilton convention
+///     \f$ R(\mathrm{quat\_mul}(a, b)) = R(a)\,R(b) \f$.
+///   - Twists are \f$ \xi = [v_x, v_y, v_z,\; \omega_x, \omega_y, \omega_z] \f$
+///     (translation-velocity first, angular-velocity last).
+///   - SE(3) elements are \f$ g = [t_x, t_y, t_z,\; q_x, q_y, q_z, q_w] \f$;
+///     the identity is \f$ [0, 0, 0,\; 0, 0, 0, 1] \f$.
 
 #pragma once
 
@@ -51,20 +20,16 @@ namespace geodex::utils {
 
 namespace detail {
 
-/// @brief Cross product of two 3-vectors (kept local so the header needs only
-/// `<Eigen/Core>`, not `<Eigen/Geometry>`).
+/// @brief Cross product of two 3-vectors.
 inline Eigen::Vector3d cross(const Eigen::Vector3d& a, const Eigen::Vector3d& b) {
   return Eigen::Vector3d(a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2],
                          a[0] * b[1] - a[1] * b[0]);
 }
 
-/// @brief Small-angle threshold for the SO(3) exp/log coefficients (no
-/// cancellation there, so the pure-\f$0/0\f$ guard suffices).
+/// @brief Small-angle threshold for the SO(3) exp/log coefficients.
 inline constexpr double kSo3Eps = 1e-8;
 
-/// @brief Small-angle threshold for the SE(3) V-matrix coefficients. Larger
-/// than `kSo3Eps` because \f$(1-\cos\theta)\f$ and \f$(\theta-\sin\theta)\f$
-/// lose relative precision to cancellation well before \f$\theta = 10^{-8}\f$.
+/// @brief Small-angle threshold for the SE(3) V-matrix coefficients.
 inline constexpr double kSe3Eps = 1e-3;
 
 }  // namespace detail

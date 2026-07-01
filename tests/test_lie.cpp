@@ -11,8 +11,8 @@
 
 #include "geodex/utils/lie.hpp"
 
-// The strong SE(3) oracle relies on Eigen's (unsupported) matrix exponential.
-// It is optional: when the header is unavailable, that single test is skipped.
+// Optional strong oracle: skipped when Eigen's unsupported matrix exponential
+// header is unavailable.
 #if __has_include(<unsupported/Eigen/MatrixFunctions>)
 #include <unsupported/Eigen/MatrixFunctions>
 #define GEODEX_HAS_MATRIX_EXP 1
@@ -161,8 +161,7 @@ TEST(LieSo3Log, DoubleCoverGeneric) {
 }
 
 TEST(LieSo3Log, DoubleCoverAtPiExactZeroScalar) {
-  // theta = pi: scalar part is exactly zero, exercising the lexicographic
-  // tie-break so the antipodal identity still holds.
+  // theta = pi: scalar part is exactly zero (exercises the lexicographic tie-break).
   Vector4d q(1.0, 0.0, 0.0, 0.0);
   ExpectVecNear(so3_log(q), so3_log((-q).eval()), 1e-12, "so3_log(q) == so3_log(-q) at pi");
   EXPECT_NEAR(so3_log(q).norm(), kPi, 1e-12);

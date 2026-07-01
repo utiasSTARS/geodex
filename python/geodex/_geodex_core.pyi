@@ -228,8 +228,7 @@ class SO2:
     """The special orthogonal group SO(2), the circle group S¹.
 
     Points and tangents are shape-(1,) arrays (an angle in [−π, π) and an angular
-    velocity). SO(2) is abelian, so a single exponential map is both the retraction
-    and its inverse. Uses the canonical (bi-invariant) metric with a configurable weight.
+    velocity). Uses the canonical (bi-invariant) metric with a configurable weight.
     """
 
     def __init__(self, weight: float = 1.0) -> None: ...
@@ -248,8 +247,7 @@ class SO3:
 
     Points are unit quaternions ``[x, y, z, w]`` (shape (4,)); tangents are body
     angular velocities ω (shape (3,)). Geodesics are quaternion SLERP. ``frame='body'``
-    selects the left-invariant convention, ``frame='world'`` the right-invariant
-    (world-frame) one; they coincide for the default isotropic (bi-invariant) metric.
+    (left-invariant) or ``frame='world'`` (right-invariant).
     """
 
     def __init__(self, frame: str = "body", weight: float = 1.0) -> None: ...
@@ -269,8 +267,7 @@ class SE3:
     A pose is ``[tx, ty, tz, qx, qy, qz, qw]`` (shape (7,)): a translation followed by
     a scalar-last unit quaternion. A tangent is a twist ``[v; ω]`` (shape (6,)).
     Geodesics are coupled screw motions. ``frame='body'`` (left-invariant) or
-    ``frame='world'`` (right-invariant); the two differ, since SE(3) admits no
-    bi-invariant metric.
+    ``frame='world'`` (right-invariant).
     """
 
     def __init__(

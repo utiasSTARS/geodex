@@ -17,7 +17,7 @@ static_assert(RiemannianManifold<ProductManifold<Sphere<>, Euclidean<Eigen::Dyna
 
 namespace {
 
-// Build a length-5 vector (unambiguous comma-initializer idiom).
+// Build a length-5 vector.
 Eigen::VectorXd V5(double a, double b, double c, double d, double e) {
   Eigen::VectorXd v(5);
   v << a, b, c, d, e;

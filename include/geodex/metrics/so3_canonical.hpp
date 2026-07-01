@@ -16,20 +16,14 @@ namespace geodex {
 /// \f$ \omega \in \mathfrak{so}(3) \cong \mathbb{R}^3 \f$ and is constant
 /// (left-invariant):
 /// \f$ \langle u, v \rangle = w_x u_x v_x + w_y u_y v_y + w_z u_z v_z \f$.
-///
-/// The default unit weights \f$ (1, 1, 1) \f$ give the round, **bi-invariant**
-/// metric on SO(3), for which the Lie-group `log` is the Riemannian logarithm
-/// and geodesics are constant-speed rotations (quaternion SLERP). Any isotropic
-/// scaling \f$ w \cdot I \f$ (all three weights equal) is likewise bi-invariant:
-/// it rescales lengths uniformly without changing the geodesics. Anisotropic
-/// weights break bi-invariance and yield a genuinely left-invariant (not
-/// bi-invariant) metric.
+/// The default unit weights \f$ (1, 1, 1) \f$ give the round bi-invariant metric,
+/// for which the Lie-group `log` is the Riemannian logarithm and geodesics are
+/// constant-speed rotations (quaternion SLERP).
 ///
 /// Implementation: this is `ConstantSPDMetric<3>` with
 /// \f$ A = \mathrm{diag}(w_x, w_y, w_z) \f$. The `weights_` field is preserved
 /// alongside the base metric so that `SO3::has_riemannian_log_runtime()` can
-/// quickly test isotropy without inspecting the wrapped SPD matrix. Points and
-/// tangents are 3-vectors, mirroring `SE2LeftInvariantMetric`.
+/// quickly test isotropy without inspecting the wrapped SPD matrix.
 class SO3CanonicalMetric {
  public:
   using Point = Eigen::Vector3d;    ///< Body angular velocity base (unused; constant metric).

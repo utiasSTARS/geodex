@@ -10,14 +10,10 @@ using namespace geodex::python;
 void bind_se3(nb::module_& m) {
   nb::class_<PySE3>(m, "SE3",
                     "The special Euclidean group SE(3) = R^3 x SO(3).\n\n"
-                    "A pose is a 7-vector [tx, ty, tz, qx, qy, qz, qw]: a translation\n"
-                    "followed by a scalar-last unit quaternion, shape (7,).\n"
-                    "A tangent is a twist [v; omega], shape (6,), living in the Lie\n"
-                    "algebra se(3) (intrinsic dimension 6).\n\n"
-                    "Geodesics are coupled screw motions. Uses a left-invariant metric\n"
-                    "(SE3InvariantMetric) with configurable translation/rotation weights.\n"
-                    "The frame selects the group-exponential retraction: 'body' (left)\n"
-                    "or 'world' (right).")
+                    "A pose is a 7-vector [tx, ty, tz, qx, qy, qz, qw]: a translation followed\n"
+                    "by a scalar-last unit quaternion. A tangent is a twist [v; omega], shape (6,).\n"
+                    "Geodesics are coupled screw motions. Uses a left-invariant metric with\n"
+                    "configurable translation/rotation weights. frame='body' (left) or 'world' (right).")
       .def(nb::init<const std::string&, double, double, double, double, double, double, double,
                     double>(),
            nb::arg("frame") = "body", nb::arg("w_trans") = 1.0, nb::arg("w_rot") = 1.0,

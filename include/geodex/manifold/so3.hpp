@@ -26,22 +26,15 @@ namespace geodex {
 // Retraction policies
 // ---------------------------------------------------------------------------
 //
-// SO(3) points are unit quaternions `[x, y, z, w]` (Point = Eigen::Vector4d) and
-// tangents are body angular velocities `omega` (Tangent = Eigen::Vector3d), so
-// Point and Tangent differ in size (4 vs 3). Both retractions below use the true
-// Lie-group exp/log (`utils::so3_exp` / `utils::so3_log`); they differ only in
-// the frame in which the increment acts:
-//   - Left  (body):  q ↦ q · Exp(omega)   — increment on the right, body frame.
-//   - Right (world): q ↦ Exp(omega) · q   — increment on the left, world frame.
-// For an isotropic (bi-invariant) metric both realize the same geodesics and both
-// group logs equal the Riemannian log; for an anisotropic metric they differ.
+// Points are unit quaternions `[x, y, z, w]` (Point = Eigen::Vector4d); tangents
+// are body angular velocities `omega` (Tangent = Eigen::Vector3d), so Point and
+// Tangent differ in size (4 vs 3).
 
 /// @brief Body-frame (left-translation) exponential/logarithm on SO(3).
 ///
 /// @details \f$ \mathrm{retract}(q, \omega) = q \otimes \mathrm{Exp}(\omega) \f$
 /// and \f$ \mathrm{inverse\_retract}(q_0, q_1) = \mathrm{Log}(q_0^{-1} \otimes q_1) \f$,
-/// the body-frame relative rotation. This is the standard left-invariant
-/// exponential map \f$ \exp_q(\omega) = q \cdot \mathrm{Exp}(\omega) \f$.
+/// the body-frame relative rotation.
 struct SO3LeftExponentialMap {
   /// @brief Body exponential map \f$ \exp_q(\omega) = q \otimes \mathrm{Exp}(\omega) \f$.
   /// @param q Base unit quaternion \f$ [x, y, z, w] \f$.
@@ -66,8 +59,7 @@ struct SO3LeftExponentialMap {
 ///
 /// @details \f$ \mathrm{retract}(q, \omega) = \mathrm{Exp}(\omega) \otimes q \f$
 /// and \f$ \mathrm{inverse\_retract}(q_0, q_1) = \mathrm{Log}(q_1 \otimes q_0^{-1}) \f$,
-/// the world-frame relative rotation. This is the right-invariant exponential
-/// map, useful when angular velocities are expressed in the spatial frame.
+/// the world-frame relative rotation.
 struct SO3RightExponentialMap {
   /// @brief World exponential map \f$ \exp_q(\omega) = \mathrm{Exp}(\omega) \otimes q \f$.
   /// @param q Base unit quaternion \f$ [x, y, z, w] \f$.
@@ -106,10 +98,8 @@ static_assert(Retraction<SO3RightExponentialMap, Eigen::Vector4d, Eigen::Vector3
 /// dimension is 3 while a point occupies 4 coordinates.
 ///
 /// The manifold composes a metric policy and a retraction policy following the
-/// same design as Sphere, Torus, and SE(2). With the default
-/// `SO3CanonicalMetric` (unit weights) and either exponential retraction the
-/// metric is bi-invariant: geodesics are constant-speed rotations and
-/// `geodesic(q0, q1, t)` is exactly quaternion SLERP.
+/// same design as Sphere, Torus, and SE(2). With the default `SO3CanonicalMetric`
+/// (unit weights) the metric is bi-invariant and `geodesic` is quaternion SLERP.
 ///
 /// @tparam MetricT Metric policy (default: `SO3CanonicalMetric`).
 /// @tparam RetractionT Retraction policy (default: `SO3LeftExponentialMap`).
@@ -126,17 +116,10 @@ class SO3 {
   /// the currently-configured metric?
   ///
   /// @details True exactly when the metric is isotropic — all three
-  /// `SO3CanonicalMetric` weights equal, i.e. \f$ w \cdot I \f$ — AND the
-  /// retraction is one of the two group exponential maps
-  /// (`SO3LeftExponentialMap` / `SO3RightExponentialMap`). Any isotropic scaling
-  /// is bi-invariant, so both the left and right group logs coincide with the
-  /// Riemannian log and \f$ \nabla_g(\tfrac12 d_g^2(\cdot, q))(x) = -\log_x(q) \f$
-  /// holds exactly; `discrete_geodesic` can then take the log direction as the
-  /// natural gradient. Anisotropic weights break bi-invariance and fall back to
-  /// the finite-difference natural gradient.
-  ///
-  /// Because the weights are a runtime value this check cannot be a compile-time
-  /// constant, so it is exposed as `has_riemannian_log_runtime()`.
+  /// `SO3CanonicalMetric` weights equal — AND the retraction is one of the two
+  /// group exponential maps. In that case the group `log` is the Riemannian
+  /// logarithm and `discrete_geodesic` can take the log direction as the natural
+  /// gradient; anisotropic weights fall back to finite differences.
   bool has_riemannian_log_runtime() const {
     if constexpr ((std::is_same_v<RetractionT, SO3LeftExponentialMap> ||
                    std::is_same_v<RetractionT, SO3RightExponentialMap>) &&
@@ -177,7 +160,7 @@ class SO3 {
   /// @details Draws four standard normals via the Box-Muller transform over the
   /// sampler's uniform box and normalizes the resulting 4-vector — Marsaglia's
   /// method for a uniform point on \f$ S^3 \f$, which projects to the uniform
-  /// (Haar) distribution on SO(3). Mirrors `Sphere::random_point` at dimension 4.
+  /// (Haar) distribution on SO(3).
   /// @return A valid unit quaternion \f$ [x, y, z, w] \f$.
   Point random_point() const {
     sampler_.sample_box(4, sample_buf_);
@@ -203,11 +186,9 @@ class SO3 {
   /// @name Metric delegates
   /// @{
   //
-  // The metric is left-invariant and acts on the body algebra (a 3-vector), so
-  // the manifold Point (a 4-vector quaternion) is not a valid metric base point.
-  // We pass the algebra origin `0 ∈ R^3`; every canonical metric is constant and
-  // ignores it. The `inner_matrix` requires-clause is therefore keyed on the
-  // metric's own point type (`Eigen::Vector3d`), not the manifold Point.
+  // The metric acts on the body algebra (a 3-vector) and ignores its base-point
+  // argument, so the manifold's 4-vector quaternion point is not forwarded; a
+  // zero 3-vector is passed as the metric's `p`.
 
   /// @brief Riemannian inner product at \f$ p \f$.
   Scalar inner(const Point& /*p*/, const Tangent& u, const Tangent& v) const {

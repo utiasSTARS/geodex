@@ -18,18 +18,12 @@ namespace geodex {
 /// ordered \f$ \xi = [v;\,\omega] \f$ and the weight vector is
 /// \f$ w = (w_{v_x}, w_{v_y}, w_{v_z},\; w_{\omega_x}, w_{\omega_y}, w_{\omega_z}) \f$.
 /// The two-scalar constructor sets \f$ w = (w_t, w_t, w_t, w_r, w_r, w_r) \f$ so
-/// translation and rotation can be weighted independently — SE(3) admits no
-/// bi-invariant metric, so any choice of weights is a modeling decision (see
-/// `manifold/se3.hpp`).
+/// translation and rotation can be weighted independently.
 ///
 /// Implementation: this is `ConstantSPDMetric<6>` with `A = diag(w)`. The
 /// `weights_` field is kept alongside the base metric so that
 /// `SE3::has_riemannian_log_runtime()` can cheaply detect unit weights without
 /// inspecting the full SPD matrix.
-///
-/// Because the metric is left-invariant it does not depend on the base point;
-/// the acted-on quantity is the 6-vector twist, so both the point and tangent
-/// types are `Eigen::Matrix<double,6,1>` (the "p" argument is unused/constant).
 class SE3InvariantMetric {
  public:
   using Vector6d = Eigen::Matrix<double, 6, 1>;  ///< Twist / metric-argument type.
