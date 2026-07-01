@@ -17,8 +17,7 @@ jobs:
         include:
           - { os: ubuntu-latest, archs: x86_64 }
           - { os: ubuntu-24.04-arm, archs: aarch64 }
-          - { os: macos-14, archs: arm64 }
-          - { os: macos-13, archs: x86_64 }
+          - { os: macos-14, archs: universal2 }
           - { os: windows-latest, archs: AMD64 }
     steps:
       - uses: actions/checkout@v4
