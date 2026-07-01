@@ -1,5 +1,5 @@
 find_package(Python 3.9
-  REQUIRED COMPONENTS Interpreter Development.Module Development
+  REQUIRED COMPONENTS Interpreter Development.Module
   OPTIONAL_COMPONENTS Development.SABIModule)
 
 # Fetch nanobind

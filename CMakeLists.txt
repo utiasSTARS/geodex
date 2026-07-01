@@ -37,8 +37,11 @@ if(BUILD_OMPL_EXAMPLES)
   find_package(ompl REQUIRED)
 endif()
 
-# Always-on built-in robot dynamics (precompiled CRBA mass matrices).
-include(cmake/robots.cmake)
+# Robot dynamics (precompiled CRBA mass matrices)
+option(GEODEX_ROBOTS "Build the built-in robot dynamics library" ON)
+if(GEODEX_ROBOTS)
+  include(cmake/robots.cmake)
+endif()
 
 # Optional integrations
 include(cmake/integrations/pinocchio.cmake)

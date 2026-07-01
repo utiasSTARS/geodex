@@ -36,7 +36,7 @@ Issues = "https://github.com/utiasSTARS/geodex/issues"
 [tool.scikit-build]
 minimum-version = "0.10"
 cmake.build-type = "Release"
-cmake.args = ["-DBUILD_PYTHON_BINDINGS=ON", "-DGEODEX_ROBOTS_NATIVE_ARCH=OFF"]
+cmake.args = ["-DBUILD_PYTHON_BINDINGS=ON", "-DGEODEX_ROBOTS=OFF"]
 wheel.packages = ["python/geodex"]
 wheel.exclude = ["include/**", "lib/**"]
 wheel.py-api = "cp312"
