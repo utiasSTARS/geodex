@@ -1,0 +1,27 @@
+# Pinned external inputs of the docs assets, read by fetch.py.
+#
+# Each table names one archive or file by URL and SHA-256. fetch.py downloads it once into
+# build/docs-assets-cache/, checks the hash, unpacks archives and returns the directory.
+# Figures and recordings depend only on these pinned sources. Record the license of every
+# entry, and prefer sources whose license allows the docs to show them.
+#
+# [name]
+# url = "https://..."            # a release archive, a wheel, or a file at a commit
+# sha256 = "..."                 # of the downloaded bytes
+# license = "SPDX identifier"    # of the content the docs use
+# unpack = true                  # unpack .tar.gz, .tar.xz, .zip and .whl archives (default)
+
+# PickNik ros2_robotiq_gripper, the visual meshes of the Robotiq 2F-85 on the UR5 in the docs
+# robot viewer. The FR3 model takes its meshes from the pins in
+# third_party/robot_descriptions.cmake.
+[ros2_robotiq_gripper]
+url = "https://github.com/PickNikRobotics/ros2_robotiq_gripper/archive/a74d007d8f2f06dc6a503ad21038ba869d4999a6.tar.gz"
+sha256 = "7f471e183d0f34e0200aecd1840e0d56fa0e17df4639a3e493e408d40fc9835b"
+license = "BSD-3-Clause"
+
+# three.js 0.169.0 from the npm registry. vendor_three.py copies the module build and the
+# loaders, controls and line helpers of the docs robot viewer into docs/_static/three.
+[three]
+url = "https://registry.npmjs.org/three/-/three-0.169.0.tgz"
+sha256 = "c86d0937570fb425d981e156ddf919c43dbc45d4e91fd7c8dd0de56723b3ec71"
+license = "MIT"

@@ -1,0 +1,188 @@
+<!-- Interactive explorer of left-invariant SE(2) metrics for docs/concepts/metrics.rst.
+     Self-contained, with scoped CSS under .gmx-wrap and one inline script and no external
+     dependencies. The cost of reaching a pose is the metric norm of the SE(2) logarithm,
+     the length of the constant-twist motion to it and the cost plan() gives such an edge.
+     The functions between the se2-math markers are checked against geodex by
+     docs/tests/test_widgets.py. -->
+<div class="gmx-wrap">
+  <style>
+    .gmx-wrap{
+      --surface:#f4f7fa; --surface-2:#ffffff; --border:#dfe4ea; --border-strong:#c3d3e0;
+      --text:#1a1a1a; --text-secondary:#52514e; --text-muted:#6c7a89;
+      --accent:#2980b9; --accent-bg:#e7f0fa; --accent-text:#1c5cab; --path:#eb6834;
+      --font:"Lato",Helvetica,Arial,sans-serif;
+      max-width:760px; margin:1.4em auto; font-family:var(--font); color:var(--text);
+    }
+    .gmx-wrap *{box-sizing:border-box;}
+    .gmx-row{display:flex; flex-wrap:wrap; gap:18px; align-items:flex-start;}
+    .gmx-plot{flex:1 1 360px; min-width:280px; position:relative;}
+    .gmx-plot canvas{width:100%; aspect-ratio:1/1; display:block; border:1px solid var(--border-strong); border-radius:6px; cursor:crosshair; touch-action:none;}
+    .gmx-side{flex:1 1 250px; min-width:230px;}
+    .gmx-seg{display:inline-flex; flex-wrap:wrap; border:1px solid var(--border-strong); border-radius:8px; overflow:hidden; margin-bottom:12px;}
+    .gmx-seg button{border:none; padding:6px 11px; font-size:13.5px; background:var(--surface-2); color:var(--text-secondary); cursor:pointer; font-family:inherit; margin:0; box-shadow:none; text-transform:none; line-height:1.25; font-weight:400;}
+    .gmx-seg button + button{border-left:1px solid var(--border);}
+    .gmx-seg button.on{background:var(--accent); color:#fff;}
+    .gmx-slider{margin:8px 0 12px 0;}
+    .gmx-slider label{display:flex; justify-content:space-between; font-size:13.5px; color:var(--text-secondary);}
+    .gmx-slider label sub{font-size:0.75em;}
+    .gmx-slider label b{color:var(--text); font-weight:700; font-variant-numeric:tabular-nums;}
+    .gmx-slider input{width:100%; accent-color:var(--accent); margin:4px 0 0 0;}
+    .gmx-cards{display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:6px;}
+    .gmx-card{background:var(--surface); border-radius:8px; padding:.5rem .75rem;}
+    .gmx-card .lbl{font-size:12.5px; color:var(--text-secondary);}
+    .gmx-card .val{font-size:19px; font-weight:700; color:var(--text); font-variant-numeric:tabular-nums;}
+    .gmx-card.hi{background:var(--accent-bg);}
+    .gmx-card.hi .val, .gmx-card.hi .lbl{color:var(--accent-text);}
+    .gmx-legend{display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--text-secondary); margin-top:8px;}
+    .gmx-legend .bar{flex:1; height:10px; border-radius:3px; border:1px solid var(--border);}
+    .gmx-hint{font-size:12.5px; color:var(--text-muted); margin:.7rem 0 0 0; line-height:1.55;}
+  </style>
+
+  <div class="gmx-row">
+    <div class="gmx-plot">
+      <canvas id="gmx-canvas" width="640" height="640" role="img"
+              aria-label="Cost of reaching each position from a robot at the center under an SE(2) metric"></canvas>
+      <div class="gmx-legend"><span>cheap</span><span class="bar" id="gmx-bar"></span><span>expensive</span></div>
+    </div>
+    <div class="gmx-side">
+      <div class="gmx-seg" id="gmx-presets">
+        <button data-w="1,1,0.5" class="on">Holonomic</button>
+        <button data-w="1,100,1">Differential drive</button>
+        <button data-w="1,20,2.25">Car-like</button>
+      </div>
+      <div class="gmx-slider">
+        <label><span>lateral weight w<sub>y</sub></span> <b id="gmx-wy-val">1.0</b></label>
+        <input type="range" id="gmx-wy" min="0" max="2" step="0.01" value="0">
+      </div>
+      <div class="gmx-slider">
+        <label><span>turning weight w<sub>&theta;</sub></span> <b id="gmx-wt-val">0.50</b></label>
+        <input type="range" id="gmx-wt" min="-1" max="1" step="0.01" value="-0.301">
+      </div>
+      <div class="gmx-cards">
+        <div class="gmx-card hi"><div class="lbl">edge cost</div><div class="val" id="gmx-cost">&ndash;</div></div>
+        <div class="gmx-card"><div class="lbl">arrival heading</div><div class="val" id="gmx-head">&ndash;</div></div>
+        <div class="gmx-card"><div class="lbl">sliding share of cost&sup2;</div><div class="val" id="gmx-lat">&ndash;</div></div>
+        <div class="gmx-card"><div class="lbl">turning share of cost&sup2;</div><div class="val" id="gmx-turn">&ndash;</div></div>
+      </div>
+      <p class="gmx-hint">The robot sits at the center facing right, in a 6 m by 6 m square.
+        Color is the metric length of the constant-twist motion to each position, with the
+        cheapest arrival heading. Each weight multiplies a squared rate, so the shares split
+        the squared cost. Move the pointer over the square to draw the motion and the robot
+        along it.</p>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    // [se2-math-start]
+    // SE(2) logarithm at the identity, body frame: returns [vx, vy, omega] for the pose
+    // (x, y, theta), matching geodex's SE2 log with theta in [-pi, pi).
+    function se2Log(x, y, theta) {
+      var t = Math.atan2(Math.sin(theta), Math.cos(theta));
+      if (Math.abs(t) < 1e-9) return [x, y, t];
+      var a = 0.5 * t * Math.sin(t) / (1 - Math.cos(t));
+      var b = 0.5 * t;
+      return [a * x + b * y, -b * x + a * y, t];
+    }
+    // SE(2) exponential at the identity of the body velocity (vx, vy, omega) times s.
+    function se2Exp(v, s) {
+      var w = v[2] * s, vx = v[0] * s, vy = v[1] * s;
+      if (Math.abs(w) < 1e-9) return [vx, vy, w];
+      var sw = Math.sin(w), cw = Math.cos(w);
+      return [(sw * vx - (1 - cw) * vy) / w, ((1 - cw) * vx + sw * vy) / w, w];
+    }
+    function metricNorm(v, w) {
+      return Math.sqrt(w[0] * v[0] * v[0] + w[1] * v[1] * v[1] + w[2] * v[2] * v[2]);
+    }
+    // [se2-math-end]
+
+    var root = document.currentScript.parentElement;
+    var canvas = root.querySelector("#gmx-canvas"), ctx = canvas.getContext("2d");
+    var wySlider = root.querySelector("#gmx-wy"), wtSlider = root.querySelector("#gmx-wt");
+    var R = 3.0, N = 128, HEADINGS = 96;
+    var ramp = ["#cde2fb", "#b7d3f6", "#9ec5f4", "#86b6ef", "#6da7ec", "#5598e7",
+                "#3987e5", "#2a78d6", "#256abf", "#1c5cab", "#184f95", "#104281"];
+    root.querySelector("#gmx-bar").style.background =
+      "linear-gradient(90deg," + ramp.join(",") + ")";
+    var w = [1, 1, 0.5], field = null, fieldMax = 1, target = [2.0, 1.5];
+
+    function best(x, y) {
+      var bestCost = Infinity, bestV = null;
+      for (var k = 0; k < HEADINGS; k++) {
+        var th = -Math.PI + 2 * Math.PI * k / HEADINGS;
+        var v = se2Log(x, y, th), c = metricNorm(v, w);
+        if (c < bestCost) { bestCost = c; bestV = v; }
+      }
+      return [bestCost, bestV];
+    }
+    function compute() {
+      field = new Float64Array(N * N); fieldMax = 0;
+      for (var j = 0; j < N; j++) for (var i = 0; i < N; i++) {
+        var x = -R + 2 * R * (i + 0.5) / N, y = R - 2 * R * (j + 0.5) / N;
+        var c = best(x, y)[0]; field[j * N + i] = c; if (c > fieldMax) fieldMax = c;
+      }
+    }
+    function toPx(x, y) { return [(x + R) / (2 * R) * canvas.width, (R - y) / (2 * R) * canvas.height]; }
+    function robot(p, color, alpha) {
+      var s = canvas.width / (2 * R), c = toPx(p[0], p[1]);
+      ctx.save(); ctx.translate(c[0], c[1]); ctx.rotate(-p[2]); ctx.globalAlpha = alpha;
+      ctx.fillStyle = "#ffffff"; ctx.strokeStyle = color; ctx.lineWidth = 2.5;
+      ctx.fillRect(-0.3 * s, -0.2 * s, 0.6 * s, 0.4 * s); ctx.strokeRect(-0.3 * s, -0.2 * s, 0.6 * s, 0.4 * s);
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0.28 * s, 0); ctx.stroke();
+      ctx.restore();
+    }
+    function draw() {
+      var cell = canvas.width / N, bands = ramp.length;
+      for (var j = 0; j < N; j++) for (var i = 0; i < N; i++) {
+        var b = Math.min(bands - 1, Math.floor(field[j * N + i] / fieldMax * bands));
+        ctx.fillStyle = ramp[b]; ctx.fillRect(i * cell, j * cell, cell + 1, cell + 1);
+      }
+      var r = best(target[0], target[1]), v = r[1];
+      ctx.lineWidth = 4; ctx.strokeStyle = "#eb6834"; ctx.beginPath();
+      for (var k = 0; k <= 60; k++) {
+        var p = se2Exp(v, k / 60), q = toPx(p[0], p[1]);
+        if (k === 0) ctx.moveTo(q[0], q[1]); else ctx.lineTo(q[0], q[1]);
+      }
+      ctx.stroke();
+      for (var m = 1; m <= 4; m++) robot(se2Exp(v, m / 4), "#eb6834", 0.9);
+      robot([0, 0, 0], "#0b0b0b", 1);
+      var total = w[0] * v[0] * v[0] + w[1] * v[1] * v[1] + w[2] * v[2] * v[2];
+      root.querySelector("#gmx-cost").textContent = r[0].toFixed(2);
+      root.querySelector("#gmx-head").textContent = (v[2] * 180 / Math.PI).toFixed(0) + "°";
+      root.querySelector("#gmx-lat").textContent = (100 * w[1] * v[1] * v[1] / total).toFixed(0) + "%";
+      root.querySelector("#gmx-turn").textContent = (100 * w[2] * v[2] * v[2] / total).toFixed(0) + "%";
+    }
+    function fromSliders() {
+      w = [1, Math.pow(10, +wySlider.value), Math.pow(10, +wtSlider.value)];
+      root.querySelector("#gmx-wy-val").textContent = w[1] < 10 ? w[1].toFixed(1) : w[1].toFixed(0);
+      root.querySelector("#gmx-wt-val").textContent = w[2].toFixed(2);
+      compute(); draw();
+    }
+    function setWeights(ws) {
+      wySlider.value = Math.log10(ws[1]); wtSlider.value = Math.log10(ws[2]); fromSliders();
+    }
+    root.querySelectorAll("#gmx-presets button").forEach(function (b) {
+      b.addEventListener("click", function () {
+        root.querySelectorAll("#gmx-presets button").forEach(function (o) { o.classList.remove("on"); });
+        b.classList.add("on"); setWeights(b.dataset.w.split(",").map(Number));
+      });
+    });
+    [wySlider, wtSlider].forEach(function (s) {
+      s.addEventListener("input", function () {
+        root.querySelectorAll("#gmx-presets button").forEach(function (o) { o.classList.remove("on"); });
+        fromSliders();
+      });
+    });
+    function pick(ev) {
+      var box = canvas.getBoundingClientRect();
+      var x = -R + 2 * R * (ev.clientX - box.left) / box.width;
+      var y = R - 2 * R * (ev.clientY - box.top) / box.height;
+      if (Math.hypot(x, y) < 0.05) return;
+      target = [x, y]; draw();
+    }
+    canvas.addEventListener("pointermove", pick);
+    canvas.addEventListener("pointerdown", pick);
+    setWeights([1, 1, 0.5]);
+  })();
+  </script>
+</div>

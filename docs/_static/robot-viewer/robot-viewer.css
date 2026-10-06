@@ -1,0 +1,173 @@
+/* The robot viewer of the geodex docs (robot-scene directive). */
+
+.geodex-robot-scene {
+    position: relative;
+    width: 100%;
+    border: 1px solid #dfe4ea;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+.geodex-robot-scene.geodex-robot-hero {
+    border-color: #e8ebef;
+}
+
+.geodex-robot-poster,
+.geodex-robot-stage,
+.geodex-robot-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.geodex-robot-poster {
+    object-fit: cover;
+    display: block;
+    margin: 0;
+}
+
+.geodex-robot-canvas {
+    display: block;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    cursor: grab;
+}
+
+.geodex-robot-canvas:active {
+    cursor: grabbing;
+}
+
+.geodex-robot-ready .geodex-robot-canvas {
+    opacity: 1;
+}
+
+.geodex-robot-hint {
+    position: absolute;
+    top: 0.6em;
+    right: 0.8em;
+    font-size: 0.78em;
+    color: #6b7178;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.geodex-robot-ready .geodex-robot-hint {
+    opacity: 0.85;
+}
+
+.geodex-robot-touched .geodex-robot-hint {
+    opacity: 0;
+}
+
+.geodex-robot-controls {
+    position: absolute;
+    left: 0.6em;
+    right: 0.6em;
+    bottom: 0.5em;
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.geodex-robot-controls[hidden] {
+    display: none;
+}
+
+.geodex-robot-ready .geodex-robot-controls {
+    opacity: 0.55;
+}
+
+.geodex-robot-ready:hover .geodex-robot-controls,
+.geodex-robot-ready:focus-within .geodex-robot-controls {
+    opacity: 1;
+}
+
+.geodex-robot-controls button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 1.9em;
+    min-width: 1.9em;
+    padding: 0 0.55em;
+    border: 1px solid #cfd6de;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    color: #2c3e50;
+    font-size: 0.8em;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.geodex-robot-controls button:hover {
+    border-color: #2980b9;
+    color: #2980b9;
+}
+
+.geodex-robot-controls button:focus-visible {
+    outline: 2px solid #2980b9;
+    outline-offset: 1px;
+}
+
+.geodex-robot-play {
+    padding: 0 !important;
+    width: 1.9em;
+}
+
+.geodex-robot-play svg {
+    width: 0.9em;
+    height: 0.9em;
+    fill: currentColor;
+}
+
+.geodex-robot-play .geodex-robot-icon-pause,
+.geodex-robot-playing .geodex-robot-play .geodex-robot-icon-play {
+    display: none;
+}
+
+.geodex-robot-playing .geodex-robot-play .geodex-robot-icon-pause {
+    display: block;
+}
+
+.geodex-robot-spheres[aria-pressed="false"] {
+    color: #6b7178;
+    background: rgba(255, 255, 255, 0.75);
+}
+
+.geodex-robot-scrub {
+    flex: 1;
+    min-width: 4em;
+    height: 1.2em;
+    margin: 0;
+    accent-color: #2980b9;
+    background: transparent;
+    cursor: pointer;
+}
+
+.geodex-robot-failed .geodex-robot-canvas,
+.geodex-robot-failed .geodex-robot-controls,
+.geodex-robot-failed .geodex-robot-hint {
+    display: none;
+}
+
+.geodex-figure.geodex-robot-figure-hero {
+    margin: 0.4em auto 1.8em auto;
+}
+
+@media (max-width: 600px) {
+    .geodex-robot-hint {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .geodex-robot-canvas,
+    .geodex-robot-controls,
+    .geodex-robot-hint {
+        transition: none;
+    }
+}

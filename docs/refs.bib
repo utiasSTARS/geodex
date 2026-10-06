@@ -1,30 +1,43 @@
 @inproceedings{kyaw2026geometry,
-  abstract = {In many robot motion planning problems, task objectives and physical constraints induce non-Euclidean geometry on the configuration space, yet many planners operate using Euclidean distances that ignore this structure. We address the problem of planning collision-free motions that minimize length under configuration-dependent Riemannian metrics, corresponding to geodesics on the configuration manifold. Conventional numerical methods for computing such paths do not scale well to high-dimensional systems, while sampling-based planners trade scalability for geometric fidelity. To bridge this gap, we propose a sampling-based motion planning framework that operates directly on Riemannian manifolds. We introduce a computationally efficient midpoint-based approximation of the Riemannian geodesic distance and prove that it matches the true Riemannian distance with third-order accuracy. Building on this approximation, we design a local planner that traces the manifold using first-order retractions guided by Riemannian natural gradients. Experiments on a two-link planar arm and a 7-DoF Franka manipulator under a kinetic-energy metric, as well as on rigid-body planning in SE(2) with non-holonomic motion constraints, demonstrate that our approach consistently produces lower-cost trajectories than Euclidean-based planners and classical numerical geodesic-solver baselines.},
-  address = {Oulu, Finland},
-  author = {Phone Thiha Kyaw and Jonathan Kelly},
-  booktitle = {Proceedings of the 17th World Symposium on the Algorithmic Foundations of Robotics {(WAFR)}},
-  date = {2026-06-15/2026-06-17},
-  month = {Jun. 15--17},
-  note = {To Appear},
-  title = {Geometry-Aware Sampling-Based Motion Planning on {Riemannian} Manifolds},
-  url = {https://arxiv.org/abs/2602.00992},
-  year = {2026}
+  title={Geometry-Aware Sampling-Based Motion Planning on {Riemannian} Manifolds},
+  author={Kyaw, Phone Thiha and Kelly, Jonathan},
+  booktitle={Proceedings of the 17th World Symposium on the Algorithmic Foundations of Robotics (WAFR)},
+  address={Oulu, Finland},
+  month={jun},
+  year={2026},
+  url={https://arxiv.org/abs/2602.00992}
+}
+
+@article{kyaw2026geodex,
+  title={geodex: A Library for Motion Planning on {Riemannian} Manifolds},
+  author={Kyaw, Phone Thiha and Wei, Ben and Samavi, Sepehr and {Rogel Garcia}, Miguel Angel and Kelly, Jonathan},
+  journal={arXiv preprint arXiv:26XX.XXXXX},
+  year={2026},
+  url={https://arxiv.org/abs/26XX.XXXXX}
+}
+
+@article{kyaw2026greedy,
+  title={Greedy Heuristics for Sampling-Based Motion Planning in High-Dimensional State Spaces},
+  author={Kyaw, Phone Thiha and Le, Anh Vu and Mohan, Rajesh Elara and Kelly, Jonathan},
+  journal={Autonomous Robots},
+  year={2026},
+  url={https://arxiv.org/abs/2405.03411}
 }
 
 @inproceedings{jaquier2022riemannian,
-  title={Riemannian geometry as a unifying theory for robot motion learning and control},
-  author={Jaquier, No{\'e}mie and Asfour, Tamim},
-  booktitle={The International Symposium of Robotics Research},
-  pages={395--403},
-  year={2022},
-  organization={Springer}
+  title        = {{Riemannian} geometry as a unifying theory for robot motion learning and control},
+  author       = {Jaquier, No{\'e}mie and Asfour, Tamim},
+  booktitle    = {The International Symposium of Robotics Research},
+  pages        = {395--403},
+  year         = {2022},
+  organization = {Springer}
 }
 
 @article{li2024riemannian,
-  title={A Riemannian take on distance fields and geodesic flows in robotics},
-  author={Li, Yiming and Qiu, Jiacheng and Calinon, Sylvain},
-  journal={arXiv preprint arXiv:2412.05197},
-  year={2024}
+  title   = {A {Riemannian} take on distance fields and geodesic flows in robotics},
+  author  = {Li, Yiming and Qiu, Jiacheng and Calinon, Sylvain},
+  journal = {arXiv preprint arXiv:2412.05197},
+  year    = {2024}
 }
 
 @book{BulloLewis2004,
@@ -32,7 +45,7 @@
   title     = {Geometric Control of Mechanical Systems},
   publisher = {Springer},
   volume    = {49},
-  year      = {2004},
+  year      = {2004}
 }
 
 @book{Arnold1989,
@@ -40,7 +53,7 @@
   title     = {Mathematical Methods of Classical Mechanics},
   edition   = {2nd},
   publisher = {Springer},
-  year      = {1989},
+  year      = {1989}
 }
 
 @book{Lee2018,
@@ -48,30 +61,174 @@
   title     = {Introduction to {Riemannian} Manifolds},
   edition   = {2nd},
   publisher = {Springer},
-  year      = {2018},
+  year      = {2018}
 }
 
 @book{Boumal2023,
   author    = {Boumal, Nicolas},
   title     = {An Introduction to Optimization on Smooth Manifolds},
   publisher = {Cambridge University Press},
-  year      = {2023},
+  year      = {2023}
 }
 
 @book{Absil2008,
   author    = {Absil, P.-A. and Mahony, Robert and Sepulchre, Rodolphe},
   title     = {Optimization Algorithms on Matrix Manifolds},
   publisher = {Princeton University Press},
-  year      = {2008},
+  year      = {2008}
 }
 
 @article{belta2002euclidean,
-  title={Euclidean metrics for motion generation on {SE(3)}},
-  author={Belta, Calin and Kumar, Vijay},
-  journal={Proceedings of the Institution of Mechanical Engineers, Part C: Journal of Mechanical Engineering Science},
-  volume={216},
-  number={1},
-  pages={47--60},
-  year={2002},
-  publisher={SAGE Publications Sage UK: London, England}
+  title     = {Euclidean metrics for motion generation on {SE(3)}},
+  author    = {Belta, Calin and Kumar, Vijay},
+  journal   = {Proceedings of the Institution of Mechanical Engineers, Part C: Journal of Mechanical Engineering Science},
+  volume    = {216},
+  number    = {1},
+  pages     = {47--60},
+  year      = {2002},
+  publisher = {SAGE Publications Sage UK: London, England}
+}
+
+@article{park1995distance,
+  title     = {Distance Metrics on the Rigid-Body Motions with Applications to Mechanism Design},
+  author    = {Park, F. C.},
+  journal   = {Journal of Mechanical Design},
+  volume    = {117},
+  number    = {1},
+  pages     = {48--54},
+  year      = {1995},
+  publisher = {American Society of Mechanical Engineers}
+}
+
+@article{vandercorput1935,
+  author  = {van der Corput, J. G.},
+  title   = {Verteilungsfunktionen},
+  journal = {Proceedings of the Koninklijke Akademie van Wetenschappen te Amsterdam},
+  volume  = {38},
+  pages   = {813--821},
+  year    = {1935}
+}
+
+@article{halton1960,
+  author  = {Halton, J. H.},
+  title   = {On the efficiency of certain quasi-random sequences of points in evaluating multi-dimensional integrals},
+  journal = {Numerische Mathematik},
+  volume  = {2},
+  pages   = {84--90},
+  year    = {1960}
+}
+
+@article{braaten1979,
+  author  = {Braaten, E. and Weller, G.},
+  title   = {An improved low-discrepancy sequence for multidimensional quasi-{Monte Carlo} integration},
+  journal = {Journal of Computational Physics},
+  volume  = {33},
+  number  = {2},
+  pages   = {249--258},
+  year    = {1979}
+}
+
+@article{owen2017,
+  author  = {Owen, Art B.},
+  title   = {A randomized {Halton} algorithm in {R}},
+  journal = {arXiv preprint arXiv:1706.02808},
+  year    = {2017}
+}
+
+@article{muller1959,
+  author  = {Muller, Mervin E.},
+  title   = {A note on a method for generating points uniformly on n-dimensional spheres},
+  journal = {Communications of the ACM},
+  volume  = {2},
+  number  = {4},
+  pages   = {19--20},
+  year    = {1959}
+}
+
+@article{marsaglia1972,
+  author  = {Marsaglia, George},
+  title   = {Choosing a point from the surface of a sphere},
+  journal = {The Annals of Mathematical Statistics},
+  volume  = {43},
+  number  = {2},
+  pages   = {645--646},
+  year    = {1972}
+}
+
+@incollection{shoemake1992,
+  author    = {Shoemake, Ken},
+  title     = {Uniform random rotations},
+  booktitle = {Graphics Gems III},
+  publisher = {Elsevier},
+  pages     = {124--132},
+  year      = {1992}
+}
+
+@article{okten2011,
+  author  = {{\"O}kten, Giray and G{\"o}nc{\"u}, Ahmet},
+  title   = {Generating low-discrepancy sequences from the normal distribution: {Box--Muller} or inverse transform?},
+  journal = {Mathematical and Computer Modelling},
+  volume  = {53},
+  number  = {5--6},
+  pages   = {1268--1281},
+  year    = {2011}
+}
+
+@inproceedings{branicky2001,
+  author    = {Branicky, Michael S. and LaValle, Steven M. and Olson, Kari and Yang, Libo},
+  title     = {Quasi-randomized path planning},
+  booktitle = {IEEE International Conference on Robotics and Automation (ICRA)},
+  pages     = {1481--1487},
+  year      = {2001}
+}
+
+@book{lavalle2006,
+  author    = {LaValle, Steven M.},
+  title     = {Planning Algorithms},
+  publisher = {Cambridge University Press},
+  year      = {2006}
+}
+
+@article{janson2018,
+  author  = {Janson, Lucas and Ichter, Brian and Pavone, Marco},
+  title   = {Deterministic sampling-based motion planning: Optimality, complexity, and performance},
+  journal = {The International Journal of Robotics Research},
+  volume  = {37},
+  number  = {1},
+  pages   = {46--61},
+  year    = {2018}
+}
+@article{kyaw2026loewner,
+  title={Direct Informed Sampling on {Riemannian} Manifolds via {Loewner} Order Lower Bounds},
+  author={Kyaw, Phone Thiha and Kelly, Jonathan},
+  journal={IEEE Robotics and Automation Letters},
+  year={2026},
+  url={https://arxiv.org/abs/2606.02879}
+}
+
+@inproceedings{gammell2014informed,
+  title={Informed {RRT*}: Optimal sampling-based path planning focused via direct sampling of an admissible ellipsoidal heuristic},
+  author={Gammell, Jonathan D. and Srinivasa, Siddhartha S. and Barfoot, Timothy D.},
+  booktitle={IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
+  pages={2997--3004},
+  year={2014}
+}
+
+@inproceedings{thomason2024vamp,
+  title={Motions in Microseconds via Vectorized Sampling-Based Planning},
+  author={Thomason, Wil and Kingston, Zachary and Kavraki, Lydia E.},
+  booktitle={IEEE International Conference on Robotics and Automation (ICRA)},
+  year={2024},
+  url={http://arxiv.org/abs/2309.14545}
+}
+
+@article{chamzas2022mbm,
+  title={{MotionBenchMaker}: A Tool to Generate and Benchmark Motion Planning Datasets},
+  author={Chamzas, Constantinos and Quintero-Pe{\~n}a, Carlos and Kingston, Zachary and Orthey, Andreas and Rakita, Daniel and Gleicher, Michael and Toussaint, Marc and Kavraki, Lydia E.},
+  journal={IEEE Robotics and Automation Letters},
+  volume={7},
+  number={2},
+  pages={882--889},
+  year={2022},
+  doi={10.1109/LRA.2021.3133603}
 }

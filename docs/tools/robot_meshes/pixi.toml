@@ -1,0 +1,27 @@
+# Environment of the robot mesh build for the docs viewer (build.py). It holds the URDF and
+# mesh tools, xacro for the descriptions that need it, and Node.js for the glTF-Transform
+# CLI that package.json pins.
+[workspace]
+name = "geodex-docs-robot-meshes"
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-arm64"]
+
+[dependencies]
+python = "3.12.*"
+numpy = "2.3.*"
+trimesh = "4.8.*"
+pycollada = "0.9.*"
+networkx = "3.5.*"
+lxml = "6.0.*"
+pyyaml = "6.0.*"
+pillow = "11.3.*"
+scipy = "1.16.*"
+nodejs = "22.*"
+
+[pypi-dependencies]
+yourdfpy = "==0.0.60"
+xacro = "==2.1.1"
+
+[tasks.build]
+cmd = "python build.py"
+description = "Build the robot GLBs and chain descriptions under docs/_static/robots"

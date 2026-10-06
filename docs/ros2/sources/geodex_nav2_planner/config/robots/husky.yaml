@@ -1,0 +1,32 @@
+# Clearpath Husky (a300), a skid-steer base driven as a differential drive.
+#
+# The footprint comes from clearpath_common tag 2.9.17 (726d7fba), package
+# clearpath_platform_description, and from the dimensions Clearpath publishes for the platform.
+# The footprint is the rectangle around base_link that covers the description's collision
+# geometry (chassis and wheels), widened to the published outer dimensions where those are
+# larger. It covers the whole robot.
+#   description  chassis collision mesh x [-0.451, 0.4475] m, y +-0.2305 m
+#                (meshes/a300/chassis_collision.stl), wheels r 0.1651 m, width 0.1143 m at
+#                wheel_base 0.512 m and wheel_track 0.562 m, together x [-0.451, 0.4475] m,
+#                y +-0.338 m
+#   published    990 x 698 mm (clearpathrobotics.com/husky-a300-unmanned-ground-vehicle-robot)
+#
+# The Husky uses the Jackal's differential-drive weights with wtheta 4.0. Length scales
+# with the square root of a weight, and a radian of turning costs sqrt(2), about 1.41, times as
+# much as on the Jackal. A skid-steer base scrubs its wheels to turn, and the Husky's 0.512 m
+# wheelbase scrubs more than the Jackal's 0.262 m.
+planner_server:
+  ros__parameters:
+    planner_plugins: ["GridBased"]
+    GridBased:
+      plugin: "geodex_nav2_planner::GeodexSE2Planner"
+      wx: 1.0
+      wy: 50.0
+      wtheta: 4.0
+      max_reverse_run: 0.2
+      forward_repair: true
+
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      footprint: "[[0.495, 0.349], [0.495, -0.349], [-0.495, -0.349], [-0.495, 0.349]]"

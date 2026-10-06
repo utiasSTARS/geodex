@@ -1,0 +1,279 @@
+{
+ "robot": "ur5",
+ "label": "Universal Robots UR5 with a Robotiq 2F-85",
+ "root": "offset_link",
+ "joint_names": [
+  "shoulder_pan_joint",
+  "shoulder_lift_joint",
+  "elbow_joint",
+  "wrist_1_joint",
+  "wrist_2_joint",
+  "wrist_3_joint"
+ ],
+ "links": [
+  "offset_link",
+  "shoulder_link",
+  "upper_arm_link",
+  "forearm_link",
+  "wrist_1_link",
+  "wrist_2_link",
+  "wrist_3_link"
+ ],
+ "joints": [
+  {
+   "name": "shoulder_pan_joint",
+   "type": "revolute",
+   "parent": "offset_link",
+   "child": "shoulder_link",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.0,
+     1.003559
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.706825181105,
+     0.707388269167
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 0
+  },
+  {
+   "name": "shoulder_lift_joint",
+   "type": "revolute",
+   "parent": "shoulder_link",
+   "child": "upper_arm_link",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.13585,
+     0.0
+    ],
+    "quat": [
+     0.0,
+     0.707106780552,
+     0.0,
+     0.707106781821
+    ]
+   },
+   "axis": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "index": 1
+  },
+  {
+   "name": "elbow_joint",
+   "type": "revolute",
+   "parent": "upper_arm_link",
+   "child": "forearm_link",
+   "origin": {
+    "xyz": [
+     0.0,
+     -0.1197,
+     0.425
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "index": 2
+  },
+  {
+   "name": "wrist_1_joint",
+   "type": "revolute",
+   "parent": "forearm_link",
+   "child": "wrist_1_link",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.0,
+     0.39225
+    ],
+    "quat": [
+     0.0,
+     0.707106780552,
+     0.0,
+     0.707106781821
+    ]
+   },
+   "axis": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "index": 3
+  },
+  {
+   "name": "wrist_2_joint",
+   "type": "revolute",
+   "parent": "wrist_1_link",
+   "child": "wrist_2_link",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.093,
+     0.0
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 4
+  },
+  {
+   "name": "wrist_3_joint",
+   "type": "revolute",
+   "parent": "wrist_2_link",
+   "child": "wrist_3_link",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.0,
+     0.09465
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "index": 5
+  }
+ ],
+ "ee": {
+  "link": "tool0",
+  "parent": "wrist_3_link",
+  "xyz": [
+   0.0,
+   0.0823,
+   0.0
+  ],
+  "quat": [
+   -0.707106780552,
+   0.0,
+   0.0,
+   0.707106781821
+  ]
+ },
+ "meshes": {
+  "full": "ur5.glb",
+  "ghost": "ur5_ghost.glb"
+ },
+ "bounds": {
+  "forearm_link": [
+   [
+    -0.058,
+    -0.0572,
+    -0.058
+   ],
+   [
+    0.058,
+    0.0545,
+    0.4312
+   ]
+  ],
+  "offset_link": [
+   [
+    -0.0734,
+    -0.0734,
+    0.9114
+   ],
+   [
+    0.11,
+    0.0734,
+    0.9354
+   ]
+  ],
+  "shoulder_link": [
+   [
+    -0.0595,
+    -0.0595,
+    -0.0652
+   ],
+   [
+    0.0595,
+    0.0705,
+    0.0685
+   ]
+  ],
+  "upper_arm_link": [
+   [
+    -0.0595,
+    -0.0652,
+    -0.0595
+   ],
+   [
+    0.0595,
+    0.0685,
+    0.4845
+   ]
+  ],
+  "wrist_1_link": [
+   [
+    -0.0387,
+    0.0475,
+    -0.0572
+   ],
+   [
+    0.0387,
+    0.1324,
+    0.0475
+   ]
+  ],
+  "wrist_2_link": [
+   [
+    -0.0387,
+    -0.0572,
+    0.0491
+   ],
+   [
+    0.0387,
+    0.0475,
+    0.1334
+   ]
+  ],
+  "wrist_3_link": [
+   [
+    -0.0763,
+    0.0473,
+    -0.0375
+   ],
+   [
+    0.0761,
+    0.2746,
+    0.043
+   ]
+  ]
+ }
+}

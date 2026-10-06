@@ -17,6 +17,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Released
 
+### [1.0.0] - 2026-10-06
+
+geodex 1.0 plans collision-free, metric-aware robot motion in a single planning call, from Python or C++, with the whole stack in one `pip install`.
+
+#### Highlights
+- **Plan with a single call.** `geodex.plan(robot, start, goal, collision=scene)` returns a smooth, collision-free path. `planning::plan()` is the same call in C++.
+- **Everything from pip.** `pip install pygeodex` now includes planning, SIMD collision checking and the built-in robots on Linux and macOS.
+- **Nine robots, ready to plan.** Franka Panda and FR3, UR5, Baxter, PR2, Hello Robot Stretch 3 and Stretch 4, and a UR5e on a Clearpath Ridgeback or Husky.
+- **Whole-body mobile manipulation.** Base and arm are planned together, and a holonomic or a differential-drive base is one metric setting. `make_product` and `heuristics::product_lower_bound` build the space and its heuristic for any base and arm.
+- **Smooth paths.** `smooth_path` rounds the corners of a path into C² curves, checked like every other edge and at most 0.1 percent longer under the metric than the corners they replace. A time parameterization such as TOTG or TOPP-RA no longer stops at every waypoint. On a differential-drive base, the base pose may keep a corner where the base turns, and the arm's joints still turn along curves (`PathSmoothingSettings.sharp_coordinates`). `PathSmoothingSettings.round_corners = False` keeps the corners. `PathSmoothingSettings.edge_travel` spaces the edge checks by a bound on how far the checked geometry moves, and a robot plan spaces them by each edge's own sphere travel.
+- **ROS 2 plugins.** A Nav2 global planner and a MoveIt planner, in their own repositories, for Jazzy and Lyrical.
+- **Planning times.** Every plan reports the time and the iterations to its first solution (`first_solution_ms`, `first_solution_iterations`) next to the search and smoothing times (`time_ms`, `smooth_ms`). At `LogLevel.Info`, or with `GEODEX_LOG_LEVEL=info`, `plan()` prints them.
+- **Reproducible.** A seed and an iteration budget give the same path on every run on the same platform, and one pixi workspace builds every dependency from one exact release or commit.
+- **New documentation.** Every example comes in Python and C++, with interactive 3D views and robot guides.
+
+#### Upgrading from 0.2
+- `collision_resolution` is now `collision_check_resolution` in `PlanSettings` and `PathSmoothingSettings`, and it sets only the spacing of the edge checks. The MoveIt plugin's `planner.collision_resolution` and the Nav2 plugin's `collision_resolution` are renamed the same way.
+- `simplify_path` and the earlier smoothers are replaced by `smooth_path`, which `plan()` runs for you. It returns the smoothed path at evenly spaced waypoints, at the longest step that follows its rounded corners within `corner_tolerance`, and `output_spacing` limits the step.
+- The default sampler is scrambled Halton. Use `PseudoRandomSampler` for independent uniform samples.
+- `plan()` joins states with the manifold's geodesic by default (`interp="base_geodesic"`). `interp="riemannian_geodesic"` follows the discrete geodesic of the metric, and `interp="auto"` picks between the two.
+- `geodex.planners.RRTConnect` is removed, and `plan()` always runs G-RRT*. `PlanSettings.planner` holds the parameters of `GreedyRRTstar`.
+- The Fetch robot is removed.
+- Installed CMake targets are `geodex::robots`, `geodex::vamp` and `geodex::pinocchio`, and `find_package(geodex 1.0)` accepts any 1.x release.
+- The examples follow the docs sections, and `examples/README.md` lists them. `pixi run quickstart` replaces `pixi run plan`.
+- The sphere, `minimum_energy_grid` and `manipulator_planning` examples, the MotionBenchMaker sample problems and the `BUILD_BENCHMARKS` option are removed.
+
+#### Fixes
+- The built-in heuristics could overestimate the cost for some robot configurations.
+- Arrays of the wrong size from Python now raise `ValueError` instead of crashing.
+- Planning from several threads at once is now safe.
+- A seeded plan in Python and the same plan in C++ could differ in the last bits and then return different smoothed paths. On one build they now return the same path bit for bit.
+- A seeded plan returns the same path in a process that has planned before.
+- With `greedy_ratio=0`, G-RRT* pruned its trees to the greedy set. It now prunes them to the informed set.
+- With `limits` set, a C++ `plan()` on a space with a sampling box, such as `Euclidean`, sampled the box instead of the limits and could fail to find a path when the limits reached outside [-1, 1].
+
 ### [0.2.1] - 2026-07-01
 
 #### Added - new major features
@@ -41,7 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Added - new major features
 - Built-in robot dynamics (`geodex::robots`) — an always-on `geodex_robots` archive with **no Pinocchio dependency**:
-  - `robots::MassMatrix<Robot::R>` — precompiled CRBA joint-space mass matrix `M(q)` for **Panda, UR5, Fetch, Baxter, and PR2**, code-generated per robot from its URDF and post-processed for SIMD-friendly trigonometry. Fully fixed-size at compile time and roughly 2× faster than Pinocchio's CRBA.
+  - `robots::MassMatrix<Robot::R>` — precompiled CRBA joint-space mass matrix `M(q)` for **Panda, UR5, Fetch, Baxter, and PR2**, code-generated per robot from its URDF and post-processed for SIMD-friendly trigonometry. Fully fixed-size at compile time.
   - `robots::MassLowerBound<Robot::R>::matrix()` — a certified constant SPD matrix that lower-bounds `M(q)` in the Loewner order over each robot's joint-limit box, shipped precomputed so planners load a constant instead of running `precompute_matrix_lower_bound` at startup.
 - Admissible heuristics (`geodex::heuristics`):
   - `heuristics::MatrixLowerBound` — informed-sampling heuristic built from a constant SPD Loewner lower bound of the metric.

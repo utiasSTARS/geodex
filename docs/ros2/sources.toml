@@ -1,0 +1,46 @@
+# Files of the two ROS 2 plugin repositories that the ROS 2 pages show or read.
+#
+# docs/tools/plugin_sources.py copies each file verbatim into docs/ros2/sources/<repository>/
+# with the same relative path, records its SHA-256 here, and writes the parameter and robot
+# tables under docs/ros2/generated/ from the copies. Its check mode fails when a copy differs
+# from its recorded hash, when a table differs from what the copies produce, or, with the
+# plugin checkouts present, when a copy differs from the plugin's own file. The copies are
+# the plugins' tested configuration files, so every snippet on the pages is one of them.
+#
+# The checkouts default to sibling directories of the geodex tree. GEODEX_NAV2_PLANNER_DIR
+# and GEODEX_MOVEIT_DIR name others.
+
+[repositories.geodex_nav2_planner]
+url = "https://github.com/utiasSTARS/geodex_nav2_planner"
+env = "GEODEX_NAV2_PLANNER_DIR"
+files = [
+  "README.md",
+  "params/geodex_nav2_planner_parameters.yaml",
+  "config/office.yaml",
+  "config/robots/jackal.yaml",
+  "config/robots/husky.yaml",
+  "config/robots/ridgeback.yaml",
+  "config/robots/dingo_o.yaml",
+]
+
+[repositories.geodex_moveit]
+url = "https://github.com/utiasSTARS/geodex_moveit"
+env = "GEODEX_MOVEIT_DIR"
+files = [
+  "README.md",
+  "geodex_moveit/params/geodex_moveit_parameters.yaml",
+  "geodex_moveit_demos/config/fr3_shelf_geodex.yaml",
+]
+
+# SHA-256 of every copy, written by the sync mode.
+[sha256]
+"geodex_moveit/README.md" = "a8d83b8549c10286661b3d8e6c7514b07e7310d6a6c1479fea3065fd0e297dfc"
+"geodex_moveit/geodex_moveit/params/geodex_moveit_parameters.yaml" = "3b77318898b45dd5675e8cff8cb011216b9920338b70b854c4d50871a0713a89"
+"geodex_moveit/geodex_moveit_demos/config/fr3_shelf_geodex.yaml" = "b742e3d42f717d0e760fd84d393c3490d4b31c2098f84e4ebc5d5cc6e737e7bc"
+"geodex_nav2_planner/README.md" = "e779f389c05230663d9ec03fd210b03913abb819c0a11c788d3fc2b4ac059844"
+"geodex_nav2_planner/config/office.yaml" = "692c06594ee2857e5c6dea846cffcc0ab4cdb37e068b35a457f3146e1c0243d8"
+"geodex_nav2_planner/config/robots/dingo_o.yaml" = "96f37df92b877a6971ae4ee4c7247d796f74ce302f1d98cb3b374040428a3881"
+"geodex_nav2_planner/config/robots/husky.yaml" = "08c673fe0b12e3307b4848e2585bc819bad4d8bf1a2acc387acf89a219924ad3"
+"geodex_nav2_planner/config/robots/jackal.yaml" = "bb41e36c820ad34ac44bf645790d4edc3365386b7499f404a2f8ffc16d3094a2"
+"geodex_nav2_planner/config/robots/ridgeback.yaml" = "801749c46cc68320a32cf9c1c4ef313c66b9f559d6fd2cd042446d1761d649e9"
+"geodex_nav2_planner/params/geodex_nav2_planner_parameters.yaml" = "bdb31c049d351efe11c772944a950bfe40f022da29e10deb19111f71ccf9930d"

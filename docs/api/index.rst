@@ -1,179 +1,56 @@
 API Reference
 =============
 
-Core Concepts
--------------
+The C++ core is header-only apart from the robot library and the integrations. The table below
+gives the Python and C++ entry points of each capability. See :doc:`python` for every public
+name of the module and :doc:`cpp` for every public header.
 
-.. doxygenfile:: core/concepts.hpp
-   :sections: briefdescription detaileddescription
+.. list-table::
+   :header-rows: 1
+   :widths: 30 35 35
 
-.. doxygenfile:: core/metric.hpp
-   :sections: briefdescription detaileddescription
+   * - Capability
+     - Python
+     - C++
+   * - Manifolds
+     - ``geodex.Sphere``, ``geodex.SE2``, ...
+     - ``geodex::Sphere``, ``geodex::SE2``, ...
+   * - Custom metric on a manifold
+     - ``geodex.ConfigurationSpace``
+     - ``geodex::ConfigurationSpace``
+   * - Clearance metric
+     - ``geodex.ClearanceMetric``
+     - ``geodex::SDFConformalMetric``
+   * - Planning
+     - ``geodex.plan``, ``geodex.PlanSettings``
+     - ``geodex::planning::plan``, ``geodex::planning::PlanSettings``
+   * - Smoothing
+     - ``geodex.smooth_path``
+     - ``geodex::algorithm::smooth_path``
+   * - Planner log level
+     - ``geodex.set_log_level``
+     - ``geodex::planning::set_log_level``
+   * - Built-in robots
+     - ``geodex.robots.Panda()``, ...
+     - ``geodex::robots::Robot::Panda``, ...
+   * - Planning for a robot in a scene
+     - ``geodex.plan(robot, q0, q1, collision=scene)``
+     - ``geodex::robots::plan<R>(q0, q1, env)``
+   * - Whole-body spaces
+     - ``geodex.robots.Stretch4(base=...)``
+     - ``geodex::make_product(SE2, geodex::robots::joint_space<R>())``
+   * - Heuristic of a product
+     - ``geodex.heuristics.product_lower_bound``
+     - ``geodex::heuristics::product_lower_bound``
+   * - Collision scenes
+     - ``geodex.load_scene``, ``geodex.Scene``
+     - ``geodex::integration::vamp::load_scene``
+   * - Planar collision
+     - ``geodex.collision``
+     - ``geodex::collision``
 
-.. doxygenfile:: core/distance.hpp
-   :sections: briefdescription detaileddescription
+.. toctree::
+   :maxdepth: 2
 
-.. doxygenfile:: core/interpolation.hpp
-   :sections: briefdescription detaileddescription
-
-.. doxygenfile:: core/retraction.hpp
-   :sections: briefdescription detaileddescription
-
-Manifolds
----------
-
-Sphere
-^^^^^^
-
-.. doxygenclass:: geodex::Sphere
-   :members:
-
-.. doxygentypedef:: geodex::SphereRoundMetric
-
-.. doxygenstruct:: geodex::SphereExponentialMap
-   :members:
-
-.. doxygenstruct:: geodex::SphereProjectionRetraction
-   :members:
-
-Euclidean
-^^^^^^^^^
-
-.. doxygenclass:: geodex::Euclidean
-   :members:
-
-.. doxygentypedef:: geodex::EuclideanStandardMetric
-
-
-Torus
-^^^^^
-
-.. doxygenclass:: geodex::Torus
-   :members:
-
-.. doxygentypedef:: geodex::TorusFlatMetric
-
-SE(2)
-^^^^^
-
-.. doxygenclass:: geodex::SE2
-   :members:
-
-Configuration Space
-^^^^^^^^^^^^^^^^^^^
-
-.. doxygenclass:: geodex::ConfigurationSpace
-   :members:
-
-Metrics
--------
-
-.. doxygenclass:: geodex::IdentityMetric
-   :members:
-
-.. doxygenclass:: geodex::ConstantSPDMetric
-   :members:
-
-.. doxygenclass:: geodex::SE2LeftInvariantMetric
-   :members:
-
-.. doxygenclass:: geodex::KineticEnergyMetric
-   :members:
-
-.. doxygenclass:: geodex::JacobiMetric
-   :members:
-
-.. doxygenclass:: geodex::PullbackMetric
-   :members:
-
-.. doxygenclass:: geodex::WeightedMetric
-   :members:
-
-.. doxygenclass:: geodex::SDFConformalMetric
-   :members:
-
-Collision
----------
-
-.. doxygenclass:: geodex::collision::DistanceGrid
-   :members:
-
-.. doxygenclass:: geodex::collision::GridSDF
-   :members:
-
-.. doxygenclass:: geodex::collision::InflatedSDF
-   :members:
-
-.. doxygenclass:: geodex::collision::PolygonFootprint
-   :members:
-
-.. doxygenclass:: geodex::collision::FootprintGridChecker
-   :members:
-
-.. doxygenclass:: geodex::collision::CircleSDF
-   :members:
-
-.. doxygenclass:: geodex::collision::CircleSmoothSDF
-   :members:
-
-.. doxygenstruct:: geodex::collision::RectObstacle
-   :members:
-
-.. doxygenclass:: geodex::collision::RectSmoothSDF
-   :members:
-
-.. doxygenfunction:: geodex::collision::rects_overlap
-
-Sampling
---------
-
-.. doxygenclass:: geodex::StochasticSampler
-   :members:
-
-.. doxygenclass:: geodex::HaltonSampler
-   :members:
-
-.. doxygenconcept:: geodex::Sampler
-
-.. doxygenconcept:: geodex::SeedableSampler
-
-Heuristics
-----------
-
-.. doxygenstruct:: geodex::EuclideanHeuristic
-   :members:
-
-Algorithms
-----------
-
-.. doxygenfunction:: geodex::distance_midpoint
-
-.. doxygenstruct:: geodex::InterpolationSettings
-   :members:
-
-.. doxygenenum:: geodex::InterpolationStatus
-
-.. doxygenstruct:: geodex::InterpolationResult
-   :members:
-
-.. doxygenstruct:: geodex::InterpolationCache
-   :members:
-
-.. doxygenfunction:: geodex::discrete_geodesic
-
-Batched inner product
-~~~~~~~~~~~~~~~~~~~~~
-
-.. doxygenconcept:: geodex::HasBatchInnerMatrix
-
-OMPL Integration
-----------------
-
-.. doxygenclass:: geodex::integration::ompl::GeodexStateSpace
-   :members:
-
-.. doxygenclass:: geodex::integration::ompl::GeodexState
-   :members:
-
-.. doxygenclass:: geodex::integration::ompl::GeodexStateSampler
-   :members:
+   python
+   cpp
