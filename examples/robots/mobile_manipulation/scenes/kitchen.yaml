@@ -1,0 +1,53 @@
+# A kitchen for the Stretch examples, written for geodex. Box dimensions are full extents
+# in meters, and the floor is at z = 0.
+world:
+  collision_objects:
+    - id: back_wall
+      primitive_poses:
+        - position: [0.0, 2.55, 1.2]
+          orientation: [0.0, 0.0, 0.0, 1.0]
+      primitives:
+        - type: box
+          dimensions: [6.2, 0.1, 2.4]
+    - id: left_wall
+      primitive_poses:
+        - position: [-3.05, 0.0, 1.2]
+          orientation: [0.0, 0.0, 0.0, 1.0]
+      primitives:
+        - type: box
+          dimensions: [0.1, 5.2, 2.4]
+    - id: counter
+      primitive_poses:
+        - position: [-2.7, 0.35, 0.45]
+          orientation: [0.0, 0.0, 0.0, 1.0]
+      primitives:
+        - type: box
+          dimensions: [0.6, 2.7, 0.9]
+    - id: fridge
+      primitive_poses:
+        - position: [-2.6, 2.1, 0.9]
+          orientation: [0.0, 0.0, 0.0, 1.0]
+      primitives:
+        - type: box
+          dimensions: [0.8, 0.7, 1.8]
+    - id: island
+      primitive_poses:
+        - position: [0.0, 0.8, 0.45]
+          orientation: [0.0, 0.0, 0.0, 1.0]
+      primitives:
+        - type: box
+          dimensions: [1.6, 0.8, 0.9]
+    - id: table
+      primitive_poses:
+        - position: [2.0, -1.2, 0.37]
+          orientation: [0.0, 0.0, 0.0, 1.0]
+      primitives:
+        - type: box
+          dimensions: [0.9, 1.2, 0.74]
+    - id: chair
+      primitive_poses:
+        - position: [-0.2, -1.2, 0.45]
+          orientation: [0.0, 0.0, 0.0, 1.0]
+      primitives:
+        - type: box
+          dimensions: [0.45, 0.45, 0.9]
