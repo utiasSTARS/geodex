@@ -1,9 +1,20 @@
 build/
+.pixi/
 .venv/
 __pycache__/
 *.pyc
+.DS_Store
 
 # Generated outputs
 *.json
-!package.json
 *.html
+!package.json
+!scripts/robotgen/robots/*.json
+# Docs assets that the docs build embeds but does not generate
+!docs/_static/*.html
+!docs/_static/plots/*.html
+!docs/_static/robots/*/*.json
+!docs/_static/robot-scenes/*.json
+!docs/tools/robot_meshes/package-lock.json
+
+*.tar.gz
