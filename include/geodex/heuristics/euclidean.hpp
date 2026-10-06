@@ -3,13 +3,15 @@
 
 #pragma once
 
+#include "geodex/utils/ordered_sum.hpp"
+
 namespace geodex::heuristics {
 
 /// @brief Euclidean (L2) chord-distance heuristic.
 ///
 /// @details Computes the chord distance \f$ \|a - b\|_2 \f$ between two
 /// coordinate vectors. Admissible for any manifold where geodesic distance
-/// is bounded below by chord distance — specifically, when
+/// is bounded below by chord distance, which holds when
 /// \f$ \lambda_{\min}(M(q)) \geq 1 \f$ for all \f$ q \in \mathcal{Q} \f$.
 /// When \f$ \lambda_{\min} < 1 \f$ in some direction, the geodesic distance
 /// may be less than the chord distance, making this heuristic inadmissible
@@ -21,7 +23,7 @@ struct Euclidean {
   /// @return The Euclidean chord distance.
   template <typename PointA, typename PointB>
   auto operator()(const PointA& a, const PointB& b) const -> double {
-    return (a - b).norm();
+    return utils::ordered_norm(a - b);
   }
 };
 

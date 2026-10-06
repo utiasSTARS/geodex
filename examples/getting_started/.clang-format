@@ -1,0 +1,3 @@
+# Docs snippets wrap at 84 columns, the width of the docs content column.
+BasedOnStyle: InheritParentConfig
+ColumnLimit: 84

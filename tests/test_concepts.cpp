@@ -43,7 +43,7 @@ static_assert(!geodex::Manifold<NotAManifold>);
 static_assert(!geodex::RiemannianManifold<NotAManifold>);
 
 TEST(Concepts, MockEuclideanSatisfiesAllConcepts) {
-  // Runtime confirmation — if this compiles, concepts are satisfied.
+  // Runtime confirmation. The file compiles only when the concepts are satisfied.
   EXPECT_TRUE(geodex::Manifold<MockEuclidean>);
   EXPECT_TRUE(geodex::RiemannianManifold<MockEuclidean>);
   EXPECT_TRUE(geodex::HasMetric<MockEuclidean>);

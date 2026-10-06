@@ -14,12 +14,13 @@ void bind_so3(nb::module_& m) {
       "Points are unit quaternions [x,y,z,w] (shape (4,)); tangents are body angular "
       "velocities omega (shape (3,)).\n"
       "frame='body' (left-invariant) or 'world' (right-invariant).")
-      .def(nb::init<const std::string&, double>(), nb::arg("frame") = "body",
-           nb::arg("weight") = 1.0,
+      .def(nb::init<const std::string&, double, const std::string&>(), nb::arg("frame") = "body",
+           nb::arg("weight") = 1.0, nb::arg("sampler") = "scrambled",
            "Create an SO(3) manifold.\n\n"
            "Args:\n"
            "    frame: 'body' (left-invariant) or 'world' (right-invariant).\n"
-           "    weight: Positive isotropic metric weight; norm scales as sqrt(weight).")
+           "    weight: Positive isotropic metric weight; norm scales as sqrt(weight).\n"
+           "    sampler: 'scrambled' (default), 'halton', or 'random'.")
       .def("dim", &PySO3::dim, "Return the intrinsic dimension (always 3).")
       .def("random_point", &PySO3::random_point,
            "Sample a rotation uniformly (Haar measure) as a unit quaternion [x,y,z,w].")
@@ -34,5 +35,9 @@ void bind_so3(nb::module_& m) {
            "Geodesic distance d(p, q) (rotation angle for the bi-invariant metric).")
       .def("geodesic", &PySO3::geodesic, nb::arg("p"), nb::arg("q"), nb::arg("t"),
            "Geodesic interpolation at parameter t in [0, 1] (quaternion SLERP).")
+      .def("seed", &PySO3::seed, nb::arg("seed"),
+           "Reseed the sampler for reproducible sampling.")
+      .def("set_sampler", &PySO3::set_sampler, nb::arg("sampler"),
+           "Switch the sampler: 'scrambled', 'halton', or 'random'.")
       .def("__repr__", &PySO3::repr);
 }

@@ -3,9 +3,11 @@ Concept Hierarchy and Architecture
 
 **geodex** is built around a small set of C++20 concepts that define what it means to
 be a manifold, a metric, a retraction, and so on. These concepts compose through a
-*policy-based design*: a manifold class like ``Sphere`` is parameterized by
+*policy-based design*. A manifold class like ``Sphere`` is parameterized by
 interchangeable metric, retraction, and sampler policies, and the compiler statically
 verifies that the assembled type satisfies the full ``RiemannianManifold`` concept.
+Algorithms, the planner and the integrations consume manifolds only through these
+concepts, and every layer above the geometry works for every manifold below it.
 
 Concept Hierarchy
 -----------------
@@ -52,6 +54,16 @@ adds the geometric structure needed for distance computation and motion planning
            +injectivity_radius()
        }
 
+       class HasCoordinateMetric {
+           <<concept>>
+           +coordinate_metric(p)
+       }
+
+       class HasPeriods {
+           <<concept>>
+           +periods()
+       }
+
        class RiemannianManifold {
            <<concept>>
        }
@@ -60,22 +72,26 @@ adds the geometric structure needed for distance computation and motion planning
        Manifold <|-- HasDistance
        Manifold <|-- HasGeodesic
        Manifold <|-- HasInjectivityRadius
+       Manifold <|-- HasCoordinateMetric
+       Manifold <|-- HasPeriods
        HasMetric <|-- RiemannianManifold
        HasDistance <|-- RiemannianManifold
        HasGeodesic <|-- RiemannianManifold
 
-``RiemannianManifold`` is deliberately monolithic: any type satisfying it provides the
-complete interface that algorithms need. For finer-grained constraints, geodex also
-defines three orthogonal trait concepts: ``HasMetric``, ``HasDistance``, and
-``HasGeodesic``. These allow algorithms to require only the operations they actually
-use. For example, an algorithm that only needs exp/log can constrain on
-``HasGeodesic`` without requiring a full metric. ``HasInjectivityRadius`` optionally
-exposes the local injectivity radius on manifolds that support it.
+A type satisfying ``RiemannianManifold`` provides the complete interface that algorithms
+need. Three trait concepts (``HasMetric``, ``HasDistance``, ``HasGeodesic``) let algorithms
+constrain on only the operations they actually use, and ``HasInjectivityRadius`` exposes the
+local injectivity radius on manifolds that support it. ``HasCoordinateMetric`` and
+``HasPeriods`` describe the coordinates themselves, the metric tensor on coordinate
+velocities and the period of each periodic axis. The planner uses both for an admissible
+heuristic whose chord wraps around a periodic heading, as on :math:`\mathrm{SE}(2)` (see
+:doc:`planning`).
 
-Two further policy concepts plug into a manifold from the side. ``Retraction<>`` is the
-contract every retraction policy satisfies, with just ``retract(p, v)`` and
-``inverse_retract(p, q)``. ``Sampler`` and its refinement ``SeedableSampler`` allow
-drawing uniform samples on manifolds.
+``Retraction<>`` is the contract every retraction policy satisfies, with only
+``retract(p, v)`` and ``inverse_retract(p, q)``. ``Sampler`` and its refinement
+``SeedableSampler`` give uniform samples in the unit cube, and the default is a scrambled
+Halton low-discrepancy sequence. A manifold's measure-preserving map sends that sequence onto
+the manifold (see :doc:`sampling`).
 
 .. mermaid::
 
@@ -95,7 +111,7 @@ drawing uniform samples on manifolds.
 
        class Sampler {
            <<concept>>
-           +sample_box(d, out)
+           +sample(n, out)
        }
 
        class SeedableSampler {
@@ -110,80 +126,106 @@ drawing uniform samples on manifolds.
 How It All Fits Together
 ------------------------
 
-Three families of policies (metrics, retractions, samplers) feed into the manifold
-classes, and algorithms consume those manifolds through the ``RiemannianManifold``
-concept.
+The library has four layers. The **geometry** layer holds the manifolds and the three
+families of policies they are built from (metrics, retractions, samplers). The
+**algorithm** layer consumes manifolds through the concepts, with distance and geodesic
+interpolation, the smoother and the metric lower bound. The
+**planning** layer turns a manifold into a plan through ``plan()``, with admissible
+heuristics, the collision helpers and the built-in robots. The **integration** layer
+connects geodex to other software (OMPL for search, VAMP for collision checking, Pinocchio
+for dynamics, and the Nav2 and MoveIt 2 plugins in their own repositories). The Python
+module binds every layer. See :doc:`/api/index` for the Python and C++ names where they
+differ.
 
 .. graphviz::
 
    digraph geodex {
-       rankdir=LR;
+       rankdir=TB;
        bgcolor="transparent";
-       compound=true;
        pad="0.3";
-       nodesep="0.35";
-       ranksep="0.9";
-       node [shape=box, style="filled",
-             fillcolor="#e7f0fa", color="#2980b9", penwidth="1.2",
-             fontname="Helvetica", fontsize=11, fontcolor="#1a1a1a",
-             margin="0.18,0.10", height="0.45"];
-       edge [color="#2980b9", penwidth="1.1",
-             fontname="Helvetica", fontsize=10, fontcolor="#34495e",
-             arrowsize="0.8"];
-       graph [fontname="Helvetica", fontsize=11, fontcolor="#1a1a1a",
-              color="#2980b9", penwidth="1.0",
-              style="filled", fillcolor="#f7fbfe"];
+       ranksep="0.42";
+       node [shape=plain, fontname="Helvetica", fontsize=13, fontcolor="#1a1a1a"];
+       edge [color="#2980b9", penwidth="1.1", fontname="Helvetica", fontsize=12,
+             fontcolor="#34495e", arrowsize="0.8"];
 
-       subgraph cluster_metrics {
-           label=<<B>Metrics</B>>;
-           ConstantSPDMetric;
-           WeightedMetric;
-           KineticEnergyMetric;
-           JacobiMetric;
-           PullbackMetric;
-           SE2LeftInvariantMetric;
-       }
+       // Each layer is one node, a bold title over a row of cells. Cell text starts right
+       // after its tag.
+       policies [label=<
+         <TABLE BGCOLOR="#f7fbfe" COLOR="#2980b9" BORDER="1" CELLBORDER="0"
+                CELLSPACING="10" CELLPADDING="7">
+           <TR><TD COLSPAN="3" CELLPADDING="2"
+               ><FONT POINT-SIZE="14"><B>Policies</B></FONT></TD></TR>
+           <TR>
+             <TD BGCOLOR="#e7f0fa" BORDER="1">Metrics<BR
+               />Identity, ConstantSPD, SE2LeftInvariant,<BR/>KineticEnergy, Jacobi, Pullback,<BR
+               />SDFConformal (clearance), Weighted</TD>
+             <TD BGCOLOR="#e7f0fa" BORDER="1">Retractions<BR
+               />exponential maps, projection, Euler</TD>
+             <TD BGCOLOR="#e7f0fa" BORDER="1">Samplers<BR
+               />ScrambledHalton, Halton, PseudoRandom</TD>
+           </TR>
+         </TABLE>>];
+       manifolds [label=<
+         <TABLE BGCOLOR="#f7fbfe" COLOR="#2980b9" BORDER="1" CELLBORDER="0"
+                CELLSPACING="10" CELLPADDING="7">
+           <TR><TD COLSPAN="2" CELLPADDING="2"
+               ><FONT POINT-SIZE="14"><B>Manifolds</B></FONT></TD></TR>
+           <TR>
+             <TD BGCOLOR="#e7f0fa" BORDER="1">Sphere, Euclidean, Torus,<BR/>SO2, SO3, SE2, SE3</TD>
+             <TD BGCOLOR="#e7f0fa" BORDER="1">ConfigurationSpace,<BR/>ProductManifold</TD>
+           </TR>
+         </TABLE>>];
+       algorithms [label=<
+         <TABLE BGCOLOR="#f7fbfe" COLOR="#2980b9" BORDER="1" CELLBORDER="0"
+                CELLSPACING="10" CELLPADDING="7">
+           <TR><TD COLSPAN="3" CELLPADDING="2"
+               ><FONT POINT-SIZE="14"><B>Algorithms</B></FONT></TD></TR>
+           <TR>
+             <TD BGCOLOR="#e7f0fa" BORDER="1">distance_midpoint,<BR/>discrete_geodesic</TD>
+             <TD BGCOLOR="#e7f0fa" BORDER="1">smooth_path</TD>
+             <TD BGCOLOR="#e7f0fa" BORDER="1">precompute_matrix_lower_bound</TD>
+           </TR>
+         </TABLE>>];
+       planning [label=<
+         <TABLE BGCOLOR="#f7fbfe" COLOR="#2980b9" BORDER="1" CELLBORDER="0"
+                CELLSPACING="10" CELLPADDING="7">
+           <TR><TD COLSPAN="4" CELLPADDING="2"
+               ><FONT POINT-SIZE="14"><B>Planning</B></FONT></TD></TR>
+           <TR>
+             <TD BGCOLOR="#e7f0fa" BORDER="1">plan()</TD>
+             <TD BGCOLOR="#e7f0fa" BORDER="1">heuristics<BR/>Zero, Euclidean, MatrixLowerBound</TD>
+             <TD BGCOLOR="#e7f0fa" BORDER="1">collision<BR/>SDFs, footprints, distance grids</TD>
+             <TD BGCOLOR="#e7f0fa" BORDER="1">robots<BR/>CRBA mass matrices, bounds,<BR
+               />joint spaces</TD>
+           </TR>
+         </TABLE>>];
+       integrations [label=<
+         <TABLE BGCOLOR="#f7fbfe" COLOR="#2980b9" BORDER="1" CELLBORDER="0"
+                CELLSPACING="10" CELLPADDING="7">
+           <TR><TD COLSPAN="4" CELLPADDING="2"
+               ><FONT POINT-SIZE="14"><B>Integrations</B></FONT></TD></TR>
+           <TR>
+             <TD BGCOLOR="#e7f0fa" BORDER="1">OMPL fork<BR/>state space, G-RRT*</TD>
+             <TD BGCOLOR="#e7f0fa" BORDER="1">VAMP<BR/>SIMD collision checking</TD>
+             <TD BGCOLOR="#e7f0fa" BORDER="1">Pinocchio<BR/>mass matrices from URDF</TD>
+             <TD BGCOLOR="#e7f0fa" BORDER="1">Nav2 and MoveIt 2<BR/>planner plugins</TD>
+           </TR>
+         </TABLE>>];
 
-       subgraph cluster_retractions {
-           label=<<B>Retractions</B>>;
-           SphereExponentialMap;
-           SphereProjectionRetraction;
-           SE2ExponentialMap;
-           SE2EulerRetraction;
-       }
-
-       subgraph cluster_samplers {
-           label=<<B>Samplers</B>>;
-           StochasticSampler;
-           HaltonSampler;
-       }
-
-       subgraph cluster_manifolds {
-           label=<<B>Manifolds</B>>;
-           Sphere       [label="Sphere<Dim>"];
-           Euclidean    [label="Euclidean<Dim>"];
-           Torus        [label="Torus<Dim>"];
-           SE2          [label="SE2"];
-           ConfigurationSpace;
-       }
-
-       subgraph cluster_algorithms {
-           label=<<B>Algorithms</B>>;
-           distance_midpoint;
-           discrete_geodesic;
-       }
-
-       JacobiMetric          -> Sphere    [ltail=cluster_metrics,
-                                            lhead=cluster_manifolds,
-                                            label="metric"];
-       SE2EulerRetraction    -> SE2       [ltail=cluster_retractions,
-                                            lhead=cluster_manifolds,
-                                            label="retraction"];
-       HaltonSampler         -> Euclidean [ltail=cluster_samplers,
-                                            lhead=cluster_manifolds,
-                                            label="sampler"];
-       ConfigurationSpace    -> distance_midpoint
-                                          [ltail=cluster_manifolds,
-                                           lhead=cluster_algorithms,
-                                           label="RiemannianManifold"];
+       policies   -> manifolds    [label="  policies"];
+       manifolds  -> algorithms   [label="  RiemannianManifold"];
+       algorithms -> planning;
+       planning   -> integrations;
    }
+
+Each arrow is a dependency through a concept, not through a concrete type. A new metric works
+in every manifold that accepts a metric policy, a new manifold works in every algorithm and
+in ``plan()`` as soon as it satisfies ``RiemannianManifold``, and the integrations see only
+the planner's interface.
+
+See also
+--------
+
+- :doc:`metrics` for what each metric models.
+- :doc:`planning` and :doc:`smoothing` for the planning layer.
+- :doc:`/api/cpp` for the reference of every type in the map.

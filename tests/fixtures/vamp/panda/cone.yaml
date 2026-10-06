@@ -1,0 +1,10 @@
+# A cone. The VAMP scene does not model cones, and load_scene rejects this file.
+world:
+  collision_objects:
+    - id: cone
+      primitive_poses:
+        - position: [0.0, 0.0, 0.5]
+          orientation: [0.0, 0.0, 0.0, 1.0]
+      primitives:
+        - type: cone
+          dimensions: [2.0, 1.0]

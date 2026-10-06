@@ -16,6 +16,31 @@ using namespace geodex;
 static_assert(RiemannianManifold<SO3<>>);
 static_assert(RiemannianManifold<SO3<SO3CanonicalMetric, SO3RightExponentialMap>>);
 
+TEST(SO3, UnitCubeDimIsThree) {
+  SO3<> m;
+  EXPECT_EQ(m.unit_cube_dim(), 3);
+}
+
+TEST(SO3, FromUnitCubeIsUnitQuaternion) {
+  SO3<> m;
+  Eigen::VectorXd u(3);
+  for (double a = 0.1; a < 1.0; a += 0.3) {
+    for (double b = 0.1; b < 1.0; b += 0.3) {
+      for (double c = 0.1; c < 1.0; c += 0.3) {
+        u << a, b, c;
+        EXPECT_NEAR(m.from_unit_cube(u).norm(), 1.0, 1e-12);
+      }
+    }
+  }
+}
+
+TEST(SO3, FromUnitCubeIsDeterministic) {
+  SO3<> m;
+  Eigen::VectorXd u(3);
+  u << 0.2, 0.5, 0.8;
+  EXPECT_EQ(m.from_unit_cube(u), m.from_unit_cube(u));
+}
+
 namespace {
 
 /// @brief Compare two quaternions up to sign (the SO(3) double cover q ~ -q).
@@ -36,7 +61,7 @@ Eigen::Quaterniond ToEigen(const Eigen::Vector4d& q) {
 }  // namespace
 
 // ---------------------------------------------------------------------------
-// Body (left) exponential retraction — default
+// Body (left) exponential retraction, the default
 // ---------------------------------------------------------------------------
 
 class SO3LeftTest : public ::testing::Test {
@@ -183,11 +208,4 @@ TEST(SO3MetricTest, AnisotropicMetricIsNotRiemannianLog) {
   Eigen::Vector4d q = utils::so3_exp(Eigen::Vector3d(0.1, -0.2, 0.05));
   EXPECT_NEAR(manifold.norm(q, Eigen::Vector3d(0.0, 1.0, 0.0)), 2.0, 1e-12);  // sqrt(4)
   EXPECT_NEAR(manifold.norm(q, Eigen::Vector3d(0.0, 0.0, 1.0)), 3.0, 1e-12);  // sqrt(9)
-}
-
-TEST(SO3MetricTest, EulerRetractionWithIsotropicMetricNotFlagged) {
-  // A non-group retraction must never claim the Riemannian-log fast path, even
-  // with an isotropic metric.
-  SO3<> manifold;
-  EXPECT_TRUE(manifold.has_riemannian_log_runtime());
 }

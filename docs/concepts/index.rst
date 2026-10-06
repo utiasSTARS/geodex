@@ -1,18 +1,20 @@
 Core Concepts
 =============
 
-This section gathers the conceptual background needed to use **geodex** effectively. It
-starts with the geometric vocabulary that underpins the library, then describes how
-those ideas are encoded as C++20 concepts and policy types, and finally walks through
-the main algorithms that consume them. Readers already comfortable with Riemannian
-geometry can skip directly to the architecture and algorithm pages.
+These pages cover the geometry behind **geodex**, how the library expresses it, and how the
+planner and the smoother use it. Readers who know Riemannian geometry can start at
+:doc:`architecture`.
 
 .. toctree::
    :maxdepth: 1
 
    riemannian-geometry
    architecture
+   metrics
+   sampling
    discrete-geodesic-interpolation
+   planning
+   smoothing
 
 **See also**
 
@@ -20,4 +22,5 @@ geometry can skip directly to the architecture and algorithm pages.
   Python snippets.
 - :doc:`/tutorials/minimum-energy-planning` for composing ``KineticEnergyMetric`` and
   ``JacobiMetric`` to plan minimum-energy motions.
-- :doc:`/api/index` for the full reference of every class and concept named here.
+- :doc:`/api/cpp` for the C++ API reference.
+- :doc:`/api/python` for the Python API reference.

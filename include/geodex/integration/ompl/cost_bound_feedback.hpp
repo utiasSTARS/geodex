@@ -20,21 +20,25 @@ namespace geodex::integration::ompl {
 /// the effective informed-set cost used by the sampler without altering the
 /// admissibility of the underlying heuristic.
 struct CostBoundFeedback {
-  /// @brief Greedy cost bound — typically \f$ \max_{p \in \text{path}}
+  /// @brief Greedy cost bound, typically \f$ \max_{p \in \text{path}}
   /// [h(s, p) + h(p, g)] \f$.
   /// @details When finite and `greedy_biasing_ratio > 0`, a fraction
-  /// `greedy_biasing_ratio` of samples are drawn from a tighter ellipsoid
+  /// `greedy_biasing_ratio` of samples come from a tighter ellipsoid
   /// bounded by `greedy_cost` rather than the planner's `c_best`.
   double greedy_cost = std::numeric_limits<double>::infinity();
 
-  /// @brief Heuristic-path-cost bound — \f$ \sum_i h(p_i, p_{i+1}) \f$ along
+  /// @brief Heuristic-path-cost bound \f$ \sum_i h(p_i, p_{i+1}) \f$ along
   /// the current solution path.
   /// @details Always \f$ \le c_{\text{best}} \f$ for admissible \f$ h \f$.
   /// When finite, the sampler uses \f$ \min(c_{\text{best}}, \text{HPC}) \f$
   /// as the effective cost bound.
   double heuristic_path_cost = std::numeric_limits<double>::infinity();
 
-  /// @brief Fraction of samples drawn from the greedy ellipsoid in
+  /// @brief Whether `narrowCost` may tighten the sampling bound to
+  /// `heuristic_path_cost`. `false` leaves it at the planner's cost bound.
+  bool narrow_to_heuristic_path_cost = true;
+
+  /// @brief Fraction of samples from the greedy ellipsoid in
   /// \f$ [0, 1] \f$. `0` disables greedy biasing; `1` always picks greedy when
   /// `greedy_cost` is finite.
   double greedy_biasing_ratio = 0.0;
@@ -44,7 +48,7 @@ struct CostBoundFeedback {
   /// @details When `true` (default), the sampler chains itself onto pdef's
   /// intermediate-solution callback and also checks `pdef->getSolutionCount()`
   /// at every `sampleUniform`, recomputing both bounds from the latest path
-  /// (5%-relative-improvement gated). When `false`, the sampler installs no
+  /// whenever it is cheaper. When `false`, the sampler installs no
   /// callback and skips the count check; the caller is fully responsible for
   /// keeping the bounds up-to-date via the objective's `setHeuristicPathCost`
   /// and `setGreedyCost` setters. Toggle before `ss.solve()` is first called

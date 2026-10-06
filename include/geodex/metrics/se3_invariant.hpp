@@ -1,5 +1,5 @@
 /// @file se3_invariant.hpp
-/// @brief Invariant metric on SE(3) — thin wrapper over ConstantSPDMetric<6>.
+/// @brief Invariant metric on SE(3), a thin wrapper over ConstantSPDMetric<6>.
 
 #pragma once
 
@@ -13,17 +13,15 @@ namespace geodex {
 /// @brief Invariant metric on SE(3) (left- or right-invariant, depending on the
 /// retraction it is paired with).
 ///
-/// @details The inner product is constant on the Lie algebra \f$ \mathfrak{se}(3) \f$:
+/// @details The inner product is constant on the Lie algebra \f$ \mathfrak{se}(3) \f$,
 /// \f$ \langle u, v \rangle = u^\top \mathrm{diag}(w)\, v \f$, where a twist is
 /// ordered \f$ \xi = [v;\,\omega] \f$ and the weight vector is
 /// \f$ w = (w_{v_x}, w_{v_y}, w_{v_z},\; w_{\omega_x}, w_{\omega_y}, w_{\omega_z}) \f$.
-/// The two-scalar constructor sets \f$ w = (w_t, w_t, w_t, w_r, w_r, w_r) \f$ so
-/// translation and rotation can be weighted independently.
+/// The two-scalar constructor sets \f$ w = (w_t, w_t, w_t, w_r, w_r, w_r) \f$ and
+/// weights translation and rotation independently.
 ///
-/// Implementation: this is `ConstantSPDMetric<6>` with `A = diag(w)`. The
-/// `weights_` field is kept alongside the base metric so that
-/// `SE3::has_riemannian_log_runtime()` can cheaply detect unit weights without
-/// inspecting the full SPD matrix.
+/// The class wraps `ConstantSPDMetric<6>` with `A = diag(w)`, and `weights()` returns
+/// the diagonal without inspecting the full SPD matrix.
 class SE3InvariantMetric {
  public:
   using Vector6d = Eigen::Matrix<double, 6, 1>;  ///< Twist / metric-argument type.

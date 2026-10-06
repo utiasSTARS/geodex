@@ -21,11 +21,8 @@ pinocchio = geodex.pinocchio
 
 
 REPO = Path(__file__).resolve().parent.parent.parent
-PANDA_URDF = REPO / "examples" / "manipulator_planning" / "data" / "panda" / "urdf" / "panda.urdf"
+PANDA_URDF = REPO / "data" / "robots" / "panda" / "urdf" / "panda.urdf"
 BAXTER_URDF = REPO / "tests" / "fixtures" / "pinocchio" / "baxter_both_arms.urdf"
-
-if not PANDA_URDF.is_file():
-    pytest.skip(f"Panda URDF fixture missing at {PANDA_URDF}", allow_module_level=True)
 
 
 # ---------------------------------------------------------------------------

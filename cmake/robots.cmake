@@ -1,35 +1,32 @@
 # Built-in robot dynamics (precompiled CRBA mass matrices).
 #
-# Defines the always-on `geodex_robots` STATIC target (alias `geodex::robots`)
-# hosting the per-robot dispatcher `src/robots/mass_matrix.cpp` plus the
-# CppAD::CG-generated sources under `src/robots/generated/`.
+# Defines the `geodex_robots` STATIC target (alias `geodex::robots`) with the per-robot
+# dispatcher `src/robots/mass_matrix.cpp` and the CppAD::CG-generated sources under
+# `src/robots/generated/`.
 #
-# The geodex INTERFACE target gains a transitive INTERFACE link to
-# `geodex_robots`, so consumers only ever need to link `geodex` (alias
-# `geodex::geodex`).
+# The geodex INTERFACE target links `geodex_robots` transitively. Consumers link only
+# `geodex` (alias `geodex::geodex`).
 #
-# This integration is INDEPENDENT of `GEODEX_PINOCCHIO`: the generated C
-# source has no Pinocchio types and no Eigen types crossing the TU boundary;
-# only `<math.h>` is included. Pinocchio + CppAD::CG are needed only when
-# `GEODEX_ENABLE_ROBOT_REGEN=ON`, which registers maintainer targets for
-# refreshing generated sources when a URDF changes.
+# This integration does not depend on `GEODEX_PINOCCHIO`. Pinocchio and Eigen types do not
+# cross the translation unit boundary of the generated C source, which includes only
+# `<math.h>`. Pinocchio and CppAD::CG are needed only with `GEODEX_ENABLE_ROBOT_REGEN=ON`,
+# which registers targets that refresh the generated sources after a URDF changes.
 #
 # ---------------------------------------------------------------------------
 # Adding a new robot
 # ---------------------------------------------------------------------------
-# Use `scripts/add_robot.sh --name <robot> --urdf <path>` to copy the URDF
-# into `data/robots/`, regenerate sources, certify the Loewner mass-matrix
-# lower bound, and update the manifest + public robot registry.
+# `scripts/robotgen/add_robot.sh --name <robot> --urdf <path>` copies the URDF into
+# `data/robots/`, regenerates the sources, certifies the Loewner mass-matrix lower bound,
+# and updates the manifest and the public robot registry.
 
 # ---------------------------------------------------------------------------
-# Robot list. Normal builds use this manifest to locate committed generated
-# sources. Regeneration tooling uses the same names/URDFs only when explicitly
-# enabled.
+# Robot list. Normal builds find the committed generated sources through this manifest.
+# The regeneration tooling, when enabled, uses the same names and URDFs.
 # ---------------------------------------------------------------------------
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/robots_manifest.cmake)
 
 option(GEODEX_ENABLE_ROBOT_REGEN
-  "Register maintainer targets for regenerating built-in robot CRBA sources"
+  "Register targets for regenerating built-in robot CRBA sources"
   OFF)
 
 list(LENGTH GEODEX_ROBOT_NAMES _n_names)
@@ -44,11 +41,11 @@ if(NOT _n_names EQUAL _n_urdfs)
 endif()
 
 # ---------------------------------------------------------------------------
-# Collect per-robot generated sources, abort if any is missing.
+# Collect the per-robot generated sources and report any missing one.
 # ---------------------------------------------------------------------------
 set(_robots_sources
   ${CMAKE_CURRENT_SOURCE_DIR}/src/robots/mass_matrix.cpp)
-set(_robots_generated_srcs "")     # generated TUs, for per-source flag-setting
+set(_robots_generated_srcs "")     # generated TUs that get per-source flags
 set(_missing_srcs "")
 
 math(EXPR _last "${_n_names} - 1")
@@ -77,7 +74,7 @@ if(_missing_srcs)
       "  ${_missing_srcs}\n"
       "These files are committed artifacts for normal builds. To regenerate, "
       "configure with -DGEODEX_ENABLE_ROBOT_REGEN=ON and run "
-      "`scripts/add_robot.sh` or the `regenerate_robots` target.")
+      "`scripts/robotgen/add_robot.sh` or the `regenerate_robots` target.")
   endif()
 endif()
 
@@ -91,28 +88,27 @@ set_target_properties(geodex_robots PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_include_directories(geodex_robots
   PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
          $<BUILD_INTERFACE:${eigen_SOURCE_DIR}>
-         # Public header `mass_matrix.hpp` includes the generated per-robot
-         # constants from `generated/<robot>_crba.hpp` (constexpr nq, joint
-         # limits, extern-C decl), so the generated dir's parent must be on
-         # the consumer's include path under the `generated/` prefix.
+         # The public header `mass_matrix.hpp` includes the per-robot constants
+         # (constexpr nq, joint limits, extern-C declaration) as
+         # `generated/<robot>_crba.hpp`. The parent of the generated directory
+         # must be on the consumer's include path.
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/robots>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/robots/generated)
 target_compile_features(geodex_robots PUBLIC cxx_std_20)
 
 # ---------------------------------------------------------------------------
-# Compile flags (compiler-portable). PRIVATE so they never propagate to
-# consumer translation units — preserves Eigen ABI parity with the rest of
-# the project (and any system Pinocchio).
+# Compile flags (compiler-portable). They are PRIVATE and do not reach consumer
+# translation units, which keep the Eigen ABI of the rest of the project and of any
+# system Pinocchio.
 # ---------------------------------------------------------------------------
 target_compile_options(geodex_robots PRIVATE
   $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-O3>
   $<$<CXX_COMPILER_ID:MSVC>:/O2>)
 
-# Per-source aggressive flags applied ONLY to the auto-generated CRBA TUs.
-# `-Ofast -ffast-math` enable FP reordering and FMA contraction in the
-# straight-line CRBA expressions (worth several × on this TU). `-march=native`
-# tunes for the build host; if you cross-compile or want a portable binary,
-# override these via -DGEODEX_ROBOTS_TU_FLAGS.
+# Aggressive flags for the generated CRBA TUs only. `-Ofast -ffast-math` allow FP
+# reordering and FMA contraction in the straight-line CRBA expressions, which run several
+# times faster with them. `-march=native` tunes for the build host. For a cross-compile or
+# a portable binary, override the flags with -DGEODEX_ROBOTS_TU_FLAGS.
 option(GEODEX_ROBOTS_NATIVE_ARCH
   "Add -march=native to the generated robot CRBA translation units." ON)
 
@@ -132,11 +128,11 @@ elseif(MSVC)
   set(_tu_flags /O2 /fp:fast)
 else()
   set(_tu_flags "")
-  message(WARNING "Unknown compiler '${CMAKE_CXX_COMPILER_ID}' — falling back to "
-                  "default -O3 only on the geodex_robots TUs.")
+  message(WARNING "Unknown compiler '${CMAKE_CXX_COMPILER_ID}'. The geodex_robots TUs "
+                  "use the default -O3 only.")
 endif()
 
-# Convert list to ;-separated string for COMPILE_OPTIONS property.
+# Escape the list separators for the COMPILE_OPTIONS property.
 string(REPLACE ";" "$<SEMICOLON>" _tu_flags_prop "${_tu_flags}")
 foreach(_src IN LISTS _robots_generated_srcs)
   set_source_files_properties(${_src} PROPERTIES COMPILE_OPTIONS "${_tu_flags_prop}")
@@ -145,22 +141,15 @@ endforeach()
 # ---------------------------------------------------------------------------
 # SIMD trig path selection.
 #
-# The generated source's vectorized-trig prelude has two implementations
-# gated on `__APPLE__`:
-#   * Apple (any arch): a single `vvsincos(sin_buf, cos_buf, in_buf, &n)`
-#     call from Accelerate's vMathLib — NEON-vectorized on Apple Silicon,
-#     SSE/AVX on Intel Macs. Linked PRIVATELY so the framework dependency
-#     does not propagate to consumers.
-#   * Everywhere else: two `for (...) sin/cos` loops that GCC/Clang
-#     auto-vectorize into AVX2 calls to GLIBC's libmvec
-#     (`_ZGVdN4v_sin`, `_ZGVdN4v_cos`, 4-wide double) on Linux x86_64.
-#     On other Unix-likes the loops resolve to scalar `<math.h>` calls.
-#
-# TODO (Linux aarch64): glibc 2.37+ ships `_ZGVnN2v_sin` / `_ZGVnN2v_cos`
-# for aarch64. When ready, add an `elseif(... PROCESSOR ... aarch64 ...)`
-# arm that links `mvec` PUBLIC and verifies auto-vectorization picks up
-# the 2-wide NEON variants. Sleef (https://sleef.org) is the cross-vendor
-# alternative if libmvec coverage is insufficient.
+# The vectorized-trig prelude of the generated source has two implementations,
+# selected by `__APPLE__`.
+#   * Apple (any arch) makes one `vvsincos(sin_buf, cos_buf, in_buf, &n)` call into
+#     Accelerate's vMathLib, which uses NEON on Apple Silicon and SSE/AVX on Intel
+#     Macs. The framework links PRIVATE and does not propagate to consumers.
+#   * Elsewhere, GCC and Clang auto-vectorize two `for (...) sin/cos` loops into AVX2
+#     calls to glibc's libmvec (`_ZGVdN4v_sin`, `_ZGVdN4v_cos`, 4-wide double) on
+#     Linux x86_64. Other Unix-likes, aarch64 Linux among them, call the scalar
+#     `<math.h>` functions.
 # ---------------------------------------------------------------------------
 if(APPLE)
   target_link_libraries(geodex_robots PRIVATE "-framework Accelerate")
@@ -175,23 +164,22 @@ else()
 endif()
 
 # ---------------------------------------------------------------------------
-# Transitive link from geodex INTERFACE so consumers don't reference us
-# explicitly.
+# Link geodex_robots through the geodex INTERFACE target. Consumers do not reference it.
 # ---------------------------------------------------------------------------
 target_link_libraries(geodex INTERFACE geodex_robots)
 install(TARGETS geodex_robots EXPORT geodexTargets)
+# The top-level CMakeLists.txt installs the generated headers next to the public ones.
 
 list(JOIN GEODEX_ROBOT_NAMES " " _robot_list_str)
 message(STATUS "geodex_robots enabled (robots: ${_robot_list_str}; trig: ${_robots_simd_status})")
 
 # ---------------------------------------------------------------------------
-# Certify per-robot Loewner lower bounds for the CRBA
-# kinetic-energy metric, written to src/robots/generated/<robot>_bound.hpp.
+# Certify per-robot Loewner lower bounds for the CRBA kinetic-energy metric and write
+# them to src/robots/generated/<robot>_bound.hpp. Requires GEODEX_ENABLE_ROBOT_REGEN.
 #
-# Unlike the CRBA codegen below, this needs NO Pinocchio/CppAD: it links the
-# already-compiled generated CRBA (geodex_robots) and runs the header-only
-# precompute against the exact M(q) the planner evaluates.
-# Gated on GEODEX_ENABLE_ROBOT_REGEN
+# This step does not need Pinocchio or CppAD. It links the compiled generated CRBA
+# (geodex_robots) and runs the header-only precompute against the exact M(q) the
+# planner evaluates.
 #
 # Usage:
 #   cmake --build build --target regenerate_robot_bounds
@@ -200,8 +188,29 @@ message(STATUS "geodex_robots enabled (robots: ${_robot_list_str}; trig: ${_robo
 #       Recompute just one robot's bound.
 # ---------------------------------------------------------------------------
 if(GEODEX_ENABLE_ROBOT_REGEN)
+  # Compile every generated source again as a template over its scalar type. The certifier
+  # evaluates each shipped CRBA in interval arithmetic.
+  find_package(Python3 REQUIRED COMPONENTS Interpreter)
+  set(_crba_template_dir ${CMAKE_CURRENT_BINARY_DIR}/crba_templates)
+  set(_crba_templates "")
+  set(_crba_includes "// Generated by cmake/robots.cmake. DO NOT EDIT.\n#pragma once\n")
+  foreach(_robot IN LISTS GEODEX_ROBOT_NAMES)
+    set(_src ${CMAKE_CURRENT_SOURCE_DIR}/src/robots/generated/${_robot}_crba.cpp)
+    set(_out ${_crba_template_dir}/${_robot}_crba_template.hpp)
+    add_custom_command(OUTPUT ${_out}
+      COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/robotgen/crba_template.py
+              ${_src} ${_out} ${_robot}
+      DEPENDS ${_src} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/robotgen/crba_template.py
+      COMMENT "CRBA template for '${_robot}'")
+    list(APPEND _crba_templates ${_out})
+    string(APPEND _crba_includes "#include \"${_robot}_crba_template.hpp\"\n")
+  endforeach()
+  file(CONFIGURE OUTPUT ${_crba_template_dir}/crba_templates.hpp CONTENT "${_crba_includes}")
+
   add_executable(precompute_robot_bound
-    ${CMAKE_CURRENT_SOURCE_DIR}/scripts/precompute_robot_bound.cpp)
+    ${CMAKE_CURRENT_SOURCE_DIR}/scripts/robotgen/precompute_robot_bound.cpp ${_crba_templates})
+  target_include_directories(precompute_robot_bound PRIVATE
+    ${_crba_template_dir} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/robotgen)
   target_link_libraries(precompute_robot_bound PRIVATE geodex geodex_robots)
   target_compile_features(precompute_robot_bound PRIVATE cxx_std_20)
 
@@ -219,8 +228,6 @@ if(GEODEX_ENABLE_ROBOT_REGEN)
 endif()
 
 # ---------------------------------------------------------------------------
-# Maintainer regen targets (gated on Pinocchio + CppAD::CG availability).
+# Maintainer regeneration targets, registered when Pinocchio and CppAD::CG are available.
 # ---------------------------------------------------------------------------
-if(GEODEX_ENABLE_ROBOT_REGEN AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/scripts/pinocchio_codegen.cmake)
-  include(${CMAKE_CURRENT_SOURCE_DIR}/scripts/pinocchio_codegen.cmake)
-endif()
+include(${CMAKE_CURRENT_SOURCE_DIR}/scripts/robotgen/pinocchio_codegen.cmake)

@@ -1,0 +1,8 @@
+# Universal Robots UR5 with a Robotiq 2F-85 and an FT 300 sensor
+
+- URDF `ur5.urdf`. Expanded from `ur/robots/ur5_robotiq_robot_limited.urdf.xacro` of KavrakiLab `robowflex_resources` at commit `fb37f078fe27d5327781913ee130c3f0f2d70c0b` (MIT). This expansion (sha256 `5c72f77e...`) is the source of the precomputed CRBA and Loewner bound. The Robotiq gripper and FT 300 geometry are then replaced by boxes, see below. Kinematics and inertials are unchanged, and regenerating the CRBA from this file reproduces the shipped one.
+- UR5 meshes `meshes/ur5/visual/*.dae`. Byte-identical to `ur_description/meshes/ur5/visual/` of `ros-industrial/universal_robot` at commit `f287d22063bcb072869aa372c42686bc53d7418a` (BSD, license text in the `ur5-robotiq` section of `THIRD_PARTY_LICENSES.txt`). The URDF also names `meshes/ur5/collision/*.stl`, which are not vendored.
+- Robotiq parts. The gripper links and the FT 300 carry the axis-aligned bounding boxes of the robowflex meshes (`robotiq/85_gripper/meshes/arg/*_fine.STL` and `robotiq/force_torque_sensor/meshes/collision/robotiq_fts300.stl`), rounded outward to 10 micrometres, made by
+  `python scripts/robotgen/mesh_boxes.py <expansion> ur5.urdf --meshes <robowflex>/robotiq/85_gripper/meshes/arg <robowflex>/robotiq/force_torque_sensor/meshes/collision`.
+  No Robotiq mesh ships. The gripper meshes trace to `a-price/robotiq_arg85_description` (BSD by package.xml only, no license text), and the FT 300 mesh matches no file in `ros-industrial/robotiq`, so neither could be shown redistributable.
+- The VAMP kernel is VAMP's own `vamp/robots/ur5.hh`.

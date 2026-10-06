@@ -22,6 +22,7 @@ namespace geodex::collision {
 /// \f$ \mathrm{sdf}(q) = \|q_{xy} - c\| - r \f$
 class CircleSDF {
  public:
+  /// @brief A circle of the given center and radius.
   CircleSDF(const double cx, const double cy, const double radius)
       : cx_(cx), cy_(cy), radius_(radius), radius_sq_(radius * radius) {}
 
@@ -70,7 +71,7 @@ class CircleSmoothSDF {
 
     const auto n = circles_.size();
 
-    // Single-pass: compute and cache -beta * d_i, track max for stability.
+    // One pass computes and caches -beta * d_i and tracks the max for stability.
     thread_local std::vector<double> neg_bd;
     neg_bd.resize(n);
 

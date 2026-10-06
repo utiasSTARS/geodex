@@ -21,6 +21,53 @@ static_assert(RiemannianManifold<Euclidean<2, PlanarManipulatorMetric>>);
 static_assert(HasInjectivityRadius<Euclidean<2, PlanarManipulatorMetric>>);
 
 // ---------------------------------------------------------------------------
+// Unit-cube map
+// ---------------------------------------------------------------------------
+
+TEST(Euclidean, FromUnitCubeDeterministicAndInBounds) {
+  Euclidean<3> e;  // default bounds [-1, 1]^3
+  EXPECT_EQ(e.unit_cube_dim(), 3);
+  Eigen::VectorXd u(3);
+  u << 0.0, 0.5, 0.9;
+  const Eigen::Vector3d p = e.from_unit_cube(u);
+  EXPECT_EQ(p, e.from_unit_cube(u));
+  EXPECT_NEAR(p[0], -1.0, 1e-12);
+  EXPECT_NEAR(p[1], 0.0, 1e-12);
+  EXPECT_NEAR(p[2], 0.8, 1e-12);
+  for (int i = 0; i < 3; ++i) {
+    EXPECT_GE(p[i], -1.0);
+    EXPECT_LE(p[i], 1.0);
+  }
+}
+
+TEST(Euclidean, SeedMakesSamplingReproducible) {
+  Euclidean<3> a, b;
+  a.seed(123);
+  b.seed(123);
+  for (int i = 0; i < 10; ++i) {
+    EXPECT_EQ(a.random_point(), b.random_point());
+  }
+}
+
+TEST(Euclidean, SetSamplerReplacesTheSampler) {
+  Euclidean<3> a, b;
+  a.set_sampler(ScrambledHaltonSampler{99});
+  b.set_sampler(ScrambledHaltonSampler{99});
+  for (int i = 0; i < 10; ++i) {
+    EXPECT_EQ(a.random_point(), b.random_point());
+  }
+}
+
+TEST(Euclidean, SetDefaultSeedMakesDefaultConstructionReproducible) {
+  set_default_seed(7);
+  Euclidean<3> a;
+  Eigen::Vector3d first = a.random_point();
+  set_default_seed(7);
+  Euclidean<3> b;
+  EXPECT_EQ(first, b.random_point());
+}
+
+// ---------------------------------------------------------------------------
 // Fixed-dimension R^3
 // ---------------------------------------------------------------------------
 
@@ -265,7 +312,7 @@ TEST_F(PlanarManipulatorMetricTest, CouplingVariesWithQ2) {
 }
 
 TEST_F(PlanarManipulatorMetricTest, M22IsConstant) {
-  // M22 = I2 + m2*lc2^2 — independent of q
+  // M22 = I2 + m2*lc2^2 does not depend on q.
   double m22_a = metric.mass_matrix(Eigen::Vector2d(0.0, 0.0))(1, 1);
   double m22_b = metric.mass_matrix(Eigen::Vector2d(1.0, 1.5))(1, 1);
   double m22_c = metric.mass_matrix(Eigen::Vector2d(-0.5, M_PI))(1, 1);

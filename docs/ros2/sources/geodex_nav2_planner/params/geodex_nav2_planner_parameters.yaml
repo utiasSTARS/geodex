@@ -1,0 +1,240 @@
+# The parameter table of GeodexSE2Planner holds every parameter with its type,
+# default, range and description. generate_parameter_library turns it into the
+# ROS declarations and validation, and cmake/generate_core_params.py turns the
+# same file into the ROS-free parameter struct of the planning core.
+#
+# Every name is declared under the plugin's name on the planner server, for
+# example GridBased.wy. config/geodex_nav2_planner.example.yaml lists
+# every default.
+
+geodex_nav2_planner:
+
+  # Metric. The SE(2) left-invariant metric weights body-frame motion.
+  wx:
+    type: double
+    default_value: 1.0
+    description: "Metric weight on forward motion in the body frame."
+    validation:
+      bounds<>: [0.01, 100.0]
+  wy:
+    type: double
+    default_value: 50.0
+    description: "Metric weight on sideways motion in the body frame, large for a differential drive and near wx for a holonomic base."
+    validation:
+      bounds<>: [0.01, 1000.0]
+  wtheta:
+    type: double
+    default_value: 2.0
+    description: "Metric weight on rotation."
+    validation:
+      bounds<>: [0.001, 100.0]
+
+  # Search.
+  solve_time:
+    type: double
+    default_value: 5.0
+    description: "Time limit in seconds for all searches of one request, the first solution and its refinement together, without the distance transform, smoothing and publishing."
+    validation:
+      bounds<>: [0.001, 60.0]
+  refine_time:
+    type: double
+    default_value: 0.01
+    description: "Seconds of refinement after the first exact solution, within solve_time."
+    validation:
+      bounds<>: [0.0, 60.0]
+  refine_iterations:
+    type: int
+    default_value: 0
+    description: "Refinement budget in planner iterations after the first exact solution, or 0 for refine_time alone."
+    validation:
+      bounds<>: [0, 100000000]
+  stop_at_first_solution:
+    type: bool
+    default_value: false
+    description: "Return the first exact solution without refining it."
+  range:
+    type: double
+    default_value: 12.0
+    description: "G-RRT* extension step in the planning metric, or 0 to let OMPL choose."
+    validation:
+      bounds<>: [0.0, 1000.0]
+  greedy_ratio:
+    type: double
+    default_value: 0.9
+    description: "Fraction of informed samples taken from the greedy set."
+    validation:
+      bounds<>: [0.0, 1.0]
+  narrow_to_heuristic_path_cost:
+    type: bool
+    default_value: false
+    description: "Let the informed sampler narrow its bound to the heuristic cost of the current solution."
+  rewire_factor:
+    type: double
+    default_value: 1.1
+    description: "Scale of the RRT* rewiring neighborhood."
+    validation:
+      bounds<>: [0.1, 5.0]
+  nn_metric:
+    type: bool
+    default_value: false
+    description: "Find nearest neighbors by the metric distance, or by the coordinate Euclidean distance with a wrapped heading when false."
+  k_nearest:
+    type: bool
+    default_value: true
+    description: "Use a k-nearest rewiring neighborhood, or an r-disc when false."
+  goal_tolerance:
+    type: double
+    default_value: 0.0
+    description: "Accepted metric distance to the goal, where 0 requires the exact goal pose."
+    validation:
+      bounds<>: [0.0, 2.0]
+  seed:
+    type: int
+    default_value: 0
+    description: "Seed of every random generator a plan uses, or 0 for a fresh search seed and the smoother's fixed default seed."
+    validation:
+      bounds<>: [0, 4294967295]
+
+  # Collision.
+  collision_check_resolution:
+    type: double
+    default_value: 0.0
+    description: "Spacing of motion checks in meters, or 0 for the costmap resolution."
+    validation:
+      bounds<>: [0.0, 1.0]
+  safety_margin:
+    type: double
+    default_value: 0.0
+    description: "Clearance in meters that every lethal cell center keeps from the footprint outline along the whole path, where half a cell diagonal (resolution / sqrt(2)) keeps the footprint off every lethal cell square."
+    validation:
+      bounds<>: [0.0, 0.5]
+  footprint_samples_per_edge:
+    type: int
+    default_value: 8
+    description: "Minimum number of samples per footprint edge, which the checker raises until samples are at most one cell apart."
+    validation:
+      bounds<>: [1, 64]
+  lethal_cost_threshold:
+    type: int
+    default_value: 254
+    description: "Costmap cost at or above which a cell is an obstacle, with unknown cells (255) always obstacles."
+    validation:
+      bounds<>: [1, 254]
+  max_reverse_length:
+    type: double
+    default_value: -1.0
+    description: "Per-edge budget of backward motion in meters during the search, where 0 forbids backward motion and a negative value disables the check."
+    validation:
+      bounds<>: [-1.0, 5.0]
+  initial_path:
+    type: bool
+    default_value: false
+    description: "With max_reverse_length set, first find a path without the reverse budget and start the constrained search from its greedy cost."
+
+  # Direction stage. After the search, the planner turns backward runs into forward driving.
+  max_reverse_run:
+    type: double
+    default_value: 0.2
+    description: "Limit in meters on the backward run of the smoothed path outside the start and goal allowances, or negative to switch off the direction stage. The direction stage runs after the search and turns backward runs into forward driving (forward_repair). A run that the repair cannot turn stays in the path, and the smoother does not lengthen it."
+    validation:
+      bounds<>: [-1.0, 5.0]
+  reverse_allow_start:
+    type: double
+    default_value: 1.0
+    description: "Path length in meters from the start within which backward driving is free."
+    validation:
+      bounds<>: [0.0, 10.0]
+  reverse_allow_goal:
+    type: double
+    default_value: 1.0
+    description: "Path length in meters before the goal within which backward driving is free."
+    validation:
+      bounds<>: [0.0, 10.0]
+  forward_repair:
+    type: bool
+    default_value: true
+    description: "Turn backward runs of the raw path into forward driving with a spin in place at each end."
+  reverse_spin_cost:
+    type: double
+    default_value: 0.5
+    description: "Meters of backward driving that one spin in place is worth, where a run is turned only when it is longer than two spins."
+    validation:
+      bounds<>: [0.05, 10.0]
+
+  # Clearance. The conformal factor is c = 1 + kappa exp(-beta d) of the footprint distance d.
+  clearance_kappa:
+    type: double
+    default_value: 1.5
+    description: "Strength of the clearance factor, or 0 to plan on the plain SE(2) metric."
+    validation:
+      bounds<>: [0.0, 50.0]
+  clearance_beta:
+    type: double
+    default_value: 3.0
+    description: "Decay rate of the clearance factor in 1/m."
+    validation:
+      bounds<>: [0.1, 100.0]
+  clearance_in_search:
+    type: bool
+    default_value: true
+    description: "Search on the clearance metric, or on plain SE(2) with the clearance metric for smoothing only when false."
+
+  # Smoothing.
+  smoothing_enabled:
+    type: bool
+    default_value: true
+    description: "Smooth the path on the planning metric, and publish the unsmoothed path when the smoothed path fails the collision or backward-driving checks of the search."
+  smoothing_output_spacing:
+    type: double
+    default_value: 0.1
+    description: "Longest step between the smoother's returned waypoints, as the coordinate norm of the SE(2) twist, or 0 for no limit. The waypoints lie at equal steps between the corners the smoother keeps, within smoothing_corner_tolerance of the smoothed path."
+    validation:
+      bounds<>: [0.0, 2.0]
+  smoothing_round_corners:
+    type: bool
+    default_value: true
+    description: "Round each corner of the smoothed path into a twice continuously differentiable curve that leaves and joins its two edges tangentially, or keep every corner when false."
+  smoothing_corner_tolerance:
+    type: double
+    default_value: 0.0001
+    description: "Largest distance between a rounding curve and the edges between its samples, and between the smoothed path and its evenly spaced edges, in the coordinate norm of the SE(2) twist. A corner stays sharp when its rounding curve would lie within this distance of the corner. A larger value gives a longer step between the returned waypoints."
+    validation:
+      bounds<>: [0.000001, 0.1]
+  smoothing_corner_max_angle:
+    type: double
+    default_value: 1.5707963267948966
+    description: "Largest turning angle in radians of a rounded corner, measured under the planning metric, pi/2 (90 degrees) by default. A corner that turns further, such as a reversal, stays a cusp."
+    validation:
+      bounds<>: [0.0, 3.141592653589793]
+
+  # Output.
+  waypoint_spacing:
+    type: double
+    default_value: 0.05
+    description: "Largest metric arclength step between published poses, where every waypoint of the final path is published and each edge splits into equal steps."
+    validation:
+      bounds<>: [0.01, 1.0]
+
+  # Sampling region.
+  static_map_topic:
+    type: string
+    default_value: "map"
+    description: "Topic of the static map, an occupancy grid with transient-local durability, whose area bounds the samples taken before a solution exists, or empty to sample the whole costmap."
+
+  # Visualization.
+  publish_footprints:
+    type: bool
+    default_value: false
+    description: "Publish the footprint outline with an orientation frame at poses along the path, as a MarkerArray on path_footprints."
+  marker_spacing:
+    type: double
+    default_value: 0.25
+    description: "Metric arclength between footprint markers, or 0 for a marker at every pose."
+    validation:
+      bounds<>: [0.0, 5.0]
+  marker_z:
+    type: double
+    default_value: 0.0
+    description: "Height of the footprint markers in meters."
+    validation:
+      bounds<>: [-10.0, 10.0]

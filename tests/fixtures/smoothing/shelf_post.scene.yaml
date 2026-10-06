@@ -1,0 +1,17 @@
+# A shelf and a post in the Panda workspace.
+world:
+  collision_objects:
+    - id: shelf
+      primitive_poses:
+        - position: [0.50, 0.0, 0.95]
+          orientation: [0.0, 0.0, 0.0, 1.0]
+      primitives:
+        - type: box
+          dimensions: [0.40, 0.90, 0.08]
+    - id: post
+      primitive_poses:
+        - position: [0.40, 0.10, 0.55]
+          orientation: [0.0, 0.0, 0.0, 1.0]
+      primitives:
+        - type: box
+          dimensions: [0.10, 0.10, 0.50]

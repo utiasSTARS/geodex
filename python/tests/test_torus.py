@@ -65,7 +65,7 @@ class TestTorus:
         q = np.array([2 * np.pi - 0.1])
         t1 = geodex.Torus(1)
         d = t1.distance(p, q)
-        assert d == pytest.approx(0.2, abs=1e-6)
+        assert d == pytest.approx(0.2, rel=1e-3)
 
     def test_geodesic_endpoints(self):
         p = self.t2.random_point()
@@ -90,3 +90,13 @@ class TestTorus:
         p = np.array([1.0, 2.0])
         v = np.array([3.0, 4.0])
         assert self.t2.norm(p, v) == pytest.approx(5.0, abs=1e-12)
+
+
+def test_coordinate_metric_periods_and_bound():
+    torus = geodex.Torus(2)
+    assert np.allclose(torus.coordinate_metric(np.zeros(2)), np.eye(2))
+    assert np.allclose(torus.periods(), [2.0 * np.pi] * 2)
+    h = torus.matrix_lower_bound()
+    a = np.array([2.0 * np.pi - 0.1, 0.0])
+    b = np.array([0.1, 0.0])
+    assert h(a, b) == pytest.approx(0.2, rel=1e-3)

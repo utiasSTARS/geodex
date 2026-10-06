@@ -1,0 +1,126 @@
+{
+ "robot": "dingo_o",
+ "label": "Clearpath Dingo-O",
+ "root": "world",
+ "joint_names": [
+  "base_x_joint",
+  "base_y_joint",
+  "base_theta_joint"
+ ],
+ "links": [
+  "world",
+  "base_x_link",
+  "base_y_link",
+  "base_link"
+ ],
+ "joints": [
+  {
+   "name": "base_x_joint",
+   "type": "prismatic",
+   "parent": "world",
+   "child": "base_x_link",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "index": 0
+  },
+  {
+   "name": "base_y_joint",
+   "type": "prismatic",
+   "parent": "base_x_link",
+   "child": "base_y_link",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "index": 1
+  },
+  {
+   "name": "base_theta_joint",
+   "type": "revolute",
+   "parent": "base_y_link",
+   "child": "base_link",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.0,
+     0.01490597
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 2
+  }
+ ],
+ "ee": {
+  "link": "base_link",
+  "parent": "base_link",
+  "xyz": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "quat": [
+   0.0,
+   0.0,
+   0.0,
+   1.0
+  ]
+ },
+ "meshes": {
+  "full": "dingo_o.glb",
+  "ghost": "dingo_o_ghost.glb"
+ },
+ "bounds": {
+  "base_link": [
+   [
+    -0.3432,
+    -0.2586,
+    -0.0149
+   ],
+   [
+    0.3432,
+    0.2586,
+    0.0963
+   ]
+  ]
+ }
+}

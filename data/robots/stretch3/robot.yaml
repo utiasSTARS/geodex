@@ -1,0 +1,28 @@
+name: stretch3
+urdf: stretch3_spherized.urdf
+dynamics_urdf: stretch3_dynamics.urdf
+srdf: stretch3.srdf
+vamp_name: stretch3
+mass_matrix: stretch3
+base: differential
+
+planning_groups:
+  whole_body:
+    default_ee_link: link_grasp_center
+    joints:
+      - base_x_joint
+      - base_y_joint
+      - base_theta_joint
+      - joint_lift
+      - joint_arm
+      - joint_wrist_yaw
+      - joint_wrist_pitch
+      - joint_wrist_roll
+  arm:
+    default_ee_link: link_grasp_center
+    joints:
+      - joint_lift
+      - joint_arm
+      - joint_wrist_yaw
+      - joint_wrist_pitch
+      - joint_wrist_roll

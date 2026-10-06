@@ -1,5 +1,5 @@
 /// @file jacobi.hpp
-/// @brief Jacobi metric — a configuration-dependent scaling of the kinetic energy metric.
+/// @brief Jacobi metric, a configuration-dependent scaling of the kinetic energy metric.
 
 #pragma once
 
@@ -17,9 +17,9 @@ namespace detail {
 
 /// @brief Functor capturing the Jacobi scaling \f$\alpha(q) = 2(H - P(q))\f$.
 ///
-/// @details Used as the `AlphaT` parameter of `WeightedMetric` to turn a
-/// kinetic-energy metric into a Jacobi metric. We use a named functor struct
-/// (rather than a lambda) so that `JacobiMetric` has a nameable type.
+/// @details The `AlphaT` parameter of `WeightedMetric` that turns a kinetic-energy
+/// metric into a Jacobi metric. A named functor, not a lambda, gives `JacobiMetric` a
+/// nameable type.
 template <typename PotentialFn>
 class JacobiAlphaFunctor {
  public:
@@ -44,25 +44,24 @@ class JacobiAlphaFunctor {
 /// @brief Jacobi metric conformally scaling a kinetic energy metric by the
 /// available kinetic energy \f$ H - P(q) \f$.
 ///
-/// @details The inner product at configuration \f$ q \f$ is:
-/// \f$ \langle u, v \rangle_q = 2\,(H - P(q))\, u^\top M(q) \, v \f$
+/// @details The inner product at configuration \f$ q \f$ is
+/// \f$ \langle u, v \rangle_q = 2\,(H - P(q))\, u^\top M(q) \, v \f$,
 /// where \f$ H \f$ is the total energy, \f$ P(q) \f$ is the potential, and
 /// \f$ M(q) \f$ is the mass matrix. Geodesics of this metric are the natural
 /// motions of the mechanical system (Maupertuis' principle).
 ///
-/// Implementation: this is a thin composition of `KineticEnergyMetric` (the
-/// mass matrix) and `WeightedMetric` (the configuration-dependent scaling).
-/// The `inner`, `inner_matrix`, and `norm` methods forward to the composed
-/// metric — no duplicated mass-matrix or potential-evaluation logic.
+/// The class composes `KineticEnergyMetric` (the mass matrix) and `WeightedMetric`
+/// (the configuration-dependent scaling). `inner`, `inner_matrix` and `norm` forward
+/// to the composed metric.
 ///
 /// @tparam MassMatrixFn Callable returning the SPD mass matrix at \f$ q \f$.
 /// @tparam PotentialFn Callable returning the scalar potential \f$ P(q) \f$.
 template <typename MassMatrixFn, typename PotentialFn>
 class JacobiMetric {
  public:
-  using KEMetric = KineticEnergyMetric<MassMatrixFn>;
-  using AlphaFn = detail::JacobiAlphaFunctor<PotentialFn>;
-  using InnerMetric = WeightedMetric<KEMetric, AlphaFn>;
+  using KEMetric = KineticEnergyMetric<MassMatrixFn>;       ///< The kinetic energy metric.
+  using AlphaFn = detail::JacobiAlphaFunctor<PotentialFn>;  ///< The scale 2 (H - P(q)).
+  using InnerMetric = WeightedMetric<KEMetric, AlphaFn>;    ///< The scaled metric.
 
   /// @brief Construct a Jacobi metric.
   /// @param mass_fn Callable returning the SPD mass matrix.
@@ -95,9 +94,9 @@ class JacobiMetric {
     return riemannian_norm(*this, q, v);
   }
 
-  /// @brief Batched inner product: \f$U^\top \bigl(2(H - P(q)) M(q)\bigr) V\f$
-  /// computed with a single evaluation of \f$M(q)\f$ and \f$P(q)\f$ through
-  /// the wrapped `WeightedMetric`.
+  /// @brief Batched inner product \f$U^\top \bigl(2(H - P(q)) M(q)\bigr) V\f$ with a
+  /// single evaluation of \f$M(q)\f$ and \f$P(q)\f$ through the wrapped
+  /// `WeightedMetric`.
   template <typename Point>
   Eigen::MatrixXd inner_matrix(const Point& q, const Eigen::MatrixXd& U,
                                const Eigen::MatrixXd& V) const {
@@ -111,9 +110,8 @@ class JacobiMetric {
   InnerMetric inner_metric_;
 };
 
-/// @brief Factory function for `JacobiMetric` — convenience wrapper that lets
-/// users write `make_jacobi_metric(mass_fn, pot_fn, H)` without naming the
-/// template parameters.
+/// @brief Build a `JacobiMetric` as `make_jacobi_metric(mass_fn, pot_fn, H)`
+/// without naming the template parameters.
 template <typename MassMatrixFn, typename PotentialFn>
 auto make_jacobi_metric(MassMatrixFn mass_fn, PotentialFn pot_fn, double H) {
   return JacobiMetric<MassMatrixFn, PotentialFn>{std::move(mass_fn), std::move(pot_fn), H};

@@ -1,0 +1,30 @@
+name: husky_ur5e
+urdf: husky_ur5e_spherized.urdf
+dynamics_urdf: husky_ur5e_dynamics.urdf
+srdf: husky_ur5e.srdf
+vamp_name: husky_ur5e
+mass_matrix: husky_ur5e
+base: differential
+
+planning_groups:
+  whole_body:
+    default_ee_link: arm_0_tool0
+    joints:
+      - base_x_joint
+      - base_y_joint
+      - base_theta_joint
+      - arm_0_shoulder_pan_joint
+      - arm_0_shoulder_lift_joint
+      - arm_0_elbow_joint
+      - arm_0_wrist_1_joint
+      - arm_0_wrist_2_joint
+      - arm_0_wrist_3_joint
+  arm:
+    default_ee_link: arm_0_tool0
+    joints:
+      - arm_0_shoulder_pan_joint
+      - arm_0_shoulder_lift_joint
+      - arm_0_elbow_joint
+      - arm_0_wrist_1_joint
+      - arm_0_wrist_2_joint
+      - arm_0_wrist_3_joint

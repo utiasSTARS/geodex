@@ -11,8 +11,10 @@ RECURSIVE              = YES
 FILE_PATTERNS          = *.hpp
 EXCLUDE_PATTERNS       = */detail/*
 
-# Extraction
-EXTRACT_ALL            = NO
+# Extraction. Every entity of a public header is extracted, documented or not, so the C++
+# API page renders the whole public surface; detail namespaces stay out.
+EXTRACT_ALL            = YES
+EXCLUDE_SYMBOLS        = detail *::detail *::detail::*
 EXTRACT_PRIVATE        = NO
 EXTRACT_STATIC         = YES
 
@@ -35,7 +37,7 @@ WARN_NO_PARAMDOC       = NO
 # Preprocessing
 ENABLE_PREPROCESSING   = YES
 MACRO_EXPANSION        = YES
-PREDEFINED             = GEODEX_DEBUG
+PREDEFINED             = EIGEN_STRONG_INLINE= EIGEN_DEVICE_FUNC=
 
 # Misc
 QUIET                  = YES

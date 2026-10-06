@@ -1,0 +1,285 @@
+diff --git a/src/ompl/geometric/planners/rrt/GreedyRRTstar.h b/src/ompl/geometric/planners/rrt/GreedyRRTstar.h
+index 4c75a76c..0a03d14d 100644
+--- a/src/ompl/geometric/planners/rrt/GreedyRRTstar.h
++++ b/src/ompl/geometric/planners/rrt/GreedyRRTstar.h
+@@ -264,6 +264,19 @@ namespace ompl
+                 return useKNearest_;
+             }
+ 
++            /** \brief Set whether motion validity is symmetric, i.e. checkMotion(a, b) == checkMotion(b, a).
++                When true (default), rewiring reuses the motion checks made while choosing a parent. */
++            void setSymmetricMotionValidity(bool symmetric)
++            {
++                symmetricMotionValidity_ = symmetric;
++            }
++
++            /** \brief Get whether motion validity is symmetric. */
++            bool getSymmetricMotionValidity() const
++            {
++                return symmetricMotionValidity_;
++            }
++
+             /** \brief Set the number of attempts to make while performing rejection or informed sampling */
+             void setNumSamplingAttempts(unsigned int numAttempts)
+             {
+@@ -291,10 +304,26 @@ namespace ompl
+                 return rewireFactor_;
+             }
+ 
++            /** \brief Set an upper bound on the k-nearest neighbourhood (0 = unbounded).
++
++                The k-nearest rule grows k with log(n) scaled by a constant that is exponential in the
++                dimension, so in high dimension k can exceed the tree size and every extension scans the
++                whole tree. The cap leaves small neighbourhoods unchanged and only binds once k would grow
++                past it. */
++            void setMaxNeighbors(unsigned int maxNeighbors)
++            {
++                maxNeighbors_ = maxNeighbors;
++            }
++
++            /** \brief Get the upper bound on the k-nearest neighbourhood (0 = unbounded). */
++            unsigned int getMaxNeighbors() const
++            {
++                return maxNeighbors_;
++            }
++
+             /** \brief Set a different nearest neighbors datastructure */
+             template <template <typename T> class NN>
+-            void setNearestNeighbors()
+-            {
++            void setNearestNeighbors()            {
+                 if ((tStart_ && tStart_->size() != 0) || (tGoal_ && tGoal_->size() != 0))
+                     OMPL_WARN("Calling setNearestNeighbors will clear all states.");
+                 clear();
+@@ -508,6 +537,9 @@ namespace ompl
+             /** \brief An informed sampler */
+             base::InformedSamplerPtr infSampler_;
+ 
++            /** \brief Goal-tree sampler, one stream per tree (see sampleUniform). */
++            base::InformedSamplerPtr infSamplerGoal_;
++
+             /** \brief The start tree */
+             TreeData tStart_;
+ 
+@@ -533,13 +565,18 @@ namespace ompl
+             /** \brief Option to use k-nearest search for rewiring */
+             bool useKNearest_{true};
+ 
++            /** \brief Whether motion validity is symmetric */
++            bool symmetricMotionValidity_{true};
++
+             /** \brief The rewiring factor, s, so that r_rrt = s \times r_rrt* > r_rrt* (or k_rrt = s \times k_rrt* >
+              * k_rrt*) */
+             double rewireFactor_{1.1};
+ 
++            /** \brief Upper bound on the k-nearest neighbourhood; 0 means unbounded. */
++            unsigned int maxNeighbors_{0u};
++
+             /** \brief A constant for k-nearest rewiring calculations */
+             double k_rrt_{0u};
+-
+             /** \brief A constant for r-disc rewiring calculations */
+             double r_rrt_{0.};
+ 
+diff --git a/src/ompl/geometric/planners/rrt/src/GreedyRRTstar.cpp b/src/ompl/geometric/planners/rrt/src/GreedyRRTstar.cpp
+index 6ade3af0..66a97400 100644
+--- a/src/ompl/geometric/planners/rrt/src/GreedyRRTstar.cpp
++++ b/src/ompl/geometric/planners/rrt/src/GreedyRRTstar.cpp
+@@ -59,6 +59,8 @@ ompl::geometric::GreedyRRTstar::GreedyRRTstar(const base::SpaceInformationPtr &s
+     Planner::declareParam<double>("greedy_biasing_ratio", this, &GreedyRRTstar::setGreedyBiasingRatio,
+                                   &GreedyRRTstar::getGreedyBiasingRatio, "0.:0.01:1.0");
+     Planner::declareParam<bool>("use_k_nearest", this, &GreedyRRTstar::setKNearest, &GreedyRRTstar::getKNearest, "0,1");
++    Planner::declareParam<bool>("symmetric_motion_validity", this, &GreedyRRTstar::setSymmetricMotionValidity,
++                                &GreedyRRTstar::getSymmetricMotionValidity, "0,1");
+     Planner::declareParam<bool>("delay_collision_checking", this, &GreedyRRTstar::setDelayCC,
+                                 &GreedyRRTstar::getDelayCC, "0,1");
+     Planner::declareParam<bool>("delay_rewiring", this, &GreedyRRTstar::setDelayRewiring,
+@@ -69,6 +71,8 @@ ompl::geometric::GreedyRRTstar::GreedyRRTstar(const base::SpaceInformationPtr &s
+                                 &GreedyRRTstar::getBalancedSearch, "0,1");
+     Planner::declareParam<unsigned int>("number_sampling_attempts", this, &GreedyRRTstar::setNumSamplingAttempts,
+                                         &GreedyRRTstar::getNumSamplingAttempts, "10:10:100000");
++    Planner::declareParam<unsigned int>("max_neighbors", this, &GreedyRRTstar::setMaxNeighbors,
++                                        &GreedyRRTstar::getMaxNeighbors, "0:1:100000");
+ 
+     bestConnectionPoint_ = std::make_pair<Motion *, Motion *>(nullptr, nullptr);
+     connectionPoints_.clear();
+@@ -182,6 +186,7 @@ void ompl::geometric::GreedyRRTstar::clear()
+     setup_ = false;
+     Planner::clear();
+     infSampler_.reset();
++    infSamplerGoal_.reset();
+     freeMemory();
+     if (tStart_)
+         tStart_->clear();
+@@ -369,8 +374,11 @@ ompl::geometric::GreedyRRTstar::GrowState ompl::geometric::GreedyRRTstar::growTr
+ 
+                 if (opt_->isCostBetterThan(costs[i], motion->cost))
+                 {
++                    // An asymmetric validator is checked in the direction of travel
+                     if ((!useKNearest_ || si_->distance(nbh[i]->state, motion->state) < maxDistance_) &&
+-                        si_->checkMotion(nbh[i]->state, motion->state))
++                        ((symmetricMotionValidity_ || tgi.start) ?
++                             si_->checkMotion(nbh[i]->state, motion->state) :
++                             si_->isValid(motion->state) && si_->checkMotion(motion->state, nbh[i]->state)))
+                     {
+                         motion->incCost = incCosts[i];
+                         motion->cost = costs[i];
+@@ -407,11 +415,13 @@ ompl::geometric::GreedyRRTstar::GrowState ompl::geometric::GreedyRRTstar::growTr
+             base::Cost nbhNewCost = opt_->combineCosts(motion->cost, nbhIncCost);
+             if (opt_->isCostBetterThan(nbhNewCost, nbh[i]->cost))
+             {
++                // The parent check ran the other way, so reuse it only when validity is symmetric
+                 bool motionValid;
+-                if (valid[i] == 0)
++                if (valid[i] == 0 || !symmetricMotionValidity_)
+                 {
+                     motionValid = (!useKNearest_ || si_->distance(nbh[i]->state, motion->state) < maxDistance_) &&
+-                                  si_->checkMotion(motion->state, nbh[i]->state);
++                                  (tgi.start ? si_->checkMotion(motion->state, nbh[i]->state) :
++                                               si_->checkMotion(nbh[i]->state, motion->state));
+                 }
+                 else
+                 {
+@@ -606,7 +616,7 @@ ompl::base::PlannerStatus ompl::geometric::GreedyRRTstar::solve(const base::Plan
+     }
+ 
+     // Allocate a sampler if necessary
+-    if (!infSampler_)
++    if (!infSampler_ || !infSamplerGoal_)
+     {
+         OMPL_INFORM("%s: Creating informed sampler...", getName().c_str());
+         allocSampler();
+@@ -695,8 +705,19 @@ ompl::base::PlannerStatus ompl::geometric::GreedyRRTstar::solve(const base::Plan
+             if (!tgi.checkForSolution)
+             {
+                 GrowState gsc = ADVANCED;
++                double prevGap = std::numeric_limits<double>::infinity();
+                 while (gsc == ADVANCED && !ptc)
++                {
+                     gsc = growTree(otherTree, tgi, rmotion, compareFn);
++                    if (gsc != ADVANCED)
++                        break;
++                    // A gap that stops shrinking means nearest is cycling (the
++                    // distance violates the triangle inequality); stop the chain.
++                    const double gap = si_->distance(tgi.xmotion->state, rmotion->state);
++                    if (gap >= prevGap)
++                        break;
++                    prevGap = gap;
++                }
+ 
+                 /* update distance between trees */
+                 const double newDist = tree->getDistanceFunction()(addedMotion, otherTree->nearest(addedMotion));
+@@ -984,10 +1005,12 @@ void ompl::geometric::GreedyRRTstar::getNeighbors(TreeData &tree, Motion *motion
+     {
+         //- k-nearest RRT*
+         unsigned int k = std::ceil(k_rrt_ * log(cardDbl));
++        // Without a cap, k can exceed the tree size in high dimension
++        if (maxNeighbors_ > 0u)
++            k = std::min(k, maxNeighbors_);
+         tree->nearestK(motion, k, nbh);
+     }
+-    else
+-    {
++    else    {
+         double r = std::min(
+             maxDistance_, r_rrt_ * std::pow(log(cardDbl) / cardDbl, 1 / static_cast<double>(si_->getStateDimension())));
+         tree->nearestR(motion, r, nbh);
+@@ -1264,9 +1287,13 @@ int ompl::geometric::GreedyRRTstar::pruneTree(TreeData &tree, const base::Cost &
+                 }
+                 else
+                 {
+-                    bestGoalMotions_.erase(
+-                        std::remove(bestGoalMotions_.begin(), bestGoalMotions_.end(), leave_to_prune->connection),
+-                        bestGoalMotions_.end());
++                    // Drop the goal motions connected to this start motion. Its own
++                    // connection can point to a goal motion pruned earlier, and a new
++                    // motion can reuse that address.
++                    bestGoalMotions_.erase(std::remove_if(bestGoalMotions_.begin(), bestGoalMotions_.end(),
++                                                          [leave_to_prune](const Motion *goalMotion)
++                                                          { return goalMotion->connection == leave_to_prune; }),
++                                           bestGoalMotions_.end());
+                     leave_to_prune->connection = nullptr;
+                     leave_to_prune->isConnectionPoint = false;
+                 }
+@@ -1530,8 +1557,9 @@ void ompl::geometric::GreedyRRTstar::setInformedSampling(bool informedSampling)
+         // If we currently have a sampler, we need to make a new one
+         if (infSampler_)
+         {
+-            // Reset the sampler
++            // Reset the samplers
+             infSampler_.reset();
++            infSamplerGoal_.reset();
+ 
+             // Create the sampler
+             // we cannot do this here since moveit creates the planner before goal states are given
+@@ -1543,28 +1571,34 @@ void ompl::geometric::GreedyRRTstar::setInformedSampling(bool informedSampling)
+ 
+ void ompl::geometric::GreedyRRTstar::allocSampler()
+ {
+-    // We are using informed sampling, this can end-up reverting to rejection sampling in some cases
++    // One sampler per tree, so each tree consumes its own full stream (see sampleUniform).
+     infSampler_ = opt_->allocInformedStateSampler(pdef_, numSampleAttempts_);
++    infSamplerGoal_ = opt_->allocInformedStateSampler(pdef_, numSampleAttempts_);
+ }
+ 
+ bool ompl::geometric::GreedyRRTstar::sampleUniform(base::State *statePtr)
+ {
++    // One stream per tree. Splitting a single low-discrepancy stream across the
++    // trees by a deterministic schedule confines each tree to a slice of the
++    // space (a base-2 Halton axis alternates halves every draw) and can stall.
++    const base::InformedSamplerPtr &sampler = startTree_ ? infSampler_ : infSamplerGoal_;
++
+     // I dont want to trigger the random number generation here yet
+     // since we don't need it until we found an initial solution
+     if (!bestGoalMotion_)
+     {
+         // Simply return a state from the regular sampler
+         // infSampler handles that internally since bestCost is still inf
+-        infSampler_->sampleUniform(statePtr, bestCost_);
++        sampler->sampleUniform(statePtr, bestCost_);
+         return true;
+     }
+ 
+     // sample from the greedy informed set
+     if (rng_.uniform01() < greedyBiasingRatio_)
+-        return infSampler_->sampleUniform(statePtr, greedyBestCost_);
++        return sampler->sampleUniform(statePtr, greedyBestCost_);
+ 
+     // sample from the informed set
+-    return infSampler_->sampleUniform(statePtr, bestCost_);
++    return sampler->sampleUniform(statePtr, bestCost_);
+ }
+ 
+ void ompl::geometric::GreedyRRTstar::calculateRewiringLowerBounds()
+diff --git a/src/ompl/geometric/planners/rrt/src/RRTConnect.cpp b/src/ompl/geometric/planners/rrt/src/RRTConnect.cpp
+index 78ef9b86..cc0fe7eb 100644
+--- a/src/ompl/geometric/planners/rrt/src/RRTConnect.cpp
++++ b/src/ompl/geometric/planners/rrt/src/RRTConnect.cpp
+@@ -35,6 +35,7 @@
+ /* Author: Ioan Sucan */
+ 
+ #include "ompl/geometric/planners/rrt/RRTConnect.h"
++#include <limits>
+ #include "ompl/base/goals/GoalSampleableRegion.h"
+ #include "ompl/tools/config/SelfConfig.h"
+ #include "ompl/util/String.h"
+@@ -291,8 +292,18 @@ ompl::base::PlannerStatus ompl::geometric::RRTConnect::solve(const base::Planner
+             if (gsc == TRAPPED)
+                 tgi.start = !tgi.start;
+ 
+-            while (gsc == ADVANCED)
++            double prevGap = std::numeric_limits<double>::infinity();
++            while (gsc == ADVANCED && !ptc)
++            {
+                 gsc = growTree(otherTree, tgi, rmotion);
++                if (gsc != ADVANCED)
++                    break;
++                // Stop when the gap stops shrinking; see GreedyRRTstar.
++                const double gap = si_->distance(tgi.xmotion->state, rmotion->state);
++                if (gap >= prevGap)
++                    break;
++                prevGap = gap;
++            }
+ 
+             /* update distance between trees */
+             const double newDist = tree->getDistanceFunction()(addedMotion, otherTree->nearest(addedMotion));

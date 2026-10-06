@@ -1,0 +1,269 @@
+<!-- Interactive sampling explorer for the "Why even coverage helps" section.
+     Self-contained, with scoped CSS under .gsv-wrap plus one inline script, no external
+     dependencies. Embedded in docs/concepts/sampling.rst via `.. raw:: html`. -->
+<div class="gsv-wrap">
+  <style>
+    .gsv-wrap{
+      --surface:#f4f7fa; --surface-2:#ffffff;
+      --border:#dfe4ea; --border-strong:#c3d3e0; --border-stronger:#9fb3c4;
+      --grid:#e6edf4;
+      --text:#1a1a1a; --text-secondary:#34495e; --text-muted:#6c7a89;
+      --accent:#2980b9; --accent-fill:#5a9bd4; --accent-bg:#e7f0fa; --accent-text:#1f5f8b;
+      --warn:#d9663a; --warn-bg:#fbede6;
+      --font:"Lato",Helvetica,Arial,sans-serif;
+      max-width:640px; margin:1.4em auto; font-family:var(--font); color:var(--text);
+    }
+    .gsv-wrap *{box-sizing:border-box;}
+    .gsv-controls{display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-bottom:1rem;}
+    .gsv-seg{display:inline-flex; border:1px solid var(--border-strong); border-radius:8px; overflow:hidden;}
+    .gsv-seg button{border:none; padding:6px 13px; font-size:13.5px; background:var(--surface-2); color:var(--text-secondary); cursor:pointer; font-family:inherit; margin:0; box-shadow:none; text-transform:none; line-height:1.25; font-weight:400;}
+    .gsv-seg button:focus{outline:none;}
+    .gsv-seg button + button{border-left:1px solid var(--border);}
+    .gsv-seg button.on{background:var(--accent); color:#fff;}
+    .gsv-check{display:inline-flex; align-items:center; gap:7px; font-size:13.5px; color:var(--text-secondary); cursor:pointer;}
+    .gsv-check input{width:15px; height:15px; accent-color:var(--warn); margin:0;}
+    .gsv-svg{width:100%; max-width:360px; display:block; margin:0 auto; touch-action:none; cursor:crosshair;}
+    .gsv-cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(112px,1fr)); gap:11px; margin-top:1rem;}
+    .gsv-card{background:var(--surface); border-radius:8px; padding:.6rem .9rem;}
+    .gsv-card .lbl{font-size:12.5px; color:var(--text-secondary);}
+    .gsv-card .val{font-size:21px; font-weight:500; color:var(--text);}
+    .gsv-card.hi{background:var(--accent-bg);}
+    .gsv-card.hi .lbl{color:var(--accent-text);}
+    .gsv-card.hi .val{color:var(--accent-text);}
+    .gsv-hint{font-size:12.5px; color:var(--text-muted); margin:.75rem 0 0 0; line-height:1.6;}
+  </style>
+
+  <div class="gsv-controls">
+    <div class="gsv-seg" id="gsv-metric">
+      <button data-metric="discrepancy" class="on">Star discrepancy</button>
+      <button data-metric="dispersion">Dispersion</button>
+    </div>
+    <div class="gsv-seg" id="gsv-type">
+      <button data-type="random" class="on">Pseudo-random</button>
+      <button data-type="halton">Halton</button>
+    </div>
+    <div class="gsv-seg" id="gsv-n">
+      <button data-n="32">32</button>
+      <button data-n="64" class="on">64</button>
+      <button data-n="128">128</button>
+    </div>
+    <label class="gsv-check"><input type="checkbox" id="gsv-worst"> Show worst</label>
+  </div>
+
+  <svg class="gsv-svg" id="gsv-svg" viewBox="0 0 356 356" role="img"
+       aria-label="Point set in the unit square with an anchored box or an empty ball">
+    <defs><clipPath id="gsv-clip"><rect x="28" y="28" width="300" height="300"></rect></clipPath></defs>
+    <rect x="28" y="28" width="300" height="300" fill="var(--surface-2)" stroke="var(--border-strong)" stroke-width="1"></rect>
+    <g id="gsv-grid"></g>
+    <g id="gsv-disc-layer">
+      <rect id="gsv-worst-box" x="28" y="28" width="0" height="0" fill="none" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="5 4" style="display:none;"></rect>
+      <rect id="gsv-cur-box" x="28" y="28" width="0" height="0" fill="var(--accent-fill)" fill-opacity="0.12" stroke="var(--accent)" stroke-width="1.5"></rect>
+    </g>
+    <g id="gsv-disp-layer" style="display:none;">
+      <circle id="gsv-worst-ball" cx="0" cy="0" r="0" fill="var(--warn)" fill-opacity="0.08" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="5 4" clip-path="url(#gsv-clip)" style="display:none;"></circle>
+      <circle id="gsv-cur-ball" cx="0" cy="0" r="0" fill="var(--accent-fill)" fill-opacity="0.12" stroke="var(--accent)" stroke-width="1.5" clip-path="url(#gsv-clip)"></circle>
+    </g>
+    <g id="gsv-pts"></g>
+    <circle id="gsv-handle" r="7" fill="var(--surface-2)" stroke="var(--accent)" stroke-width="2" style="cursor:grab;"></circle>
+    <text x="24" y="344" text-anchor="end" style="font-size:11px; fill:var(--text-muted);">0</text>
+    <text x="328" y="344" text-anchor="middle" style="font-size:11px; fill:var(--text-muted);">1</text>
+    <text x="20" y="332" text-anchor="end" style="font-size:11px; fill:var(--text-muted);">0</text>
+    <text x="20" y="32" text-anchor="end" style="font-size:11px; fill:var(--text-muted);">1</text>
+  </svg>
+
+  <div class="gsv-cards" id="gsv-cards-disc">
+    <div class="gsv-card"><div class="lbl">inside / N</div><div class="val" id="gsv-frac">0.000</div></div>
+    <div class="gsv-card"><div class="lbl">box area</div><div class="val" id="gsv-area">0.000</div></div>
+    <div class="gsv-card"><div class="lbl">gap</div><div class="val" id="gsv-gap">0.000</div></div>
+    <div class="gsv-card hi"><div class="lbl">worst gap D*</div><div class="val" id="gsv-star">0.000</div></div>
+  </div>
+  <div class="gsv-cards" id="gsv-cards-disp" style="display:none;">
+    <div class="gsv-card"><div class="lbl">empty radius here</div><div class="val" id="gsv-rad">0.000</div></div>
+    <div class="gsv-card hi"><div class="lbl">dispersion (worst)</div><div class="val" id="gsv-disp">0.000</div></div>
+  </div>
+
+  <p class="gsv-hint" id="gsv-hint"></p>
+</div>
+
+<script>
+(function(){
+  var PAD=28, S=300, VB=356, NS="http://www.w3.org/2000/svg";
+  var $=function(id){return document.getElementById(id);};
+  var svg=$("gsv-svg"), gPts=$("gsv-pts"), gGrid=$("gsv-grid"), handle=$("gsv-handle");
+  var curBox=$("gsv-cur-box"), worstBox=$("gsv-worst-box");
+  var curBall=$("gsv-cur-ball"), worstBall=$("gsv-worst-ball");
+  var discLayer=$("gsv-disc-layer"), dispLayer=$("gsv-disp-layer");
+  var cardsDisc=$("gsv-cards-disc"), cardsDisp=$("gsv-cards-disp"), hint=$("gsv-hint");
+
+  var HINTS={
+    discrepancy:"Drag the box corner. The gap is the fraction of points inside minus the box area, and the star discrepancy is the largest gap over every box anchored at the origin. Switch between the two point sets to compare.",
+    dispersion:"Drag the probe. The circle is the largest empty ball that fits at that spot without covering a point. The dispersion is the widest empty ball anywhere in the square, the biggest gap the sampling leaves."
+  };
+
+  var state={metric:"discrepancy", type:"random", N:64, pts:[],
+             b1:0.6, b2:0.6, qx:0.5, qy:0.5,
+             star:null, disp:null, showWorst:false};
+
+  for(var t=0.25; t<1; t+=0.25){
+    var lx=document.createElementNS(NS,"line");
+    lx.setAttribute("x1",PAD+t*S); lx.setAttribute("y1",PAD); lx.setAttribute("x2",PAD+t*S); lx.setAttribute("y2",PAD+S);
+    lx.setAttribute("stroke","var(--grid)"); gGrid.appendChild(lx);
+    var ly=document.createElementNS(NS,"line");
+    ly.setAttribute("x1",PAD); ly.setAttribute("y1",PAD+t*S); ly.setAttribute("x2",PAD+S); ly.setAttribute("y2",PAD+t*S);
+    ly.setAttribute("stroke","var(--grid)"); gGrid.appendChild(ly);
+  }
+
+  // --- point sets ---
+  function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+  function halton(i,b){var f=1,r=0;while(i>0){f/=b;r+=f*(i%b);i=Math.floor(i/b);}return r;}
+  function makeSet(type,N){
+    var p=[];
+    if(type==="halton"){ for(var i=1;i<=N;i++) p.push([halton(i,2),halton(i,3)]); }
+    else { var rnd=mulberry32(987654); for(var j=0;j<N;j++) p.push([rnd(),rnd()]); }
+    return p;
+  }
+
+  // Anchored star discrepancy: the supremum is attained at boxes whose upper
+  // corner lands on point coordinates, so scan those candidates and take the
+  // largest gap, checking both the closed and open counts.
+  function starDisc(pts){
+    var N=pts.length;
+    var xs=pts.map(function(p){return p[0];}).concat([1]);
+    var ys=pts.map(function(p){return p[1];}).concat([1]);
+    var best=0,bx=1,by=1;
+    for(var i=0;i<xs.length;i++){ for(var j=0;j<ys.length;j++){
+      var a=xs[i],b=ys[j],area=a*b,cC=0,cO=0;
+      for(var k=0;k<pts.length;k++){var px=pts[k][0],py=pts[k][1];
+        if(px<=a&&py<=b)cC++; if(px<a&&py<b)cO++;}
+      var d=Math.max(Math.abs(cC/N-area),Math.abs(cO/N-area));
+      if(d>best){best=d;bx=a;by=b;}
+    }}
+    return {D:best,bx:bx,by:by};
+  }
+
+  function nearest(pts,x,y){
+    var best=Infinity,nx=0,ny=0;
+    for(var k=0;k<pts.length;k++){var dx=pts[k][0]-x,dy=pts[k][1]-y,d=dx*dx+dy*dy;
+      if(d<best){best=d;nx=pts[k][0];ny=pts[k][1];}}
+    return {d:Math.sqrt(best),nx:nx,ny:ny};
+  }
+
+  // Largest empty ball that fits inside the square: at each grid point the ball
+  // grows until it reaches the nearest sample or the nearest wall, and we keep
+  // the widest one. Constraining it to the square keeps the ball in a real gap
+  // rather than hanging off a corner.
+  function dispersion(pts){
+    var G=110,best=0,cx=0,cy=0;
+    for(var i=0;i<=G;i++){ for(var j=0;j<=G;j++){
+      var x=i/G,y=j/G,r=Math.min(nearest(pts,x,y).d,x,1-x,y,1-y);
+      if(r>best){best=r;cx=x;cy=y;}
+    }}
+    return {D:best,cx:cx,cy:cy};
+  }
+
+  function toX(x){return PAD+x*S;}
+  function toY(y){return PAD+(1-y)*S;}
+
+  function drawPoints(){
+    while(gPts.firstChild) gPts.removeChild(gPts.firstChild);
+    var near=state.metric==="dispersion"?nearest(state.pts,state.qx,state.qy):null;
+    state.pts.forEach(function(p){
+      var hi;
+      if(state.metric==="discrepancy") hi=p[0]<state.b1 && p[1]<state.b2;
+      else hi=near && p[0]===near.nx && p[1]===near.ny;
+      var c=document.createElementNS(NS,"circle");
+      c.setAttribute("cx",toX(p[0])); c.setAttribute("cy",toY(p[1])); c.setAttribute("r","3.2");
+      c.setAttribute("fill",hi?"var(--accent)":"var(--surface-2)");
+      c.setAttribute("stroke",hi?"var(--accent)":"var(--border-stronger)"); c.setAttribute("stroke-width","1");
+      gPts.appendChild(c);
+    });
+  }
+
+  function updateDiscrepancy(){
+    var yTop=toY(state.b2);
+    curBox.setAttribute("x",PAD); curBox.setAttribute("y",yTop);
+    curBox.setAttribute("width",state.b1*S); curBox.setAttribute("height",state.b2*S);
+    handle.setAttribute("cx",toX(state.b1)); handle.setAttribute("cy",yTop);
+    var inside=0; state.pts.forEach(function(p){ if(p[0]<state.b1 && p[1]<state.b2) inside++; });
+    var area=state.b1*state.b2, frac=inside/state.N;
+    $("gsv-frac").textContent=frac.toFixed(3);
+    $("gsv-area").textContent=area.toFixed(3);
+    $("gsv-gap").textContent=Math.abs(frac-area).toFixed(3);
+    drawPoints();
+  }
+
+  function updateDispersion(){
+    var pd=nearest(state.pts,state.qx,state.qy).d;
+    var r=Math.min(pd,state.qx,1-state.qx,state.qy,1-state.qy);
+    var cx=toX(state.qx), cy=toY(state.qy);
+    curBall.setAttribute("cx",cx); curBall.setAttribute("cy",cy); curBall.setAttribute("r",r*S);
+    handle.setAttribute("cx",cx); handle.setAttribute("cy",cy);
+    $("gsv-rad").textContent=r.toFixed(3);
+    drawPoints();
+  }
+
+  function update(){ if(state.metric==="discrepancy") updateDiscrepancy(); else updateDispersion(); }
+
+  function rebuild(){
+    state.pts=makeSet(state.type,state.N);
+    state.star=starDisc(state.pts);
+    state.disp=dispersion(state.pts);
+    $("gsv-star").textContent=state.star.D.toFixed(3);
+    $("gsv-disp").textContent=state.disp.D.toFixed(3);
+    worstBox.setAttribute("x",PAD); worstBox.setAttribute("y",toY(state.star.by));
+    worstBox.setAttribute("width",state.star.bx*S); worstBox.setAttribute("height",state.star.by*S);
+    worstBall.setAttribute("cx",toX(state.disp.cx)); worstBall.setAttribute("cy",toY(state.disp.cy));
+    worstBall.setAttribute("r",state.disp.D*S);
+    update();
+  }
+
+  function applyWorstVisibility(){
+    var show=state.showWorst;
+    worstBox.style.display=(show && state.metric==="discrepancy")?"block":"none";
+    worstBall.style.display=(show && state.metric==="dispersion")?"block":"none";
+  }
+
+  function setMetric(m){
+    state.metric=m;
+    discLayer.style.display=m==="discrepancy"?"":"none";
+    dispLayer.style.display=m==="dispersion"?"":"none";
+    cardsDisc.style.display=m==="discrepancy"?"":"none";
+    cardsDisp.style.display=m==="dispersion"?"":"none";
+    hint.textContent=HINTS[m];
+    applyWorstVisibility();
+    update();
+  }
+
+  // pointer -> data coords, clamped
+  function toData(evt){
+    var r=svg.getBoundingClientRect(), sc=VB/r.width;
+    var x=((evt.clientX-r.left)*sc-PAD)/S, y=1-((evt.clientY-r.top)*sc-PAD)/S;
+    return [Math.max(0,Math.min(1,x)), Math.max(0,Math.min(1,y))];
+  }
+  var dragging=false;
+  function place(e){
+    var d=toData(e);
+    if(state.metric==="discrepancy"){ state.b1=Math.max(0.001,d[0]); state.b2=Math.max(0.001,d[1]); }
+    else { state.qx=d[0]; state.qy=d[1]; }
+    update();
+  }
+  svg.addEventListener("pointerdown",function(e){dragging=true;handle.style.cursor="grabbing";place(e);e.preventDefault();});
+  window.addEventListener("pointermove",function(e){if(dragging){place(e);e.preventDefault();}});
+  window.addEventListener("pointerup",function(){dragging=false;handle.style.cursor="grab";});
+
+  function wireSeg(id,attr,cast,apply){
+    $(id).addEventListener("click",function(e){
+      var b=e.target.closest("button"); if(!b)return;
+      [].forEach.call(this.querySelectorAll("button"),function(x){x.classList.remove("on");});
+      b.classList.add("on"); apply(cast(b.getAttribute(attr)));
+    });
+  }
+  wireSeg("gsv-metric","data-metric",String,function(v){setMetric(v);});
+  wireSeg("gsv-type","data-type",String,function(v){state.type=v;rebuild();});
+  wireSeg("gsv-n","data-n",Number,function(v){state.N=v;rebuild();});
+  $("gsv-worst").addEventListener("change",function(e){state.showWorst=e.target.checked;applyWorstVisibility();});
+
+  hint.textContent=HINTS.discrepancy;
+  rebuild();
+})();
+</script>

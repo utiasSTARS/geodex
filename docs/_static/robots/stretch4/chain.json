@@ -1,0 +1,469 @@
+{
+ "robot": "stretch4",
+ "label": "Hello Robot Stretch 4",
+ "root": "world",
+ "joint_names": [
+  "base_x_joint",
+  "base_y_joint",
+  "base_theta_joint",
+  "lift_joint",
+  "arm_joint",
+  "wrist_yaw_joint",
+  "wrist_pitch_joint",
+  "wrist_roll_joint"
+ ],
+ "links": [
+  "world",
+  "base_x_link",
+  "base_y_link",
+  "base_footprint",
+  "lift_link",
+  "arm_l1_link",
+  "arm_joint_driver_link",
+  "arm_l2_link",
+  "arm_l3_link",
+  "arm_l4_link",
+  "wrist_yaw_link",
+  "wrist_pitch_link",
+  "wrist_roll_link"
+ ],
+ "joints": [
+  {
+   "name": "base_x_joint",
+   "type": "prismatic",
+   "parent": "world",
+   "child": "base_x_link",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "index": 0
+  },
+  {
+   "name": "base_y_joint",
+   "type": "prismatic",
+   "parent": "base_x_link",
+   "child": "base_y_link",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "index": 1
+  },
+  {
+   "name": "base_theta_joint",
+   "type": "revolute",
+   "parent": "base_y_link",
+   "child": "base_footprint",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 2
+  },
+  {
+   "name": "lift_joint",
+   "type": "prismatic",
+   "parent": "base_footprint",
+   "child": "lift_link",
+   "origin": {
+    "xyz": [
+     -0.093,
+     -0.0994,
+     0.273
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 3
+  },
+  {
+   "name": "arm_l1_joint",
+   "type": "prismatic",
+   "parent": "lift_link",
+   "child": "arm_l1_link",
+   "origin": {
+    "xyz": [
+     0.003,
+     0.0994,
+     -0.012859549
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "index": 4,
+   "multiplier": 0.25,
+   "offset": 0.0
+  },
+  {
+   "name": "arm_joint",
+   "type": "prismatic",
+   "parent": "lift_link",
+   "child": "arm_joint_driver_link",
+   "origin": {
+    "xyz": [
+     0.01675,
+     0.0994,
+     -0.012859549
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "index": 4
+  },
+  {
+   "name": "arm_l2_joint",
+   "type": "prismatic",
+   "parent": "arm_l1_link",
+   "child": "arm_l2_link",
+   "origin": {
+    "xyz": [
+     -0.0135,
+     0.0,
+     0.0
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "index": 4,
+   "multiplier": 0.25,
+   "offset": 0.0
+  },
+  {
+   "name": "arm_l3_joint",
+   "type": "prismatic",
+   "parent": "arm_l2_link",
+   "child": "arm_l3_link",
+   "origin": {
+    "xyz": [
+     -0.0135,
+     0.0,
+     0.0
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "index": 4,
+   "multiplier": 0.25,
+   "offset": 0.0
+  },
+  {
+   "name": "arm_l4_joint",
+   "type": "prismatic",
+   "parent": "arm_l3_link",
+   "child": "arm_l4_link",
+   "origin": {
+    "xyz": [
+     -0.0055,
+     0.0,
+     0.0
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "index": 4,
+   "multiplier": 0.25,
+   "offset": 0.0
+  },
+  {
+   "name": "wrist_yaw_joint",
+   "type": "revolute",
+   "parent": "arm_l4_link",
+   "child": "wrist_yaw_link",
+   "origin": {
+    "xyz": [
+     0.2934,
+     0.0,
+     -0.03672
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 5
+  },
+  {
+   "name": "wrist_pitch_joint",
+   "type": "revolute",
+   "parent": "wrist_yaw_link",
+   "child": "wrist_pitch_link",
+   "origin": {
+    "xyz": [
+     0.0,
+     -0.04222,
+     -0.0452
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "index": 6
+  },
+  {
+   "name": "wrist_roll_joint",
+   "type": "revolute",
+   "parent": "wrist_pitch_link",
+   "child": "wrist_roll_link",
+   "origin": {
+    "xyz": [
+     0.04222,
+     -0.0452,
+     0.0
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "index": 7
+  }
+ ],
+ "ee": {
+  "link": "grasp_center_link",
+  "parent": "wrist_roll_link",
+  "xyz": [
+   0.253562346,
+   0.0,
+   0.0
+  ],
+  "quat": [
+   0.0,
+   0.0,
+   0.0,
+   1.0
+  ]
+ },
+ "meshes": {
+  "full": "stretch4.glb",
+  "ghost": "stretch4_ghost.glb"
+ },
+ "bounds": {
+  "arm_l1_link": [
+   [
+    -0.027,
+    -0.0446,
+    -0.0376
+   ],
+   [
+    0.1928,
+    0.0446,
+    0.0376
+   ]
+  ],
+  "arm_l2_link": [
+   [
+    0.0,
+    -0.0421,
+    -0.0351
+   ],
+   [
+    0.2218,
+    0.0421,
+    0.0351
+   ]
+  ],
+  "arm_l3_link": [
+   [
+    0.027,
+    -0.0396,
+    -0.0326
+   ],
+   [
+    0.2508,
+    0.0396,
+    0.0326
+   ]
+  ],
+  "arm_l4_link": [
+   [
+    0.0463,
+    -0.028,
+    -0.0377
+   ],
+   [
+    0.3214,
+    0.028,
+    0.0392
+   ]
+  ],
+  "base_footprint": [
+   [
+    -0.2134,
+    -0.2005,
+    -0.0005
+   ],
+   [
+    0.2134,
+    0.206,
+    1.5992
+   ]
+  ],
+  "lift_link": [
+   [
+    -0.0974,
+    -0.047,
+    -0.055
+   ],
+   [
+    0.1802,
+    0.1523,
+    0.118
+   ]
+  ],
+  "wrist_pitch_link": [
+   [
+    -0.028,
+    -0.0732,
+    -0.028
+   ],
+   [
+    0.0432,
+    0.0,
+    0.028
+   ]
+  ],
+  "wrist_roll_link": [
+   [
+    -0.0081,
+    -0.0446,
+    -0.047
+   ],
+   [
+    0.2687,
+    0.0446,
+    0.0804
+   ]
+  ],
+  "wrist_yaw_link": [
+   [
+    -0.028,
+    -0.0432,
+    -0.0732
+   ],
+   [
+    0.028,
+    0.028,
+    0.0
+   ]
+  ]
+ }
+}

@@ -1,0 +1,65 @@
+name: Docs
+
+# Build the documentation site with warnings as errors, run every docs example in Python
+# and C++ and compare the two, and check that the API pages cover every public name. The
+# figures, plots and 3D recordings are committed output of `pixi run docs-assets`. This
+# workflow does not regenerate them.
+
+on:
+  push:
+    branches: [master, main]
+    paths:
+      - "docs/**"
+      - "examples/**"
+      - "include/**"
+      - "python/**"
+      - "pixi.toml"
+      - "pixi.lock"
+      - ".github/workflows/docs.yml"
+  pull_request:
+    paths:
+      - "docs/**"
+      - "examples/**"
+      - "include/**"
+      - "python/**"
+      - "pixi.toml"
+      - "pixi.lock"
+      - ".github/workflows/docs.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docs:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e  # v0.10.2
+        with:
+          pixi-version: v0.73.0
+          locked: true
+          cache: true
+
+      - name: Build the C++ examples and the Python module
+        run: pixi run build-cpp && pixi run build-py
+
+      - name: Build the site with warnings as errors
+        run: pixi run docs
+
+      # Run after the site build. The C++ API coverage checks read the Doxygen XML and the
+      # rendered page, and fail when either is missing.
+      - name: Run every docs example in Python and C++ and compare, and check the API pages
+        run: pixi run test-docs
+        env:
+          GEODEX_DOCS_REQUIRE_SITE: "1"
+
+      - name: Upload the site
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: docs-html
+          path: build/docs/sphinx
+          retention-days: 14

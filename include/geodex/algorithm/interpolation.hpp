@@ -14,7 +14,6 @@
 #include <Eigen/Core>
 
 #include "geodex/core/concepts.hpp"
-#include "geodex/core/debug.hpp"
 #include "geodex/core/metric.hpp"
 
 namespace geodex {
@@ -119,11 +118,10 @@ struct InterpolationSettings {
 
   /// @brief Force the log-based direction even when `is_riemannian_log()` is false.
   ///
-  /// @details When true, the algorithm always uses `log(current, target)` as the
-  /// descent direction and never falls back to the FD natural gradient. The metric's
-  /// norm and distance still control step sizing and convergence. This produces
-  /// smoother paths (no FD oscillation) but the path follows the base retraction's
-  /// geodesic rather than the true Riemannian geodesic of the configured metric.
+  /// @details When true, the algorithm uses `log(current, target)` as the descent direction
+  /// and takes an FD natural-gradient step only when a log step fails its progress or
+  /// length check. The metric's norm and distance still control step sizing and
+  /// convergence. The path follows the base retraction's geodesic, not the metric's.
   bool force_log_direction = false;
 
   /// @brief Relative-error threshold above which the midpoint distance surrogate
@@ -131,8 +129,8 @@ struct InterpolationSettings {
   /// `|log(a,b)|_R`.
   ///
   /// @details `natural_gradient_fd` samples \f$d^2(p \pm h\,e_i, q)\f$ via a
-  /// third-order-accurate midpoint formula (see `distance_midpoint`). For a true
-  /// Riemannian midpoint we have \f$\log_m(a) = -\log_m(b)\f$, so the quantity
+  /// third-order-accurate midpoint formula (see `distance_midpoint`). At a true
+  /// Riemannian midpoint \f$\log_m(a) = -\log_m(b)\f$, and the quantity
   /// \f$\|v_{ma} + v_{mb}\|_m / \|v_{mb} - v_{ma}\|_m\f$ is zero. When this
   /// ratio exceeds `tau`, the midpoint is considered unreliable (non-Riemannian
   /// retraction, cut locus, or non-smoothness between the samples) and the FD
@@ -185,23 +183,25 @@ struct InterpolationCache {
 
  private:
   static constexpr int N = Tangent::SizeAtCompileTime;
-  static constexpr int MaxN = (N == Eigen::Dynamic) ? Eigen::Dynamic : N;
 
  public:
   /// @brief Scratch FD-path ambient tangent (natural gradient reconstructed in ambient space).
   Tangent v_fd;
 
+  // The buffers below are dynamic-size for every manifold. A fixed-size manifold and its
+  // dynamic-size wrapper run the same Eigen kernels on them.
+
   /// @brief Basis matrix (FD path): columns are tangent basis vectors at the current point.
-  Eigen::Matrix<double, N, Eigen::Dynamic, 0, MaxN, MaxN> basis_mat;
+  Eigen::MatrixXd basis_mat;
 
   /// @brief Metric tensor \f$G_{ij} = \langle e_i, e_j\rangle_p\f$ in the current basis.
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, 0, MaxN, MaxN> G;
+  Eigen::MatrixXd G;
 
   /// @brief Coordinate-space gradient of \f$\tfrac{1}{2}\, d^2(\cdot, \text{target})\f$.
-  Eigen::Matrix<double, Eigen::Dynamic, 1, 0, MaxN, 1> grad;
+  Eigen::VectorXd grad;
 
   /// @brief Natural-gradient coefficients \f$\alpha = -G^{-1} g\f$.
-  Eigen::Matrix<double, Eigen::Dynamic, 1, 0, MaxN, 1> alpha;
+  Eigen::VectorXd alpha;
 
   /// @brief Resize all buffers for the given ambient and intrinsic dimensions.
   /// @param ambient Ambient-space dimension of a tangent vector (typically `Tangent::size()`).
@@ -229,7 +229,7 @@ struct InterpolationResult {
   /// @brief Sequence of iterates from `start` toward `target` (always starts with `start`).
   std::vector<PointT> path;
 
-  /// @brief Termination reason — always check this before using the path for downstream work.
+  /// @brief Termination reason. Check it before using the path.
   InterpolationStatus status = InterpolationStatus::Converged;
 
   /// @brief Number of successful gradient steps taken (distortion retries do not count).
@@ -266,9 +266,7 @@ namespace detail {
 ///
 /// @details For manifolds whose `log` is the actual Riemannian logarithm, this
 /// is the exact geodesic distance. For retraction-based logs it is a first-order
-/// approximation. Used inside `discrete_geodesic` hot loops in place of
-/// `distance_midpoint` because it is very cheap and sufficient for
-/// convergence and progress checks.
+/// approximation. `discrete_geodesic` uses it for the convergence and progress checks.
 template <RiemannianManifold M>
 inline auto distance_via_log(const M& m, const typename M::Point& a, const typename M::Point& b) ->
     typename M::Scalar {
@@ -281,17 +279,15 @@ inline auto distance_via_log(const M& m, const typename M::Point& a, const typen
 /// @details Computes the third-order-accurate midpoint distance
 /// \f$\|\log_m(b) - \log_m(a)\|_m\f$ where
 /// \f$m = \exp_a(\tfrac{1}{2}\log_a(b))\f$, and checks the Riemannian-midpoint
-/// identity \f$\log_m(a) = -\log_m(b)\f$ — equivalently
+/// identity \f$\log_m(a) = -\log_m(b)\f$, equivalently
 /// \f$\|v_{ma} + v_{mb}\|_m \ll \|v_{mb} - v_{ma}\|_m\f$. When the relative
 /// deviation exceeds `tau`, the midpoint is considered unreliable (see the
 /// InterpolationSettings doc for scenarios) and the function returns the
 /// first-order fallback \f$|\log_a(b)|_R\f$ instead. The boolean out-parameter
-/// `tripped` reports which branch was taken so the caller can count fallbacks
-/// for diagnostics.
+/// `tripped` reports which branch was taken, and the caller counts the fallbacks.
 ///
-/// Used inside `natural_gradient_fd` where an accurate
-/// \f$\nabla(\tfrac{1}{2}\,d^2)\f$ is required — the main-loop progress check
-/// continues to use the cheaper `distance_via_log` directly.
+/// `natural_gradient_fd` uses it for an accurate \f$\nabla(\tfrac{1}{2}\,d^2)\f$. The
+/// main-loop progress check uses `distance_via_log`.
 template <RiemannianManifold M>
 inline auto distance_midpoint_fd(const M& m, const typename M::Point& a,
                                  const typename M::Point& b, double tau, bool& tripped) ->
@@ -313,9 +309,8 @@ inline auto distance_midpoint_fd(const M& m, const typename M::Point& a,
   const Tangent v_sum = v_mb + v_ma;
   const Scalar d_mid = m.norm(mid, v_diff);
 
-  // Guard: for a true Riemannian midpoint, v_ma = -v_mb, so ||v_sum|| should be
-  // tiny compared to ||v_diff||. When it isn't, fall back to |log|_R which is
-  // more robust though less accurate.
+  // At a true Riemannian midpoint v_ma = -v_mb, and ||v_sum|| is small against
+  // ||v_diff||. A larger ||v_sum|| falls back to |log|_R.
   if (d_mid > Scalar{0}) {
     const Scalar err = m.norm(mid, v_sum);
     if (err > tau * d_mid) {
@@ -422,10 +417,10 @@ bool natural_gradient_fd(const M& m, const typename M::Point& p, const typename 
   cache.G.resize(d, d);
   cache.alpha.resize(d);
 
-  // 1) Coordinate gradient via central finite differences. Sample d^2 via the
-  // midpoint surrogate with guard; when the guard trips for either sample in a
-  // basis direction we recompute both via-log so the two terms of the central
-  // difference use the same surrogate (mixing would bias the quotient).
+  // 1) Coordinate gradient via central finite differences. The d^2 samples use the
+  // guarded midpoint surrogate. When the guard trips for either sample in a basis
+  // direction, both samples use the via-log distance, and the two terms of the central
+  // difference share one surrogate.
   for (int i = 0; i < d; ++i) {
     const auto p_plus = m.exp(p, h * cache.basis_mat.col(i));
     const auto p_minus = m.exp(p, -h * cache.basis_mat.col(i));
@@ -440,11 +435,10 @@ bool natural_gradient_fd(const M& m, const typename M::Point& p, const typename 
     }
     cache.grad(i) = (0.5 * d_plus * d_plus - 0.5 * d_minus * d_minus) / (2.0 * h);
   }
-  GEODEX_LOG("  natural_gradient_fd grad=" << cache.grad.transpose());
 
-  // 2) Metric tensor G_ij = <e_i, e_j>_p. Use batch path if the manifold
-  // provides `inner_matrix` (e.g., KineticEnergyMetric: one mass-matrix eval
-  // instead of d^2 scalar calls).
+  // 2) Metric tensor G_ij = <e_i, e_j>_p. A manifold with `inner_matrix` fills it in
+  // a single call. KineticEnergyMetric then evaluates the mass matrix once instead of d^2
+  // times.
   if constexpr (HasBatchInnerMatrix<M>) {
     const Eigen::MatrixXd B = cache.basis_mat.leftCols(d);
     const Eigen::MatrixXd G_full = m.inner_matrix(p, B, B);
@@ -457,7 +451,6 @@ bool natural_gradient_fd(const M& m, const typename M::Point& p, const typename 
       }
     }
   }
-  GEODEX_LOG("  natural_gradient_fd G=\n" << cache.G);
 
   // 3) Scale-relative Tikhonov regularization + LLT solve.
   const double trace = cache.G.diagonal().sum();
@@ -466,7 +459,6 @@ bool natural_gradient_fd(const M& m, const typename M::Point& p, const typename 
 
   auto solver = cache.G.llt();
   if (solver.info() != Eigen::Success) {
-    GEODEX_LOG("  natural_gradient_fd: LLT failed");
     if constexpr (N == Eigen::Dynamic) {
       cache.v_fd = Tangent::Zero(p.size());
     } else {
@@ -476,7 +468,6 @@ bool natural_gradient_fd(const M& m, const typename M::Point& p, const typename 
   }
 
   cache.alpha = solver.solve(-cache.grad);
-  GEODEX_LOG("  natural_gradient_fd alpha=" << cache.alpha.transpose());
 
   // 4) Reconstruct in ambient space: v_fd = B * alpha.
   if constexpr (N == Eigen::Dynamic) {
@@ -502,9 +493,8 @@ double initial_step_cap(const M& m, double requested_step_size) {
 /// @brief Auto-select the FD central-difference step when the user passed 0.
 ///
 /// @details The optimal central-FD step for double precision is approximately
-/// \f$\varepsilon_{\mathrm{mach}}^{1/3} \approx 6\times 10^{-6}\f$. We scale
-/// gently with the initial distance so tiny workspaces don't get an FD step
-/// that dwarfs the geometry.
+/// \f$\varepsilon_{\mathrm{mach}}^{1/3} \approx 6\times 10^{-6}\f$. The step is
+/// \f$10^{-5} \max(1, d_0)\f$, where \f$d_0\f$ is the initial distance.
 inline double resolve_fd_epsilon(double user_value, double initial_distance) {
   if (user_value > 0.0) return user_value;
   return std::max(1e-8, 1e-5 * std::max(1.0, initial_distance));
@@ -529,19 +519,20 @@ inline double resolve_fd_epsilon(double user_value, double initial_distance) {
 /// natural gradient computed from the manifold's `inner` product.
 ///
 /// The returned `InterpolationResult` carries the path, a termination status
-/// enum, iteration count, and the initial/final distances — allowing callers to
-/// distinguish successful convergence from `MaxStepsReached`, `CutLocus`,
-/// `GradientVanished`, `StepShrunkToZero`, and `DegenerateInput`.
+/// enum, iteration count, and the initial/final distances. The status separates
+/// successful convergence from `MaxStepsReached`, `CutLocus`, `GradientVanished`,
+/// `StepShrunkToZero`, and `DegenerateInput`.
 ///
 /// **Walk semantics**: iteration count and path size both scale as
 /// \f$\approx \text{initial\_distance} / \texttt{step\_size}\f$. Reduce
 /// `step_size` for higher path resolution.
 ///
-/// @note See Kyaw, P. T., & Kelly, J. (2026). *Geometry-Aware Sampling-Based
-/// Motion Planning on Riemannian Manifolds.* arXiv:2602.00992. The identity
-/// \f$\nabla_g(\tfrac{1}{2}\, d_g^2(\cdot, q))(x) = -\log_x^g(q)\f$ is standard;
-/// see Sakai, *Riemannian Geometry*, §IV.5 and do Carmo, *Riemannian Geometry*,
-/// Ch 13 Prop 3.6.
+/// @see Phone Thiha Kyaw, Jonathan Kelly. "Geometry-Aware Sampling-Based Motion
+///   Planning on Riemannian Manifolds." Proceedings of the 17th World Symposium on the
+///   Algorithmic Foundations of Robotics (WAFR), 2026. arXiv:2602.00992.
+/// The identity \f$\nabla_g(\tfrac{1}{2}\, d_g^2(\cdot, q))(x) = -\log_x^g(q)\f$ is
+/// standard (Sakai, *Riemannian Geometry*, §IV.5, and do Carmo, *Riemannian Geometry*,
+/// Ch. 13, Prop. 3.6).
 ///
 /// @tparam M A type satisfying `RiemannianManifold`.
 /// @param manifold The manifold instance.
@@ -570,11 +561,8 @@ auto discrete_geodesic(const M& manifold, const typename M::Point& start,
   InterpolationCache<M>& C = cache ? *cache : stack_cache;
   C.reset(detail::tangent_ambient_size(manifold, start), manifold.dim());
 
-  GEODEX_LOG("=== discrete_geodesic start ===");
-  GEODEX_LOG("start=" << start.transpose() << "  target=" << target.transpose());
-
-  // Initial distance via |log(start, target)|_R — exact for Riemannian-log manifolds,
-  // first-order approximation otherwise.
+  // Initial distance via |log(start, target)|_R. It is exact for Riemannian-log manifolds
+  // and a first-order approximation otherwise.
   Tangent v_log = manifold.log(start, target);
   double dist = manifold.norm(start, v_log);
   R.initial_distance = dist;
@@ -585,17 +573,14 @@ auto discrete_geodesic(const M& manifold, const typename M::Point& start,
     const double ambient_gap = (target - start).norm();
     if (ambient_gap == 0.0) {
       R.status = InterpolationStatus::DegenerateInput;
-      GEODEX_LOG("=== discrete_geodesic done (DegenerateInput) ===");
       return R;
     }
     if (dist < settings.cut_locus_eps && ambient_gap > 1e-10) {
       R.status = InterpolationStatus::CutLocus;
-      GEODEX_LOG("=== discrete_geodesic done (CutLocus) ===");
       return R;
     }
     if (dist <= settings.convergence_tol) {
       R.status = InterpolationStatus::Converged;
-      GEODEX_LOG("=== discrete_geodesic done (already within tol) ===");
       return R;
     }
   }
@@ -603,26 +588,23 @@ auto discrete_geodesic(const M& manifold, const typename M::Point& start,
   const double fd_eps = detail::resolve_fd_epsilon(settings.fd_epsilon, dist);
   double step_cap = detail::initial_step_cap(manifold, settings.step_size);
   const double initial_distance = dist;
-  // Resolved once per call: is the base log the Riemannian log of the metric?
-  // `is_riemannian_log` collapses the compile-time (`M::has_riemannian_log`)
-  // and runtime (`m.has_riemannian_log_runtime()`) signals into one bool.
+  // Whether the base log is the Riemannian log of the metric, resolved once per call.
+  // `is_riemannian_log` combines the compile-time (`M::has_riemannian_log`) and
+  // runtime (`m.has_riemannian_log_runtime()`) signals into one bool.
   const bool fast_path_enabled =
       settings.force_log_direction || geodex::is_riemannian_log(manifold);
 
   Point current = start;
 
   for (int i = 0; i < settings.max_steps; ++i) {
-    GEODEX_LOG("--- step " << i << ": current=" << current.transpose() << "  dist=" << dist
-                           << "  step_cap=" << step_cap);
-
     // Convergence on absolute and relative thresholds.
     if (dist <= settings.convergence_tol || dist <= settings.convergence_rel * initial_distance) {
       R.status = InterpolationStatus::Converged;
       break;
     }
 
-    // log may vanish at a stationary point that's not the target (cut locus or
-    // symmetry). Either way, we can't descend further.
+    // log may vanish at a stationary point that is not the target (cut locus or
+    // symmetry). The walk cannot descend further from there.
     if (dist < settings.gradient_eps) {
       R.status = InterpolationStatus::CutLocus;
       break;
@@ -636,29 +618,21 @@ auto discrete_geodesic(const M& manifold, const typename M::Point& start,
     double new_dist = 0.0;
     bool accepted = false;
 
-    // Runtime branch: when `fast_path_enabled` is true the base `log` is the
-    // Riemannian log of the metric and `-log` is the natural gradient of
-    // (1/2) d^2. Otherwise we use finite differences to compute the correct
-    // natural gradient under the (possibly custom) metric. For manifolds with
-    // compile-time opt-in the branch predictor collapses this into a
-    // branchless fast path.
+    // When `fast_path_enabled` is true the base `log` is the Riemannian log of the
+    // metric and `-log` is the natural gradient of (1/2) d^2. Otherwise finite
+    // differences compute the natural gradient under the metric.
     if (fast_path_enabled) {
       direction = (1.0 / dist) * v_log;
       proposed = manifold.exp(current, step_used * direction);
       new_v_log = manifold.log(proposed, target);
       new_dist = manifold.norm(proposed, new_v_log);
 
-      // Verify: did we actually get closer, and did the retraction deliver a
-      // step close to the intended length?
+      // Accept the step when it decreases the distance and the retraction delivers a
+      // step close to the intended length.
       const bool progress_ok = (new_dist < dist);
       const double actual_step = detail::distance_via_log(manifold, current, proposed);
       const bool fidelity_ok = (actual_step <= settings.distortion_ratio * step_used);
       accepted = (progress_ok && fidelity_ok);
-
-      if (!accepted) {
-        GEODEX_LOG("  log step rejected (progress_ok=" << progress_ok << " fidelity_ok="
-                                                       << fidelity_ok << "); trying FD");
-      }
     }
 
     // --- FD natural gradient. Always used when the manifold does not provide a
@@ -685,11 +659,10 @@ auto discrete_geodesic(const M& manifold, const typename M::Point& start,
       const bool fidelity_ok = (actual_step <= settings.distortion_ratio * step_used);
 
       if (!progress_ok || !fidelity_ok) {
-        // FD descent at this step cap still over-shoots or makes no progress —
-        // halve the cap and retry the iteration.
+        // The FD step at this cap overshoots or makes no progress. Halve the cap and
+        // retry the iteration.
         step_cap *= 0.5;
         ++R.distortion_halvings;
-        GEODEX_LOG("  FD rejected; halving step_cap -> " << step_cap);
         if (step_cap < settings.min_step_size) {
           R.status = InterpolationStatus::StepShrunkToZero;
           break;
@@ -704,7 +677,7 @@ auto discrete_geodesic(const M& manifold, const typename M::Point& start,
     R.path.push_back(current);
     ++R.iterations;
 
-    // Reuse the log computation we already did for the NEXT iteration.
+    // The next iteration reuses this log.
     v_log = std::move(new_v_log);
     dist = new_dist;
     R.final_distance = dist;
@@ -713,15 +686,12 @@ auto discrete_geodesic(const M& manifold, const typename M::Point& start,
     step_cap = std::min(settings.step_size, settings.growth_factor * step_cap);
   }
 
-  // Post-loop status resolution. If we exhausted max_steps without ever setting
-  // a terminal status, report MaxStepsReached.
+  // A walk that used every step without a terminal status reports MaxStepsReached.
   if (R.status == InterpolationStatus::Converged && R.iterations == settings.max_steps &&
       dist > settings.convergence_tol && dist > settings.convergence_rel * initial_distance) {
     R.status = InterpolationStatus::MaxStepsReached;
   }
 
-  GEODEX_LOG("=== discrete_geodesic done, " << R.path.size()
-                                            << " points, status=" << to_string(R.status) << " ===");
   return R;
 }
 

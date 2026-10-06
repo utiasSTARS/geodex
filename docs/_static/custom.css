@@ -1,6 +1,37 @@
-/* Make Sphinx graphviz SVGs scale to the content column instead of rendering at
-   their intrinsic pt size (which looks tiny in a wide RTD content area and leaves
-   white space on the right). The Sphinx graphviz extension wraps each diagram in
+/* geodex docs on pydata-sphinx-theme, pinned to light mode.
+
+   Body text is set in Lato, the same files the figure scripts use for their labels, so
+   figures and prose match. Colors follow the geodex blue of the diagrams. */
+
+@font-face { font-family: "Lato"; font-style: normal; font-weight: 400; font-display: swap;
+             src: url("fonts/Lato-Regular.ttf") format("truetype"); }
+@font-face { font-family: "Lato"; font-style: italic; font-weight: 400; font-display: swap;
+             src: url("fonts/Lato-Italic.ttf") format("truetype"); }
+@font-face { font-family: "Lato"; font-style: normal; font-weight: 700; font-display: swap;
+             src: url("fonts/Lato-Bold.ttf") format("truetype"); }
+@font-face { font-family: "Lato"; font-style: italic; font-weight: 700; font-display: swap;
+             src: url("fonts/Lato-BoldItalic.ttf") format("truetype"); }
+
+/* Colors, the navbar, the article sheet and the landing page are in theme.css. */
+html[data-theme="light"] {
+    --pst-font-family-base: "Lato", Helvetica, Arial, sans-serif;
+    --pst-font-family-heading: "Lato", Helvetica, Arial, sans-serif;
+    --pst-color-target: #fff6d6;
+    --pst-font-size-base: 1rem;
+}
+
+/* A wider article column for side-by-side tabs, 3D views and long C++ signatures. Between
+   the two sidebars the column is at least about 760 px wide on a 1280 px screen, which
+   fits the 84 columns docs snippets wrap at and a 7.6 in figure at its natural size. */
+.bd-page-width { max-width: 96rem; }
+.bd-main .bd-content .bd-article-container { max-width: 62em; }
+html { --pst-sidebar-secondary: 13rem; }
+@media (min-width: 960px) {
+    .bd-sidebar-primary { width: min(25%, 15rem); }
+}
+
+/* Sphinx graphviz SVGs scale to the content column instead of rendering at their
+   intrinsic pt size. The Sphinx graphviz extension wraps each diagram in
    <div class="graphviz"><object>...svg...</object></div>. */
 .graphviz {
     text-align: center;
@@ -34,167 +65,158 @@ pre.mermaid > svg,
     margin: 0 auto;
 }
 
-/* Tables: wrap long cell text instead of triggering the RTD theme's
-   horizontal scroll wrapper. Forces a fixed layout so the :widths:
-   directive in list-table actually pins the column proportions, and
-   allows long words to break so prose cells wrap cleanly. */
-.rst-content table.docutils {
+/* Tables: wrap long cell text instead of scrolling. A fixed layout makes the
+   :widths: of a list-table pin the column proportions, and long words may break so
+   prose cells wrap cleanly. */
+.bd-content table.docutils {
     width: 100%;
     table-layout: fixed;
 }
-.rst-content table.docutils td,
-.rst-content table.docutils th {
+.bd-content table.docutils td,
+.bd-content table.docutils th {
     white-space: normal !important;
     word-wrap: break-word;
     overflow-wrap: break-word;
+    vertical-align: top;
 }
-.wy-table-responsive {
+.bd-content .pst-scrollable-table-container {
     overflow: visible;
 }
 
-/* Opt-in horizontal scroll for tables with `:class: scroll-table`. The
-   table becomes its own scroll container (via display: block), cells keep
-   their intrinsic width, and identifiers don't break. Use this for tables
-   whose cells contain class names or function calls that must stay on one
-   line. */
-.rst-content table.docutils.scroll-table {
-    display: block;
-    overflow-x: auto;
-    width: 100%;
-    table-layout: auto;
-}
-.rst-content table.docutils.scroll-table td,
-.rst-content table.docutils.scroll-table th {
-    white-space: nowrap !important;
-    word-wrap: normal;
-    overflow-wrap: normal;
-}
+/* -------------------------------------------------------------------------
+   Code pairs: the Python and C++ tabs of one snippet.
+   ------------------------------------------------------------------------- */
 
-/* Default for Desktop: 50% width */
-.responsive-img {
-    width: 40%;
-    height: auto;
+.geodex-code-pair .sd-tab-set {
+    margin: 0.6em 0 1.2em 0;
 }
-
-/* Override for Mobile (screens smaller than 768px): 100% width */
-@media screen and (max-width: 768px) {
-    .responsive-img {
-        width: 90%;
-    }
+.geodex-code-pair .sd-tab-content {
+    padding-top: 0.25em;
+}
+/* 84 columns fit the 710 px code block of a 1280 px window. */
+.geodex-code-pair div.highlight pre {
+    font-size: 0.84em;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
 }
 
 /* -------------------------------------------------------------------------
-   Landing page (docs/index.rst)
-   Hero image + 2x2 quick-links card grid. Colors match the geodex blue
-   palette used by mermaid/graphviz diagrams (#e7f0fa / #2980b9).
+   Figures: recorded 3D scenes, plotly figures and their captions.
    ------------------------------------------------------------------------- */
 
-.landing-hero {
-    text-align: center;
-    margin: 1.5em 0 2em 0;
+.geodex-figure {
+    margin: 1.4em auto 1.6em auto;
+    width: 100%;
 }
-.landing-hero img {
-    max-width: 85%;
-    height: auto;
-    border-radius: 6px;
-    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.08);
-}
-
-.landing-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.25em;
-    margin: 2em 0 1em 0;
-}
-@media screen and (max-width: 768px) {
-    .landing-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-.landing-card {
-    display: flex;
-    flex-direction: column;
-    border: 1px solid #dfe4ea;
-    border-radius: 8px;
-    overflow: hidden;
-    text-decoration: none !important;
-    color: inherit;
-    background: #fff;
-    transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
-}
-.landing-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-    border-color: #2980b9;
-}
-
-.landing-card-thumb {
-    background: #f7fbfe;
-    border-bottom: 1px solid #e7f0fa;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 190px;
-    overflow: hidden;
-    padding: 0.9em;
-    box-sizing: border-box;
-}
-.landing-card-thumb img {
-    max-width: 100%;
-    max-height: 100%;
-    height: auto;
-    width: auto;
-    object-fit: contain;
-}
-
-.landing-card-thumb-text {
-    background: #f4f7fa;
-}
-.landing-card-thumb-text pre {
-    background: transparent;
-    border: none;
-    margin: 0;
-    padding: 0;
-    font-size: 0.82em;
-    line-height: 1.55;
-    color: #2c3e50;
-    white-space: pre;
-    text-align: left;
-}
-
-.landing-card-thumb-placeholder {
-    background:
-        repeating-linear-gradient(
-            45deg,
-            #f7fbfe,
-            #f7fbfe 10px,
-            #eef4fb 10px,
-            #eef4fb 20px
-        );
-    color: #6c7a89;
-    font-size: 0.9em;
-    line-height: 1.5;
-    text-align: center;
-    padding: 1em;
-}
-.landing-card-thumb-placeholder em {
-    color: #2980b9;
-    font-style: normal;
-}
-
-.landing-card-body {
-    padding: 0.9em 1.15em 1.05em 1.15em;
-}
-.landing-card-body h3 {
-    margin: 0 0 0.35em 0;
-    font-size: 1.08em;
-    color: #2980b9;
-    font-weight: 600;
-}
-.landing-card-body p {
-    margin: 0;
-    color: #444;
+.geodex-caption {
+    color: #52514e;
     font-size: 0.93em;
-    line-height: 1.5;
+    text-align: center;
+    margin: 0.5em 6% 0 6%;
+}
+.geodex-caption p {
+    margin: 0;
+}
+
+/* Looping animations (video-figure) sit in a figure like an image. */
+video.geodex-video {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+}
+
+.geodex-scene {
+    position: relative;
+    width: 100%;
+    border: 1px solid #dfe4ea;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #ffffff;
+}
+.geodex-scene img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.geodex-scene iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+}
+.geodex-scene-open {
+    position: absolute;
+    left: 50%;
+    bottom: 1.2em;
+    transform: translateX(-50%);
+    display: none;
+    align-items: center;
+    gap: 0.55em;
+    padding: 0.55em 1.1em;
+    border: 1px solid #2980b9;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.94);
+    color: #1c5cab;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.10);
+}
+.geodex-js .geodex-scene-open {
+    display: inline-flex;
+}
+.geodex-scene-open:hover {
+    background: #2980b9;
+    color: #ffffff;
+}
+.geodex-scene-icon {
+    font-size: 0.8em;
+}
+
+.geodex-plotly {
+    width: 100%;
+}
+.geodex-plotly img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* The link under each code-pair tab to the whole example file. */
+.geodex-code-pair p.geodex-example-link {
+    margin: -0.6rem 0 0.4rem 0;
+    font-size: 0.85rem;
+    color: var(--pst-color-text-muted);
+}
+
+/* -------------------------------------------------------------------------
+   Stat tiles: one number of a result with its label, as cards of a grid.
+   ------------------------------------------------------------------------- */
+.bd-content table.geodex-param-table {
+    font-size: 0.92em;
+}
+.bd-content table.geodex-param-table td:first-child code,
+.bd-content table.geodex-param-table td:first-child code .pre {
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+}
+.bd-content .geodex-stat {
+    text-align: center;
+    box-shadow: none;
+}
+.bd-content .geodex-stat .sd-card-body {
+    padding: 0.7rem 0.5rem;
+}
+.bd-content .geodex-stat .sd-card-title {
+    font-size: 1.7rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 0.1rem;
+    color: var(--pst-color-primary);
+}
+.bd-content .geodex-stat .sd-card-text {
+    margin: 0;
+    color: var(--pst-color-text-muted);
 }

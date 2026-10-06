@@ -1,63 +1,31 @@
 Minimum-Energy Planning on Configuration Manifolds
 ==================================================
 
-This tutorial shows how we can use geodex to find minimum-energy motions for robot configuration spaces modeled as Riemannian manifolds.
-To keep things simple, we will only work in two dimensions, using a two-link planar manipulator as the running example.
-We will make use of two Riemannian metrics widely used in the literature for energy-aware planning for articulated systems: the **Kinetic Energy metric** and the **Jacobi metric** (see :cite:`kyaw2026geometry,li2024riemannian,jaquier2022riemannian`).
+In this tutorial, we plan a two-link planar arm from one configuration to another under three
+metrics, the Euclidean metric on the joint angles, the **kinetic-energy metric** and the
+**Jacobi metric** :footcite:`kyaw2026geometry,li2024riemannian,jaquier2022riemannian`, and we
+compare the three motions.
 
-Setting up Our Planar Manipulator
----------------------------------
+.. plotly-figure:: minimum-energy-arm
+   :alt: A two-link planar arm moving along the Euclidean, kinetic-energy and Jacobi paths.
 
-To begin, we will model the standard two-link planar arm with the following parameters:
+   The arm along the Euclidean (left), kinetic-energy (center) and Jacobi (right) paths. The
+   slider and the play button advance all three by the same fraction of their metric length,
+   and the dotted curve traces the hand.
 
-.. list-table::
-   :header-rows: 1
-   :widths: 20 20 50
+The full script is ``examples/tutorials/minimum_energy_planning.py``, and the C++ version is
+``examples/tutorials/minimum_energy_planning.cpp``. Planning needs the Linux or macOS wheel
+(see :doc:`/getting-started/installation`).
 
-   * - Symbol
-     - Default
-     - Description
-   * - :math:`l_1, l_2`
-     - 1.0 m
-     - Link lengths
-   * - :math:`m_1, m_2`
-     - 1.0 kg
-     - Link masses
-   * - :math:`l_{c1}, l_{c2}`
-     - 0.5 m
-     - CoM distances from joint (:math:`l/2` for uniform rods)
-   * - :math:`I_1, I_2`
-     - 1/12 kg·m²
-     - Moments of inertia (:math:`m l^2 / 12`)
-   * - :math:`g`
-     - 9.81 m/s²
-     - Gravitational acceleration
+.. code-pair:: tutorials/minimum_energy_planning setup
 
-Kinetic Energy Metric
----------------------
+1. Define the mass matrix
+-------------------------
 
-The *kinetic energy metric* at configuration :math:`q` is defined by the manipulator's mass matrix :math:`M(q)`:
-
-.. math::
-
-   \langle u, v \rangle_q = u^\top M(q)\, v.
-
-A path :math:`\gamma` in configuration space has Riemannian arc-length
-
-.. math::
-
-   \ell(\gamma) = \int_0^1 \sqrt{\dot\gamma^\top M(\gamma)\, \dot\gamma}\; dt,
-
-which is precisely the "kinematic effort" or the energy required to execute :math:`\gamma` at unit speed.
-Geodesics of this metric are straight lines in the inertia-weighted sense: they minimize the total effort while respecting the arm's inertial structure :cite:`BulloLewis2004`.
-Because :math:`M(q)` depends on each configuration, the metric is anisotropic and varies across the manifold.
-
-Defining the Mass Matrix
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-To compute the kinetic energy of the manipulator, we need its mass matrix :math:`M(q)`.
-For a standard two-link planar arm, the mass matrix can be derived from the Euler-Lagrange equations.
-The components of this :math:`2 \times 2` symmetric matrix are defined as:
+The arm has two links of length :math:`l_1, l_2` and mass :math:`m_1, m_2`, with their
+centers of mass at :math:`l_{c1}, l_{c2}` from the joints and moments of inertia
+:math:`I_1, I_2`. The defaults below are uniform rods of 1 m and 1 kg. The mass matrix of the
+joint angles :math:`q = (q_1, q_2)` is
 
 .. math::
 
@@ -68,341 +36,155 @@ The components of this :math:`2 \times 2` symmetric matrix are defined as:
      I_2 + m_2 l_{c2}^2
    \end{pmatrix}.
 
-Most configuration-space metrics in geodex accept callable objects as constructor arguments. We can implement this mass matrix elegantly as a functor:
+The metrics of geodex take the mass matrix as a callable, a function object in either
+language.
 
-.. tabs::
+.. code-pair:: tutorials/minimum_energy_planning mass-matrix
 
-   .. code-tab:: c++
+2. Build the kinetic-energy space
+---------------------------------
 
-      struct PlanarArmMassMatrix {
-         double l1=1.0, l2=1.0, m1=1.0, m2=1.0;  // link lengths (m) and masses (kg)
-         double lc1=0.5, lc2=0.5;                // CoM distances from joint (m)
-         double I1=1.0/12.0, I2=1.0/12.0;        // moments of inertia (kg·m²)
+The kinetic-energy metric measures a joint velocity by :math:`\dot q^\top M(q)\, \dot q`,
+twice the kinetic energy of the motion. The configuration space is :math:`\mathbb{R}^2` with
+the planner's bounds :math:`[-\pi, \pi]^2` and this metric.
 
-         Eigen::Matrix2d operator()(const Eigen::Vector2d& q) const {
-            double c2 = std::cos(q[1]);       // cos(q2): elbow coupling term
-            double h  = l1 * lc2 * c2;       // inertial coupling coefficient
-            Eigen::Matrix2d M;
-            M(0,0) = I1 + I2 + m1*lc1*lc1 + m2*(l1*l1 + lc2*lc2 + 2.0*h);
-            M(0,1) = I2 + m2*(lc2*lc2 + h);
-            M(1,0) = M(0,1);
-            M(1,1) = I2 + m2*lc2*lc2;
-            return M;
-         }
-      };
-   
-   .. code-tab:: py
+.. code-pair:: tutorials/minimum_energy_planning ke-space
 
-      import numpy as np
+3. Define the potential
+-----------------------
 
-      class PlanarArmMassMatrix:
-          def __init__(self, l1=1.0, l2=1.0, m1=1.0, m2=1.0,
-                       lc1=0.5, lc2=0.5, I1=1/12, I2=1/12):
-              self.l1, self.m1, self.lc1, self.I1 = l1, m1, lc1, I1
-              self.l2, self.m2, self.lc2, self.I2 = l2, m2, lc2, I2
-
-          def __call__(self, q):
-              c2 = np.cos(q[1])              # cos(q2): elbow coupling term
-              h  = self.l1 * self.lc2 * c2  # inertial coupling coefficient
-              m00 = (self.I1 + self.I2 + self.m1*self.lc1**2
-                     + self.m2*(self.l1**2 + self.lc2**2 + 2*h))
-              m01 = self.I2 + self.m2*(self.lc2**2 + h)
-              return np.array([[m00, m01], [m01, self.I2 + self.m2*self.lc2**2]])
-
-Using the mass matrix above, we can build the configuration space on :math:`\mathbb{R}^2` (with bounds :math:`[-\pi, \pi]^2`) and define Riemannian metrics using geodex:
-
-.. tabs::
-
-   .. code-tab:: c++
-
-      #include <geodex/geodex.hpp>
-
-      // instantiate the mass matrix functor as above
-      PlanarArmMassMatrix mass_fn;
-
-      // construct the Kinetic Energy Riemannian metric
-      geodex::KineticEnergyMetric ke_metric{mass_fn};
-
-      // create the configuration space: Euclidean base manifold + kinetic energy metric
-      geodex::ConfigurationSpace cspace_ke{geodex::Euclidean<2>{}, ke_metric};
-
-   .. code-tab:: py
-
-      import geodex
-
-      # instantiate the mass matrix functor as above
-      mass_fn = PlanarArmMassMatrix()
-
-      # construct the Kinetic Energy Riemannian metric
-      ke_metric = geodex.KineticEnergyMetric(mass_fn)
-
-      # create the configuration space: Euclidean base manifold + kinetic energy metric
-      cspace_ke = geodex.ConfigurationSpace(geodex.Euclidean(2), ke_metric)
-
-Jacobi Metric
--------------
-
-Maupertuis' variational principle :cite:`Arnold1989` states that the *natural trajectories* of a conservative mechanical system (solutions of Newton's equations at fixed total energy :math:`H`) are exactly the geodesics of the *Jacobi metric*:
-
-.. math::
-
-   \langle u, v \rangle_q = 2\,(H - P(q))\; u^\top M(q)\, v,
-
-where :math:`P(q)` is the potential energy and :math:`H > P(q)` everywhere on the path (the arm must have enough energy to reach every configuration).
-
-We can interpret this physically: where kinetic energy is large (i.e., :math:`P(q) \ll H`), the arm moves quickly, and the conformal factor :math:`2(H - P(q))` scales the metric *up*.
-This makes these regions appear geometrically *larger* and therefore incentivising paths that pass through them.
-Conversely, near regions where :math:`P(q) \approx H`, the metric shrinks to zero and paths are forced away.
-
-Formulating Gravity Potential
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-To use this, we need to account for the potential energy :math:`P(q)` acting on the arm due to gravity.
-This is the sum of the potential energies of the two links, calculated from the heights of their respective centers of mass:
+The Jacobi metric adds gravity through the potential energy of the two links,
 
 .. math::
 
    P(q) = m_1 g l_{c1} \sin q_1 + m_2 g \bigl(l_1 \sin q_1 + l_{c2} \sin(q_1+q_2)\bigr).
 
-.. tabs::
+.. code-pair:: tutorials/minimum_energy_planning potential
 
-   .. code-tab:: c++
+4. Build the Jacobi space
+-------------------------
 
-      // gravitational potential: sum of CoM heights weighted by mass and gravity
-      auto potential = [](const Eigen::Vector2d& q) {
-         constexpr double g = 9.81, m1 = 1.0, m2 = 1.0, l1 = 1.0, lc1 = 0.5, lc2 = 0.5;
-         return m1 * g * lc1 * std::sin(q[0])
-               + m2 * g * (l1 * std::sin(q[0]) + lc2 * std::sin(q[0] + q[1]));
-      };
-
-   .. code-tab:: py
-
-      import numpy as np
-
-      # gravitational potential: sum of CoM heights weighted by mass and gravity
-      def potential(q, g=9.81, m1=1.0, m2=1.0, l1=1.0, lc1=0.5, lc2=0.5):
-          return (m1 * g * lc1 * np.sin(q[0])
-                  + m2 * g * (l1 * np.sin(q[0]) + lc2 * np.sin(q[0] + q[1])))
-
-Setting the Maximum Potential Bound
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Working with the Jacobi metric requires us to define a total energy level :math:`H` that strictly bounds the potential energy.
-This ensures that the kinetic energy remains positive (:math:`H > P(q)` for all :math:`q`).
-
-For our two-link planar arm, we can analytically compute the upper bound of the potential energy, :math:`P_{\max}`, which occurs when the arm is fully extended directly upwards.
+For a total energy :math:`H` above the potential everywhere, the Jacobi metric is
 
 .. math::
 
-   P_{\max} = g\,(m_1 l_{c1} + m_2(l_1 + l_{c2})).
+   \langle u, v \rangle_q = 2\,(H - P(q))\; u^\top M(q)\, v ,
 
-Using our default parameters, this yields approximately **19.62 J**. We can define this as a constant:
+and its geodesics are the motions of the arm under gravity alone at energy :math:`H`
+:footcite:`Arnold1989`. The factor :math:`2(H - P(q))` is twice the kinetic energy the arm
+has left at :math:`q`. The potential is largest with the arm straight up,
+:math:`P_{\max} = g\,(m_1 l_{c1} + m_2(l_1 + l_{c2})) \approx 19.62` J, and we set
+:math:`H = 1.2\,P_{\max}`.
 
-.. tabs::
+.. code-pair:: tutorials/minimum_energy_planning jacobi-space
 
-   .. code-tab:: c++
+5. Look at the metrics
+----------------------
 
-      constexpr double pmax = 9.81 * (1.0*0.5 + 1.0*(1.0 + 0.5)); // ~19.62 J
-
-   .. code-tab:: py
-
-      pmax = 9.81 * (1.0*0.5 + 1.0*(1.0 + 0.5))  # ~19.62 J
-
-Similar to kinetic energy metric, we can construct a Jacobi metric.
-Here, we set :math:`H = 1.2\,P_{\max}` (a 20% margin above the maximum potential energy) to ensure the metric is valid and well-conditioned everywhere in the configuration space:
-
-.. tabs::
-
-   .. code-tab:: c++
-
-      constexpr double H = 1.2 * pmax;  // total energy: 20% above maximum potential
-      geodex::JacobiMetric jacobi_metric{mass_fn, potential, H};
-      geodex::ConfigurationSpace cspace_j{geodex::Euclidean<2>{}, jacobi_metric};
-
-   .. code-tab:: py
-
-      H = 1.2 * pmax  # total energy: 20% above maximum potential
-      jacobi_metric = geodex.JacobiMetric(mass_fn, potential, H)
-      cspace_j = geodex.ConfigurationSpace(geodex.Euclidean(2), jacobi_metric)
-
-Visualizing the Configuration Space
------------------------------------
-
-To understand how these metrics behave across the manifold, we visualize their metric ellipses.
-A metric ellipse at configuration :math:`q` is the unit ball of the inner product:
-
-.. math::
-
-   \mathcal{E}_q = \bigl\{ v \in T_q\mathcal{M} : \langle v, v \rangle_q \leq 1 \bigr\}.
-
-Equivalently, it is the eigenellipse of the *inverse* metric tensor :math:`G^{-1}(q)`.
-A physically larger ellipse indicates the metric is "looser" in that region, meaning less energy is required per unit of configuration displacement.
-
-In both figures below, the background color maps the determinant of the metric tensor.
+A metric ellipse at :math:`q` is the unit ball :math:`\{v : \langle v, v \rangle_q \le 1\}`,
+the velocities of unit cost. A large ellipse marks a region where motion is cheap.
 
 .. figure:: figs/minimum-energy-planning/ke_metric.svg
    :align: center
-   :alt: KE metric ellipses over T²
-   
-   Figure: Kinetic energy metric ellipses over :math:`[-\pi, \pi]^2`
+   :width: 45%
+   :alt: Kinetic-energy metric ellipses over the square of joint angles.
 
-The kinetic energy metric ellipses, representing the unit balls of :math:`M(q)^{-1}`, change shape based purely on the elbow angle :math:`q_2`.
-Near :math:`q_2 = 0` (arm extended), the coupling between shoulder and elbow is strongest and the ellipses are elongated along :math:`q_1`, reflecting the shoulder's higher effective inertia.
-Near :math:`q_2 = \pm\pi` (arm folded back), the links decouple and both joints share a similar effective inertia, resulting in nearly circular ellipses.
+   Kinetic-energy metric ellipses over :math:`[-\pi, \pi]^2`, drawn on a color map of the
+   determinant of :math:`M(q)`.
+
+The kinetic-energy ellipses change with the elbow angle :math:`q_2` alone. Near
+:math:`q_2 = 0`, with the arm stretched out, the shoulder swings both links at full radius,
+and the ellipses are long and thin, stretched along the elbow direction. Near
+:math:`q_2 = \pm\pi`, with the arm folded back, the shoulder's inertia drops and the ellipses
+become rounder.
 
 .. figure:: figs/minimum-energy-planning/jacobi_combined.svg
    :align: center
-   :alt: Jacobi metric ellipses at three energy levels
+   :width: 100%
+   :alt: Jacobi metric ellipses at three energy levels.
 
-   Figure: Jacobi metric ellipses at three energy levels
+   Jacobi metric ellipses at three energy levels. In each panel, the largest ellipse fills its
+   grid cell, and the determinant is divided by its largest value.
 
-The Jacobi metric introduces a conformal scaling factor, :math:`2(H - P(q))`, driven by the total energy :math:`H`.
-The figure shows :math:`H` at :math:`H = 1.2\,P_{\max}` (left), :math:`H = 2.0\,P_{\max}` (centre), and :math:`H = 5.0\,P_{\max}` (right).
-At low energy (left), the conformal factor varies drastically.
-In high-potential regions where :math:`P(q) \approx H`, the ellipses shrink to near-zero, heavily penalizing paths through these configurations.
-As :math:`H` increases (centre, right), the conformal factor becomes uniform, and the Jacobi ellipses scale globally and increasingly resemble the kinetic energy metric from the figure above.
+At :math:`H = 1.2\,P_{\max}` (left), the factor :math:`2(H - P(q))` varies strongly.
+Where the potential is low, the ellipses shrink and motion is expensive. Where
+:math:`P(q)` approaches :math:`H`, the ellipses grow and motion is cheap. At
+:math:`H = 2\,P_{\max}` (middle) and :math:`H = 5\,P_{\max}` (right), the factor varies
+less, and the ellipses take the shapes of the kinetic-energy ellipses.
 
-Reproducing the figures:
+6. Plan under each metric
+-------------------------
 
-.. toggle::
+We plan the same start and goal once under each metric. G-RRT\* runs with the greedy ratio
+at zero and the zero heuristic, as an uninformed RRT\*, and every metric gets the same
+search. ``iterations=3000`` and ``seed=1`` give the same paths on every run.
 
-   .. code-block:: sh
-   
-      # Requires matplotlib and LaTeX
-      pip install matplotlib
-      sudo apt update && sudo apt install -y texlive-latex-extra dvipng cm-super
+.. code-pair:: tutorials/minimum_energy_planning plan
 
-      # Configure and build
-      cmake -B build -DBUILD_EXAMPLES=ON
-      cmake --build build --target minimum_energy_grid
+It prints
 
-      # Generate JSON data
-      ./build/minimum_energy_grid minimum_energy_grid.json
+.. code-block:: text
 
-      # Render SVG figures
-      python scripts/visualize_metric_grid.py minimum_energy_grid.json \
-          --output-dir docs/tutorials/figs/minimum-energy-planning
-
-Planning with Asymptotically Optimal Planners
----------------------------------------------
-
-.. note::
-
-   This example requires OMPL, which must be built from source with modern CMake targets.
-   See the `OMPL installation guide <https://ompl.kavrakilab.org/installation.html>`_ for details.
-
-With a clear picture of how these metrics reshape the geometry, we can now plan actual motions on it.
-We will run the motion planner three times on the same start and goal pairs, once with the Euclidean metric, once with the kinetic energy metric, and once with the Jacobi metric, and compare the resulting paths.
-
-geodex provides an OMPL integration layer that wraps any ``RiemannianManifold`` as an ``ompl::base::StateSpace``.
-The two key classes are ``GeodexStateSpace`` (which delegates ``distance()`` and ``interpolate()`` to the manifold) and ``GeodexOptimizationObjective`` (which uses geodesic distance as the path cost).
-Together, these allow you to plug any Riemannian metric into OMPL's asymptotically optimal planners without needing to modify the underlying planner itself.
-The following snippet shows how to set up and solve using RRT* algorithm with each of the three metrics (see the full example for details):
-
-.. tabs::
-
-   .. code-tab:: c++
-
-      #include <geodex/geodex.hpp>
-      #include <geodex/integration/ompl/geodex_state_space.hpp>
-      #include <geodex/integration/ompl/geodex_optimization_objective.hpp>
-      #include <ompl/geometric/SimpleSetup.h>
-      #include <ompl/geometric/planners/rrt/RRTstar.h>
-
-      namespace ob = ompl::base;
-      namespace og = ompl::geometric;
-      using geodex::integration::ompl::GeodexStateSpace;
-      using geodex::integration::ompl::GeodexOptimizationObjective;
-
-      // -- Flat metric (identity on R^2) --
-      geodex::Euclidean<2> flat_euclidean;
-
-      // -- Kinetic energy metric --
-      PlanarArmMassMatrix mass_fn;                          // functor from above
-      geodex::KineticEnergyMetric ke_metric{mass_fn};
-      geodex::ConfigurationSpace cspace_ke{geodex::Euclidean<2>{}, ke_metric};
-
-      // -- Jacobi metric --
-      constexpr double H = 1.2 * pmax;
-      geodex::JacobiMetric jacobi_metric{mass_fn, potential, H};
-      geodex::ConfigurationSpace cspace_j{geodex::Euclidean<2>{}, jacobi_metric};
-
-      // Wrap any of the above as an OMPL state space (example: Jacobi)
-      ob::RealVectorBounds bounds(2);
-      bounds.setLow(-M_PI);
-      bounds.setHigh(M_PI);
-      auto space = std::make_shared<GeodexStateSpace<decltype(cspace_j)>>(cspace_j, bounds);
-
-      og::SimpleSetup ss(space);
-      // ... set start, goal, planner ...
-      auto objective = std::make_shared<
-          GeodexOptimizationObjective<decltype(cspace_j)>>(
-          ss.getSpaceInformation(), goal_coords);
-      ss.setOptimizationObjective(objective);
-      ss.setPlanner(std::make_shared<og::RRTstar>(ss.getSpaceInformation()));
-      ss.solve(5.0);
-
-   .. code-tab:: py
-
-      # Python bindings do not support OMPL integration.   
+   Euclidean       solved=True cost=4.4429 waypoints=2
+   Kinetic energy  solved=True cost=4.4500 waypoints=297
+   Jacobi          solved=True cost=29.6691 waypoints=452
 
 .. figure:: figs/minimum-energy-planning/planning_result.svg
    :align: center
-   :alt: RRT* under Euclidean, KE, and Jacobi metrics
+   :width: 100%
+   :alt: Planner paths and smoothed paths under the Euclidean, kinetic-energy and Jacobi
+         metrics.
 
-   Figure: RRT* trees and solution paths under Euclidean (left), kinetic energy (centre), and Jacobi (right) metrics. Background colour maps the determinant of the respective metric tensor.
+   The three plans from the start (green) to the goal (orange), over the determinant of each
+   metric. The dashed line is the planner's path, with each edge drawn along the curve the
+   planner checked, and the blue line is the path that ``plan`` returns. Each title names the
+   metric and the length of the returned path under it.
 
-Under the Euclidean metric, the planner treats all joint displacements equally.
-The background is uniform (:math:`\det(I) = 1` everywhere) and the solution path is just a straight line in joint space.
+Under the Euclidean metric, the returned path is the straight line in joint space, of length
+:math:`\pi\sqrt{2} \approx 4.443`. The kinetic-energy path folds the elbow toward
+:math:`q_2 = \pi`, swings the shoulder, and unfolds the elbow at the end. With the elbow folded,
+the shoulder's effective inertia :math:`M_{11}(q) = \tfrac{5}{3} + \cos q_2` is smallest. The
+path's kinetic-energy length is 4.450, against 5.850 for the straight line.
+The Jacobi path swings through configurations where the arm is raised, around
+:math:`q_1 = \pi/2`, where the arm has little kinetic energy left and the metric is small. Its
+Jacobi length is 29.67, against 33.24 for the straight line. Lengths under different metrics
+measure different quantities.
 
-The kinetic energy metric biases the planner toward configurations where the effective inertia is lower.
-The background shows :math:`\det(M(q))`, which varies with the elbow angle.
-The path naturally curves toward folded-arm configurations (:math:`q_2` near :math:`\pm\pi`) to minimize kinematic effort.
+.. note::
 
-The Jacobi metric explicitly penalises high-potential regions through its conformal factor :math:`2(H - P(q))`.
-The background shows :math:`\det(J(q))`, which shrinks toward zero near the potential ridge.
-Because distances grow to infinity as :math:`P(q)` approaches :math:`H`, the planner is forced to route around the ridge.
-The resulting path safely avoids configurations where the arm would fight gravity, even if it requires a longer coordinate-space detour.
+   The zero heuristic is admissible for every metric. The default Euclidean chord is not
+   admissible under the kinetic-energy metric, whose smallest eigenvalue drops to about 0.07
+   with the arm stretched out (:math:`q_2 = 0`), and some paths are shorter than their
+   chord.
 
-This tutorial demonstrates how the choice of Riemannian metric elegantly encodes physics directly into the planning objective.
-The Euclidean metric ignores physics, the kinetic energy metric respects inertial coupling, and the Jacobi metric accounts for both inertia and gravitational potential simultaneously.
+7. Try it: raise the energy
+---------------------------
 
-Seeing the Arm in Motion
-------------------------
+Plan the Jacobi metric again at :math:`H = 5\,P_{\max}` and compare how far each path folds
+the elbow.
 
-The animation below traces the two-link arm along all three solutions side by side.
+.. code-pair:: tutorials/minimum_energy_planning try-it
 
-.. figure:: figs/minimum-energy-planning/arm.gif
-   :align: center
-   :width: 95%
-   :alt: Two-link planar arm under the Euclidean, kinetic-energy, and Jacobi metrics.
+It prints
 
-   Figure: Planar arm sweeping along the Euclidean, kinetic-energy, and Jacobi
-   minimum-energy paths.
+.. code-block:: text
 
-Reproducing the figures:
+   Kinetic energy        largest elbow angle 2.925 rad
+   Jacobi, H = 1.2 Pmax  largest elbow angle 2.356 rad
+   Jacobi, H = 5 Pmax    largest elbow angle 2.889 rad
 
-.. toggle::
+At the higher energy, the Jacobi path folds the elbow like the kinetic-energy path, and the
+figure of step 5 shows the same trend in the ellipses.
 
-   .. code-block:: sh
-   
-      # Requires matplotlib and LaTeX
-      pip install matplotlib
-      sudo apt update && sudo apt install -y texlive-latex-extra dvipng cm-super
+Where to go next
+----------------
 
-      # Configure and build (requires OMPL)
-      cmake -B build -DBUILD_OMPL_EXAMPLES=ON -Dompl_DIR=/path/to/ompl/install/share/ompl/cmake
-      cmake --build build --target minimum_energy_planning
-
-      # Run the planning example
-      ./build/examples/ompl/minimum_energy_planning minimum_energy_planning.json
-
-      # Render SVG figure and animation
-      python scripts/visualize_minimum_energy_planning.py minimum_energy_planning.json \
-          --output-dir docs/tutorials/figs/minimum-energy-planning
+- :doc:`/concepts/metrics` covers the kinetic-energy and Jacobi metrics and the other metrics
+  geodex provides.
+- :doc:`/concepts/planning` covers the planner, its settings and admissible heuristics.
+- :doc:`/robots/manipulation` plans a Franka FR3 under its kinetic-energy metric.
 
 References
 ----------
 
-.. bibliography::
-   :filter: docname in docnames
+.. footbibliography::

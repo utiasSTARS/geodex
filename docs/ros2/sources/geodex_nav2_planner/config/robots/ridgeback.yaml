@@ -1,0 +1,31 @@
+# Clearpath Ridgeback (r100), a holonomic base on mecanum wheels.
+#
+# The footprint comes from clearpath_common tag 2.9.17 (726d7fba), package
+# clearpath_platform_description, and from the dimensions Clearpath publishes for the platform.
+# The footprint is the rectangle around base_link that covers the description's collision
+# geometry (chassis and wheels), widened to the published outer dimensions where those are
+# larger. It covers the whole robot.
+#   description  body collision mesh x +-0.4663 m, y +-0.3950 m
+#                (meshes/r100/body-collision.stl), chassis_length 0.960 m and chassis_width
+#                0.793 m (urdf/r100/r100.urdf.xacro)
+#   published    960 x 793 mm (clearpathrobotics.com/ridgeback-indoor-robot-platform)
+#
+# With wy equal to wx, sideways motion costs as much as forward motion, and the robot moves
+# sideways where that is shorter. The metric differs from a differential-drive base only in wy. The
+# direction stage turns backward or sideways stretches into forward driving and is off for a
+# holonomic base.
+planner_server:
+  ros__parameters:
+    planner_plugins: ["GridBased"]
+    GridBased:
+      plugin: "geodex_nav2_planner::GeodexSE2Planner"
+      wx: 1.0
+      wy: 1.0
+      wtheta: 2.0
+      max_reverse_run: -1.0
+      forward_repair: false
+
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      footprint: "[[0.480, 0.3965], [0.480, -0.3965], [-0.480, -0.3965], [-0.480, 0.3965]]"

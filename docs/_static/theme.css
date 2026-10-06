@@ -1,0 +1,468 @@
+/* The geodex look on top of pydata-sphinx-theme, pinned to light mode.
+
+   A light blue-grey canvas holds the page, the article sits on a white sheet, and one accent
+   (the geodex blue of the diagrams) marks links, the current navigation item, tabs,
+   admonitions and section rules. Text colors pass WCAG AA on the sheet and on the canvas. */
+
+html[data-theme="light"] {
+    --gx-accent: #2980b9;
+    --gx-accent-text: #1f6fa6;
+    --gx-accent-strong: #185a8a;
+    --gx-tint: #eef5fb;
+    --gx-tint-strong: #e3eef8;
+    --gx-ink: #13293d;
+    --gx-muted: #5b6673;
+    --gx-canvas: #f3f6f9;
+    --gx-line: #e2e8ef;
+    --gx-shadow: 0 1px 2px rgba(19, 41, 61, 0.05), 0 6px 24px -8px rgba(19, 41, 61, 0.10);
+    --gx-shadow-hover: 0 2px 4px rgba(19, 41, 61, 0.06), 0 14px 32px -10px rgba(19, 41, 61, 0.22);
+
+    --pst-color-primary: var(--gx-accent-text);
+    --pst-color-secondary: var(--gx-accent-strong);
+    --pst-color-link: var(--gx-accent-text);
+    --pst-color-link-hover: var(--gx-accent-strong);
+    --pst-color-accent: var(--gx-accent);
+    --pst-color-heading: var(--gx-ink);
+    --pst-color-text-muted: var(--gx-muted);
+    --pst-color-background: var(--gx-canvas);
+    --pst-color-on-background: #ffffff;
+    --pst-color-surface: #f4f7fa;
+    --pst-color-border: #dde4ec;
+    --pst-color-info: var(--gx-accent);
+    --pst-color-info-bg: var(--gx-tint-strong);
+    --pst-color-table-row-hover-bg: var(--gx-tint);
+    --pst-color-inline-code: var(--gx-accent-strong);
+    --pst-color-inline-code-links: var(--gx-accent-text);
+
+    --sd-color-card-border: var(--gx-line);
+    --sd-color-card-border-hover: var(--gx-accent);
+    --sd-color-card-background: #ffffff;
+    --sd-color-tabs-label-active: var(--gx-accent-text);
+    --sd-color-tabs-label-hover: var(--gx-accent-strong);
+    --sd-color-tabs-label-inactive: var(--gx-muted);
+    --sd-color-tabs-underline-active: var(--gx-accent);
+    --sd-color-tabs-underline-hover: #b9d3ea;
+    --sd-color-tabs-overline: var(--gx-line);
+    --sd-color-tabs-underline: var(--gx-line);
+}
+
+::selection {
+    background: #cfe3f5;
+}
+
+/* -------------------------------------------------------------------------
+   Navbar: a thin accent rule on top, the logo mark and bolder links.
+   ------------------------------------------------------------------------- */
+
+html[data-theme="light"] .bd-header {
+    background-color: rgba(255, 255, 255, 0.94) !important;
+    border-top: 3px solid var(--gx-accent);
+    box-shadow: 0 1px 0 var(--gx-line), 0 8px 24px -18px rgba(19, 41, 61, 0.45);
+    backdrop-filter: saturate(1.4) blur(8px);
+}
+.bd-header .navbar-brand {
+    gap: 0.55rem;
+}
+.bd-header .navbar-brand img.logo__image {
+    height: 1.9rem;
+    width: auto;
+}
+.bd-header .navbar-brand p.title,
+.bd-header .navbar-brand .title {
+    color: var(--gx-ink);
+    font-weight: 700;
+    font-size: 1.3rem;
+    letter-spacing: -0.01em;
+}
+.bd-header ul.navbar-nav > li.nav-item > .nav-link {
+    color: #3a4654;
+    font-weight: 700;
+}
+.bd-header ul.navbar-nav > li.nav-item > .nav-link:hover {
+    color: var(--gx-accent-strong);
+}
+
+/* -------------------------------------------------------------------------
+   Canvas and sheet. On a wide screen the article is a white sheet with a soft shadow.
+   ------------------------------------------------------------------------- */
+
+@media (min-width: 960px) {
+    .bd-sidebar-primary {
+        border-right: 0;
+    }
+    .bd-main .bd-content .bd-article-container {
+        background: #ffffff;
+        border: 1px solid var(--gx-line);
+        border-radius: 14px;
+        box-shadow: var(--gx-shadow);
+        margin: 1.25rem 0.75rem 2rem;
+        padding: 1.75rem 1.25rem 1.25rem;
+    }
+}
+@media (max-width: 959.98px) {
+    .bd-main .bd-content .bd-article-container {
+        background: #ffffff;
+    }
+}
+
+/* -------------------------------------------------------------------------
+   Headings: navy ink, and a rule with an accent notch above each section.
+   ------------------------------------------------------------------------- */
+
+.bd-article h1 {
+    color: var(--gx-ink);
+    font-weight: 700;
+    font-size: 2.3rem;
+    letter-spacing: -0.015em;
+    margin-bottom: 1.1rem;
+}
+.bd-article section > h2 {
+    position: relative;
+    color: var(--gx-ink);
+    font-weight: 700;
+    font-size: 1.55rem;
+    letter-spacing: -0.01em;
+    margin-top: 2.6rem;
+    padding-top: 1.3rem;
+    border-top: 1px solid var(--gx-line);
+}
+.bd-article section > h2::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: 0;
+    width: 2.25rem;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--gx-accent);
+}
+.bd-article section > h3 {
+    color: #1d3a55;
+    font-weight: 700;
+    font-size: 1.22rem;
+    margin-top: 2rem;
+}
+.bd-article section > h4 {
+    color: #1d3a55;
+    font-weight: 700;
+}
+.bd-article p.rubric {
+    color: var(--gx-ink);
+}
+
+/* -------------------------------------------------------------------------
+   Sidebars: section captions in small capitals, a tinted hover, the accent notch on the
+   current page.
+   ------------------------------------------------------------------------- */
+
+.bd-sidebar-primary .sidebar-primary-items__start .bd-links__title,
+.bd-sidebar-secondary .page-toc .onthispage {
+    color: var(--gx-muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.bd-sidebar-primary nav.bd-links li > a {
+    border-radius: 6px;
+    transition: background-color 0.12s ease;
+}
+.bd-sidebar-primary nav.bd-links li > a:hover {
+    background-color: var(--gx-tint-strong);
+    text-decoration: none;
+}
+.bd-sidebar-primary nav.bd-links .current > a {
+    background-color: var(--gx-tint-strong);
+}
+.bd-sidebar-secondary .bd-toc-nav a:hover {
+    text-decoration: none;
+    color: var(--gx-accent-strong);
+}
+
+/* -------------------------------------------------------------------------
+   Code, tabs, admonitions and tables.
+   ------------------------------------------------------------------------- */
+
+.bd-article div.highlight,
+.bd-article div.highlight pre {
+    background-color: #f6f9fc;
+}
+.bd-article div.highlight {
+    border: 1px solid var(--gx-line);
+    border-radius: 8px;
+}
+.bd-article div.highlight pre {
+    border: 0;
+    border-radius: 8px;
+}
+code.literal {
+    background-color: var(--gx-tint);
+    border-color: #d9e6f2;
+}
+
+.bd-content .sd-tab-set > label {
+    background-color: #f1f5f9;
+    color: var(--gx-muted);
+    border-radius: 8px 8px 0 0;
+    padding: 0 0.95em;
+}
+.bd-content .sd-tab-set > input:checked + label {
+    border-color: var(--gx-line) var(--gx-line) transparent;
+    border-width: 1px 1px 0;
+    box-shadow: inset 0 3px 0 var(--gx-accent);
+    color: var(--gx-accent-text);
+    transform: translateY(1px);
+}
+.bd-content .sd-tab-set .sd-tab-content {
+    border: 1px solid var(--gx-line);
+    border-radius: 0 10px 10px 10px;
+}
+
+html[data-theme="light"] .admonition,
+html[data-theme="light"] div.admonition {
+    border-left-width: 4px;
+    border-radius: 10px;
+    box-shadow: var(--gx-shadow) !important;
+}
+.admonition > .admonition-title,
+div.admonition > .admonition-title {
+    font-weight: 700;
+}
+
+.bd-content table.docutils {
+    border: 1px solid var(--gx-line);
+    border-radius: 8px;
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+}
+.bd-content table.docutils th {
+    background-color: #f1f5f9;
+    color: var(--gx-ink);
+    border-bottom: 1px solid var(--gx-line);
+}
+.bd-content table.docutils td {
+    border-top: 1px solid #edf1f5;
+}
+.bd-content table.docutils tbody tr:first-child td {
+    border-top: 0;
+}
+
+/* -------------------------------------------------------------------------
+   Cards: rounded, a soft shadow, and a lift on hover.
+   ------------------------------------------------------------------------- */
+
+.bd-content .sd-card {
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(19, 41, 61, 0.05) !important;
+    overflow: hidden;
+    transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease;
+}
+.bd-content .sd-card.sd-card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--gx-shadow-hover) !important;
+}
+.bd-content .sd-card .sd-card-title {
+    color: var(--gx-ink);
+}
+.bd-content .sd-card.sd-card-hover .sd-card-title {
+    color: var(--gx-accent-text);
+}
+
+/* -------------------------------------------------------------------------
+   Figures: recorded scenes and videos get the same rounded frame.
+   ------------------------------------------------------------------------- */
+
+.geodex-scene {
+    border-radius: 10px;
+    border-color: var(--gx-line);
+    box-shadow: 0 1px 2px rgba(19, 41, 61, 0.05);
+}
+
+/* -------------------------------------------------------------------------
+   Previous and next links, and the footer.
+   ------------------------------------------------------------------------- */
+
+.prev-next-area a {
+    border: 1px solid var(--gx-line);
+    border-radius: 10px;
+    padding: 0.55rem 0.9rem;
+    transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+.prev-next-area a:hover {
+    background-color: var(--gx-tint);
+    border-color: #b9d3ea;
+}
+.prev-next-area a p.prev-next-title {
+    text-decoration: none;
+}
+.bd-footer {
+    background-color: #eaeff4;
+    border-top: 1px solid var(--gx-line);
+}
+
+/* -------------------------------------------------------------------------
+   Landing page. The title, the tags and the lead sit on a tinted panel with the metric
+   illustration on its right, above the section cards.
+   ------------------------------------------------------------------------- */
+
+.bd-main .bd-content .bd-article-container:has(.landing-hero) {
+    max-width: 70em;
+}
+.bd-article section:has(> .landing-hero) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+}
+.bd-article section:has(> .landing-hero) > * {
+    grid-column: 1 / -1;
+}
+.bd-article section:has(> .landing-hero)::before {
+    content: "";
+    grid-column: 1 / -1;
+    grid-row: 1 / 3;
+    border: 1px solid #d9e6f2;
+    border-radius: 16px;
+    background:
+        radial-gradient(120% 90% at 100% 0%, rgba(41, 128, 185, 0.10), transparent 60%),
+        linear-gradient(160deg, #f7fbfe 0%, #eaf2fa 100%);
+}
+.bd-article section:has(> .landing-hero) > h1 {
+    grid-row: 1;
+    z-index: 1;
+    font-size: 3.1rem;
+    line-height: 1.1;
+    margin: 0;
+    padding: 1.9rem 1.8rem 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+}
+.bd-article section:has(> .landing-hero) > h1::before {
+    content: "";
+    width: 3.1rem;
+    height: 3.1rem;
+    flex: none;
+    background: url("logo-light.svg") center / contain no-repeat;
+}
+html[data-theme="dark"] .bd-article section:has(> .landing-hero) > h1::before {
+    background-image: url("logo-dark.svg");
+}
+.bd-article section:has(> .landing-hero) > .landing-hero {
+    grid-row: 2;
+    z-index: 1;
+    padding: 0 1.8rem 1.6rem;
+}
+.bd-article section:has(> .landing-hero) > .sd-container-fluid {
+    margin-top: 1.6rem;
+}
+@media (min-width: 960px) {
+    .bd-article section:has(> .landing-hero) {
+        grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    }
+    .bd-article section:has(> .landing-hero) > h1,
+    .bd-article section:has(> .landing-hero) > .landing-hero {
+        grid-column: 1;
+    }
+    .bd-article section:has(> .landing-hero)::after {
+        content: "";
+        grid-column: 2;
+        grid-row: 1 / 3;
+        z-index: 1;
+        margin: 1.5rem 1.5rem 1.5rem 0.5rem;
+        min-height: 16rem;
+        background: url("landing/hero.svg") center / contain no-repeat;
+    }
+}
+
+.landing-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    list-style: none;
+    margin: 0 0 1.2rem;
+    padding: 0;
+}
+.landing-tags li {
+    margin: 0;
+    padding: 0.28rem 0.75rem;
+    border: 1px solid #c9dcee;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.85);
+    color: var(--gx-accent-strong);
+    font-size: 0.86rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+.landing-tags a {
+    color: inherit;
+    text-decoration: none;
+}
+.landing-tags a:hover {
+    text-decoration: underline;
+}
+.landing-tags li:first-child,
+.landing-tags li:nth-child(2) {
+    background: var(--gx-accent-strong);
+    border-color: var(--gx-accent-strong);
+    color: #ffffff;
+}
+.landing-lead p {
+    font-size: 1.08em;
+    line-height: 1.65;
+    color: #26374a;
+    margin-bottom: 0.8rem;
+}
+.landing-lead p:last-child {
+    margin-bottom: 0;
+}
+
+.landing-cards .sd-card-img-top,
+.landing-cards .landing-media {
+    height: 170px;
+    object-fit: contain;
+    background: linear-gradient(180deg, #f7fbfe 0%, #eef5fb 100%);
+    border-bottom: 1px solid var(--gx-line);
+    padding: 0.8em;
+}
+.landing-cards .landing-card-media .sd-card-body {
+    display: flex;
+    flex-direction: column;
+    padding-top: 0;
+}
+.landing-cards .landing-card-media .landing-media {
+    order: -1;
+    width: calc(100% + 2rem);
+    max-width: none;
+    margin: 0 -1rem 1rem;
+    object-fit: cover;
+    padding: 0;
+}
+.landing-cards .sd-card-title {
+    font-size: 1.12rem;
+    font-weight: 700;
+}
+.landing-cards .sd-card-text {
+    color: #3d4a58;
+    font-size: 0.95em;
+}
+
+/* Inline math and the punctuation after it stay on one line. */
+.geodex-nowrap {
+  white-space: nowrap;
+}
+
+/* Real robot videos above the landing cards. */
+.landing-robots figure {
+    margin: 0;
+}
+.landing-robots video.geodex-video {
+    display: block;
+    border-radius: 10px;
+    box-shadow: 0 1px 0 var(--gx-line), 0 10px 24px -20px rgba(19, 41, 61, 0.55);
+}
+.landing-robots figcaption {
+    margin-top: 0.55rem;
+    color: var(--gx-muted);
+    font-size: 0.92rem;
+    text-align: left;
+}

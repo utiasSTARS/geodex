@@ -20,16 +20,16 @@ namespace geodex {
 /// The alpha parameter can be either:
 /// - a constant `double` (e.g. `WeightedMetric{base, 3.0}`)
 /// - a callable `Fn(q) -> double` for configuration-dependent scaling
-///   (used by `JacobiMetric`, region-avoiding metrics, etc.).
+///   (as in `JacobiMetric`).
 ///
 /// @tparam MetricT The base metric type.
-/// @tparam AlphaT  Scaling factor type — either `double` or a callable.
+/// @tparam AlphaT  Scaling factor type, either `double` or a callable.
 template <typename MetricT, typename AlphaT = double>
 class WeightedMetric {
  public:
   /// @brief Construct a weighted metric.
   /// @param base The base metric to scale.
-  /// @param alpha Scaling factor — constant `double` or callable `Fn(q) -> double`.
+  /// @param alpha Scaling factor, a constant `double` or a callable `Fn(q) -> double`.
   WeightedMetric(MetricT base, AlphaT alpha) : base_(std::move(base)), alpha_(std::move(alpha)) {}
 
   /// @brief Compute the scaled inner product \f$\alpha(q) \langle u, v
@@ -65,9 +65,9 @@ class WeightedMetric {
     return evaluate_alpha(q) * base_.inner_matrix(q, U, V);
   }
 
-  /// @brief Forward injectivity radius from the base metric — only valid for
-  /// constant-scalar \f$\alpha\f$ (a config-dependent alpha breaks the
-  /// uniform-scaling guarantee).
+  /// @brief Forward injectivity radius from the base metric. It exists only for a
+  /// constant-scalar \f$\alpha\f$. A configuration-dependent alpha breaks the
+  /// uniform-scaling guarantee.
   double injectivity_radius() const
     requires(std::is_arithmetic_v<AlphaT> &&
              requires(const MetricT& m) {
@@ -84,7 +84,7 @@ class WeightedMetric {
   const AlphaT& alpha() const { return alpha_; }
 
  private:
-  /// @brief Evaluate \f$\alpha(q)\f$ — selects between constant scalar and
+  /// @brief Evaluate \f$\alpha(q)\f$. Selects between constant scalar and
   /// callable at compile time.
   template <typename Point>
   double evaluate_alpha(const Point& q) const {

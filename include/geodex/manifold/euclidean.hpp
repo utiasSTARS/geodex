@@ -6,6 +6,7 @@
 #include <cmath>
 
 #include <limits>
+#include <stdexcept>
 #include <type_traits>
 
 #include <Eigen/Core>
@@ -24,8 +25,8 @@ namespace geodex {
 
 /// @brief The standard Euclidean metric on \f$ \mathbb{R}^n \f$.
 ///
-/// @details The inner product is the standard dot product:
-/// \f$ \langle u, v \rangle = u \cdot v \f$. Zero-storage stateless metric.
+/// @details The inner product is the standard dot product
+/// \f$ \langle u, v \rangle = u \cdot v \f$. The metric is stateless and stores nothing.
 template <int Dim = Eigen::Dynamic>
 using EuclideanStandardMetric = IdentityMetric<Dim>;
 
@@ -36,26 +37,26 @@ using EuclideanStandardMetric = IdentityMetric<Dim>;
 /// @brief Euclidean manifold \f$ \mathbb{R}^n \f$ parameterized by dimension and metric policy.
 ///
 /// @details Supports both compile-time fixed dimension (e.g., `Euclidean<3>`) and
-/// runtime dynamic dimension (`Euclidean<Eigen::Dynamic>`). The exp/log maps are
-/// trivial (addition/subtraction) since the space is flat.
+/// runtime dynamic dimension (`Euclidean<Eigen::Dynamic>`). The exp and log maps are
+/// addition and subtraction on the flat space.
 ///
 /// @tparam Dim Compile-time dimension, or `Eigen::Dynamic`.
-/// @tparam MetricT Metric policy (default: EuclideanStandardMetric).
-/// @tparam SamplerT Sampler policy for `random_point()` (default: `StochasticSampler`).
+/// @tparam MetricT Metric policy (default EuclideanStandardMetric).
+/// @tparam SamplerT Sampler policy for `random_point()` (default `ScrambledHaltonSampler`).
 template <int Dim = Eigen::Dynamic, typename MetricT = EuclideanStandardMetric<Dim>,
-          typename SamplerT = StochasticSampler>
+          typename SamplerT = ScrambledHaltonSampler>
 class Euclidean {
  public:
   using Scalar = double;                       ///< Scalar type.
   using Point = Eigen::Vector<double, Dim>;    ///< Point type.
+  using SamplerType = SamplerT;                ///< Sampler policy backing random_point().
   using Tangent = Eigen::Vector<double, Dim>;  ///< Tangent vector type.
 
-  /// @brief Runtime query: is `log` the Riemannian logarithm of the metric?
+  /// @brief Runtime check whether `log` is the Riemannian logarithm of the metric.
   ///
-  /// @details True only when the metric is the identity `ConstantSPDMetric<Dim>`
-  /// (the standard Euclidean dot product). Non-identity SPDs live under a
-  /// different inner product, so `discrete_geodesic` falls back to finite
-  /// differences for those cases.
+  /// @details True only when the metric is the identity, `IdentityMetric<Dim>` or an
+  /// identity `ConstantSPDMetric<Dim>`, the standard Euclidean dot product. For other SPD
+  /// metrics, `discrete_geodesic` falls back to finite differences.
   bool has_riemannian_log_runtime() const {
     if constexpr (std::is_same_v<MetricT, IdentityMetric<Dim>>) {
       return true;
@@ -106,10 +107,13 @@ class Euclidean {
         hi_(Eigen::VectorXd::Constant(n, 1.0)),
         sample_buf_(n) {}
 
-  /// @brief Set the sampling bounds. Values outside these bounds are never
-  /// returned by `random_point()`, but `exp`/`log`/metric operations remain
-  /// unchanged (bounds are a sampler concern, not a topological one).
+  /// @brief Set the sampling bounds. `random_point()` returns only values inside
+  /// them. `exp`, `log` and the metric do not change.
+  /// @throws std::invalid_argument unless `lo` and `hi` hold `dim()` entries each.
   void set_sampling_bounds(const Eigen::VectorXd& lo, const Eigen::VectorXd& hi) {
+    if (lo.size() != dim() || hi.size() != dim()) {
+      throw std::invalid_argument("Euclidean: sampling bounds must hold dim() entries each");
+    }
     lo_ = lo;
     hi_ = hi;
   }
@@ -123,29 +127,46 @@ class Euclidean {
   /// @brief Return the dimension of the space.
   int dim() const { return dim_; }
 
-  /// @brief Sample a point uniformly in \f$[\mathrm{lo}, \mathrm{hi}]^n\f$ (default \f$[-1,
-  /// 1]^n\f$).
-  ///
-  /// @details Uses the configured `SamplerT` (default: `StochasticSampler`)
-  /// to draw uniform box samples and linearly rescales to the sampling
-  /// bounds. Pass `HaltonSampler` via the template parameter for
-  /// deterministic low-discrepancy sampling.
-  Point random_point() const {
-    sampler_.sample_box(dim_, sample_buf_);
+  /// @brief Number of unit-cube coordinates that from_unit_cube consumes.
+  int unit_cube_dim() const { return dim_; }
+
+  /// @brief Map unit-cube coordinates to a point by affine rescaling to [lo, hi].
+  Point from_unit_cube(Eigen::Ref<const Eigen::VectorXd> u) const {
+    detail::require_unit_cube_size(u.size(), dim_);
     Point p;
     if constexpr (Dim == Eigen::Dynamic) {
       p.resize(dim_);
     }
     for (int i = 0; i < dim_; ++i) {
-      p[i] = lo_[i] + sample_buf_[i] * (hi_[i] - lo_[i]);
+      p[i] = lo_[i] + u[i] * (hi_[i] - lo_[i]);
     }
     return p;
   }
 
+  /// @brief Sample a point uniformly in [lo, hi]^n (default [-1, 1]^n).
+  Point random_point() const {
+    sample_buf_.resize(dim_);
+    sampler_.sample(dim_, sample_buf_);
+    return from_unit_cube(sample_buf_);
+  }
+
+  /// @brief Reseed the sampler for a reproducible random_point sequence.
+  void seed(std::uint64_t s)
+    requires SeedableSampler<SamplerT>
+  {
+    sampler_.seed(s);
+  }
+
+  /// @brief Replace the sampler.
+  void set_sampler(SamplerT s) { sampler_ = std::move(s); }
+
+  /// @brief The sampler behind random_point(). Planning samples through copies of it.
+  const SamplerT& sampler() const { return sampler_; }
+
   /// @brief Project an ambient vector onto the tangent space at \f$ p \f$.
   ///
   /// @details The tangent space of \f$ \mathbb{R}^n \f$ is \f$ \mathbb{R}^n \f$
-  /// everywhere, so the projection is the identity.
+  /// everywhere, and the projection is the identity.
   Tangent project(const Point& /*p*/, const Tangent& v) const { return v; }
 
   /// @name Metric delegates
@@ -172,13 +193,13 @@ class Euclidean {
   /// @name Exp / Log
   /// @{
 
-  /// @brief Exponential map: \f$ \exp_p(v) = p + v \f$.
+  /// @brief Exponential map \f$ \exp_p(v) = p + v \f$.
   /// @param p Base point.
   /// @param v Tangent vector.
   /// @return The resulting point.
   Point exp(const Point& p, const Tangent& v) const { return p + v; }
 
-  /// @brief Logarithmic map: \f$ \log_p(q) = q - p \f$.
+  /// @brief Logarithmic map \f$ \log_p(q) = q - p \f$.
   /// @param p Base point.
   /// @param q Target point.
   /// @return The tangent vector from \f$ p \f$ to \f$ q \f$.
@@ -195,15 +216,14 @@ class Euclidean {
   /// @return The distance \f$ d(p, q) \f$.
   Scalar distance(const Point& p, const Point& q) const { return distance_midpoint(*this, p, q); }
 
-  /// @brief Injectivity radius of \f$ \mathbb{R}^n \f$: \f$ \infty \f$.
+  /// @brief Injectivity radius of \f$ \mathbb{R}^n \f$, \f$ \infty \f$.
   ///
-  /// @details Euclidean space is flat, so the injectivity radius is infinite
-  /// regardless of the metric. Anisotropic custom metrics change geodesic
-  /// directions but not the fact that the space is simply connected and
-  /// geodesically complete.
+  /// @details The injectivity radius of flat Euclidean space is infinite for every
+  /// metric. Anisotropic custom metrics change geodesic directions, and the space
+  /// stays simply connected and geodesically complete.
   Scalar injectivity_radius() const { return std::numeric_limits<double>::infinity(); }
 
-  /// @brief Geodesic interpolation: \f$ (1 - t) p + t q \f$.
+  /// @brief Geodesic interpolation \f$ (1 - t) p + t q \f$.
   /// @param p Start point.
   /// @param q End point.
   /// @param t Interpolation parameter in \f$ [0, 1] \f$.
@@ -213,8 +233,8 @@ class Euclidean {
   /// @}
 
  private:
-  /// @brief Build the default metric for dynamic Euclidean: `ConstantSPDMetric<Dynamic>(n)`
-  /// when applicable, otherwise a default-constructed metric.
+  /// @brief Build the default metric for dynamic Euclidean, `MetricT(n)` when the metric
+  /// takes a size and a default-constructed metric otherwise.
   static MetricT make_default_metric(int n) {
     if constexpr (std::is_constructible_v<MetricT, int>) {
       return MetricT(n);
@@ -225,8 +245,8 @@ class Euclidean {
 
   MetricT metric_;
   int dim_;
-  Eigen::VectorXd lo_;                  ///< Lower sampling bounds (default: -1^n).
-  Eigen::VectorXd hi_;                  ///< Upper sampling bounds (default:  1^n).
+  Eigen::VectorXd lo_;                  ///< Lower sampling bounds (default -1^n).
+  Eigen::VectorXd hi_;                  ///< Upper sampling bounds (default  1^n).
   mutable SamplerT sampler_;            ///< Sampler used by `random_point`.
   mutable Eigen::VectorXd sample_buf_;  ///< Preallocated buffer for sampler output.
 };

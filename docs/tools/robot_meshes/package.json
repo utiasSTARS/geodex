@@ -1,0 +1,8 @@
+{
+  "name": "geodex-docs-robot-meshes",
+  "private": true,
+  "description": "glTF-Transform CLI of the docs robot mesh build",
+  "dependencies": {
+    "@gltf-transform/cli": "4.5.0"
+  }
+}

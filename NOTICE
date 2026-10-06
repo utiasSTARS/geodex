@@ -1,13 +1,43 @@
 geodex
-Copyright © 2026 Space and Terrestrial Autonomous Robotic Systems (STARS) Lab
+Copyright 2026 Space and Terrestrial Autonomous Robotic Systems (STARS) Lab
 
 Licensed under the Apache License, Version 2.0 (see LICENSE).
 
-This product bundles the following third-party components:
+The pygeodex wheels statically link, and the geodex sources build, the following
+third-party software. Each license text is in THIRD_PARTY_LICENSES.txt, in the section
+named in the last column.
 
-Eigen — https://gitlab.com/libeigen/eigen
-  Mozilla Public License 2.0 (MPL-2.0)
+  OMPL (utiasSTARS fork)       BSD-3-Clause             ompl
+  VAMP, nigh, pdqsort          Apache-2.0, BSD-3, Zlib  vamp
+  SIMDxorshift (x86-64)        Apache-2.0               simdxorshift
+  Boost                        BSL-1.0                  boost
+  Eigen                        MPL-2.0 and others       eigen
+  nanobind, robin-map          BSD-3-Clause, MIT        nanobind
+  yaml-cpp                     MIT                      yaml-cpp
+  cricket (VAMP kernel code)   MIT                      cricket
 
-nanobind — https://github.com/wjakob/nanobind
-  Copyright (c) Wenzel Jakob
-  BSD 3-Clause License
+The generated VAMP collision kernels follow cricket's kernel template, and the PR2 sphere
+model starts from cricket's PR2 resource.
+
+The robot dynamics and collision models, and the robot descriptions in this repository,
+derive from the following sources.
+
+  Franka Panda and FR3         Apache-2.0 with NOTICE   franka-description
+  Robotiq 2F-85 and coupling   BSD-3-Clause             ros2-robotiq-gripper
+  Universal Robots UR5         BSD-3-Clause, MIT        ur5-robotiq
+  Universal Robots UR5e        BSD-3-Clause             universal-robots-description
+  robowflex_resources          MIT                      robowflex-resources
+  Rethink Baxter               BSD-3-Clause             baxter-common
+  Willow Garage PR2            BSD-3-Clause             pr2-description
+  Clearpath platforms          BSD-3-Clause             clearpath-common
+  Hello Robot Stretch 3 and 4  Clear BSD                stretch-urdf
+
+The UR5 URDF is expanded from robowflex_resources, which also records the upstream sources of
+the Panda and Baxter descriptions. The UR5e on the Ridgeback and Husky comes from the Universal
+Robots ROS 2 description. The FR3 comes from franka_description, and the Robotiq 2F-85 on its
+coupling comes from PickNik's ros2_robotiq_gripper.
+
+The franka_description NOTICE reads:
+
+  franka_description
+  Copyright 2023 Franka Robotics GmbH

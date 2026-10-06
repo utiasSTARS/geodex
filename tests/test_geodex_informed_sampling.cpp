@@ -1,9 +1,11 @@
 /// @file test_geodex_informed_sampling.cpp
 /// @brief Tests for direct-sampling strategies in `GeodexDirectInfSampler`.
 
-#include <atomic>
 #include <cmath>
 #include <cstdint>
+
+#include <algorithm>
+#include <atomic>
 #include <limits>
 #include <memory>
 #include <thread>
@@ -11,7 +13,6 @@
 #include <vector>
 
 #include <Eigen/Core>
-
 #include <gtest/gtest.h>
 #include <ompl/base/Cost.h>
 #include <ompl/base/ProblemDefinition.h>
@@ -19,6 +20,7 @@
 #include <ompl/base/SpaceInformation.h>
 #include <ompl/base/objectives/PathLengthOptimizationObjective.h>
 #include <ompl/base/spaces/RealVectorBounds.h>
+#include <ompl/util/ProlateHyperspheroid.h>
 
 #include "geodex/heuristics/eigenvalue_lower_bound.hpp"
 #include "geodex/heuristics/euclidean.hpp"
@@ -27,6 +29,9 @@
 #include "geodex/integration/ompl/geodex_optimization_objective.hpp"
 #include "geodex/integration/ompl/geodex_state_space.hpp"
 #include "geodex/manifold/euclidean.hpp"
+#include "geodex/manifold/se2.hpp"
+#include "geodex/manifold/sphere.hpp"
+#include "geodex/utils/angle.hpp"
 
 namespace ob = ompl::base;
 namespace gio = geodex::integration::ompl;
@@ -38,6 +43,11 @@ using Space2D = gio::GeodexStateSpace<Manifold2D>;
 using Space3D = gio::GeodexStateSpace<Manifold3D>;
 using State2D = gio::GeodexState<Manifold2D>;
 using State3D = gio::GeodexState<Manifold3D>;
+
+using ManifoldSE2 = geodex::SE2<>;
+using SpaceSE2 = gio::GeodexStateSpace<ManifoldSE2>;
+using StateSE2 = gio::GeodexState<ManifoldSE2>;
+using MlbDyn = gh::MatrixLowerBound<Eigen::Dynamic>;
 
 namespace {
 
@@ -80,7 +90,7 @@ std::pair<ob::SpaceInformationPtr, ob::ProblemDefinitionPtr> makeSiAndPdef(
 }  // namespace
 
 // ============================================================================
-// Euclidean PHS — regression after the if-constexpr restructure
+// Euclidean PHS
 // ============================================================================
 
 TEST(GeodexInformedSampling, EuclideanPHS_SamplesInsideInformedRegion) {
@@ -102,12 +112,12 @@ TEST(GeodexInformedSampling, EuclideanPHS_SamplesInsideInformedRegion) {
 }
 
 // ============================================================================
-// EigenvalueLowerBound — cost gets scaled by 1/sqrt(lambda_min)
+// EigenvalueLowerBound, cost scaled by 1/sqrt(lambda_min)
 // ============================================================================
 
 TEST(GeodexInformedSampling, EigenvalueLB_SamplesRespectScaledCost) {
   auto space = std::make_shared<Space2D>(Manifold2D{}, makeBounds(2, -10, 10));
-  // Foci at (-1, 0), (1, 0): d_foci = 2.
+  // Foci at (-1, 0) and (1, 0), d_foci = 2.
   auto [si, pdef] = makeSiAndPdef(space, {-1.0, 0.0}, {1.0, 0.0});
 
   // lambda_min = 4 → sqrt = 2. Effective PHS transverse diameter = 10/2 = 5,
@@ -131,7 +141,7 @@ TEST(GeodexInformedSampling, EigenvalueLB_SamplesRespectScaledCost) {
 }
 
 // ============================================================================
-// MatrixLowerBound — latent-space PHS with isotropic M_lower
+// MatrixLowerBound, latent-space PHS with isotropic M_lower
 // ============================================================================
 
 TEST(GeodexInformedSampling, MatrixLB_SamplesInsideInformedRegion) {
@@ -158,7 +168,7 @@ TEST(GeodexInformedSampling, MatrixLB_SamplesInsideInformedRegion) {
 }
 
 // ============================================================================
-// MatrixLowerBound — anisotropic M_lower exercises latent-space transform
+// MatrixLowerBound, anisotropic M_lower exercises latent-space transform
 // ============================================================================
 
 TEST(GeodexInformedSampling, MatrixLB_AnisotropicMetricRespectsBoundsAndCost) {
@@ -166,7 +176,7 @@ TEST(GeodexInformedSampling, MatrixLB_AnisotropicMetricRespectsBoundsAndCost) {
   auto space = std::make_shared<Space2D>(Manifold2D{}, makeBoundsAxes(-5, 5, -2, 2));
   auto [si, pdef] = makeSiAndPdef(space, {-3.0, 0.0}, {3.0, 0.0});
 
-  // Anisotropic M_lower: x is stiffer than y by 4x.
+  // Anisotropic M_lower with x stiffer than y by 4x.
   Eigen::Matrix2d M;
   M << 4.0, 0.0, 0.0, 1.0;
   gh::MatrixLowerBound<2> heuristic{M};
@@ -190,7 +200,7 @@ TEST(GeodexInformedSampling, MatrixLB_AnisotropicMetricRespectsBoundsAndCost) {
 }
 
 // ============================================================================
-// MatrixLowerBound — empty bounds disables clipped-AABB; PHS sampling still works
+// MatrixLowerBound, empty bounds disable clipped-AABB and PHS sampling works
 // ============================================================================
 
 TEST(GeodexInformedSampling, MatrixLB_EmptyBoundsFallsBackToPhsLatent) {
@@ -199,7 +209,7 @@ TEST(GeodexInformedSampling, MatrixLB_EmptyBoundsFallsBackToPhsLatent) {
 
   Eigen::Matrix2d M = Eigen::Matrix2d::Identity();
   gh::MatrixLowerBound<2> heuristic{M};
-  // Pass empty bounds — sampler should fall back to PHS-with-rejection on bounds.
+  // With empty bounds the sampler falls back to PHS with rejection on bounds.
   gio::GeodexDirectInfSampler<gh::MatrixLowerBound<2>> sampler(pdef, 100, heuristic,
                                                                ob::RealVectorBounds(0));
 
@@ -212,15 +222,15 @@ TEST(GeodexInformedSampling, MatrixLB_EmptyBoundsFallsBackToPhsLatent) {
 }
 
 // ============================================================================
-// Volume-ratio fallback — inadmissibly small M_lower triggers uniform sampling
+// Volume-ratio fallback, inadmissibly small M_lower triggers uniform sampling
 // ============================================================================
 
 TEST(GeodexInformedSampling, VolumeRatio_FallsBackToUniformOnInadmissibleMetric) {
   auto space = std::make_shared<Space2D>(Manifold2D{}, makeBounds(2, -1, 1));
   auto [si, pdef] = makeSiAndPdef(space, {-0.5, 0.0}, {0.5, 0.0});
 
-  // Inadmissibly small M_lower → very large PHS in original space.
-  // det(M_lower) = 1e-8 → sqrt = 1e-4, makes the PHS's effective volume huge.
+  // An inadmissibly small M_lower gives a very large PHS in the original space.
+  // det(M_lower) = 1e-8 and sqrt = 1e-4 make the effective PHS volume huge.
   Eigen::Matrix2d M = 1e-4 * Eigen::Matrix2d::Identity();
   gh::MatrixLowerBound<2> heuristic{M};
   gio::GeodexDirectInfSampler<gh::MatrixLowerBound<2>> sampler(pdef, 100, heuristic,
@@ -236,7 +246,7 @@ TEST(GeodexInformedSampling, VolumeRatio_FallsBackToUniformOnInadmissibleMetric)
 }
 
 // ============================================================================
-// Infinite cost — uniform fallback for all branches
+// Infinite cost, uniform fallback for all branches
 // ============================================================================
 
 TEST(GeodexInformedSampling, InfiniteCost_AllStrategiesFallBackToUniform) {
@@ -275,15 +285,15 @@ TEST(GeodexInformedSampling, InfiniteCost_AllStrategiesFallBackToUniform) {
 }
 
 // ============================================================================
-// Below-minimum-transverse-diameter — fall back to uniform without crashing
+// Below-minimum-transverse-diameter, fallback to uniform without crashing
 // ============================================================================
 
 TEST(GeodexInformedSampling, DegeneratePHS_FallsBackToUniformWithoutCrashing) {
   auto space = std::make_shared<Space2D>(Manifold2D{}, makeBounds(2, -10, 10));
   auto [si, pdef] = makeSiAndPdef(space, {-3.0, 0.0}, {3.0, 0.0});
 
-  // d_foci = 6; cost just above 6 with EigenvalueLB scaling gets pulled below
-  // the minimum transverse diameter via division by sqrt(lambda_min) = 2.
+  // d_foci = 6. Dividing a cost just above 6 by sqrt(lambda_min) = 2 pulls it below the
+  // minimum transverse diameter.
   gh::EigenvalueLowerBound<gh::Euclidean> heuristic{4.0};
   gio::GeodexDirectInfSampler<gh::EigenvalueLowerBound<gh::Euclidean>> sampler{pdef, 50, heuristic};
 
@@ -337,14 +347,14 @@ TEST(GeodexInformedSampling, ExactMinimumCost_SamplesFocalSegment) {
 }
 
 // ============================================================================
-// Custom heuristic — rejection sampling still works for non-trait callables
+// Custom heuristic, rejection sampling works for non-trait callables
 // ============================================================================
 
 namespace {
 struct CustomHeuristic {
   template <typename A, typename B>
   auto operator()(const A& a, const B& b) const -> double {
-    // Inflated Euclidean — still admissible for any metric h <= 1.5*||.||.
+    // Inflated Euclidean, admissible for any metric with h <= 1.5*||.||.
     return 1.5 * (a - b).norm();
   }
 };
@@ -377,7 +387,7 @@ TEST(GeodexInformedSampling, CustomHeuristic_FallsBackToRejectionSampling) {
 }
 
 // ============================================================================
-// hasInformedMeasure — true for trait-recognized heuristics, false otherwise
+// hasInformedMeasure, true for trait-recognized heuristics and false otherwise
 // ============================================================================
 
 TEST(GeodexInformedSampling, HasInformedMeasure_DispatchesByTrait) {
@@ -402,14 +412,14 @@ TEST(GeodexInformedSampling, HasInformedMeasure_DispatchesByTrait) {
 }
 
 // ============================================================================
-// getInformedMeasure — returns sane volumes for finite/infinite costs
+// getInformedMeasure, sane volumes for finite and infinite costs
 // ============================================================================
 
 TEST(GeodexInformedSampling, GetInformedMeasure_ReturnsSaneVolumes) {
   auto space = std::make_shared<Space2D>(Manifold2D{}, makeBounds(2, -5, 5));
   auto [si, pdef] = makeSiAndPdef(space, {-1.0, 0.0}, {1.0, 0.0});
 
-  // Euclidean — finite cost above min trans diameter gives finite measure.
+  // For Euclidean a finite cost above the minimum transverse diameter gives a finite measure.
   gio::GeodexDirectInfSampler<gh::Euclidean> euc{pdef, 50};
   EXPECT_GT(euc.getInformedMeasure(ob::Cost(5.0)), 0.0);
   EXPECT_LT(euc.getInformedMeasure(ob::Cost(5.0)), 100.0);  // < space measure (10x10)
@@ -419,17 +429,204 @@ TEST(GeodexInformedSampling, GetInformedMeasure_ReturnsSaneVolumes) {
   EXPECT_DOUBLE_EQ(euc.getInformedMeasure(ob::Cost(std::numeric_limits<double>::infinity())),
                    space->getMeasure());
 
-  // MatrixLB volumes: positive, finite, below space measure.
+  // MatrixLB volumes are positive, finite and below the space measure.
   Eigen::Matrix2d M = 4.0 * Eigen::Matrix2d::Identity();
   gh::MatrixLowerBound<2> mlb{M};
   gio::GeodexDirectInfSampler<gh::MatrixLowerBound<2>> mlb_s{pdef, 50, mlb};
-  // Latent foci-distance = sqrt((g-s)^T M (g-s)) = 4. Need c_best > 4.
+  // The latent foci distance is sqrt((g-s)^T M (g-s)) = 4, and c_best must exceed 4.
   EXPECT_GT(mlb_s.getInformedMeasure(ob::Cost(8.0)), 0.0);
   EXPECT_DOUBLE_EQ(mlb_s.getInformedMeasure(ob::Cost(2.0)), 0.0);
 }
 
 // ============================================================================
-// Annular sampler — sampleUniform(min, max) excludes the inner region
+// Deck-group lifts on SE(2)
+// ============================================================================
+
+namespace {
+
+// SE(2) over [-5, 5]^2 with theta spanning exactly one period.
+std::shared_ptr<SpaceSE2> makeSE2Space() {
+  ob::RealVectorBounds b(3);
+  b.setLow(0, -5.0);
+  b.setHigh(0, 5.0);
+  b.setLow(1, -5.0);
+  b.setHigh(1, 5.0);
+  b.setLow(2, -std::numbers::pi);
+  b.setHigh(2, std::numbers::pi);
+  return std::make_shared<SpaceSE2>(ManifoldSE2{}, b);
+}
+
+Eigen::VectorXd se2Periods() { return Eigen::Vector3d(0.0, 0.0, geodex::utils::two_pi); }
+
+Eigen::MatrixXd identity3() { return Eigen::MatrixXd::Identity(3, 3); }
+
+// The informed measure of a lift union is the sum of its hyperspheroid measures. Start
+// theta 3 and goal theta -3 put the goal lifts (k in {-1, 0, +1} on theta) 6 + 2 pi, 6 and
+// 2 pi - 6 from the start.
+double liftMeasure(const double foci_distance, const double cost) {
+  const double s[3] = {0.0, 0.0, 0.0};
+  const double g[3] = {foci_distance, 0.0, 0.0};
+  return ompl::ProlateHyperspheroid(3, s, g).getPhsMeasure(cost);
+}
+
+}  // namespace
+
+TEST(GeodexInformedLifts, PeriodicAxisBuildsThreeLifts) {
+  // Wide x and y bounds keep the union below the C-space measure, which caps it.
+  ob::RealVectorBounds b(3);
+  b.setLow(0, -50.0);
+  b.setHigh(0, 50.0);
+  b.setLow(1, -50.0);
+  b.setHigh(1, 50.0);
+  b.setLow(2, -std::numbers::pi);
+  b.setHigh(2, std::numbers::pi);
+  auto space = std::make_shared<SpaceSE2>(ManifoldSE2{}, b);
+  auto [si, pdef] = makeSiAndPdef(space, {0.0, 0.0, 3.0}, {0.0, 0.0, -3.0});
+  MlbDyn heuristic{identity3(), se2Periods()};
+  gio::GeodexDirectInfSampler<MlbDyn> sampler(pdef, 100, heuristic, space->getBounds());
+  const double c = 13.0;
+  const double sum = liftMeasure(6.0 + geodex::utils::two_pi, c) + liftMeasure(6.0, c) +
+                     liftMeasure(geodex::utils::two_pi - 6.0, c);
+  ASSERT_LT(sum, space->getMeasure());
+  EXPECT_NEAR(sampler.getInformedMeasure(ob::Cost(c)), sum, 1e-9 * sum);
+}
+
+TEST(GeodexInformedLifts, EmptyDeckGroupYieldsExactlyOnePhs) {
+  auto space = makeSE2Space();
+  auto [si, pdef] = makeSiAndPdef(space, {0.0, 0.0, 3.0}, {0.0, 0.0, -3.0});
+  MlbDyn heuristic{identity3()};  // the robot case
+  gio::GeodexDirectInfSampler<MlbDyn> sampler(pdef, 100, heuristic, space->getBounds());
+  // The short route through the cut is not in the informed set.
+  EXPECT_EQ(sampler.getInformedMeasure(ob::Cost(1.0)), 0.0);
+  EXPECT_NEAR(sampler.getInformedMeasure(ob::Cost(7.0)), liftMeasure(6.0, 7.0), 1e-12);
+}
+
+TEST(GeodexInformedLifts, LiftsNeedBoundsForTheFundamentalDomain) {
+  auto space = makeSE2Space();
+  auto [si, pdef] = makeSiAndPdef(space, {0.0, 0.0, 3.0}, {0.0, 0.0, -3.0});
+  MlbDyn heuristic{identity3(), se2Periods()};
+  gio::GeodexDirectInfSampler<MlbDyn> sampler(pdef, 100, heuristic);
+  EXPECT_EQ(sampler.getInformedMeasure(ob::Cost(1.0)), 0.0);
+  EXPECT_NEAR(sampler.getInformedMeasure(ob::Cost(7.0)), liftMeasure(6.0, 7.0), 1e-12);
+}
+
+TEST(GeodexInformedLifts, SamplesLandOnBothSidesOfTheCut) {
+  // Start near +pi and goal near -pi are 2 eps apart through the cut. A single PHS puts
+  // its foci 2 pi - 2 eps apart and does not represent this.
+  constexpr double eps = 0.1;
+  auto space = makeSE2Space();
+  const double ts = std::numbers::pi - eps, tg = -std::numbers::pi + eps;
+  auto [si, pdef] = makeSiAndPdef(space, {0.0, 0.0, ts}, {0.0, 0.0, tg});
+  MlbDyn heuristic{identity3(), se2Periods()};
+  gio::GeodexDirectInfSampler<MlbDyn> sampler(pdef, 100, heuristic, space->getBounds());
+
+  const double max_cost = 4.0 * eps;
+  auto* state = space->allocState();
+  int above = 0, below = 0;
+  for (int i = 0; i < 400; ++i) {
+    ASSERT_TRUE(sampler.sampleUniform(state, ob::Cost(max_cost)));
+    const double theta = state->as<StateSE2>()->values[2];
+    if (theta > 0.0) ++above;
+    if (theta < 0.0) ++below;
+  }
+  space->freeState(state);
+  EXPECT_GT(above, 0);
+  EXPECT_GT(below, 0);
+  // The volume-ratio fallback did not run.
+  EXPECT_LE(sampler.getSamplingStats().last_volume_ratio, sampler.getVolumeRatioThreshold());
+}
+
+TEST(GeodexInformedLifts, EverySampleSatisfiesTheWrappedInformedSet) {
+  constexpr double eps = 0.1;
+  auto space = makeSE2Space();
+  const Eigen::Vector3d s(0.0, 0.0, std::numbers::pi - eps);
+  const Eigen::Vector3d g(0.0, 0.0, -std::numbers::pi + eps);
+  auto [si, pdef] = makeSiAndPdef(space, {s[0], s[1], s[2]}, {g[0], g[1], g[2]});
+  MlbDyn heuristic{identity3(), se2Periods()};
+  gio::GeodexDirectInfSampler<MlbDyn> sampler(pdef, 100, heuristic, space->getBounds());
+
+  const double max_cost = 4.0 * eps;
+  auto* state = space->allocState();
+  for (int i = 0; i < 400; ++i) {
+    ASSERT_TRUE(sampler.sampleUniform(state, ob::Cost(max_cost)));
+    Eigen::Map<const Eigen::Vector3d> x(state->as<StateSE2>()->values);
+    EXPECT_LE(heuristic(s, x) + heuristic(x, g), max_cost + 1e-9);
+    EXPECT_TRUE(space->satisfiesBounds(state));
+  }
+  space->freeState(state);
+}
+
+TEST(GeodexInformedLifts, OverlapAcceptRejectsSomeFoldedSamples) {
+  // A budget wide enough for several lifts to overlap makes the overlap accept
+  // reject some folded samples. Those are the attempts without another outcome.
+  auto space = makeSE2Space();
+  auto [si, pdef] = makeSiAndPdef(space, {0.0, 0.0, 3.0}, {0.0, 0.0, -3.0});
+  MlbDyn heuristic{identity3(), se2Periods()};
+  gio::GeodexDirectInfSampler<MlbDyn> sampler(pdef, 100, heuristic, space->getBounds());
+  auto* state = space->allocState();
+  for (int i = 0; i < 400; ++i) sampler.sampleUniform(state, ob::Cost(8.0));
+  space->freeState(state);
+  const auto stats = sampler.getSamplingStats();
+  EXPECT_EQ(stats.phs_rejections, 0u);
+  EXPECT_GT(stats.total_attempts, stats.accepted + stats.bounds_rejections);
+}
+
+TEST(GeodexInformedLifts, MinTransverseDiameterIsTakenOverLifts) {
+  // The union has positive measure below the base lift's own minimum, where a
+  // single PHS reports an empty informed set.
+  constexpr double eps = 0.1;
+  auto space = makeSE2Space();
+  auto [si, pdef] = makeSiAndPdef(space, {0.0, 0.0, std::numbers::pi - eps},
+                                  {0.0, 0.0, -std::numbers::pi + eps});
+  MlbDyn heuristic{identity3(), se2Periods()};
+  gio::GeodexDirectInfSampler<MlbDyn> lifted(pdef, 100, heuristic, space->getBounds());
+  gio::GeodexDirectInfSampler<MlbDyn> single(pdef, 100, MlbDyn{identity3()},
+                                             space->getBounds());
+
+  const ob::Cost c(4.0 * eps);
+  EXPECT_GT(lifted.getInformedMeasure(c), 0.0);
+  EXPECT_EQ(single.getInformedMeasure(c), 0.0);
+}
+
+TEST(GeodexInformedLifts, UnionMeasureNeverExceedsTheCSpaceMeasure) {
+  auto space = makeSE2Space();
+  auto [si, pdef] = makeSiAndPdef(space, {0.0, 0.0, 1.0}, {0.0, 0.0, -1.0});
+  MlbDyn heuristic{identity3(), se2Periods()};
+  gio::GeodexDirectInfSampler<MlbDyn> sampler(pdef, 100, heuristic, space->getBounds());
+  EXPECT_LE(sampler.getInformedMeasure(ob::Cost(500.0)), space->getMeasure() + 1e-9);
+}
+
+TEST(GeodexInformedLifts, AperiodicSamplingIsBitIdentical) {
+  // Empty periods reproduce the plain constructor exactly. Robot plans rely on this.
+  auto space = std::make_shared<Space2D>(Manifold2D{}, makeBounds(2, -10, 10));
+  auto [si, pdef] = makeSiAndPdef(space, {-3.0, 0.0}, {3.0, 0.0});
+  Eigen::MatrixXd M = Eigen::MatrixXd::Identity(2, 2);
+  M(0, 0) = 4.0;
+
+  // Both samplers need the same low-discrepancy scramble to be comparable.
+  geodex::set_default_seed(7);
+  gio::GeodexDirectInfSampler<MlbDyn> a(pdef, 1, MlbDyn{M}, makeBounds(2, -10, 10));
+  geodex::set_default_seed(7);
+  gio::GeodexDirectInfSampler<MlbDyn> b(pdef, 1, MlbDyn{M, Eigen::VectorXd{}},
+                                        makeBounds(2, -10, 10));
+
+  auto* sa = space->allocState();
+  auto* sb = space->allocState();
+  for (int i = 0; i < 50; ++i) {
+    const bool oka = a.sampleUniform(sa, ob::Cost(9.0));
+    const bool okb = b.sampleUniform(sb, ob::Cost(9.0));
+    ASSERT_EQ(oka, okb);
+    if (!oka) continue;
+    for (int d = 0; d < 2; ++d) {
+      EXPECT_DOUBLE_EQ(sa->as<State2D>()->values[d], sb->as<State2D>()->values[d]);
+    }
+  }
+  space->freeState(sa);
+  space->freeState(sb);
+}
+
+// ============================================================================
+// Annular sampler, sampleUniform(min, max) excludes the inner region
 // ============================================================================
 
 TEST(GeodexInformedSampling, AnnularSampling_RespectsLowerBound) {
@@ -471,7 +668,7 @@ TEST(GeodexInformedSampling, AnnularSampling_UsesSingleAttemptBudget) {
 }
 
 // ============================================================================
-// Diagnostics — SamplingStats counters
+// SamplingStats counters
 // ============================================================================
 
 TEST(GeodexInformedSampling, Stats_AccumulateAcceptsAndAttempts) {
@@ -492,27 +689,7 @@ TEST(GeodexInformedSampling, Stats_AccumulateAcceptsAndAttempts) {
   space->freeState(state);
 }
 
-TEST(GeodexInformedSampling, Stats_ResetClearsCounters) {
-  auto space = std::make_shared<Space2D>(Manifold2D{}, makeBounds(2, -10, 10));
-  auto [si, pdef] = makeSiAndPdef(space, {-3.0, 0.0}, {3.0, 0.0});
-
-  gio::GeodexDirectInfSampler<gh::Euclidean> sampler{pdef, 100};
-  auto* state = space->allocState();
-  for (int i = 0; i < 10; ++i) sampler.sampleUniform(state, ob::Cost(10.0));
-  EXPECT_GT(sampler.getSamplingStats().total_attempts, 0u);
-
-  sampler.resetSamplingStats();
-  const auto reset = sampler.getSamplingStats();
-  EXPECT_EQ(reset.total_attempts, 0u);
-  EXPECT_EQ(reset.accepted, 0u);
-  EXPECT_EQ(reset.bounds_rejections, 0u);
-  EXPECT_EQ(reset.phs_rejections, 0u);
-  EXPECT_EQ(reset.uniform_fallback_count, 0u);
-  EXPECT_EQ(reset.focused_sample_count, 0u);
-  space->freeState(state);
-}
-
-TEST(GeodexInformedSampling, Stats_VolumeRatioFallbackIncrementsCounter) {
+TEST(GeodexInformedSampling, Stats_VolumeRatioAboveThresholdTriggersFallback) {
   auto space = std::make_shared<Space2D>(Manifold2D{}, makeBounds(2, -1, 1));
   auto [si, pdef] = makeSiAndPdef(space, {-0.5, 0.0}, {0.5, 0.0});
 
@@ -526,26 +703,38 @@ TEST(GeodexInformedSampling, Stats_VolumeRatioFallbackIncrementsCounter) {
   auto* state = space->allocState();
   for (int i = 0; i < 30; ++i) sampler.sampleUniform(state, ob::Cost(10.0));
   const auto stats = sampler.getSamplingStats();
-  EXPECT_GT(stats.uniform_fallback_count, 0u);
   EXPECT_GT(stats.last_volume_ratio, sampler.getVolumeRatioThreshold());
   space->freeState(state);
 }
 
 TEST(GeodexInformedSampling, VolumeRatioThresholdZeroDisablesFallback) {
+  // The volume ratio of this problem is positive. With the fallback disabled, the samples
+  // equal those of a threshold the ratio never reaches.
   auto space = std::make_shared<Space2D>(Manifold2D{}, makeBounds(2, -1, 1));
   auto [si, pdef] = makeSiAndPdef(space, {-0.5, 0.0}, {0.5, 0.0});
 
   Eigen::Matrix2d M = 1e-4 * Eigen::Matrix2d::Identity();
   gh::MatrixLowerBound<2> heuristic{M};
-  gio::GeodexDirectInfSampler<gh::MatrixLowerBound<2>> sampler{pdef, 50, heuristic,
-                                                               makeBounds(2, -1, 1)};
-  sampler.setVolumeRatioThreshold(0.0);
-
-  auto* state = space->allocState();
-  for (int i = 0; i < 30; ++i) sampler.sampleUniform(state, ob::Cost(10.0));
-  const auto stats = sampler.getSamplingStats();
-  EXPECT_EQ(stats.uniform_fallback_count, 0u);
-  space->freeState(state);
+  double ratio = 0.0;
+  auto samples = [&](const double threshold) {
+    geodex::set_default_seed(7);
+    gio::GeodexDirectInfSampler<gh::MatrixLowerBound<2>> sampler{pdef, 50, heuristic,
+                                                                 makeBounds(2, -1, 1)};
+    sampler.setVolumeRatioThreshold(threshold);
+    auto* state = space->allocState();
+    std::vector<double> out;
+    for (int i = 0; i < 30; ++i) {
+      EXPECT_TRUE(sampler.sampleUniform(state, ob::Cost(10.0)));
+      out.push_back(state->as<State2D>()->values[0]);
+      out.push_back(state->as<State2D>()->values[1]);
+    }
+    space->freeState(state);
+    ratio = sampler.getSamplingStats().last_volume_ratio;
+    return out;
+  };
+  const auto disabled = samples(0.0);
+  EXPECT_GT(ratio, 0.0);
+  EXPECT_EQ(disabled, samples(std::numeric_limits<double>::max()));
 }
 
 TEST(GeodexInformedSampling, VolumeRatioFallbackStillRespectsFiniteCost) {
@@ -564,11 +753,35 @@ TEST(GeodexInformedSampling, VolumeRatioFallbackStillRespectsFiniteCost) {
     Eigen::Map<const Eigen::Vector2d> x(state->as<State2D>()->values);
     EXPECT_LE((x - s).norm() + (x - g).norm(), max_cost.value() + 1e-9);
   }
-  EXPECT_GT(sampler.getSamplingStats().uniform_fallback_count, 0u);
+  EXPECT_GT(sampler.getSamplingStats().last_volume_ratio, sampler.getVolumeRatioThreshold());
   space->freeState(state);
 }
 
-TEST(GeodexInformedSampling, Stats_ReportsClippedAABBVolumeForMatrixLB) {
+// Every returned sample is counted once, as informed (accepted) or as a plain uniform
+// sample, also when the volume-ratio fallback redirects to rejection sampling.
+TEST(GeodexInformedSampling, CountersSplitEveryReturnedSample) {
+  auto space = std::make_shared<Space2D>(Manifold2D{}, makeBounds(2, -10, 10));
+  auto [si, pdef] = makeSiAndPdef(space, {-3.0, 0.0}, {3.0, 0.0});
+  gio::GeodexDirectInfSampler<gh::Euclidean> sampler{pdef, 10000};
+  sampler.setVolumeRatioThreshold(1e-3);
+  auto* state = space->allocState();
+  unsigned long returned = 0;
+  for (int i = 0; i < 50; ++i) returned += sampler.sampleUniform(state, ob::Cost(7.0)) ? 1 : 0;
+  for (int i = 0; i < 20; ++i) {
+    ASSERT_TRUE(sampler.sampleUniform(state, ob::Cost(std::numeric_limits<double>::infinity())));
+    ++returned;
+  }
+  space->freeState(state);
+  const auto stats = sampler.getSamplingStats();
+  EXPECT_GT(stats.last_volume_ratio, sampler.getVolumeRatioThreshold());
+  EXPECT_EQ(stats.uniform_samples, 20u);
+  EXPECT_EQ(stats.accepted + stats.uniform_samples, returned);
+}
+
+// Latent foci (-6, 0) and (6, 0) and cost 14 give a latent PHS of area pi * 7 * sqrt(13),
+// about 79.3. Clipped to the latent bounds [-10, 10] x [-2, 2], its bounding box has area
+// 14 * 4 = 56, and the sampler picks the clipped box.
+TEST(GeodexInformedSampling, Stats_ReportsClippedAABBStrategyForMatrixLB) {
   auto space = std::make_shared<Space2D>(Manifold2D{}, makeBoundsAxes(-5, 5, -2, 2));
   auto [si, pdef] = makeSiAndPdef(space, {-3.0, 0.0}, {3.0, 0.0});
 
@@ -578,46 +791,39 @@ TEST(GeodexInformedSampling, Stats_ReportsClippedAABBVolumeForMatrixLB) {
   gio::GeodexDirectInfSampler<gh::MatrixLowerBound<2>> sampler{pdef, 50, heuristic,
                                                                makeBoundsAxes(-5, 5, -2, 2)};
 
+  const Eigen::Vector2d s(-3.0, 0.0);
+  const Eigen::Vector2d g(3.0, 0.0);
   auto* state = space->allocState();
-  for (int i = 0; i < 20; ++i) sampler.sampleUniform(state, ob::Cost(14.0));
-  const auto stats = sampler.getSamplingStats();
-  EXPECT_GT(stats.phs_volume, 0.0);
-  // clipped_aabb_volume is set whenever the strategy decision runs.
-  EXPECT_GE(stats.clipped_aabb_volume, 0.0);
+  for (int i = 0; i < 20; ++i) {
+    ASSERT_TRUE(sampler.sampleUniform(state, ob::Cost(14.0)));
+    Eigen::Map<const Eigen::Vector2d> x(state->as<State2D>()->values);
+    EXPECT_LE(heuristic(s, x) + heuristic(x, g), 14.0 + 1e-9);
+    EXPECT_TRUE(space->satisfiesBounds(state));
+  }
+  EXPECT_TRUE(sampler.getSamplingStats().using_clipped_aabb);
   space->freeState(state);
 }
 
-TEST(GeodexInformedSampling, Sampler_LatentBoundsAABBExposed) {
-  auto space = std::make_shared<Space2D>(Manifold2D{}, makeBounds(2, -3, 3));
-  auto [si, pdef] = makeSiAndPdef(space, {-1.0, 0.0}, {1.0, 0.0});
+TEST(GeodexInformedSampling, ClippedAABBStrategyNeedsBounds) {
+  auto space = std::make_shared<Space2D>(Manifold2D{}, makeBoundsAxes(-5, 5, -2, 2));
+  auto [si, pdef] = makeSiAndPdef(space, {-3.0, 0.0}, {3.0, 0.0});
 
-  Eigen::Matrix2d M = Eigen::Matrix2d::Identity();
+  Eigen::Matrix2d M;
+  M << 4.0, 0.0, 0.0, 1.0;
   gh::MatrixLowerBound<2> heuristic{M};
-  gio::GeodexDirectInfSampler<gh::MatrixLowerBound<2>> mlb_with_bounds{pdef, 50, heuristic,
-                                                                      makeBounds(2, -3, 3)};
-  Eigen::VectorXd lo, hi;
-  EXPECT_TRUE(mlb_with_bounds.getLatentBoundsAABB(lo, hi));
-  EXPECT_EQ(lo.size(), 2);
-  EXPECT_EQ(hi.size(), 2);
-  EXPECT_LT(lo[0], hi[0]);
-  EXPECT_LT(lo[1], hi[1]);
+  gio::GeodexDirectInfSampler<gh::MatrixLowerBound<2>> sampler{pdef, 50, heuristic};
 
-  // Without bounds the accessor returns false.
-  gio::GeodexDirectInfSampler<gh::MatrixLowerBound<2>> mlb_no_bounds{pdef, 50, heuristic};
-  Eigen::VectorXd lo2, hi2;
-  EXPECT_FALSE(mlb_no_bounds.getLatentBoundsAABB(lo2, hi2));
-
-  // Euclidean has no latent bounds at all.
-  gio::GeodexDirectInfSampler<gh::Euclidean> euc{pdef, 50};
-  Eigen::VectorXd lo3, hi3;
-  EXPECT_FALSE(euc.getLatentBoundsAABB(lo3, hi3));
+  auto* state = space->allocState();
+  sampler.sampleUniform(state, ob::Cost(14.0));
+  EXPECT_FALSE(sampler.getSamplingStats().using_clipped_aabb);
+  space->freeState(state);
 }
 
 // ============================================================================
-// Objective — motion-cost call counter and last-sampler tracking
+// Objective, motion cost and last-sampler tracking
 // ============================================================================
 
-TEST(GeodexOptimizationObjectiveTest, MotionCostCallCount_IncrementsPerCall) {
+TEST(GeodexOptimizationObjectiveTest, MotionCost_IsTheEndpointDistance) {
   auto space = std::make_shared<Space2D>(Manifold2D{}, makeBounds(2, -5, 5));
   auto si = std::make_shared<ob::SpaceInformation>(space);
   si->setStateValidityChecker([](const ob::State*) { return true; });
@@ -625,7 +831,6 @@ TEST(GeodexOptimizationObjectiveTest, MotionCostCallCount_IncrementsPerCall) {
 
   Eigen::Vector2d goal_coords(2.0, 0.0);
   gio::GeodexOptimizationObjective<Manifold2D> obj{si, goal_coords};
-  EXPECT_EQ(obj.getMotionCostCallCount(), 0u);
 
   auto* a = space->allocState();
   auto* b = space->allocState();
@@ -633,13 +838,12 @@ TEST(GeodexOptimizationObjectiveTest, MotionCostCallCount_IncrementsPerCall) {
   a->as<State2D>()->values[1] = 0.0;
   b->as<State2D>()->values[0] = 1.0;
   b->as<State2D>()->values[1] = 0.0;
-  for (int i = 0; i < 7; ++i) (void)obj.motionCost(a, b);
-  EXPECT_EQ(obj.getMotionCostCallCount(), 7u);
+  for (int i = 0; i < 7; ++i) EXPECT_NEAR(obj.motionCost(a, b).value(), 1.0, 1e-12);
   space->freeState(a);
   space->freeState(b);
 }
 
-TEST(GeodexOptimizationObjectiveTest, MotionCostCallCount_ThreadSafeUnderConcurrentCalls) {
+TEST(GeodexOptimizationObjectiveTest, MotionCost_ThreadSafeUnderConcurrentCalls) {
   auto space = std::make_shared<Space2D>(Manifold2D{}, makeBounds(2, -5, 5));
   auto si = std::make_shared<ob::SpaceInformation>(space);
   si->setStateValidityChecker([](const ob::State*) { return true; });
@@ -655,17 +859,21 @@ TEST(GeodexOptimizationObjectiveTest, MotionCostCallCount_ThreadSafeUnderConcurr
   b->as<State2D>()->values[0] = 1.0;
   b->as<State2D>()->values[1] = 0.0;
 
+  const double expected = obj.motionCost(a, b).value();
   constexpr int kThreads = 4;
   constexpr int kPerThread = 1000;
+  std::atomic<int> mismatches{0};
   std::vector<std::thread> threads;
   threads.reserve(kThreads);
   for (int t = 0; t < kThreads; ++t) {
     threads.emplace_back([&] {
-      for (int i = 0; i < kPerThread; ++i) (void)obj.motionCost(a, b);
+      for (int i = 0; i < kPerThread; ++i) {
+        if (obj.motionCost(a, b).value() != expected) ++mismatches;
+      }
     });
   }
   for (auto& th : threads) th.join();
-  EXPECT_EQ(obj.getMotionCostCallCount(), static_cast<std::uint64_t>(kThreads * kPerThread));
+  EXPECT_EQ(mismatches.load(), 0);
   space->freeState(a);
   space->freeState(b);
 }
@@ -678,7 +886,7 @@ TEST(GeodexOptimizationObjectiveTest, GetLastSamplerStats_TracksLatestAllocation
   auto obj = std::make_shared<gio::GeodexOptimizationObjective<Manifold2D>>(si, goal_coords);
   pdef_only->setOptimizationObjective(obj);
 
-  // No sampler allocated yet → default stats.
+  // Before any sampler is allocated the stats are the defaults.
   EXPECT_EQ(obj->getLastSamplerStats().total_attempts, 0u);
 
   auto sampler1 = obj->allocInformedStateSampler(pdef_only, 100);
@@ -687,12 +895,12 @@ TEST(GeodexOptimizationObjectiveTest, GetLastSamplerStats_TracksLatestAllocation
   EXPECT_GT(obj->getLastSamplerStats().total_attempts, 0u);
   const auto attempts_after_first = obj->getLastSamplerStats().total_attempts;
 
-  // Allocate a fresh sampler — last_sampler_ now points at it.
+  // Allocate a fresh sampler. last_sampler_ points at it.
   auto sampler2 = obj->allocInformedStateSampler(pdef_only, 100);
-  // Stats from sampler2 (just allocated, no calls) should be zero.
+  // Stats from sampler2, which has not sampled yet, are zero.
   EXPECT_EQ(obj->getLastSamplerStats().total_attempts, 0u);
 
-  // Make sure the older sampler's stats aren't mistakenly returned.
+  // The stats come from sampler2, not from sampler1.
   for (int i = 0; i < 3; ++i) sampler2->sampleUniform(state, ob::Cost(10.0));
   EXPECT_GT(obj->getLastSamplerStats().total_attempts, 0u);
   EXPECT_LT(obj->getLastSamplerStats().total_attempts, attempts_after_first);
@@ -700,7 +908,7 @@ TEST(GeodexOptimizationObjectiveTest, GetLastSamplerStats_TracksLatestAllocation
 }
 
 // ============================================================================
-// Cost-bound feedback — greedy biasing + heuristic-path-cost tightening
+// Cost-bound feedback, greedy biasing and heuristic-path-cost tightening
 // ============================================================================
 
 TEST(GeodexOptimizationObjectiveTest, Feedback_HeuristicPathCostNarrowsSampling) {
@@ -719,7 +927,7 @@ TEST(GeodexOptimizationObjectiveTest, Feedback_HeuristicPathCostNarrowsSampling)
   auto* state = space->allocState();
   const Eigen::Vector2d s(-3.0, 0.0);
   const Eigen::Vector2d g(3.0, 0.0);
-  // Planner's c_best is loose at 20; the tighter HPC=7 should bind.
+  // The planner's c_best of 20 is loose. The tighter HPC=7 binds.
   for (int i = 0; i < 200; ++i) {
     ASSERT_TRUE(sampler->sampleUniform(state, ob::Cost(20.0)));
     Eigen::Map<const Eigen::Vector2d> x(state->as<State2D>()->values);
@@ -728,7 +936,7 @@ TEST(GeodexOptimizationObjectiveTest, Feedback_HeuristicPathCostNarrowsSampling)
   space->freeState(state);
 }
 
-TEST(GeodexOptimizationObjectiveTest, Feedback_GreedyBiasingDrawsTighterEllipsoid) {
+TEST(GeodexOptimizationObjectiveTest, Feedback_GreedyBiasingSamplesTighterEllipsoid) {
   auto space = std::make_shared<Space2D>(Manifold2D{}, makeBounds(2, -10, 10));
   auto [si, pdef] = makeSiAndPdef(space, {-3.0, 0.0}, {3.0, 0.0});
 
@@ -771,9 +979,128 @@ TEST(GeodexOptimizationObjectiveTest, Feedback_GreedyBiasingRatioRespected) {
   const int kCalls = 1000;
   for (int i = 0; i < kCalls; ++i) sampler->sampleUniform(state, ob::Cost(20.0));
   const auto focused = obj->getLastSamplerStats().focused_sample_count;
-  // Loose statistical bound: 50% +/- 8% on 1000 trials.
+  // A loose statistical bound of 50% +/- 8% on 1000 trials.
   EXPECT_GT(focused, static_cast<unsigned long>(0.42 * kCalls));
   EXPECT_LT(focused, static_cast<unsigned long>(0.58 * kCalls));
+  space->freeState(state);
+}
+
+TEST(GeodexOptimizationObjectiveTest, Feedback_NarrowingToHeuristicPathCostCanBeTurnedOff) {
+  auto space = std::make_shared<Space2D>(Manifold2D{}, makeBounds(2, -10, 10));
+  auto [si, pdef] = makeSiAndPdef(space, {-3.0, 0.0}, {3.0, 0.0});
+
+  Eigen::Vector2d goal_coords(3.0, 0.0);
+  auto obj = std::make_shared<gio::GeodexOptimizationObjective<Manifold2D>>(si, goal_coords);
+  pdef->setOptimizationObjective(obj);
+  EXPECT_TRUE(obj->getNarrowToHeuristicPathCost());
+
+  obj->setHeuristicPathCost(7.0);
+  obj->setNarrowToHeuristicPathCost(false);
+  EXPECT_FALSE(obj->getNarrowToHeuristicPathCost());
+
+  auto sampler = obj->allocInformedStateSampler(pdef, 100);
+  auto* state = space->allocState();
+  const Eigen::Vector2d s(-3.0, 0.0);
+  const Eigen::Vector2d g(3.0, 0.0);
+  // The planner's bound of 20 applies, and samples reach past the heuristic path cost.
+  double widest = 0.0;
+  for (int i = 0; i < 200; ++i) {
+    ASSERT_TRUE(sampler->sampleUniform(state, ob::Cost(20.0)));
+    Eigen::Map<const Eigen::Vector2d> x(state->as<State2D>()->values);
+    const double c = (x - s).norm() + (x - g).norm();
+    EXPECT_LE(c, 20.0 + 1e-9);
+    widest = std::max(widest, c);
+  }
+  EXPECT_GT(widest, 7.0);
+
+  // Turned back on, the same sampler narrows again.
+  obj->setNarrowToHeuristicPathCost(true);
+  for (int i = 0; i < 200; ++i) {
+    ASSERT_TRUE(sampler->sampleUniform(state, ob::Cost(20.0)));
+    Eigen::Map<const Eigen::Vector2d> x(state->as<State2D>()->values);
+    EXPECT_LE((x - s).norm() + (x - g).norm(), 7.0 + 1e-9);
+  }
+  space->freeState(state);
+}
+
+TEST(GeodexOptimizationObjectiveTest, GetSamplerStats_SumsTheLiveSamplers) {
+  auto space = std::make_shared<Space2D>(Manifold2D{}, makeBounds(2, -10, 10));
+  auto [si, pdef] = makeSiAndPdef(space, {-3.0, 0.0}, {3.0, 0.0});
+  Eigen::Vector2d goal_coords(3.0, 0.0);
+  auto obj = std::make_shared<gio::GeodexOptimizationObjective<Manifold2D>>(si, goal_coords);
+  pdef->setOptimizationObjective(obj);
+
+  auto* state = space->allocState();
+  auto first = obj->allocInformedStateSampler(pdef, 100);
+  auto second = obj->allocInformedStateSampler(pdef, 100);
+  for (int i = 0; i < 5; ++i) first->sampleUniform(state, ob::Cost(10.0));
+  for (int i = 0; i < 3; ++i) second->sampleUniform(state, ob::Cost(10.0));
+  EXPECT_EQ(obj->getSamplerStats().accepted, 8u);
+  EXPECT_EQ(obj->getLastSamplerStats().accepted, 3u);
+
+  first.reset();
+  EXPECT_EQ(obj->getSamplerStats().accepted, 3u);
+  space->freeState(state);
+}
+
+// Two samplers of one seeded space give independent streams, and a second space
+// with the same seed repeats them.
+TEST(GeodexOptimizationObjectiveTest, SeededSpaceGivesIndependentReproducibleSamplers) {
+  auto sample = [](const std::uint64_t seed) {
+    auto space = std::make_shared<Space2D>(Manifold2D{}, makeBounds(2, -10, 10));
+    space->setSamplerSeed(seed);
+    auto [si, pdef] = makeSiAndPdef(space, {-3.0, 0.0}, {3.0, 0.0});
+    auto obj = std::make_shared<gio::GeodexOptimizationObjective<Manifold2D>>(
+        si, Eigen::Vector2d(3.0, 0.0));
+    pdef->setOptimizationObjective(obj);
+    auto a = obj->allocInformedStateSampler(pdef, 100);
+    auto b = obj->allocInformedStateSampler(pdef, 100);
+    std::vector<double> out;
+    auto* state = space->allocState();
+    for (auto* sampler : {a.get(), b.get()}) {
+      for (int i = 0; i < 20; ++i) {
+        sampler->sampleUniform(state, ob::Cost(10.0));
+        out.push_back(state->as<State2D>()->values[0]);
+        out.push_back(state->as<State2D>()->values[1]);
+      }
+    }
+    space->freeState(state);
+    return out;
+  };
+  const auto first = sample(5);
+  EXPECT_EQ(first, sample(5));
+  EXPECT_NE(first, sample(6));
+  const std::vector<double> a(first.begin(), first.begin() + 40);
+  const std::vector<double> b(first.begin() + 40, first.end());
+  EXPECT_NE(a, b);
+}
+
+// Ambient coordinates of an embedded manifold are not intrinsic. The sampler
+// rejection-samples on the manifold instead of sampling a hyperspheroid point.
+TEST(GeodexOptimizationObjectiveTest, EmbeddedManifoldSamplesStayOnTheManifold) {
+  using Sphere = geodex::Sphere<>;
+  using SphereSpace = gio::GeodexStateSpace<Sphere>;
+  auto space = std::make_shared<SphereSpace>(Sphere{}, makeBounds(3, -1.05, 1.05));
+  auto [si, pdef] = makeSiAndPdef(space, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0});
+  auto obj = std::make_shared<gio::GeodexOptimizationObjective<Sphere>>(
+      si, Eigen::Vector3d(0.0, 1.0, 0.0));
+  pdef->setOptimizationObjective(obj);
+  auto sampler = obj->allocInformedStateSampler(pdef, 100);
+  using Direct = gio::GeodexDirectInfSampler<gh::Euclidean, Sphere::SamplerType>;
+  EXPECT_FALSE(std::static_pointer_cast<Direct>(sampler)->getDirectSampling());
+  EXPECT_FALSE(sampler->hasInformedMeasure());
+
+  auto* state = space->allocState();
+  const Eigen::Vector3d s(1.0, 0.0, 0.0), g(0.0, 1.0, 0.0);
+  int sampled = 0;
+  for (int i = 0; i < 200; ++i) {
+    if (!sampler->sampleUniform(state, ob::Cost(2.0))) continue;
+    ++sampled;
+    Eigen::Map<const Eigen::Vector3d> x(state->as<gio::GeodexState<Sphere>>()->values);
+    EXPECT_NEAR(x.norm(), 1.0, 1e-12);
+    EXPECT_LE((x - s).norm() + (x - g).norm(), 2.0 + 1e-9);
+  }
+  EXPECT_GT(sampled, 0);
   space->freeState(state);
 }
 
@@ -790,7 +1117,7 @@ TEST(GeodexOptimizationObjectiveTest, Feedback_SharedAcrossSamplerReallocations)
   obj->setHeuristicPathCost(7.0);
   auto sampler2 = obj->allocInformedStateSampler(pdef, 100);
 
-  // Both samplers should see the HPC update: samples from each are within 7.
+  // Both samplers see the HPC update, and samples from each lie within 7.
   auto* state = space->allocState();
   const Eigen::Vector2d s(-3.0, 0.0);
   const Eigen::Vector2d g(3.0, 0.0);
@@ -814,7 +1141,7 @@ TEST(GeodexOptimizationObjectiveTest, ComputeGreedyCost_MaxOverPathStates) {
   Eigen::Vector2d goal_coords(3.0, 0.0);
   gio::GeodexOptimizationObjective<Manifold2D> obj{si, goal_coords};
 
-  // Build a 4-state path: (-3,0) → (0,2) → (1,1) → (3,0).
+  // A 4-state path (-3,0) → (0,2) → (1,1) → (3,0).
   std::vector<ob::State*> path;
   for (auto pt : {Eigen::Vector2d(-3, 0), Eigen::Vector2d(0, 2), Eigen::Vector2d(1, 1),
                   Eigen::Vector2d(3, 0)}) {
@@ -846,7 +1173,7 @@ TEST(GeodexOptimizationObjectiveTest, ComputeHeuristicPathCost_SumOverEdges) {
   Eigen::Vector2d goal_coords(3.0, 0.0);
   gio::GeodexOptimizationObjective<Manifold2D> obj{si, goal_coords};
 
-  // 3-state straight path along x-axis: (-3,0) → (0,0) → (3,0). Sum = 6.
+  // A 3-state straight path along the x-axis, (-3,0) → (0,0) → (3,0). Sum = 6.
   std::vector<ob::State*> path;
   for (double x : {-3.0, 0.0, 3.0}) {
     auto* s = space->allocState();
@@ -868,7 +1195,7 @@ TEST(GeodexOptimizationObjectiveTest, ComputeHeuristicPathCost_SumOverEdges) {
 namespace {
 
 // Build an exact-solution PathGeometric on `space` from a list of (x, y) pairs
-// and register it on `pdef`. Returned PathPtr is owned by pdef.
+// and register it on `pdef`. pdef owns the returned PathPtr.
 std::shared_ptr<ompl::geometric::PathGeometric> addExactSolution(
     const std::shared_ptr<Space2D>& space, const ob::SpaceInformationPtr& si,
     const ob::ProblemDefinitionPtr& pdef,
@@ -898,7 +1225,7 @@ TEST(GeodexInformedSamplerSelfRefresh, AutoUpdatesOnFirstExactSolution) {
   EXPECT_TRUE(std::isinf(obj->getHeuristicPathCost()));
   EXPECT_TRUE(std::isinf(obj->getGreedyCost()));
 
-  // Add an exact solution: straight path along the x-axis. HPC = 6, GC = 6.
+  // Add an exact solution, a straight path along the x-axis. HPC = 6, GC = 6.
   addExactSolution(space, si, pdef, {{-3.0, 0.0}, {0.0, 0.0}, {3.0, 0.0}});
 
   auto sampler = obj->allocInformedStateSampler(pdef, 100);
@@ -911,7 +1238,7 @@ TEST(GeodexInformedSamplerSelfRefresh, AutoUpdatesOnFirstExactSolution) {
   EXPECT_NEAR(obj->getGreedyCost(), 6.0, 1e-12);
 }
 
-TEST(GeodexInformedSamplerSelfRefresh, ThresholdGate_NoOpOnSubFivePctImprovement) {
+TEST(GeodexInformedSamplerSelfRefresh, RefreshesOnCheaperPathOnly) {
   auto space = std::make_shared<Space2D>(Manifold2D{}, makeBounds(2, -10, 10));
   auto [si, pdef] = makeSiAndPdef(space, {-3.0, 0.0}, {3.0, 0.0});
 
@@ -919,27 +1246,29 @@ TEST(GeodexInformedSamplerSelfRefresh, ThresholdGate_NoOpOnSubFivePctImprovement
   auto obj = std::make_shared<gio::GeodexOptimizationObjective<Manifold2D>>(si, goal_coords);
   pdef->setOptimizationObjective(obj);
 
-  // First solution: HPC = 8 (a triangular detour through (0, 4)).
+  // The first solution is a triangular detour through (0, 4) with cost 10.
   addExactSolution(space, si, pdef, {{-3.0, 0.0}, {0.0, 4.0}, {3.0, 0.0}});
 
   auto sampler = obj->allocInformedStateSampler(pdef, 100);
   auto* state = space->allocState();
   ASSERT_TRUE(sampler->sampleUniform(state, ob::Cost(20.0)));
-  const double hpc_after_first = obj->getHeuristicPathCost();
-  const double gc_after_first = obj->getGreedyCost();
-  EXPECT_NEAR(hpc_after_first, 10.0, 1e-12);  // 5 + 5
+  EXPECT_NEAR(obj->getHeuristicPathCost(), 10.0, 1e-12);
+  EXPECT_NEAR(obj->getGreedyCost(), 10.0, 1e-12);
 
-  // Second solution: only ~3% better (HPC = 9.7). Threshold (5%) gates the write.
-  // The early-return short-circuits both bounds, so neither HPC nor GC moves.
-  addExactSolution(space, si, pdef,
-                   {{-3.0, 0.0}, {0.0, 3.85}, {3.0, 0.0}});  // 2 * sqrt(3^2 + 3.85^2) ≈ 9.764
+  // A small improvement still moves both bounds.
+  const double small = 2.0 * std::hypot(3.0, 3.85);
+  addExactSolution(space, si, pdef, {{-3.0, 0.0}, {0.0, 3.85}, {3.0, 0.0}});
   ASSERT_TRUE(sampler->sampleUniform(state, ob::Cost(20.0)));
-  EXPECT_NEAR(obj->getHeuristicPathCost(), hpc_after_first, 1e-12)
-      << "sub-threshold improvement should not update the bound";
-  EXPECT_NEAR(obj->getGreedyCost(), gc_after_first, 1e-12)
-      << "sub-threshold gate should leave GC unchanged too";
+  EXPECT_NEAR(obj->getHeuristicPathCost(), small, 1e-12);
+  EXPECT_NEAR(obj->getGreedyCost(), small, 1e-12);
 
-  // Third solution: a strictly better straight path (HPC = 6). >5% better, write through.
+  // A more expensive path leaves the bounds alone.
+  addExactSolution(space, si, pdef, {{-3.0, 0.0}, {0.0, 4.5}, {3.0, 0.0}});
+  ASSERT_TRUE(sampler->sampleUniform(state, ob::Cost(20.0)));
+  EXPECT_NEAR(obj->getHeuristicPathCost(), small, 1e-12);
+  EXPECT_NEAR(obj->getGreedyCost(), small, 1e-12);
+
+  // A cheaper path moves them again.
   addExactSolution(space, si, pdef, {{-3.0, 0.0}, {0.0, 0.0}, {3.0, 0.0}});
   ASSERT_TRUE(sampler->sampleUniform(state, ob::Cost(20.0)));
   EXPECT_NEAR(obj->getHeuristicPathCost(), 6.0, 1e-12);
@@ -949,9 +1278,8 @@ TEST(GeodexInformedSamplerSelfRefresh, ThresholdGate_NoOpOnSubFivePctImprovement
 }
 
 TEST(GeodexInformedSamplerSelfRefresh, MatrixLB_AutoRefreshTightensSampling) {
-  // Anisotropic metric: M = diag(4, 1) → heuristic distances along x-axis are
-  // 2× the Euclidean distance. Verify the sampler picks up the path-derived
-  // bound and constrains samples accordingly.
+  // With M = diag(4, 1) heuristic distances along the x-axis are 2× the Euclidean
+  // distance. The sampler picks up the path-derived bound and constrains samples to it.
   auto space = std::make_shared<Space2D>(Manifold2D{}, makeBounds(2, -5, 5));
   auto [si, pdef] = makeSiAndPdef(space, {-2.0, 0.0}, {2.0, 0.0});
 
@@ -965,7 +1293,7 @@ TEST(GeodexInformedSamplerSelfRefresh, MatrixLB_AutoRefreshTightensSampling) {
           si, goal_coords, heuristic);
   pdef->setOptimizationObjective(obj);
 
-  // Straight x-axis path: HPC = 2 * 2 = 4 under L^T diff norm with M = diag(4,1).
+  // For the straight x-axis path HPC = 2 * 2 = 4 under the L^T diff norm with M = diag(4,1).
   addExactSolution(space, si, pdef, {{-2.0, 0.0}, {0.0, 0.0}, {2.0, 0.0}});
 
   auto sampler = obj->allocInformedStateSampler(pdef, 100);
@@ -978,14 +1306,13 @@ TEST(GeodexInformedSamplerSelfRefresh, MatrixLB_AutoRefreshTightensSampling) {
 }
 
 TEST(GeodexInformedSamplerSelfRefresh, NoFeedbackChannel_DoesNothing) {
-  // Construct a sampler with a null feedback channel by using an objective and
-  // immediately stripping the feedback shared_ptr. The auto-refresh code path
-  // must early-return on null feedback regardless of pdef state.
+  // A sampler without a feedback channel ignores the solution in pdef. The auto-refresh
+  // path returns early on null feedback.
   auto space = std::make_shared<Space2D>(Manifold2D{}, makeBounds(2, -10, 10));
   auto [si, pdef] = makeSiAndPdef(space, {-3.0, 0.0}, {3.0, 0.0});
   addExactSolution(space, si, pdef, {{-3.0, 0.0}, {0.0, 0.0}, {3.0, 0.0}});
 
-  // Direct construction with no feedback: behaves as a stateless informed sampler.
+  // Built directly without feedback, the sampler is a stateless informed sampler.
   gh::Euclidean heuristic;
   ob::RealVectorBounds bounds(2);
   bounds.setLow(-10);
@@ -993,7 +1320,6 @@ TEST(GeodexInformedSamplerSelfRefresh, NoFeedbackChannel_DoesNothing) {
   gio::GeodexDirectInfSampler<gh::Euclidean> sampler{pdef, 100, heuristic, bounds, nullptr};
   auto* state = space->allocState();
   ASSERT_TRUE(sampler.sampleUniform(state, ob::Cost(20.0)));
-  // No assertion on feedback (we don't have one); the test verifies sample
-  // returns true without crashing the early-return guard.
+  // The test checks only that sampleUniform succeeds through the early-return guard.
   space->freeState(state);
 }

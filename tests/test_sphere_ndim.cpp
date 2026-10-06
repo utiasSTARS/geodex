@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "geodex/geodex.hpp"
+#include "geodex/utils/normal.hpp"
 
 using namespace geodex;
 
@@ -20,6 +21,38 @@ static_assert(RiemannianManifold<Sphere<Eigen::Dynamic>>);
 
 static_assert(HasInjectivityRadius<Sphere<3>>);
 static_assert(HasInjectivityRadius<Sphere<Eigen::Dynamic>>);
+
+// ---------------------------------------------------------------------------
+// Inverse normal CDF and the unit-cube map on higher spheres
+// ---------------------------------------------------------------------------
+
+TEST(NormalQuantile, RoundTripThroughCdf) {
+  for (double p = 0.001; p < 0.999; p += 0.0137) {
+    const double x = utils::normal_quantile(p);
+    const double cdf = 0.5 * std::erfc(-x / std::numbers::sqrt2);
+    EXPECT_NEAR(cdf, p, 1e-9);
+  }
+  EXPECT_NEAR(utils::normal_quantile(0.5), 0.0, 1e-9);
+  EXPECT_NEAR(utils::normal_quantile(0.975), 1.959963985, 1e-6);
+  EXPECT_NEAR(utils::normal_quantile(0.025), -1.959963985, 1e-6);
+  // The unit interval's endpoints map to finite values.
+  EXPECT_TRUE(std::isfinite(utils::normal_quantile(0.0)));
+  EXPECT_TRUE(std::isfinite(utils::normal_quantile(1.0)));
+}
+
+TEST(SphereNDim, UnitCubeDimAndUnitNorm) {
+  for (int n : {3, 4, 5, 7}) {
+    Sphere<Eigen::Dynamic> s(n);
+    EXPECT_EQ(s.unit_cube_dim(), n + 1);
+    Eigen::VectorXd u(n + 1);
+    for (int trial = 0; trial < 20; ++trial) {
+      for (int i = 0; i <= n; ++i) {
+        u[i] = 0.05 + 0.9 * static_cast<double>((trial * 7 + i * 3) % 100) / 100.0;
+      }
+      EXPECT_NEAR(s.from_unit_cube(u).norm(), 1.0, 1e-12);
+    }
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Dimension and Ambient checks
@@ -96,7 +129,7 @@ TEST(SphereNDim, ExpLogRoundTripS4) {
 // ---------------------------------------------------------------------------
 
 TEST(SphereNDim, DistanceOrthogonalPointsS3) {
-  // Distance between orthogonal unit vectors on S^3 should be π/2.
+  // Orthogonal unit vectors on S^3 lie π/2 apart.
   Sphere<3> s;
   Eigen::Vector4d p(1.0, 0.0, 0.0, 0.0);
   Eigen::Vector4d q(0.0, 1.0, 0.0, 0.0);
@@ -166,6 +199,6 @@ TEST(SphereNDim, ProjectionRetractionS3) {
   auto q = s.exp(p, v);
   EXPECT_NEAR(q.norm(), 1.0, 1e-12);
 
-  // Projection retraction is not exact, but `is_riemannian_log` should be false.
+  // The projection retraction is not exact, and `is_riemannian_log` is false.
   EXPECT_FALSE(is_riemannian_log(s));
 }

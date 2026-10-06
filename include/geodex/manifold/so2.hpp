@@ -1,5 +1,5 @@
 /// @file so2.hpp
-/// @brief SO(2) manifold — the circle group with a single canonical metric.
+/// @brief SO(2) manifold, the circle group with a single canonical metric.
 
 #pragma once
 
@@ -27,8 +27,8 @@ namespace geodex {
 /// @brief True exponential and logarithmic maps on SO(2) (Lie group exp/log).
 ///
 /// @details Angle addition/subtraction wrapped to \f$ [-\pi, \pi) \f$, realizing
-/// the shortest-arc geodesic on the circle. SO(2) is abelian, so a single map
-/// serves as both retraction and inverse.
+/// the shortest-arc geodesic on the circle. SO(2) is abelian, and one map serves
+/// as both retraction and inverse.
 struct SO2ExponentialMap {
   /// @brief Exponential map \f$ \exp_\theta(v) = \mathrm{wrap}(\theta + v) \f$.
   /// @param theta Base angle as a 1-vector.
@@ -69,23 +69,23 @@ static_assert(
 /// wraparound. The manifold is parameterized by a metric policy and a retraction
 /// policy, following the same design as Sphere, Torus, and SE(2).
 ///
-/// @tparam MetricT Metric policy (default: SO2CanonicalMetric).
-/// @tparam RetractionT Retraction policy (default: SO2ExponentialMap).
-/// @tparam SamplerT Sampler policy for `random_point()` (default: `StochasticSampler`).
+/// @tparam MetricT Metric policy (default SO2CanonicalMetric).
+/// @tparam RetractionT Retraction policy (default SO2ExponentialMap).
+/// @tparam SamplerT Sampler policy for `random_point()` (default `ScrambledHaltonSampler`).
 template <typename MetricT = SO2CanonicalMetric, typename RetractionT = SO2ExponentialMap,
-          typename SamplerT = StochasticSampler>
+          typename SamplerT = ScrambledHaltonSampler>
 class SO2 {
  public:
   using Scalar = double;                        ///< Scalar type.
   using Point = Eigen::Matrix<double, 1, 1>;    ///< Angle \f$ \theta \f$.
+  using SamplerType = SamplerT;                 ///< Sampler policy backing random_point().
   using Tangent = Eigen::Matrix<double, 1, 1>;  ///< Angular velocity \f$ \omega \f$.
 
-  /// @brief Runtime query: is the currently-configured metric the bi-invariant
-  /// round metric (unit weight on `SO2CanonicalMetric` paired with the true
-  /// `SO2ExponentialMap`)?
+  /// @brief Runtime check whether the configured metric is the bi-invariant round
+  /// metric, a unit-weight `SO2CanonicalMetric` with the true `SO2ExponentialMap`.
   ///
-  /// @details Only in this case is the Lie-group `log` the Riemannian logarithm of
-  /// the metric, so `discrete_geodesic` can take the log direction as the natural
+  /// @details Only then is the Lie-group `log` the Riemannian logarithm of the
+  /// metric, and `discrete_geodesic` can take the log direction as the natural
   /// gradient.
   bool has_riemannian_log_runtime() const {
     if constexpr (std::is_same_v<MetricT, SO2CanonicalMetric> &&
@@ -112,19 +112,50 @@ class SO2 {
   /// @brief Return the intrinsic dimension (always 1).
   int dim() const { return 1; }
 
-  /// @brief Sample a random angle uniformly in \f$ [-\pi, \pi) \f$.
-  /// @return A random angle as a 1-vector.
-  Point random_point() const {
-    sampler_.sample_box(1, sample_buf_);
+  /// @brief Number of unit-cube coordinates that from_unit_cube consumes.
+  int unit_cube_dim() const { return 1; }
+
+  /// @brief Map a unit-cube coordinate to an angle in [-pi, pi).
+  Point from_unit_cube(Eigen::Ref<const Eigen::VectorXd> u) const {
+    detail::require_unit_cube_size(u.size(), 1);
     Point p;
-    p[0] = lo_ + sample_buf_[0] * (hi_ - lo_);
+    p[0] = lo_ + u[0] * (hi_ - lo_);
     return p;
   }
+
+  /// @brief Sample a random angle uniformly in [-pi, pi).
+  Point random_point() const {
+    sample_buf_.resize(1);
+    sampler_.sample(1, sample_buf_);
+    return from_unit_cube(sample_buf_);
+  }
+
+  /// @brief Reseed the sampler for a reproducible random_point sequence.
+  void seed(std::uint64_t s)
+    requires SeedableSampler<SamplerT>
+  {
+    sampler_.seed(s);
+  }
+
+  /// @brief Replace the sampler.
+  void set_sampler(SamplerT s) { sampler_ = std::move(s); }
+
+  /// @brief The sampler behind random_point(). Planning samples through copies of it.
+  const SamplerT& sampler() const { return sampler_; }
+
+  /// @brief Lower sampling bound \f$ -\pi \f$ as a 1-vector.
+  Point lo() const { return Point{lo_}; }
+
+  /// @brief Upper sampling bound \f$ \pi \f$ as a 1-vector.
+  Point hi() const { return Point{hi_}; }
+
+  /// @brief Deck-group generator of the single coordinate axis, \f$ 2\pi \f$.
+  Point periods() const { return Point{utils::two_pi}; }
 
   /// @brief Project an ambient vector onto the tangent space at \f$ p \f$.
   ///
   /// @details The tangent space of SO(2) is \f$ \mathbb{R} \f$ (the Lie algebra
-  /// \f$ \mathfrak{so}(2) \f$), so the projection is the identity.
+  /// \f$ \mathfrak{so}(2) \f$), and the projection is the identity.
   Tangent project(const Point& /*p*/, const Tangent& v) const { return v; }
 
   /// @name Metric delegates
@@ -144,6 +175,23 @@ class SO2 {
     requires MetricHasInnerMatrix<MetricT, Point>
   {
     return metric_.inner_matrix(p, U, V);
+  }
+
+  /// @brief The frame Jacobian, which is the identity. The angle is its own tangent
+  /// coordinate.
+  Eigen::MatrixXd coordinate_jacobian(const Point& /*q*/) const {
+    return Eigen::MatrixXd::Identity(1, 1);
+  }
+
+  /// @brief The metric on the angle's velocity, the metric's own Gram matrix.
+  ///
+  /// @details `plan()` uses it to certify a Loewner bound that carries the period.
+  /// A raw chord across the cut overestimates the wrapped distance.
+  Eigen::MatrixXd coordinate_metric(const Point& q) const
+    requires MetricHasInnerMatrix<MetricT, Point>
+  {
+    const Eigen::MatrixXd J = coordinate_jacobian(q);
+    return metric_.inner_matrix(q, J, J);
   }
 
   /// @}
@@ -181,5 +229,7 @@ class SO2 {
 
 // Verify the composed type satisfies RiemannianManifold.
 static_assert(RiemannianManifold<SO2<>>);
+static_assert(HasPeriods<SO2<>>);
+static_assert(HasCoordinateMetric<SO2<>>);
 
 }  // namespace geodex

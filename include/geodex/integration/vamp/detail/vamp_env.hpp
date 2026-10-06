@@ -1,10 +1,9 @@
 /// @file vamp_env.hpp
-/// @brief Internal: VAMP environment alias + opaque-handle accessor.
+/// @brief VAMP environment alias and opaque-handle accessor (internal).
 ///
-/// Not part of the public API. Pulls in VAMP SIMD types; included only by
-/// @c vamp_impl.cpp inside the @c geodex_vamp static archive, which has
-/// SIMD compile options applied PRIVATEly so they never propagate to
-/// consumer translation units.
+/// Not part of the public API. Pulls in VAMP SIMD types. Only translation units
+/// inside the @c geodex_vamp static archive include it. The archive's SIMD compile
+/// options are PRIVATE and do not reach consumer translation units.
 
 #pragma once
 

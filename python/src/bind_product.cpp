@@ -46,5 +46,9 @@ void bind_product(nb::module_& m) {
            "Product geodesic distance sqrt(sum of squared block distances).")
       .def("geodesic", &PyProduct::geodesic, nb::arg("p"), nb::arg("q"), nb::arg("t"),
            "Block-wise geodesic interpolation at t in [0, 1].")
+      .def("seed", &PyProduct::seed, nb::arg("seed"),
+           "Reseed the joint sampler for reproducible sampling.")
+      .def("set_sampler", &PyProduct::set_sampler, nb::arg("sampler"),
+           "Switch the joint sampler: 'scrambled', 'halton', or 'random'.")
       .def("__repr__", &PyProduct::repr);
 }

@@ -7,83 +7,139 @@ on:
     branches: [master]
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
+  # Build and test the header-only core without the optional integrations.
+  core:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Configure
         run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
 
       - name: Build
-        run: cmake --build build
+        run: cmake --build build --parallel 4
 
       - name: Test
-        run: ctest --test-dir build --output-on-failure
+        run: ctest --test-dir build --output-on-failure --timeout 600
 
+  # Measure the coverage of the full stack through the pixi workspace with scripts/ci/coverage.sh.
+  # The script covers the C++ suite, the Python suite and the C++ code that the Python suite
+  # reaches. The job writes the summary to the run page, keeps the HTML report as an artifact
+  # and uploads the Cobertura reports to Codecov.
   coverage:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
-      - name: Configure with coverage
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON -DCMAKE_CXX_FLAGS="--coverage"
+      - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e  # v0.10.2
+        with:
+          pixi-version: v0.73.0
+          locked: true
+          cache: true
 
-      - name: Build
-        run: cmake --build build
+      - name: Measure coverage
+        run: bash scripts/ci/coverage.sh
 
-      - name: Test
-        run: ctest --test-dir build --output-on-failure
+      - name: Write the coverage summary
+        if: ${{ !cancelled() }}
+        run: |
+          if [ -f build/coverage/summary.md ]; then
+            cat build/coverage/summary.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "scripts/ci/coverage.sh stopped before it wrote the summary." >> "$GITHUB_STEP_SUMMARY"
+          fi
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+      - name: Upload the coverage report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: coverage-report
+          path: |
+            build/coverage/summary.md
+            build/coverage/cpp/html/
+            build/coverage/*/summary.txt
+            build/coverage/python_cpp/bindings_summary.txt
+            build/coverage/cpp/ctest.log
+            build/coverage/python/pytest.log
+          if-no-files-found: warn
+          retention-days: 30
+
+      # Codecov merges the uploads of a commit. The cpp flag holds the C++ code that ctest and
+      # the Python suite reach, and the python flag holds python/geodex. A missing
+      # CODECOV_TOKEN or a failed upload does not fail the job.
+      - name: Upload the C++ coverage to Codecov
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5  # v7.1.1
+        continue-on-error: true
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          files: build/coverage/cpp/cobertura.xml,build/coverage/python_cpp/cobertura.xml
+          flags: cpp
+          name: cpp
+          disable_search: true
+          plugins: noop
+          fail_ci_if_error: false
 
-  python:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Upload the Python coverage to Codecov
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5  # v7.1.1
+        continue-on-error: true
         with:
-          python-version: "3.12" # matrix this if we want to test multiple versions
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: build/coverage/python/cobertura.xml
+          flags: python
+          name: python
+          disable_search: true
+          plugins: noop
+          fail_ci_if_error: false
 
-      - name: Install build dependencies
-        # Required because --no-build-isolation skips automatic dependency resolution for the build backend
-        run: |
-          python -m pip install --upgrade pip
-          pip install scikit-build-core cmake ninja nanobind
-
-      - name: Install geodex and test dependencies
-        run: pip install --no-build-isolation -ve ".[test]"
-
-      - name: Run Python tests
-        run: pytest python/tests/ -v
-
-  documentation:
-    runs-on: ubuntu-latest
+  # Build the full stack through the pixi workspace with the pinned OMPL fork (checked for
+  # the release patch) and VAMP. Run the C++ and Python suites, the stub check, the quickstart
+  # example and a downstream consumer of the installed CMake package.
+  pixi:
+    name: pixi ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 120
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: linux-64, os: ubuntu-24.04 }
+          - { name: osx-arm64, os: macos-15 }
+          - { name: osx-64, os: macos-15-intel }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e  # v0.10.2
         with:
-          python-version: "3.12"
+          pixi-version: v0.73.0
+          locked: true
+          cache: true
 
-      - name: Install System Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y doxygen graphviz
+      - name: Build and test everything
+        run: pixi run test
 
-      - name: Install Docs Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r docs/requirements.txt
+      - name: Plan the quickstart example
+        run: pixi run quickstart
 
-      - name: Configure CMake
-        run: cmake -B build -DBUILD_DOCS=ON
+      - name: Build a consumer of the installed CMake package
+        run: pixi run check-package
 
-      - name: Build Sphinx Docs
-        run: cmake --build build --target sphinx
+      - name: Check the install tree for content that must not ship
+        run: pixi run python scripts/ci/check_distribution.py --tree .pixi/prefix
+
+      # Build the docs on linux-64 only, in the environment where the module imports. The
+      # Python API autodoc covers the full planning stack there.
+      - name: Build the documentation
+        if: matrix.name == 'linux-64'
+        run: pixi run docs
+
+      # Publish the site to the docs-html branch that Read the Docs serves. Only the master
+      # branch of the public repository publishes.
+      - name: Publish the docs
+        if: matrix.name == 'linux-64' && github.repository == 'utiasSTARS/geodex' && github.ref == 'refs/heads/master'
+        run: bash scripts/ci/publish_docs.sh

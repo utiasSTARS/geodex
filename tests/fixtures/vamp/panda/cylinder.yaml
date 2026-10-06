@@ -1,0 +1,10 @@
+# An upright cylinder around the robot base. Every arm configuration intersects it.
+world:
+  collision_objects:
+    - id: column
+      primitive_poses:
+        - position: [0.0, 0.0, 0.5]
+          orientation: [0.0, 0.0, 0.0, 1.0]
+      primitives:
+        - type: cylinder
+          dimensions: [2.0, 1.5]

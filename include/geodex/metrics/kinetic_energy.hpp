@@ -8,6 +8,7 @@
 #include <Eigen/Core>
 
 #include "geodex/core/metric.hpp"
+#include "geodex/utils/ordered_sum.hpp"
 
 namespace geodex {
 
@@ -29,13 +30,16 @@ class KineticEnergyMetric {
   explicit KineticEnergyMetric(MassMatrixFn fn) : mass_matrix_fn_(std::move(fn)) {}
 
   /// @brief Compute the inner product \f$ \langle u, v \rangle_q = u^\top M(q) \, v \f$.
+  /// @details Sums in index order with `utils::ordered_quadratic_form`. A fixed-size and a
+  /// dynamic-size mass matrix with the same entries give the same bits.
   /// @param q Configuration point.
   /// @param u First tangent vector.
   /// @param v Second tangent vector.
   /// @return The inner product value.
   template <typename Point, typename Tangent>
   double inner(const Point& q, const Tangent& u, const Tangent& v) const {
-    return u.dot(mass_matrix_fn_(q) * v);
+    const auto& M = mass_matrix_fn_(q);
+    return utils::ordered_quadratic_form(u, M, v);
   }
 
   /// @brief Compute the norm \f$ \|v\|_q = \sqrt{v^\top M(q) \, v} \f$.
@@ -50,11 +54,9 @@ class KineticEnergyMetric {
   /// @brief Batched inner product: \f$U^\top M(q)\, V\f$ computed with a single
   /// call to the mass-matrix function.
   ///
-  /// @details This is the performance-critical path for `natural_gradient_fd`
-  /// when the mass matrix is expensive to compute (e.g., forward kinematics for
-  /// a manipulator): instead of calling `mass_matrix_fn_(q)` for every scalar
-  /// \f$G_{ij} = \langle e_i, e_j\rangle_q\f$, we call it once and form the
-  /// entire \f$d\times d\f$ tensor in a single matmul.
+  /// @details `natural_gradient_fd` uses it to build the metric tensor. It calls
+  /// `mass_matrix_fn_(q)` once and forms the entire \f$d\times d\f$ tensor of
+  /// \f$G_{ij} = \langle e_i, e_j\rangle_q\f$ in one product.
   template <typename Point>
   Eigen::MatrixXd inner_matrix(const Point& q, const Eigen::MatrixXd& U,
                                const Eigen::MatrixXd& V) const {

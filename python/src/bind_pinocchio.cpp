@@ -1,13 +1,13 @@
 /// @file bind_pinocchio.cpp
 /// @brief Python bindings for the geodex::integration::pinocchio submodule.
 ///
-/// @details Exposes URDF-driven primitives (`MassMatrix`, `FrameJacobian`,
+/// @details Exposes URDF-based primitives (`MassMatrix`, `FrameJacobian`,
 /// joint-limit and model-nq utilities) plus three `make_pullback_metric`
 /// overloads (unregularized, isotropic-regularization, kinetic-energy
 /// regularization) under the `geodex.pinocchio` Python submodule. The
-/// regularized overloads land as separately named functions
-/// (`make_pullback_metric_iso`, `make_pullback_metric_ke`) since their C++
-/// counterparts return distinct concrete types selected by tag dispatch.
+/// regularized overloads are separate functions (`make_pullback_metric_iso`,
+/// `make_pullback_metric_ke`). Their C++ counterparts return distinct concrete types
+/// selected by tag dispatch.
 
 #include <array>
 #include <memory>
@@ -63,7 +63,7 @@ PyPullbackMetric make_pullback_unregularized(const std::string& urdf_path,
 }  // namespace
 
 void bind_pinocchio(nb::module_& m) {
-  auto p = m.def_submodule("pinocchio", "URDF-driven primitives (CRBA, frame Jacobians, "
+  auto p = m.def_submodule("pinocchio", "URDF-based primitives (CRBA, frame Jacobians, "
                                         "pullback-metric factory).");
 
   // --- MassMatrix ---
@@ -192,7 +192,7 @@ void bind_pinocchio(nb::module_& m) {
       nb::arg("urdf_path"), nb::arg("options"), nb::arg("lam"),
       "Build a pullback metric with isotropic regularization + lam * I.\n\n"
       "Returns a geodex.AffineCombinedMetric of arity 2 with coefficients\n"
-      "(1.0, lam) over (PullbackMetric, IdentityMetric).");
+      "(1.0, lam) over (PullbackMetric, ConstantSPDMetric(I)).");
 
   // --- make_pullback_metric_ke: + beta * M_CRBA(q) ---
   p.def(

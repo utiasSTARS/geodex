@@ -1,13 +1,27 @@
 /// @file test_heuristics.cpp
 /// @brief Tests for admissible heuristics: Zero, Euclidean, EigenvalueLowerBound,
-///        MatrixLowerBound (with incremental Loewner-meet update), and detection traits.
+///        MatrixLowerBound (with incremental Loewner-meet update), product_lower_bound,
+///        and detection traits.
 
+#include <Eigen/Cholesky>
 #include <Eigen/Core>
 #include <gtest/gtest.h>
 
+#include <algorithm>
+#include <limits>
+#include <numbers>
 #include <random>
+#include <stdexcept>
 
 #include "geodex/heuristics/heuristics.hpp"
+#include "geodex/manifold/euclidean.hpp"
+#include "geodex/manifold/product.hpp"
+#include "geodex/manifold/se2.hpp"
+#include "geodex/manifold/so2.hpp"
+#include "geodex/metrics/constant_spd.hpp"
+#include "geodex/metrics/se2_left_invariant.hpp"
+#include "geodex/metrics/so2_canonical.hpp"
+#include "geodex/utils/angle.hpp"
 
 namespace gh = geodex::heuristics;
 
@@ -99,7 +113,7 @@ TEST(EigenvalueLowerBound, Symmetry) {
 }
 
 // ---------------------------------------------------------------------------
-// MatrixLowerBound — basic
+// MatrixLowerBound, basic
 // ---------------------------------------------------------------------------
 
 TEST(MatrixLowerBound, IdentityMatchesEuclidean) {
@@ -125,7 +139,7 @@ TEST(MatrixLowerBound, ScalarMatchesEigenvalueBound) {
 TEST(MatrixLowerBound, AnisotropicTighterThanScalar) {
   // M_lower = diag(4, 1). lambda_min = 1.
   // Euclidean-scaled eigenvalue bound: sqrt(1) * ||delta||.
-  // MatrixLB: sqrt(delta^T diag(4,1) delta) — tighter in the x direction.
+  // MatrixLB: sqrt(delta^T diag(4,1) delta), tighter in the x direction.
   Eigen::Matrix2d M;
   M << 4.0, 0.0, 0.0, 1.0;
   gh::MatrixLowerBound<2> h_mlb(M);
@@ -169,8 +183,9 @@ TEST(MatrixLowerBound, DynamicDimension) {
 
 TEST(MatrixLowerBound, EigenvalueFloorDominatesBoth) {
   // M_lower = diag(0.25, 0.25), lambda_min floor = 1.
-  // For delta = (1, 0), ||L^T delta|| = 0.5, sqrt(1)*||delta|| = 1 — floor wins.
-  // For delta = (1, 1), ||L^T delta|| = sqrt(0.5) ≈ 0.707, sqrt(1)*||delta|| = sqrt(2) ≈ 1.414 — floor still wins.
+  // For delta = (1, 0), ||L^T delta|| = 0.5 and sqrt(1)*||delta|| = 1. The floor wins.
+  // For delta = (1, 1), ||L^T delta|| = sqrt(0.5) ≈ 0.707 and sqrt(1)*||delta|| = sqrt(2)
+  // ≈ 1.414. The floor still wins.
   Eigen::Matrix2d M;
   M << 0.25, 0.0, 0.0, 0.25;
   gh::MatrixLowerBound<2> h(M, /*lambda_min=*/1.0);
@@ -218,13 +233,13 @@ TEST(MatrixLowerBound, DetAndEigenvaluesAndMatrixAgree) {
 }
 
 // ---------------------------------------------------------------------------
-// MatrixLowerBound — incremental Loewner-meet update
+// MatrixLowerBound, incremental Loewner-meet update
 // ---------------------------------------------------------------------------
 
-TEST(MatrixLowerBoundUpdate, UpdateCountStartsAtZero) {
+TEST(MatrixLowerBoundUpdate, ConstructionKeepsTheInputMatrix) {
   Eigen::Matrix3d I = Eigen::Matrix3d::Identity();
   gh::MatrixLowerBound<3> h(I);
-  EXPECT_EQ(h.update_count(), 0);
+  EXPECT_TRUE(h.matrix().isApprox(I, 1e-12));
 }
 
 TEST(MatrixLowerBoundUpdate, NotAppliedForLargerMatrix) {
@@ -233,7 +248,6 @@ TEST(MatrixLowerBoundUpdate, NotAppliedForLargerMatrix) {
   gh::MatrixLowerBound<3> h(I);
   const Eigen::Matrix3d M_new = 5.0 * I;
   EXPECT_FALSE(h.update(M_new));
-  EXPECT_EQ(h.update_count(), 0);
   EXPECT_TRUE(h.matrix().isApprox(I, 1e-12));
 }
 
@@ -245,7 +259,6 @@ TEST(MatrixLowerBoundUpdate, LowersWhenSmaller) {
   Eigen::Matrix2d M_new;
   M_new << 0.25, 0.0, 0.0, 2.0;  // smaller than I in x, larger in y
   EXPECT_TRUE(h.update(M_new));
-  EXPECT_EQ(h.update_count(), 1);
 
   // Post-update: M_lower should match the meet: diag(min(1, 0.25), min(1, 2)) = diag(0.25, 1).
   const Eigen::Matrix2d M_expected = (Eigen::Matrix2d() << 0.25, 0.0, 0.0, 1.0).finished();
@@ -420,6 +433,199 @@ TEST(MatrixLowerBoundProperties, SymmetryDynamic) {
       EXPECT_NEAR(h(a, b), h(b, a), 1e-12);
     }
   }
+}
+
+// ---------------------------------------------------------------------------
+// Periodic coordinates
+// ---------------------------------------------------------------------------
+
+TEST(MatrixLowerBoundPeriods, EmptyPeriodsReproduceTheRawDifference) {
+  Eigen::Matrix3d M = Eigen::Vector3d(1.0, 1.0, 2.25).asDiagonal();
+  gh::MatrixLowerBound<3> plain(M);
+  gh::MatrixLowerBound<3> empty(M, Eigen::VectorXd{});
+  const Eigen::Vector3d a(1.0, 2.0, 3.0);
+  const Eigen::Vector3d b(-1.0, 0.5, -3.0);
+  EXPECT_EQ(empty.periods().size(), 0);
+  EXPECT_EQ(plain(a, b), empty(a, b));
+}
+
+TEST(MatrixLowerBoundPeriods, WrapsAcrossTheBranchCut) {
+  // pi - eps and -pi + eps are 2 eps apart on the circle, not 2 pi - 2 eps.
+  Eigen::Matrix3d M = Eigen::Vector3d(1.0, 1.0, 4.0).asDiagonal();
+  const Eigen::VectorXd periods = Eigen::Vector3d(0.0, 0.0, geodex::utils::two_pi);
+  gh::MatrixLowerBound<3> wrapped(M, periods);
+  gh::MatrixLowerBound<3> unwrapped(M);
+
+  constexpr double eps = 0.05;
+  const Eigen::Vector3d a(0.0, 0.0, std::numbers::pi - eps);
+  const Eigen::Vector3d b(0.0, 0.0, -std::numbers::pi + eps);
+
+  EXPECT_NEAR(wrapped(a, b), 2.0 * (2.0 * eps), 1e-12);  // sqrt(4) * |2 eps|
+  EXPECT_NEAR(unwrapped(a, b), 2.0 * (geodex::utils::two_pi - 2.0 * eps), 1e-12);
+  EXPECT_LT(wrapped(a, b), unwrapped(a, b));
+}
+
+TEST(MatrixLowerBoundPeriods, AperiodicAxesAreLeftAlone) {
+  Eigen::Matrix3d M = Eigen::Matrix3d::Identity();
+  const Eigen::VectorXd periods = Eigen::Vector3d(0.0, 0.0, geodex::utils::two_pi);
+  gh::MatrixLowerBound<3> h(M, periods);
+  // Only theta may fold.
+  const Eigen::Vector3d a(0.0, 0.0, 0.0);
+  const Eigen::Vector3d b(100.0, 0.0, 0.0);
+  EXPECT_NEAR(h(a, b), 100.0, 1e-12);
+}
+
+TEST(MatrixLowerBoundPeriods, NeverExceedsTheDeckGroupMinimum) {
+  // For a decoupled bound the per-axis reduction must equal the minimum over all
+  // lattice translates, not merely one of them.
+  Eigen::Matrix3d M;
+  M << 1.5, 0.4, 0.0,
+       0.4, 2.0, 0.0,
+       0.0, 0.0, 3.0;
+  const double P = geodex::utils::two_pi;
+  const Eigen::VectorXd periods = Eigen::Vector3d(0.0, 0.0, P);
+  gh::MatrixLowerBound<3> h(M, periods);
+  const Eigen::Matrix3d Lt = Eigen::LLT<Eigen::Matrix3d>(M).matrixU();
+
+  std::mt19937 rng(4242);
+  std::uniform_real_distribution<double> xy(-5.0, 5.0);
+  std::uniform_real_distribution<double> th(-std::numbers::pi, std::numbers::pi);
+  for (int trial = 0; trial < 400; ++trial) {
+    const Eigen::Vector3d a(xy(rng), xy(rng), th(rng));
+    const Eigen::Vector3d b(xy(rng), xy(rng), th(rng));
+    double best = std::numeric_limits<double>::infinity();
+    for (int k = -3; k <= 3; ++k) {
+      const Eigen::Vector3d lift(0.0, 0.0, k * P);
+      best = std::min(best, (Lt * (a - b - lift)).norm());
+    }
+    EXPECT_LE(h(a, b), best + 1e-12);
+    EXPECT_NEAR(h(a, b), best, 1e-12);
+  }
+}
+
+TEST(MatrixLowerBoundPeriods, RejectsACoupledPeriodicAxis) {
+  // Coupling breaks that equivalence, so construction must fail loudly.
+  Eigen::Matrix3d M;
+  M << 1.0, 0.0, 0.3,
+       0.0, 1.0, 0.0,
+       0.3, 0.0, 1.0;
+  const Eigen::VectorXd periods = Eigen::Vector3d(0.0, 0.0, geodex::utils::two_pi);
+  EXPECT_THROW((gh::MatrixLowerBound<3>(M, periods)), std::invalid_argument);
+  EXPECT_NO_THROW((gh::MatrixLowerBound<3>(M)));
+}
+
+TEST(MatrixLowerBoundPeriods, RejectsMismatchedPeriodSize) {
+  Eigen::Matrix3d M = Eigen::Matrix3d::Identity();
+  const Eigen::VectorXd periods = Eigen::Vector2d(0.0, geodex::utils::two_pi);
+  EXPECT_THROW((gh::MatrixLowerBound<3>(M, periods)), std::invalid_argument);
+}
+
+TEST(MatrixLowerBoundPeriods, StillSymmetricAndZeroOnItself) {
+  Eigen::Matrix3d M = Eigen::Vector3d(1.0, 1.0, 2.25).asDiagonal();
+  const Eigen::VectorXd periods = Eigen::Vector3d(0.0, 0.0, geodex::utils::two_pi);
+  gh::MatrixLowerBound<3> h(M, periods);
+  std::mt19937 rng(9);
+  std::uniform_real_distribution<double> d(-4.0, 4.0);
+  for (int trial = 0; trial < 100; ++trial) {
+    const Eigen::Vector3d a(d(rng), d(rng), d(rng));
+    const Eigen::Vector3d b(d(rng), d(rng), d(rng));
+    EXPECT_NEAR(h(a, b), h(b, a), 1e-12);
+    EXPECT_NEAR(h(a, a), 0.0, 1e-12);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Product of factor bounds
+// ---------------------------------------------------------------------------
+
+namespace {
+
+// Bounds of an SE(2) x R^2 x SO(2) product. The Euclidean block couples its two axes.
+const Eigen::Matrix3d kSE2Bound = Eigen::Vector3d(0.5, 0.5, 2.0).asDiagonal();
+const Eigen::Vector3d kSE2Periods(0.0, 0.0, geodex::utils::two_pi);
+const Eigen::Matrix2d kPlaneBound = (Eigen::Matrix2d() << 2.0, 0.6, 0.6, 1.5).finished();
+const Eigen::Matrix<double, 1, 1> kCircleBound = Eigen::Matrix<double, 1, 1>::Constant(3.0);
+const Eigen::Matrix<double, 1, 1> kCirclePeriods =
+    Eigen::Matrix<double, 1, 1>::Constant(geodex::utils::two_pi);
+
+Eigen::MatrixXd block_diagonal() {
+  Eigen::MatrixXd M = Eigen::MatrixXd::Zero(6, 6);
+  M.block(0, 0, 3, 3) = kSE2Bound;
+  M.block(3, 3, 2, 2) = kPlaneBound;
+  M.block(5, 5, 1, 1) = kCircleBound;
+  return M;
+}
+
+}  // namespace
+
+TEST(ProductLowerBound, BlockDiagonalWithConcatenatedPeriods) {
+  const auto h = gh::product_lower_bound(
+      {{kSE2Bound, kSE2Periods}, {kPlaneBound}, {kCircleBound, kCirclePeriods}});
+  ASSERT_EQ(h.size(), 6);
+  EXPECT_LT((h.matrix() - block_diagonal()).cwiseAbs().maxCoeff(), 1e-12);
+  Eigen::VectorXd periods(6);
+  periods << 0.0, 0.0, geodex::utils::two_pi, 0.0, 0.0, geodex::utils::two_pi;
+  EXPECT_EQ(h.periods(), periods);
+}
+
+TEST(ProductLowerBound, AperiodicFactorsCarryNoPeriods) {
+  const auto h = gh::product_lower_bound({{kPlaneBound}, {Eigen::MatrixXd::Identity(3, 3)}});
+  EXPECT_EQ(h.size(), 5);
+  EXPECT_EQ(h.periods().size(), 0);
+}
+
+TEST(ProductLowerBound, EqualsTheMatrixLowerBoundOfTheBlockDiagonal) {
+  const auto h = gh::product_lower_bound(
+      {{kSE2Bound, kSE2Periods}, {kPlaneBound}, {kCircleBound, kCirclePeriods}});
+  Eigen::VectorXd periods = Eigen::VectorXd::Zero(6);
+  periods[2] = periods[5] = geodex::utils::two_pi;
+  const gh::MatrixLowerBound<Eigen::Dynamic> reference(block_diagonal(), periods);
+  std::mt19937 rng(17);
+  std::uniform_real_distribution<double> d(-4.0, 4.0);
+  for (int trial = 0; trial < 100; ++trial) {
+    Eigen::VectorXd a(6), b(6);
+    for (int i = 0; i < 6; ++i) {
+      a[i] = d(rng);
+      b[i] = d(rng);
+    }
+    EXPECT_EQ(h(a, b), reference(a, b));
+  }
+}
+
+TEST(ProductLowerBound, IsAdmissibleOnAThreeFactorProduct) {
+  const geodex::SE2LeftInvariantMetric metric(0.5, 2.0, 2.0);
+  const geodex::SE2<> se2(metric, Eigen::Vector3d(-3, -3, -std::numbers::pi),
+                          Eigen::Vector3d(3, 3, std::numbers::pi));
+  geodex::Euclidean<2, geodex::ConstantSPDMetric<2>> plane{
+      geodex::ConstantSPDMetric<2>(kPlaneBound)};
+  plane.set_sampling_bounds(Eigen::Vector2d(-2, -2), Eigen::Vector2d(2, 2));
+  const geodex::SO2<> circle{geodex::SO2CanonicalMetric(3.0)};
+  const auto space = geodex::make_product(se2, plane, circle);
+  const auto h = gh::product_lower_bound({{metric.coordinate_lower_bound(), se2.periods()},
+                                          {kPlaneBound},
+                                          {kCircleBound, circle.periods()}});
+  EXPECT_EQ(h.periods(), space.periods());
+  for (int trial = 0; trial < 300; ++trial) {
+    const Eigen::VectorXd a = space.random_point();
+    const Eigen::VectorXd b = space.random_point();
+    EXPECT_LE(h(a, b), space.distance(a, b) + 1e-9) << "pair " << trial;
+  }
+  // Both circles wrap across their branch cuts.
+  Eigen::VectorXd a = Eigen::VectorXd::Zero(6), b = a;
+  a[2] = a[5] = std::numbers::pi - 0.05;
+  b[2] = b[5] = -std::numbers::pi + 0.05;
+  EXPECT_NEAR(h(a, b), 0.1 * std::sqrt(2.0 + 3.0), 1e-12);
+}
+
+TEST(ProductLowerBound, RejectsMalformedFactors) {
+  EXPECT_THROW(gh::product_lower_bound({}), std::invalid_argument);
+  EXPECT_THROW(gh::product_lower_bound({{Eigen::MatrixXd::Identity(2, 3)}}), std::invalid_argument);
+  EXPECT_THROW(gh::product_lower_bound({{kSE2Bound, Eigen::Vector2d(0.0, 1.0)}}),
+               std::invalid_argument);
+  // A periodic axis coupled to another axis of its factor.
+  EXPECT_THROW(
+      gh::product_lower_bound({{kPlaneBound, Eigen::Vector2d(geodex::utils::two_pi, 0.0)}}),
+      std::invalid_argument);
 }
 
 // ---------------------------------------------------------------------------

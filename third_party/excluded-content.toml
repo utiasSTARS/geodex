@@ -1,0 +1,20 @@
+# Content that must not ship in a pygeodex wheel or sdist, or in a CMake install tree.
+# scripts/ci/check_distribution.py enforces it on the built artifacts.
+#
+# paths      regular expressions matched against archive member paths
+# binaries   byte strings searched for in compiled files (.so, .dylib, .pyd, .a)
+# robots     robot names that must not appear in geodex.robots.available() or
+#            geodex.vamp.registered_robots() of an installed wheel
+
+[[exclude]]
+what = "Fetch robot description and the dynamics and collision models derived from it"
+why = "CC BY-NC-SA 4.0, which an Apache-2.0 distribution cannot carry"
+paths = [
+    '(^|/)data/robots/fetch/',
+    '(^|/)robots/generated/fetch_',
+    '(^|/)integration/vamp/robots/fetch\.hpp$',
+    '(^|/)fixtures/vamp/fetch/',
+    '(^|/)test_vamp_fetch\.cpp$',
+]
+binaries = ["fetch_crba", "6robots5Fetch"]
+robots = ["fetch"]

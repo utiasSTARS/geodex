@@ -1,8 +1,8 @@
 Tutorials
 =========
 
-Hands-on guides for using geodex. Each tutorial assumes familiarity with the
-:doc:`/concepts/index` section.
+Each tutorial builds a runnable example step by step. See :doc:`/concepts/index` for the
+theory behind them.
 
 .. toctree::
    :maxdepth: 1

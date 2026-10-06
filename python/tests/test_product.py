@@ -48,7 +48,7 @@ class TestProduct:
         assert isinstance(r.waypoints, list)
 
     def test_so3_through_configuration_space(self):
-        # A genuine-Lie manifold composes with a custom metric via ConfigurationSpace.
+        # SO(3) composes with a custom metric through ConfigurationSpace.
         so3 = geodex.SO3()
         cs = geodex.ConfigurationSpace(so3, geodex.ConstantSPDMetric(np.eye(3)))
         q0 = so3.random_point()

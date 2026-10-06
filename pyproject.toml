@@ -1,20 +1,22 @@
 [build-system]
-requires = ["scikit-build-core>=0.10", "nanobind>=2.4"]
+requires = ["scikit-build-core==1.0.3"]
 build-backend = "scikit_build_core.build"
 
 [project]
 name = "pygeodex"
-version = "0.2.1"
+version = "1.0.0"
 description = "A general-purpose framework for planning on Riemannian manifolds"
 readme = "README.md"
-license = "Apache-2.0"
-license-files = ["LICENSE", "NOTICE"]
+# geodex is Apache-2.0.
+license = "Apache-2.0 AND BSD-3-Clause AND BSD-3-Clause-Clear AND BSL-1.0 AND MIT AND MPL-2.0 AND Zlib"
+license-files = ["LICENSE", "NOTICE", "THIRD_PARTY_LICENSES.txt"]
 requires-python = ">=3.12"
 dependencies = ["numpy>=1.21"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
-    "Operating System :: OS Independent",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -36,10 +38,27 @@ Issues = "https://github.com/utiasSTARS/geodex/issues"
 [tool.scikit-build]
 minimum-version = "0.10"
 cmake.build-type = "Release"
-cmake.args = ["-DBUILD_PYTHON_BINDINGS=ON", "-DGEODEX_ROBOTS=OFF"]
 wheel.packages = ["python/geodex"]
-wheel.exclude = ["include/**", "lib/**"]
 wheel.py-api = "cp312"
+# Install only the extension modules into the wheel, not the C++ package.
+install.components = ["python"]
+wheel.exclude = ["include/**", "lib/**", "share/**", "bin/**"]
+# The sdist carries what the full-stack build needs. Robot descriptions, docs, examples and
+# the C++ tests stay in the repository.
+sdist.exclude = [
+    ".claude/**", ".github/**", ".pixi/**", "build/**", "data/**", "dist/**",
+    "docs/**", "examples/**", "internal/**", "tests/**", "AGENTS.md", "codecov.yml",
+]
+
+# The published wheels and a plain `pip install` from the sdist build the whole planning
+# stack from pinned sources (GEODEX_BUNDLE_DEPS). The pixi workspace overrides individual
+# keys with `-C cmake.define.<NAME>=<value>`, which replaces the entry of the same name.
+[tool.scikit-build.cmake.define]
+BUILD_PYTHON_BINDINGS = "ON"
+GEODEX_OMPL = "ON"
+GEODEX_VAMP = "ON"
+GEODEX_ROBOTS = "ON"
+GEODEX_BUNDLE_DEPS = "ON"
 
 [tool.pytest.ini_options]
 testpaths = ["python/tests"]
@@ -47,8 +66,32 @@ testpaths = ["python/tests"]
 [tool.cibuildwheel]
 build = "cp312-*"
 build-frontend = "build"
-test-command = 'python -c "import geodex; geodex.SO3(); geodex.SE3(); geodex.Product([geodex.Euclidean(3), geodex.SE2()])"'
+test-command = "python {project}/scripts/ci/wheel_smoke.py"
+# The smoke test plans with the official OMPL wheel and geodex in one process.
+test-requires = ["ompl==2.0.1"]
 
 [tool.cibuildwheel.linux]
+archs = ["native"]
 manylinux-x86_64-image = "manylinux_2_28"
 manylinux-aarch64-image = "manylinux_2_28"
+# Link libmvec from the system and do not graft it into the wheel. It ships with glibc on
+# every manylinux_2_28 x86-64 system and uses the private state of the dynamic loader.
+repair-wheel-command = "auditwheel repair --exclude libmvec.so.1 -w {dest_dir} {wheel}"
+environment = { CMAKE_BUILD_PARALLEL_LEVEL = "4" }
+
+[tool.cibuildwheel.macos]
+environment = { MACOSX_DEPLOYMENT_TARGET = "11.0", CMAKE_BUILD_PARALLEL_LEVEL = "4" }
+
+# musllinux and Windows ship the geometry core only. musl does not provide libmvec for the
+# robot dynamics, and VAMP and the generated robot sources do not build with MSVC.
+[[tool.cibuildwheel.overrides]]
+select = "*-musllinux*"
+config-settings = { "cmake.define.GEODEX_OMPL" = "OFF", "cmake.define.GEODEX_VAMP" = "OFF", "cmake.define.GEODEX_ROBOTS" = "OFF", "cmake.define.GEODEX_BUNDLE_DEPS" = "OFF" }
+test-command = "python -c \"import geodex; geodex.SE2(); geodex.Product([geodex.Euclidean(3), geodex.SO3()])\""
+test-requires = []
+
+[[tool.cibuildwheel.overrides]]
+select = "*-win*"
+config-settings = { "cmake.define.GEODEX_OMPL" = "OFF", "cmake.define.GEODEX_VAMP" = "OFF", "cmake.define.GEODEX_ROBOTS" = "OFF", "cmake.define.GEODEX_BUNDLE_DEPS" = "OFF" }
+test-command = "python -c \"import geodex; geodex.SE2(); geodex.Product([geodex.Euclidean(3), geodex.SO3()])\""
+test-requires = []

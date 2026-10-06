@@ -7,7 +7,7 @@
 
 namespace geodex::heuristics {
 
-// Forward declarations — full definitions in the per-class headers.
+// Forward declarations. The per-class headers hold the full definitions.
 template <typename BaseHeuristicT>
 class EigenvalueLowerBound;
 

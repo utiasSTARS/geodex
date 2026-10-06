@@ -12,10 +12,10 @@ namespace geodex {
 /// @brief A manifold that provides geodesic interpolation, exponential, and logarithmic maps.
 ///
 /// @details Requires:
-/// - `geodesic(p, q, t)` — point at parameter \f$ t \in [0, 1] \f$ along the geodesic from
-///   \f$ p \f$ to \f$ q \f$
-/// - `exp(p, v)` — exponential map \f$ \exp_p(v) \f$ (or retraction)
-/// - `log(p, q)` — logarithmic map \f$ \log_p(q) \f$ (or inverse retraction)
+/// - `geodesic(p, q, t)`, the point at parameter \f$ t \in [0, 1] \f$ along the geodesic
+///   from \f$ p \f$ to \f$ q \f$
+/// - `exp(p, v)`, the exponential map \f$ \exp_p(v) \f$ (or retraction)
+/// - `log(p, q)`, the logarithmic map \f$ \log_p(q) \f$ (or inverse retraction)
 template <typename M>
 concept HasGeodesic =
     Manifold<M> && requires(const M m, const typename M::Point p, const typename M::Point q,

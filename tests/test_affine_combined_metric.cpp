@@ -1,5 +1,5 @@
 /// @file test_affine_combined_metric.cpp
-/// @brief Tests for `geodex::AffineCombinedMetric` — variadic positive linear
+/// @brief Tests for `geodex::AffineCombinedMetric`, the variadic positive linear
 ///        combination of Riemannian metric policies.
 
 #include <Eigen/Core>
@@ -127,7 +127,7 @@ TEST(AffineCombined, PreservesSPDUnderPositiveCoeffs) {
 }
 
 TEST(AffineCombined, ConceptCompliance) {
-  // AffineCombinedMetric is a metric *policy*, not a manifold — it satisfies
+  // AffineCombinedMetric is a metric *policy*, not a manifold. It satisfies
   // MetricHasInnerMatrix but does not (and need not) satisfy `Manifold`/`HasMetric`.
   using Combined =
       geodex::AffineCombinedMetric<geodex::IdentityMetric<3>, geodex::IdentityMetric<3>>;

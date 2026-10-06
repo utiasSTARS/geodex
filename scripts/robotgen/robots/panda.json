@@ -1,0 +1,13 @@
+{
+  "name": "panda",
+  "description": "Franka Emika Panda, VAMP's own kernel",
+  "vamp_kernel": "{vamp}/src/impl/vamp/robots/panda.hh",
+  "spherized_urdf": "{vamp}/resources/panda/panda_spherized.urdf",
+  "limits_urdfs": [
+    "data/robots/panda/urdf/panda.urdf"
+  ],
+  "crba": {
+    "name": "panda",
+    "urdf": "data/robots/panda/urdf/panda.urdf"
+  }
+}

@@ -1,5 +1,8 @@
+#include <fstream>
 #include <random>
+#include <sstream>
 #include <string>
+#include <vector>
 
 #include <Eigen/Core>
 #include <Eigen/Eigenvalues>
@@ -17,6 +20,13 @@ namespace {
 constexpr const char* kFixturesDir = GEODEX_TEST_FIXTURES_DIR;
 
 std::string panda_urdf() { return GEODEX_PANDA_URDF; }
+
+std::string read_file(const std::string& path) {
+  std::ifstream in(path);
+  std::stringstream ss;
+  ss << in.rdbuf();
+  return ss.str();
+}
 
 Eigen::VectorXd uniform_in_limits(std::mt19937& rng, const Eigen::VectorXd& lo,
                                   const Eigen::VectorXd& hi) {
@@ -98,4 +108,58 @@ TEST(PinocchioMassMatrix, MassFunctionReturnsMassMatrix) {
   const Eigen::MatrixXd& M = mass(q);
   EXPECT_EQ(M.rows(), 7);
   EXPECT_EQ(M.cols(), 7);
+}
+
+TEST(PinocchioMassMatrixFromXML, LoadsPandaURDF) {
+  const auto mass = geodex::integration::pinocchio::MassMatrix::from_xml(read_file(panda_urdf()));
+  EXPECT_EQ(mass.model().nq, 7);
+  EXPECT_EQ(mass.model().nv, 7);
+}
+
+TEST(PinocchioMassMatrixFromXML, MatchesPathConstructor) {
+  const auto from_xml =
+      geodex::integration::pinocchio::MassMatrix::from_xml(read_file(panda_urdf()));
+  const geodex::integration::pinocchio::MassMatrix from_path{panda_urdf()};
+  const auto [lo, hi] = geodex::integration::pinocchio::joint_limits(panda_urdf());
+
+  std::mt19937 rng(42);
+  for (int trial = 0; trial < 20; ++trial) {
+    const Eigen::VectorXd q = uniform_in_limits(rng, lo, hi);
+    const Eigen::MatrixXd M_xml = from_xml(q);
+    const Eigen::MatrixXd M_path = from_path(q);
+    EXPECT_EQ((M_xml - M_path).cwiseAbs().maxCoeff(), 0.0) << "trial " << trial;
+    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> solver(M_xml);
+    EXPECT_GT(solver.eigenvalues().minCoeff(), 1e-9) << "trial " << trial;
+  }
+}
+
+TEST(PinocchioMassMatrixFromXML, ReducedModelLocksInactiveJoints) {
+  const std::string xml = read_file(panda_urdf());
+  const std::vector<std::string> active{"panda_joint1", "panda_joint2", "panda_joint3",
+                                        "panda_joint4", "panda_joint5", "panda_joint6"};
+  const auto reduced = geodex::integration::pinocchio::MassMatrix::from_xml(xml, active);
+  const auto full = geodex::integration::pinocchio::MassMatrix::from_xml(xml);
+  ASSERT_EQ(reduced.model().nq, 6);
+  EXPECT_EQ(geodex::integration::pinocchio::model_nq_from_xml(xml), 7);
+  EXPECT_EQ(geodex::integration::pinocchio::model_nq_from_xml(xml, active), 6);
+
+  // The locked joint sits at its neutral value 0. The reduced mass matrix equals the
+  // leading block of the full one at q7 = 0.
+  const auto [lo, hi] = geodex::integration::pinocchio::joint_limits(panda_urdf());
+  std::mt19937 rng(7);
+  for (int trial = 0; trial < 10; ++trial) {
+    Eigen::VectorXd q = uniform_in_limits(rng, lo, hi);
+    q[6] = 0.0;
+    const Eigen::MatrixXd M_full = full(q);
+    const Eigen::MatrixXd M_red = reduced(q.head(6));
+    EXPECT_LT((M_red - M_full.topLeftCorner(6, 6)).cwiseAbs().maxCoeff(), 1e-12)
+        << "trial " << trial;
+  }
+}
+
+TEST(PinocchioMassMatrixFromXML, AllJointsActiveKeepsFullModel) {
+  const std::string xml = read_file(panda_urdf());
+  std::vector<std::string> active;
+  for (int i = 1; i <= 7; ++i) active.push_back("panda_joint" + std::to_string(i));
+  EXPECT_EQ(geodex::integration::pinocchio::model_nq_from_xml(xml, active), 7);
 }

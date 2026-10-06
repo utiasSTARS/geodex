@@ -1,14 +1,19 @@
 /// @file geodex_state_space.hpp
-/// @brief OMPL integration: adapts geodex manifolds to ompl::base::StateSpace.
+/// @brief OMPL integration that adapts geodex manifolds to ompl::base::StateSpace.
 
 #pragma once
 
-#include <cassert>
 #include <cmath>
+#include <cstdint>
 #include <cstring>
 
 #include <algorithm>
 #include <limits>
+#include <mutex>
+#include <optional>
+#include <random>
+#include <stdexcept>
+#include <string>
 #include <vector>
 
 #include <Eigen/Core>
@@ -19,6 +24,8 @@
 #include "geodex/algorithm/interpolation.hpp"
 #include "geodex/core/concepts.hpp"
 #include "geodex/core/metric.hpp"
+#include "geodex/core/sampler.hpp"
+#include "geodex/utils/random.hpp"
 
 namespace geodex::integration::ompl {
 
@@ -31,6 +38,21 @@ using geodex::RiemannianManifold;
 
 namespace ob = ::ompl::base;
 
+namespace detail {
+
+/// @brief Guards OMPL's process-wide seed generator.
+///
+/// @details Each OMPL `RNG` takes its seed from that generator when it is created.
+/// `planning::plan()` reseeds the generator and creates its planner under this lock,
+/// and a `GeodexStateSpace` allocates its state samplers under it. Concurrent plans do
+/// not take each other's seeds.
+inline std::recursive_mutex& ompl_rng_mutex() {
+  static std::recursive_mutex mutex;
+  return mutex;
+}
+
+}  // namespace detail
+
 /// @brief Interpolation strategy for GeodexStateSpace::interpolate().
 enum class InterpolationMode {
   Auto,                ///< Identity metric -> base geodesic, custom metric -> discrete geodesic.
@@ -39,7 +61,7 @@ enum class InterpolationMode {
 };
 
 // ---------------------------------------------------------------------------
-// GeodesicPathCache — amortizes discrete_geodesic across same-endpoint queries
+// GeodesicPathCache, which amortizes discrete_geodesic across same-endpoint queries
 // ---------------------------------------------------------------------------
 
 /// @brief Caches a discrete geodesic path between two points for efficient
@@ -47,23 +69,20 @@ enum class InterpolationMode {
 ///
 /// @details OMPL's `DiscreteMotionValidator` calls `interpolate(s1, s2, j/n)`
 /// for `j = 1..n-1` with the same `(s1, s2)` pair. This cache computes the
-/// full discrete geodesic once and serves subsequent lookups via binary search
-/// on cumulative arc lengths — O(log K) per query instead of recomputing the
-/// geodesic each time.
+/// full discrete geodesic once and serves later lookups by binary search on
+/// cumulative arc lengths, O(log K) per query.
 ///
-/// @note Not thread-safe: the owning `GeodexStateSpace` stores this cache as a
-/// `mutable` member and mutates it from the `const` `interpolate()` method.
-/// OMPL's standard planners run a single `interpolate()` call per state-space
-/// instance at a time, so the single-entry cache is safe in that context.
-/// Concurrent planners must either synchronize externally or use a separate
-/// state-space instance per thread.
+/// @note Not thread-safe. The owning `GeodexStateSpace` stores this cache as a
+/// `mutable` member and mutates it from the `const` `interpolate()` method. OMPL's
+/// standard planners run one `interpolate()` call per state-space instance at a time.
+/// Concurrent planners must synchronize externally or use one state space per thread.
 ///
 /// @tparam M A type satisfying `RiemannianManifold`.
 template <RiemannianManifold M>
 class GeodesicPathCache {
  public:
-  using Point = typename M::Point;
-  using Scalar = typename M::Scalar;
+  using Point = typename M::Point;    ///< Manifold point type.
+  using Scalar = typename M::Scalar;  ///< Manifold scalar type.
 
   /// @brief Check whether the cache holds a valid path for the given endpoints.
   /// @param f Start point.
@@ -89,8 +108,8 @@ class GeodesicPathCache {
 
     auto result = discrete_geodesic(manifold, f, t, settings, &interp_cache_);
 
-    // Accept Converged, MaxStepsReached, and DegenerateInput.
-    // Reject CutLocus, GradientVanished, StepShrunkToZero — caller falls back.
+    // Accept Converged, MaxStepsReached and DegenerateInput.
+    // Reject CutLocus, GradientVanished and StepShrunkToZero, and the caller falls back.
     if (result.status == InterpolationStatus::CutLocus ||
         result.status == InterpolationStatus::GradientVanished ||
         result.status == InterpolationStatus::StepShrunkToZero) {
@@ -134,7 +153,7 @@ class GeodesicPathCache {
 
     const double target_s = t * total_arc_;
 
-    // Binary search: find first element > target_s.
+    // Binary search for the first element > target_s.
     const auto it = std::upper_bound(cum_arc_.begin(), cum_arc_.end(), target_s);
     auto idx = static_cast<int>(it - cum_arc_.begin()) - 1;
     idx = std::max(0, std::min(idx, static_cast<int>(waypoints_.size()) - 2));
@@ -142,7 +161,7 @@ class GeodesicPathCache {
     const double seg_len = cum_arc_[idx + 1] - cum_arc_[idx];
     const double t_local = (seg_len > 1e-15) ? (target_s - cum_arc_[idx]) / seg_len : 0.0;
 
-    // Local geodesic between adjacent waypoints — close enough for retraction accuracy.
+    // Local geodesic between adjacent waypoints, accurate to the retraction.
     return manifold.geodesic(waypoints_[idx], waypoints_[idx + 1], t_local);
   }
 
@@ -152,9 +171,8 @@ class GeodesicPathCache {
   /// @brief Total Riemannian arc length along the cached discrete geodesic.
   ///
   /// @details Sum of per-segment `manifold.distance(waypoints[i], waypoints[i+1])`
-  /// values computed when the path was cached. For a valid cache this is the
-  /// natural cost of the arc under the configured metric; for an invalid cache
-  /// (no successful compute) returns 0.0.
+  /// values computed when the path was cached. For a valid cache this is the cost
+  /// of the arc under the configured metric. An invalid cache returns 0.0.
   double total_arc_cost() const { return total_arc_; }
 
  private:
@@ -168,7 +186,7 @@ class GeodesicPathCache {
 };
 
 // ---------------------------------------------------------------------------
-// GeodexStateSpace — adapts a geodex RiemannianManifold to ompl::base::StateSpace
+// GeodexStateSpace, which adapts a geodex RiemannianManifold to ompl::base::StateSpace
 // ---------------------------------------------------------------------------
 
 template <typename ManifoldT>
@@ -176,7 +194,7 @@ template <typename ManifoldT>
 class GeodexStateSpace;
 
 // ---------------------------------------------------------------------------
-// GeodexState — state type storing ambient-space coordinates
+// GeodexState, the state type that stores ambient-space coordinates
 // ---------------------------------------------------------------------------
 
 /// @brief State type for GeodexStateSpace, storing ambient-space coordinates.
@@ -189,13 +207,11 @@ template <typename ManifoldT>
 class GeodexState : public ob::State {
  public:
   double* values = nullptr;  ///< Raw coordinate array (owned by the state space).
-  unsigned int dim = 0;      ///< Runtime ambient dimension; required for dynamic-size Point types.
+  unsigned int dim = 0;      ///< Runtime ambient dimension, required for dynamic-size Point types.
 
   /// @brief Read-only Eigen map of the state coordinates.
-  /// @details Returns an `Eigen::Map<const Vector>` view onto `values`. The
-  /// view is non-owning and read-only by construction; mutation must go
-  /// through the raw `values` array (or an explicitly-constructed
-  /// `Eigen::Map<Vector>`) at the call site that needs it.
+  /// @details Returns a non-owning `Eigen::Map<const Vector>` view onto `values`.
+  /// To mutate the state, write through `values` or an explicit `Eigen::Map<Vector>`.
   auto asEigen() const {
     using Point = typename ManifoldT::Point;
     constexpr int Dim = Point::SizeAtCompileTime;
@@ -213,8 +229,11 @@ class GeodexState : public ob::State {
 
 /// @brief State sampler for GeodexStateSpace.
 ///
-/// @details Provides uniform, near-uniform, and Gaussian sampling on the
-/// manifold by sampling tangent vectors and applying the exponential map.
+/// @details Samples uniformly through one stream of the manifold's own sampler
+/// (see `GeodexStateSpace::allocManifoldSampler`), and near-uniformly or from a
+/// Gaussian by sampling tangent vectors and applying the exponential map. The
+/// tangent samples come from a generator seeded from the same stream and reproduce
+/// on any machine.
 ///
 /// @tparam ManifoldT The geodex manifold type.
 template <typename ManifoldT>
@@ -223,18 +242,28 @@ class GeodexStateSampler : public ob::StateSampler {
   using StateType = GeodexState<ManifoldT>;
 
  public:
-  /// @brief Construct a sampler for the given state space.
+  /// @brief Construct a sampler on the next sampler stream of `space`.
   /// @param space The GeodexStateSpace to sample from.
-  explicit GeodexStateSampler(const ob::StateSpace* space) : ob::StateSampler(space) {}
+  /// @throws std::invalid_argument when `space` is not a `GeodexStateSpace<ManifoldT>`.
+  explicit GeodexStateSampler(const ob::StateSpace* space)
+      : GeodexStateSampler(space, checked(space)->nextStreamSeed()) {}
 
-  /// @brief Sample a state uniformly within the bounds.
+  /// @brief Sample a state uniformly on the manifold via its from_unit_cube map.
+  ///
+  /// @details Samples a low-discrepancy point in the unit cube and maps it through the
+  /// manifold's measure-preserving map. Curved manifolds are sampled uniformly in their
+  /// own volume, not in raw ambient coordinates.
   void sampleUniform(ob::State* state) override {
     auto* s = state->as<StateType>();
     const auto* space = static_cast<const StateSpace*>(space_);
-    const auto& bounds = space->getBounds();
+    const auto& manifold = space->getManifold();
+    const int cube_dim = manifold.unit_cube_dim();
+    cube_buf_.resize(cube_dim);
+    sampler_.sample(cube_dim, cube_buf_);
+    const auto point = manifold.from_unit_cube(cube_buf_);
     const unsigned int dim = space->getDimension();
     for (unsigned int i = 0; i < dim; ++i) {
-      s->values[i] = rng_.uniformReal(bounds.low[i], bounds.high[i]);
+      s->values[i] = point[static_cast<int>(i)];
     }
   }
 
@@ -260,7 +289,7 @@ class GeodexStateSampler : public ob::StateSampler {
       v.resize(dim);
     }
     for (unsigned int i = 0; i < dim; ++i) {
-      v[i] = rng_.gaussian01();
+      v[i] = geodex::utils::normal(tangent_rng_, 0.0, 1.0);
     }
     double v_norm = manifold.norm(p_near, v);
     if (v_norm > 1e-12) {
@@ -296,7 +325,7 @@ class GeodexStateSampler : public ob::StateSampler {
       v.resize(dim);
     }
     for (unsigned int i = 0; i < dim; ++i) {
-      v[i] = rng_.gaussian(0.0, stdDev);
+      v[i] = geodex::utils::normal(tangent_rng_, 0.0, stdDev);
     }
 
     Point result = manifold.exp(p_mean, v);
@@ -305,6 +334,26 @@ class GeodexStateSampler : public ob::StateSampler {
       s->values[i] = std::clamp(result[i], bounds.low[i], bounds.high[i]);
     }
   }
+
+ private:
+  GeodexStateSampler(const ob::StateSpace* space, const std::uint64_t seed)
+      : ob::StateSampler(space),
+        sampler_(checked(space)->manifoldSampler(seed)),
+        tangent_rng_(seed ^ 0x9E3779B97F4A7C15ULL) {}
+
+  static const StateSpace* checked(const ob::StateSpace* space) {
+    const auto* s = dynamic_cast<const StateSpace*>(space);
+    if (s == nullptr) {
+      throw std::invalid_argument(
+          "GeodexStateSampler: space is not a GeodexStateSpace of this "
+          "manifold type");
+    }
+    return s;
+  }
+
+  typename ManifoldT::SamplerType sampler_;  ///< one stream of the manifold's sampler
+  std::mt19937_64 tangent_rng_;              ///< tangent samples of the near and Gaussian samplers
+  Eigen::VectorXd cube_buf_;                 ///< Reused unit-cube buffer.
 };
 
 // ---------------------------------------------------------------------------
@@ -322,9 +371,10 @@ template <typename ManifoldT>
   requires geodex::RiemannianManifold<ManifoldT>
 class GeodexStateSpace : public ob::StateSpace {
  public:
-  using Point = typename ManifoldT::Point;      ///< Manifold point type.
-  using Tangent = typename ManifoldT::Tangent;  ///< Manifold tangent type.
-  using StateType = GeodexState<ManifoldT>;     ///< OMPL state type.
+  using Point = typename ManifoldT::Point;              ///< Manifold point type.
+  using Tangent = typename ManifoldT::Tangent;          ///< Manifold tangent type.
+  using SamplerType = typename ManifoldT::SamplerType;  ///< Manifold sampler type.
+  using StateType = GeodexState<ManifoldT>;             ///< OMPL state type.
 
   /// @brief Construct a state space from a manifold and bounds.
   /// @param manifold The geodex manifold instance.
@@ -337,11 +387,19 @@ class GeodexStateSpace : public ob::StateSpace {
     if constexpr (Point::SizeAtCompileTime != Eigen::Dynamic) {
       ambient_dim_ = static_cast<unsigned int>(Point::SizeAtCompileTime);
     } else {
-      ambient_dim_ = static_cast<unsigned int>(manifold_.dim());
+      // Read the ambient size from an actual point. A type-erased embedded manifold
+      // stores more ambient coordinates than its intrinsic dimension.
+      const int cube_dim = manifold_.unit_cube_dim();
+      ambient_dim_ = static_cast<unsigned int>(
+          manifold_.from_unit_cube(Eigen::VectorXd::Constant(cube_dim, 0.5)).size());
     }
 
-    assert(bounds_.low.size() == ambient_dim_);
-    assert(bounds_.high.size() == ambient_dim_);
+    if (bounds_.low.size() != ambient_dim_ || bounds_.high.size() != ambient_dim_) {
+      throw std::invalid_argument(
+          "GeodexStateSpace: bounds have " + std::to_string(bounds_.low.size()) + " lower and " +
+          std::to_string(bounds_.high.size()) + " upper entries, the manifold's points have " +
+          std::to_string(ambient_dim_) + " coordinates");
+    }
   }
 
   /// @brief Access the underlying geodex manifold.
@@ -349,6 +407,46 @@ class GeodexStateSpace : public ob::StateSpace {
 
   /// @brief Access the coordinate bounds.
   const ob::RealVectorBounds& getBounds() const { return bounds_; }
+
+  /// @brief Seed the streams of the samplers this space allocates after this call.
+  ///
+  /// @details Every sampler a planner allocates through this space, the state
+  /// samplers and the informed sampler, is a copy of the manifold's sampler
+  /// on its own stream. The sampler kind carries over, and the streams stay
+  /// independent. The stream seeds come from a generator seeded here, or without a
+  /// seed from geodex's thread-local seed source (`geodex::set_default_seed`).
+  void setSamplerSeed(const std::uint64_t seed) {
+    const std::lock_guard lock(stream_mutex_);
+    stream_seeds_.emplace(seed);
+  }
+
+  /// @brief Seed of the next sampler stream. Safe to call from several threads.
+  std::uint64_t nextStreamSeed() const {
+    const std::lock_guard lock(stream_mutex_);
+    return stream_seeds_ ? (*stream_seeds_)() : geodex::detail::seed_source()();
+  }
+
+  /// @brief A sampler for one new stream, a copy of the manifold's sampler reseeded
+  /// to the next stream seed.
+  ///
+  /// @details A manifold without `sampler()` contributes a default-constructed
+  /// `SamplerType`. A sampler without `seed()` is copied unchanged, and every stream
+  /// repeats the same sequence.
+  SamplerType allocManifoldSampler() const { return manifoldSampler(nextStreamSeed()); }
+
+  /// @brief A copy of the manifold's sampler reseeded to `seed`, or copied unchanged
+  /// when the sampler does not have `seed()`.
+  SamplerType manifoldSampler(const std::uint64_t seed) const {
+    SamplerType out = [&]() -> SamplerType {
+      if constexpr (geodex::HasSampler<ManifoldT>) {
+        return manifold_.sampler();
+      } else {
+        return SamplerType{};
+      }
+    }();
+    if constexpr (geodex::SeedableSampler<SamplerType>) out.seed(seed);
+    return out;
+  }
 
   /// @brief Set the minimum collision checking resolution in coordinate distance.
   ///
@@ -359,7 +457,13 @@ class GeodexStateSpace : public ob::StateSpace {
   ///
   /// @param resolution Minimum distance (meters) between collision checks.
   ///        Use 0.0 to disable (OMPL default only).
-  void setCollisionResolution(double resolution) { collision_resolution_ = resolution; }
+  /// @throws std::invalid_argument when `resolution` is negative or not finite.
+  void setCollisionResolution(const double resolution) {
+    if (!(resolution >= 0.0) || !std::isfinite(resolution)) {
+      throw std::invalid_argument("GeodexStateSpace: collision resolution must be finite and >= 0");
+    }
+    collision_resolution_ = resolution;
+  }
 
   /// @brief Get the collision checking resolution.
   double getCollisionResolution() const { return collision_resolution_; }
@@ -380,7 +484,7 @@ class GeodexStateSpace : public ob::StateSpace {
   /// @brief Get the current interpolation settings.
   const InterpolationSettings& getInterpolationSettings() const { return interpolation_settings_; }
 
-  /// @brief Convenience: set the step size for discrete geodesic interpolation.
+  /// @brief Set the step size for discrete geodesic interpolation.
   ///
   /// @details Controls the maximum Riemannian distance between consecutive
   /// waypoints in the cached geodesic path. Smaller values increase resolution
@@ -398,12 +502,12 @@ class GeodexStateSpace : public ob::StateSpace {
 
   /// @brief Return the maximum extent of the state space.
   ///
-  /// @todo Validate this fix properly. Current approach (max of coordinate
-  /// diagonal and Riemannian corner-to-corner distance) fixes the connect-loop
-  /// hang with anisotropic metrics, but the corner-to-corner Riemannian
-  /// distance may not be the true maximum extent (angle wrapping, non-diagonal
-  /// pairs, configuration-dependent metrics). Needs formal analysis and tests
-  /// across different manifold types.
+  /// @details Returns the larger of the coordinate diagonal and the Riemannian
+  /// distance between the bounding-box corners. The second term covers anisotropic
+  /// metrics, whose Riemannian extent can exceed the coordinate diagonal.
+  ///
+  /// @note Under angle wrapping or a configuration-dependent metric the corner
+  /// distance can underestimate the extent.
   double getMaximumExtent() const override {
     // Coordinate diagonal (baseline for isotropic metrics)
     double diag2 = 0.0;
@@ -483,13 +587,11 @@ class GeodexStateSpace : public ob::StateSpace {
 
   /// @brief Geodesic interpolation between two states.
   ///
-  /// @details For manifolds where `is_riemannian_log()` returns true (identity
-  /// metric with matching retraction), uses the direct `geodesic(p, q, t)` —
-  /// zero overhead. For non-flat metrics, computes a discrete geodesic via
-  /// Riemannian natural gradient descent, caches the path, and serves
-  /// subsequent lookups via arc-length parameterization. The cache is keyed on
-  /// the (from, to) state pair; sequential calls with the same pair (as in
-  /// `DiscreteMotionValidator::checkMotion`) amortize the computation.
+  /// @details When `is_riemannian_log()` is true (identity metric with matching
+  /// retraction), uses `geodesic(p, q, t)` directly. For other metrics, computes a
+  /// discrete geodesic by Riemannian natural gradient descent, caches it by the
+  /// (from, to) pair and looks up by arc length. Repeated calls with one pair, as in
+  /// `DiscreteMotionValidator::checkMotion`, share the computation.
   ///
   /// @param from Start state.
   /// @param to End state.
@@ -510,7 +612,7 @@ class GeodexStateSpace : public ob::StateSpace {
       return;
     }
 
-    // Boundary: avoid cache computation for endpoints.
+    // The endpoints do not need the cache.
     if (t <= 0.0) {
       copyState(state, from);
       return;
@@ -520,14 +622,14 @@ class GeodexStateSpace : public ob::StateSpace {
       return;
     }
 
-    // Check cache; compute if miss.
+    // Compute the cache on a miss.
     Point p_from = f->asEigen();
     Point p_to = tgt->asEigen();
     if (!geodesic_cache_.matches(p_from, p_to, ambient_dim_)) {
       geodesic_cache_.compute(manifold_, p_from, p_to, interpolation_settings_);
     }
 
-    // Fallback on convergence failure (cut locus, gradient vanished, etc.).
+    // Fall back on a convergence failure (cut locus, vanished gradient, ...).
     if (!geodesic_cache_.valid()) {
       Point result = manifold_.geodesic(p_from, p_to, t);
       for (unsigned int i = 0; i < ambient_dim_; ++i) s->values[i] = result[i];
@@ -540,7 +642,11 @@ class GeodexStateSpace : public ob::StateSpace {
   }
 
   /// @brief Allocate the default state sampler.
+  ///
+  /// @details Creates the sampler under `detail::ompl_rng_mutex()`. OMPL's base
+  /// sampler takes a seed from OMPL's shared generator on construction.
   ob::StateSamplerPtr allocDefaultStateSampler() const override {
+    const std::lock_guard lock(detail::ompl_rng_mutex());
     return std::make_shared<GeodexStateSampler<ManifoldT>>(this);
   }
 
@@ -580,17 +686,15 @@ class GeodexStateSpace : public ob::StateSpace {
 
   /// @brief Read-only access to the internal cached discrete-geodesic path.
   ///
-  /// @details Exposed so `GeodexOptimizationObjective` can compute the
-  /// integrated arc cost for the last `interpolate()` pair without recomputing.
-  /// The cache holds at most one (s1, s2) pair at a time; callers must check
+  /// @details `GeodexOptimizationObjective` reads it for the integrated arc cost of
+  /// the last `interpolate()` pair. The cache holds at most one (s1, s2) pair. Check
   /// `matches()` before using it.
   const GeodesicPathCache<ManifoldT>& getGeodesicCache() const { return geodesic_cache_; }
 
-  /// @brief Populate the cache for the given endpoint pair (or no-op on hit).
+  /// @brief Fill the cache for the given endpoint pair, or do nothing on a hit.
   ///
-  /// @details Used by the optimization objective when it needs the arc cost
-  /// for a pair that is not yet cached.
-  /// Uses the state space's configured `InterpolationSettings`.
+  /// @details The optimization objective calls it for the arc cost of a pair that
+  /// is not cached yet. It uses the configured `InterpolationSettings`.
   void ensureGeodesicCached(const Point& from, const Point& to) const {
     if (!geodesic_cache_.matches(from, to, ambient_dim_)) {
       geodesic_cache_.compute(manifold_, from, to, interpolation_settings_);
@@ -599,21 +703,30 @@ class GeodexStateSpace : public ob::StateSpace {
 
   /// @brief Number of collision checks for a motion between two states.
   ///
-  /// @details Returns the maximum of OMPL's default segment count and a
-  /// coordinate-distance-based count derived from `collision_resolution_`.
+  /// @details Returns the larger of OMPL's default count (metric distance over
+  /// `getLongestValidSegmentLength()`) and the coordinate distance over
+  /// `collision_resolution_`, or over the same fraction of the bounds' coordinate
+  /// diagonal when that is 0. A metric that makes a far coordinate motion short does
+  /// not thin out the checks. The count is at most the largest `unsigned int`.
   unsigned int validSegmentCount(const ob::State* s1, const ob::State* s2) const override {
     unsigned int n = ob::StateSpace::validSegmentCount(s1, s2);
-    if (collision_resolution_ > 0.0) {
-      const auto* a = s1->as<StateType>();
-      const auto* b = s2->as<StateType>();
-      double dist2 = 0.0;
-      for (unsigned int i = 0; i < ambient_dim_; ++i) {
-        double d = a->values[i] - b->values[i];
-        dist2 += d * d;
-      }
-      unsigned int n_coord =
-          static_cast<unsigned int>(std::ceil(std::sqrt(dist2) / collision_resolution_));
-      n = std::max(n, n_coord);
+    const auto* a = s1->as<StateType>();
+    const auto* b = s2->as<StateType>();
+    double dist2 = 0.0, diag2 = 0.0;
+    for (unsigned int i = 0; i < ambient_dim_; ++i) {
+      const double d = a->values[i] - b->values[i];
+      const double w = bounds_.high[i] - bounds_.low[i];
+      dist2 += d * d;
+      diag2 += w * w;
+    }
+    const double spacing = collision_resolution_ > 0.0
+                               ? collision_resolution_
+                               : getLongestValidSegmentFraction() * std::sqrt(diag2);
+    if (spacing > 0.0 && std::isfinite(spacing)) {
+      const double n_coord = std::ceil(std::sqrt(dist2) / spacing);
+      constexpr auto kMax = std::numeric_limits<unsigned int>::max();
+      n = n_coord >= static_cast<double>(kMax) ? kMax
+                                               : std::max(n, static_cast<unsigned int>(n_coord));
     }
     return std::max(n, 1u);
   }
@@ -626,6 +739,8 @@ class GeodexStateSpace : public ob::StateSpace {
   InterpolationMode interpolation_mode_ = InterpolationMode::Auto;
   InterpolationSettings interpolation_settings_;
   mutable GeodesicPathCache<ManifoldT> geodesic_cache_;
+  mutable std::optional<std::mt19937_64> stream_seeds_;  ///< set by setSamplerSeed
+  mutable std::mutex stream_mutex_;                      ///< guards stream_seeds_
 };
 
 }  // namespace geodex::integration::ompl

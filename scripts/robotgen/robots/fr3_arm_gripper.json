@@ -1,0 +1,78 @@
+{
+  "name": "fr3_arm_gripper",
+  "description": "Franka FR3 with a Robotiq 2F-85 on its coupling, fingers held 40 mm apart",
+  "vamp_struct": "FR3ArmGripper",
+  "data_dir": "data/robots/fr3_gripper",
+  "source": {
+    "xacro_file": "fr3_arm_gripper.urdf.xacro",
+    "packages": {
+      "franka_description": [
+        "FRANKA_DESCRIPTION",
+        ""
+      ],
+      "robotiq_description": [
+        "ROBOTIQ_DESCRIPTION",
+        "robotiq_description"
+      ]
+    },
+    "package": "FRANKA_DESCRIPTION"
+  },
+  "base_link": "fr3_link0",
+  "planning_joints": [
+    "fr3_joint1",
+    "fr3_joint2",
+    "fr3_joint3",
+    "fr3_joint4",
+    "fr3_joint5",
+    "fr3_joint6",
+    "fr3_joint7"
+  ],
+  "joint_positions": {
+    "robotiq_85_left_knuckle_joint": 0.44844
+  },
+  "drop_links": [
+    "fr3_link*_accelerometer_*"
+  ],
+  "frames": [
+    {
+      "name": "2f85_tcp",
+      "parent": "robotiq_85_base_link",
+      "xyz": [
+        0.0,
+        0.0,
+        0.142
+      ],
+      "rpy": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "end_effector": "2f85_tcp",
+  "spherize": {
+    "branch": 8,
+    "shrinkage": 0.9,
+    "link_scale": {
+      "fr3_link0": 2.5,
+      "fr3_link1": 1.34,
+      "fr3_link2": 1.34,
+      "fr3_link3": 1.34,
+      "fr3_link4": 1.34,
+      "fr3_link6": 2.0,
+      "fr3_link7": 1.5,
+      "robotiq_85_base_link": 4.0,
+      "robotiq_85_left_knuckle_link": 0.5,
+      "robotiq_85_right_knuckle_link": 0.5,
+      "robotiq_85_left_finger_link": 0.67,
+      "robotiq_85_right_finger_link": 0.67,
+      "robotiq_85_left_inner_knuckle_link": 0.4,
+      "robotiq_85_right_inner_knuckle_link": 0.4,
+      "robotiq_85_left_finger_tip_link": 0.75,
+      "robotiq_85_right_finger_tip_link": 0.75
+    }
+  },
+  "crba": {
+    "name": "fr3_gripper"
+  }
+}

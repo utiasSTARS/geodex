@@ -1,169 +1,146 @@
 Discrete Geodesic Interpolation
 ===============================
 
-``discrete_geodesic`` is the core interpolation function in geodex.
-Given a manifold :math:`\mathcal{M}`, a start point :math:`q_s`, and a target :math:`q_t`, it returns a sequence of points on :math:`\mathcal{M}` approximating a length-minimizing geodesic between them.
-The same subroutine drives midpoint distance estimation, edge interpolation in motion planners, and any code path that needs a geodesic on a manifold whose true logarithm is unavailable, expensive, or inconsistent with the metric in use. 
-This page explains how the algorithm works, the design decisions behind it, how to tune its parameters, and how to call it from both C++ and Python.
+``discrete_geodesic`` approximates the shortest path from a start :math:`q_s` to a target
+:math:`q_t` on a manifold :math:`\mathcal{M}` as a sequence of points. It works under any
+metric, including the kinetic-energy and clearance metrics, whose geodesics do not have a
+closed form. The planner uses it for its edges when ``interp`` is ``"riemannian_geodesic"``,
+and under ``"auto"`` when the manifold's ``geodesic`` does not follow the metric (see
+:doc:`planning`). This page describes the algorithm and its settings, and runs it on the
+sphere under two metrics.
 
 Problem statement
 -----------------
 
 .. image:: figs/discrete-geodesic-schematic.svg
    :align: center
-   :width: 85%
-   :alt: Discrete geodesic iterates on a convex manifold with tangent spaces and descent directions.
+   :width: 60%
+   :alt: Discrete geodesic iterates on a convex manifold with tangent spaces and descent
+         directions.
 
-.. raw:: html
-
-   <div style="height: 1.5em"></div>
-
-We minimize the squared Riemannian distance to the target,
+``discrete_geodesic`` minimizes the squared Riemannian distance to the target,
 
 .. math::
 
    \varphi(x) \;=\; \tfrac{1}{2}\, d_g^2(x,\, q_t),
 
-starting from :math:`x_0 = q_s` and taking Riemannian gradient steps. Every successful
-iterate is recorded as a waypoint, so on convergence the returned path traces a
-discrete approximation of the geodesic from :math:`q_s` to :math:`q_t`.
-
-At each iterate :math:`x_k`, the descent direction lives in the tangent space
-:math:`\mathcal{T}_{x_k}\mathcal{M}` and points along :math:`-\log_{x_k}(q_t)`. The
-next iterate :math:`x_{k+1}` is obtained by retracting back to :math:`\mathcal{M}`
-along that direction, capped at the current step length.
+with Riemannian gradient steps from :math:`x_0 = q_s`. Every accepted step adds a point to
+the path, and the points of a converged walk approximate the geodesic from :math:`q_s` to
+:math:`q_t`.
 
 How the algorithm works
 -----------------------
 
-Each iteration computes a descent direction in :math:`\mathcal{T}_x\mathcal{M}`,
-caps its Riemannian length at the current step budget, and moves to the next iterate
-through the manifold's retraction.
+Each iteration computes a descent direction in :math:`\mathcal{T}_x\mathcal{M}`, scales it
+to the current step cap, and moves along it with the manifold's retraction.
 
 Fast path
 ^^^^^^^^^
 
-When the manifold's log is the Riemannian logarithm of the metric in use, the
-gradient of :math:`\varphi` has a closed form:
+When the manifold's ``log`` is the Riemannian logarithm of the metric in use, the gradient of
+:math:`\varphi` has a closed form :footcite:`Lee2018`,
 
 .. math::
 
    \nabla_g \!\left[ \tfrac{1}{2}\, d_g^2(\cdot,\, q_t) \right]\!(x) \;=\; -\log_x(q_t).
 
-The algorithm uses this direction directly, normalizes it, scales by the current step
-cap, and retracts. This is by far the cheapest path: one ``log``, one ``retract``,
-and a progress check per iteration.
+The fast path steps along :math:`\log_x(q_t)`, scaled to the step cap. Each step costs one
+``log``, one ``retract`` and a progress check.
 
-Whether this fast path executes is decided by the resolver ``is_riemannian_log(m)``,
-which collapses a compile-time trait (``M::has_riemannian_log``) and a runtime hook
-(``m.has_riemannian_log_runtime()``) into a single boolean. Built-in manifolds like
-``Sphere``, ``Euclidean``, ``Torus``, and ``SE2`` under their standard metrics return
-``true`` at compile time, while ``ConfigurationSpace`` and callable metrics resolve the
-flag at runtime by asking whether the attached metric matches the base manifold's log.
-Manifolds that do not opt in always fall through to the finite-difference path below.
+``is_riemannian_log(m)`` returns whether the fast path applies. It reads the compile-time
+trait ``M::has_riemannian_log`` or the run-time hook ``m.has_riemannian_log_runtime()``. For
+the built-in manifolds, it returns ``true`` for
 
-There are cases where the closed-form direction is still geometrically useful even
-when the chosen metric is not the one implied by ``log``. Setting
-``force_log_direction = true`` skips this resolver and always uses
-:math:`-\log_x(q_t)` as the descent direction; the metric's ``norm`` and
-``distance`` continue to drive step sizing and convergence, but the resulting path
-follows the base retraction's geodesic rather than the Riemannian geodesic of the
-configured metric.
+- ``Euclidean`` and ``Torus`` with the identity metric,
+- ``Sphere`` with the round metric and the exponential map,
+- ``SO2`` with unit weight and ``SO3`` with equal weights,
+- ``SE2`` with the Euler retraction and equal translational weights,
+- a ``Product`` whose every factor returns ``true``.
 
-.. note::
+It returns ``false`` for ``SE2`` and ``SE3`` with their group exponentials and for every
+``ConfigurationSpace``. These take the finite-difference path below.
 
-   The identity :math:`\nabla_g \tfrac{1}{2} d_g^2 = -\log` is standard;
-   see :cite:`Lee2018`.
+``force_log_direction = true`` steps along :math:`\log_x(q_t)` under every metric and takes a
+finite-difference step only when a log step fails its checks. The metric still sets the step
+lengths and the stopping test, and the path follows the geodesic of the retraction instead of
+the geodesic of the metric.
 
-Finite-difference fallback
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+Finite-difference path
+^^^^^^^^^^^^^^^^^^^^^^
 
-When ``log`` is not the Riemannian logarithm of the chosen metric (anything built on
-``ConstantSPDMetric``, ``KineticEnergyMetric``, ``JacobiMetric``, ``PullbackMetric``,
-or any callable metric), or when the closed-form direction from fast path fails the progress check,
-the iteration falls back to a finite-difference natural gradient computed from the
-metric's ``inner`` product:
+When ``log`` is not the Riemannian logarithm of the metric, or when a fast-path step fails its
+checks, the iteration computes a natural gradient by finite differences. This is the case for
+a non-identity ``ConstantSPDMetric``, ``KineticEnergyMetric``, ``JacobiMetric``,
+``PullbackMetric`` and callable metrics.
 
-1. Build an orthonormal tangent basis :math:`\{e_i\}` at the current point. If the
-   manifold exposes a ``project`` method, ambient seed vectors are projected to
-   :math:`\mathcal{T}_x\mathcal{M}` before Gram-Schmidt orthonormalization.
-2. Assemble the metric tensor in this basis,
-   :math:`G_{ij} = g_x(e_i, e_j)`. When the metric provides a batched
-   ``inner_matrix``, the whole Gram matrix is filled in one call.
-3. Estimate the coordinate-space gradient :math:`g_i = \partial_{e_i} \varphi(x)` by
-   central finite differences along each basis direction. The :math:`d_g^2` samples
-   use a third-order-accurate midpoint surrogate guarded by the Riemannian-midpoint
-   identity :math:`\log_m(a) = -\log_m(b)`; when the relative deviation exceeds
-   ``fd_midpoint_guard_tau``, the sample falls back to :math:`\|\log_a(b)\|_g` for
-   that basis direction and the count is reported on
-   ``InterpolationResult::fd_midpoint_fallbacks``.
-4. Solve :math:`G\,\alpha = -g` via Cholesky. The natural gradient in
-   ambient coordinates is :math:`v = \sum_i \alpha_i\, e_i`.
+1. Build an orthonormal tangent basis :math:`\{e_i\}` at the current point. A manifold with
+   a ``project`` method projects ambient seed vectors to :math:`\mathcal{T}_x\mathcal{M}`
+   before Gram-Schmidt orthonormalization.
+2. Assemble the metric tensor in this basis, :math:`G_{ij} = g_x(e_i, e_j)`. A metric with
+   ``inner_matrix`` fills the whole matrix at once.
+3. Estimate the gradient :math:`g_i = \partial_{e_i} \varphi(x)` by central finite
+   differences along each basis direction. Each sample of :math:`d_g^2` uses a third-order
+   midpoint estimate of the distance :footcite:`kyaw2026geometry`. When the estimate
+   deviates from the midpoint identity :math:`\log_m(a) = -\log_m(b)` by more than the
+   relative tolerance ``fd_midpoint_guard_tau``, both samples of that basis direction use
+   :math:`\|\log_a(b)\|_g` instead, and ``fd_midpoint_fallbacks`` counts the direction.
+4. Solve :math:`G\,\alpha = -g` by Cholesky. The natural gradient in ambient coordinates is
+   :math:`v = \sum_i \alpha_i\, e_i`.
 
-The fallback engages on a per-step basis, so a single walk can mix fast-path and
-finite-difference iterations as the geometry demands.
+``discrete_geodesic`` chooses between the two paths at every step, and one walk can mix
+both.
 
 Adaptive step control and termination
 -------------------------------------
 
-A retraction is only an approximation of the exponential map, and on a curved
-manifold an aggressive step can either overshoot the target or land somewhere whose
-realized length differs noticeably from the requested length. After each candidate
-step, the algorithm measures :math:`\|\log_x(x_{\text{next}})\|_g` and compares it to
-the requested step length. The fallback is two-stage: when the fast-path candidate
-fails either due to the progress check or the distortion ratio, the iteration falls
-through to the finite-difference path at the same step cap, without counting a
-halving. When the FD candidate also fails, the step cap is halved, the iteration
-retries, and ``distortion_halvings`` increments. After a successful step, the cap
-regrows by ``growth_factor`` until it reaches ``step_size`` again. This
-trust-region behavior keeps the walk stable under heavy curvature without forcing
-the user to pick a tiny global step size.
+A retraction only approximates the exponential map. On a curved manifold, a long step can
+overshoot the target or move a different length than requested. After each step, the
+algorithm measures its length :math:`\|\log_x(x_{\text{next}})\|_g`. It accepts the step
+when the step moves closer to the target and its length is at most ``distortion_ratio``
+times the requested length.
 
-The loop ends with one of the following statuses:
+- A rejected fast-path step is tried again as a finite-difference step of the same length.
+- A rejected finite-difference step reduces the step cap by a factor of two.
+- After an accepted step, the cap grows by ``growth_factor``, up to ``step_size``.
+
+The walk ends with one of the following statuses.
 
 ``Converged``
-   The Riemannian distance to the target dropped below ``convergence_tol`` or below
-   ``convergence_rel * initial_distance``. The returned path ends at, or very close
-   to, ``target``.
+   The distance to the target, :math:`\|\log_x(q_t)\|_g`, dropped below ``convergence_tol``
+   or below ``convergence_rel`` times the initial distance. The path ends at or very close to
+   ``target``.
 
 ``MaxStepsReached``
-   The iteration budget was exhausted. The path is still a valid descent sequence,
-   but it has not reached the target. Inspect ``final_distance`` to decide whether
-   it is good enough.
+   The walk used ``max_steps`` accepted steps without reaching the target.
+   ``final_distance`` is the remaining distance.
 
 ``GradientVanished``
-   The Riemannian gradient norm collapsed at a non-target point. This is rare in
-   practice and usually indicates that the metric or finite-difference step is
-   misconfigured.
+   The Riemannian gradient norm fell below ``gradient_eps`` away from the target. Check the
+   metric and the finite-difference step.
 
 ``CutLocus``
-   ``log`` returned (numerically) zero while the ambient gap to the target is
-   nonzero. The classic example is exact antipodal points on the sphere, where the
-   logarithm is multivalued. This is the correct response, not a bug.
+   ``log`` returned a zero vector at a point other than the target, as for antipodal points
+   on the sphere.
 
 ``StepShrunkToZero``
-   The distortion guard halved the step cap below ``min_step_size``. This usually
-   means the retraction is incompatible with the metric in this neighborhood.
+   The step cap fell below ``min_step_size``, where the retraction and the metric disagree
+   strongly.
 
 ``DegenerateInput``
-   ``start`` and ``target`` were the same point (within tolerance) at entry.
+   ``start`` and ``target`` were equal at entry.
 
-Beyond the status, the result carries diagnostic counters that are useful for
-understanding how the walk went. ``iterations`` is the number of accepted steps,
-equal to the returned path length minus one. ``distortion_halvings`` counts how
-many times the FD path forced a step-cap halving, and a nonzero value under an
-otherwise fast-path-eligible manifold signals a poor retraction-metric match in
-this neighbourhood. ``fd_midpoint_fallbacks`` counts how many FD basis samples the
-Riemannian-midpoint guard rejected, which flags non-Riemannian retractions,
-cut-locus crossings, or non-smooth metric features within the finite-difference
-neighbourhood.
+The result also counts the work. ``iterations`` is the number of accepted steps, one less
+than the number of points. ``distortion_halvings`` counts the reductions of the step cap. On
+the fast path, a nonzero count marks a region where the retraction and the metric disagree.
+``fd_midpoint_fallbacks`` counts the basis directions whose finite-difference samples the
+midpoint check rejected.
 
 Tuning the parameters
 ---------------------
 
-Every parameter lives on ``InterpolationSettings``. Defaults are sensible for moderate
-problems on the unit sphere; you should expect to revisit ``step_size`` and
-``max_steps`` for tighter state spaces or heavier metrics.
+Every parameter is a field of ``InterpolationSettings``. The defaults suit moderate problems on
+the unit sphere. For smaller spaces or heavier metrics, lower ``step_size`` and raise
+``max_steps``.
 
 .. list-table::
    :header-rows: 1
@@ -174,195 +151,110 @@ problems on the unit sphere; you should expect to revisit ``step_size`` and
      - Effect
    * - ``step_size``
      - 0.5
-     - Maximum Riemannian step per iteration. Also the effective path resolution:
-       consecutive returned points are at most ``step_size`` apart in the metric.
-       Smaller values give a denser path and a smoother walk under aggressive
-       curvature, at the cost of more iterations.
+     - Maximum Riemannian step per iteration. Consecutive points of the path are at most
+       ``step_size`` apart in the metric. Smaller values give a denser path and a steadier
+       walk under strong curvature, with more iterations.
    * - ``convergence_tol``
      - 1e-4
-     - Absolute stop threshold on the Riemannian distance to the target.
+     - Absolute stop threshold on the distance to the target.
    * - ``convergence_rel``
      - 1e-3
-     - Relative stop threshold; the walk also stops when the distance drops below
-       ``convergence_rel * initial_distance``. Useful when the working scale of the
-       problem is much larger or smaller than the absolute tolerance.
+     - Relative stop threshold. The walk also stops when the distance drops below
+       ``convergence_rel`` times the initial distance.
    * - ``max_steps``
      - 100
-     - Successful gradient steps before giving up. Distortion retries do not count.
+     - Accepted steps before the walk stops. Rejected steps do not count.
    * - ``force_log_direction``
      - false
-     - Force the log-based descent direction even when ``is_riemannian_log(m)``
-       would return false. The metric still drives norm, distance, and convergence,
-       but the path follows the base retraction's geodesic rather than the
-       Riemannian geodesic of the configured metric. Use when the FD fallback's
-       natural oscillation is visible and a smooth path matters more than strict
-       metric fidelity.
+     - Step along :math:`\log_x(q_t)` under every metric (see `Fast path`_). Use it for a
+       smooth path when the finite-difference walk oscillates.
    * - ``fd_epsilon``
      - 0.0
-     - Central finite-difference step. Zero auto-selects
-       :math:`\max(10^{-8},\, 10^{-5} \cdot \max(1, d_0))` from the initial distance,
-       which is the right choice in nearly all cases.
+     - Central finite-difference step. 0 selects
+       :math:`\max(10^{-8},\, 10^{-5} \cdot \max(1, d_0))` from the initial distance
+       :math:`d_0`.
    * - ``fd_midpoint_guard_tau``
      - 0.25
-     - Relative-error threshold above which the midpoint-distance surrogate used
-       inside the FD gradient is rejected and the sample falls back to
-       :math:`\|\log\|_g` for that basis direction. Lower values are stricter; set to
-       0 to force the log-based sample on every basis direction.
+     - Relative deviation above which a finite-difference sample uses :math:`\|\log\|_g`
+       instead of the midpoint estimate. Lower values are stricter, and 0 uses
+       :math:`\|\log\|_g` for every sample.
    * - ``distortion_ratio``
      - 1.5
-     - How much the realized step length is allowed to exceed the requested length
-       before the retraction is considered to have overshot. Lower this for
-       retractions that drift visibly from the exponential map.
+     - Largest ratio of the realized to the requested step length. Lower it for
+       retractions that drift far from the exponential map.
    * - ``growth_factor``
      - 1.5
-     - How quickly the step cap regrows after a successful iteration. Set to ``1.0``
-       to disable growth and keep the cap fixed at whatever the distortion guard
-       last permitted.
+     - Growth of the step cap after an accepted step. ``1.0`` keeps the cap where the last
+       reduction left it.
    * - ``min_step_size``
      - 1e-12
-     - Floor on the step cap. The walk fails with ``StepShrunkToZero`` once it is
-       crossed.
+     - Floor on the step cap. The walk stops with ``StepShrunkToZero`` below it.
    * - ``gradient_eps``
      - 1e-12
-     - Riemannian-norm threshold below which the gradient is considered vanished.
+     - Riemannian norm below which the gradient counts as vanished.
    * - ``cut_locus_eps``
      - 1e-10
-     - Threshold on :math:`\|\log_x(q_t)\|_g` that, combined with a nonzero ambient
-       gap, flags a cut-locus situation.
+     - Norm of :math:`\log_{q_s}(q_t)` below which distinct endpoints count as a cut-locus
+       pair.
 
-In day-to-day use, the three parameters worth reaching for first are ``step_size``,
-``convergence_tol``, and ``distortion_ratio``. ``step_size`` has the most impact:
-halving it doubles both the path resolution and the iteration count, but it also
-makes the walk far more tolerant of curvature and metric anisotropy.
-``convergence_tol`` and ``convergence_rel`` together set how tightly the final
-iterate must approach the target; loosen them when the downstream consumer only
-needs a coarse path. ``distortion_ratio`` is the safety valve for retractions that
-are not isometries, such as ``SphereProjectionRetraction`` under an anisotropic
-metric or ``SE2EulerRetraction`` away from :math:`\theta = 0`.
+In a loop of many calls, pass an ``InterpolationCache`` to reuse the basis, the metric tensor
+and the gradient buffers. The cache sizes itself on first use and does not allocate after
+that.
 
-For hot loops, pass an ``InterpolationCache`` to reuse the basis matrix, Gram
-matrix, and gradient buffers across calls. The cache is resized once on first use
-and then avoids all per-iteration heap allocations.
+A worked example on :math:`\mathbb{S}^2` with an anisotropic metric
+--------------------------------------------------------------------
 
-Worked example: :math:`\mathbf{S}^2` with an anisotropic metric
----------------------------------------------
+The example runs ``discrete_geodesic`` twice on the unit sphere, from the north pole to a point
+in the upper hemisphere. The first run uses the round metric, takes the fast path and follows
+the great circle. The second run uses the constant SPD metric
+:math:`A = \mathrm{diag}(25, 1, 1)`, under which motion along :math:`x` costs five times as
+much, and takes the finite-difference path.
 
-The example below runs ``discrete_geodesic`` twice on the unit 2-sphere between the
-north pole and a target in the upper hemisphere. The first call uses the default
-round metric, so the fast path executes and the walk traces the great circle exactly.
-The second call swaps in a constant SPD metric :math:`A = \mathrm{diag}(25, 1, 1)`
-that heavily penalizes motion in the :math:`x` direction; the finite-difference
-fallback runs, and the resulting path bends visibly away from the great circle in
-order to spend less length along the penalized axis.
+.. code-pair:: concepts/discrete_geodesic sphere
 
-.. tabs::
+It prints ``Converged 27 Converged 89``, the status and the number of points of each path.
 
-   .. code-tab:: c++
+.. robot-scene:: discrete-geodesic-sphere
+   :width: 75%
+   :aspect: 4/3
+   :alt: Two paths on the unit sphere from the north pole to a point in the upper
+         hemisphere, a blue great circle and an orange curve that bends away from it.
 
-      #include <Eigen/Core>
-      #include <geodex/geodex.hpp>
-
-      using namespace geodex;
-
-      int main() {
-        const Eigen::Vector3d start(0.0, 0.0, 1.0);
-        const Eigen::Vector3d target(
-            std::sin(1.3) * std::cos(0.5),
-            std::sin(1.3) * std::sin(0.5),
-            std::cos(1.3));
-
-        InterpolationSettings s;
-        s.step_size = 0.05;
-        s.max_steps = 500;
-
-        // 1. Round sphere — fast path, traces the great circle.
-        Sphere<> round_sphere;
-        auto great = discrete_geodesic(round_sphere, start, target, s);
-
-        // 2. Anisotropic constant-SPD metric — finite-difference fallback.
-        Eigen::Matrix3d A = Eigen::Matrix3d::Identity();
-        A(0, 0) = 25.0;
-        Sphere<2, ConstantSPDMetric<3>> stretched{ConstantSPDMetric<3>{A}};
-        auto bent = discrete_geodesic(stretched, start, target, s);
-
-        // great.path and bent.path are std::vector<Eigen::Vector3d> waypoints.
-      }
-
-   .. code-tab:: py
-
-      import numpy as np
-      import geodex
-
-      start  = np.array([0.0, 0.0, 1.0])
-      target = np.array([
-          np.sin(1.3) * np.cos(0.5),
-          np.sin(1.3) * np.sin(0.5),
-          np.cos(1.3),
-      ])
-
-      settings = geodex.InterpolationSettings(step_size=0.05, max_steps=500)
-
-      # 1. Round sphere — fast path, traces the great circle.
-      round_sphere = geodex.Sphere()
-      great = geodex.discrete_geodesic(round_sphere, start, target, settings)
-
-      # 2. Anisotropic constant-SPD metric, attached via ConfigurationSpace.
-      A = np.diag([25.0, 1.0, 1.0])
-      stretched = geodex.ConfigurationSpace(round_sphere, geodex.ConstantSPDMetric(A))
-      bent = geodex.discrete_geodesic(stretched, start, target, settings)
-
-The two paths visualised on :math:`\mathbb{S}^2`:
-
-.. image:: figs/discrete-geodesic-s2.svg
-   :align: center
-   :width: 50%
-   :alt: Discrete geodesic walks on the 2-sphere under round and anisotropic metrics.
-
-The blue curve is the great circle path returned by the fast path under the
-round metric. The orange curve is the natural-gradient walk under
-:math:`A = \mathrm{diag}(25, 1, 1)`; both endpoints are identical, but the second
-path leaves the great circle to favour motion along :math:`y` and :math:`z`, where
-the metric is cheaper.
+   The blue curve is the great circle of the round metric. The orange curve is the walk under
+   :math:`A = \mathrm{diag}(25, 1, 1)`. It has the same endpoints and bends away from the
+   great circle to move less along :math:`x`, where motion costs five times as much. Drag to
+   orbit, and use the controls to pause the balls or move them along the paths.
 
 Common pitfalls
 ---------------
 
 .. warning::
 
-   - Anisotropic metrics combined with first-order retractions such as
-     ``SphereProjectionRetraction`` rely on the distortion guard to stay stable.
-     Do not raise ``distortion_ratio`` past 2 unless you have measured what the
-     retraction actually does in your neighborhood.
-   - Near-antipodal inputs on the sphere may legitimately terminate with
-     ``CutLocus``. The logarithm is multivalued there, and no descent direction is
-     well defined. Pre-split the problem if you need to traverse the cut.
-   - The default ``step_size = 0.5`` is large for tight state spaces or heavy metrics.
-     If you see ``MaxStepsReached`` or many distortion halvings in
-     ``distortion_halvings``, halve ``step_size`` first and re-run.
-   - Always check ``result.status`` before consuming ``result.path``. A walk that
-     stopped on ``MaxStepsReached`` still returns a valid descent sequence, but its
-     last point is not the target.
-   - SE(2) under an anisotropic or clearance-based metric tends to produce a
-     visibly bumpy path because the FD natural gradient reacts to small-scale
-     metric variation between samples. When a smooth path matters more than strict
-     Riemannian fidelity, set ``force_log_direction = true`` and inspect
-     ``fd_midpoint_fallbacks`` to confirm the FD guard was indeed tripping on the
-     original run.
+   - An anisotropic metric with a retraction other than the exponential map, such as
+     ``SphereProjectionRetraction``, relies on the distortion check. Keep
+     ``distortion_ratio`` at 2 or below unless you have measured the retraction in your
+     neighborhood.
+   - Near-antipodal endpoints on the sphere can end with ``CutLocus``, where the descent
+     direction is not defined. Split the query at an intermediate point to cross the cut locus.
+   - Check ``result.status`` before using ``result.path``. After ``MaxStepsReached``, the
+     last point of the path is not the target.
+   - On SE(2) under an anisotropic or clearance metric, the finite-difference natural
+     gradient follows small variations of the metric between samples, and the path can come
+     out bumpy. For a smooth path, set ``force_log_direction = true``. A nonzero
+     ``fd_midpoint_fallbacks`` on the finite-difference walk marks where the midpoint check
+     fired.
 
 See also
 --------
 
-- :doc:`architecture` for the policy types that ``discrete_geodesic`` consumes.
+- :doc:`architecture` for the policy types that ``discrete_geodesic`` uses.
 - :doc:`/tutorials/geodex-basics` for end-to-end use of the library.
-- :doc:`/api/index` for the full API reference of ``discrete_geodesic``,
-  ``InterpolationSettings``, ``InterpolationResult``, and
-  ``InterpolationCache``.
+- :doc:`/api/cpp` and :doc:`/api/python` for the reference of ``discrete_geodesic``,
+  ``InterpolationSettings``, ``InterpolationResult`` and ``InterpolationCache``.
 
 References
 ----------
 
-Full details are in our WAFR 2026 paper :cite:`kyaw2026geometry`.
-This page is a usage-oriented summary of the same algorithm.
+Kyaw and Kelly describe the algorithm in full :footcite:`kyaw2026geometry`.
 
-.. bibliography::
-   :filter: docname in docnames
+.. footbibliography::

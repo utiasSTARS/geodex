@@ -42,7 +42,7 @@ struct CircleSmoothSDF {
   double operator()(const auto& q) const {
     if (circles.empty()) return 1e10;
 
-    // log-sum-exp smooth-min: d = -1/β * log(Σ exp(-β * d_i))
+    // The log-sum-exp smooth-min d = -1/β * log(Σ exp(-β * d_i)).
     double max_neg_d = -1e30;
     for (const auto& c : circles) {
       double dx = q[0] - c.cx, dy = q[1] - c.cy;
@@ -65,7 +65,7 @@ struct CircleSmoothSDF {
 // Tests
 // ---------------------------------------------------------------------------
 
-// (a) Far from obstacles: conformal factor should be ~1.0.
+// (a) The conformal factor is about 1.0 far from obstacles.
 TEST(SDFConformalMetric, FarFromObstacle) {
   geodex::SE2LeftInvariantMetric base{1.0, 1.0, 0.5};
   CircleSDF sdf{5.0, 5.0, 1.0};
@@ -76,7 +76,7 @@ TEST(SDFConformalMetric, FarFromObstacle) {
   EXPECT_NEAR(c, 1.0, 1e-6);  // exp(-3*45) ≈ 0
 }
 
-// (b) At obstacle surface: conformal factor should be 1 + kappa.
+// (b) The conformal factor is 1 + kappa on the obstacle surface.
 TEST(SDFConformalMetric, AtObstacleSurface) {
   geodex::SE2LeftInvariantMetric base{1.0, 1.0, 0.5};
   CircleSDF sdf{5.0, 5.0, 1.0};
@@ -89,7 +89,7 @@ TEST(SDFConformalMetric, AtObstacleSurface) {
   EXPECT_NEAR(c, 1.0 + kappa, 1e-6);
 }
 
-// (c) Inside obstacle: conformal factor should be > 1 + kappa.
+// (c) The conformal factor exceeds 1 + kappa inside the obstacle.
 TEST(SDFConformalMetric, InsideObstacle) {
   geodex::SE2LeftInvariantMetric base{1.0, 1.0, 0.5};
   CircleSDF sdf{5.0, 5.0, 1.0};
@@ -102,7 +102,7 @@ TEST(SDFConformalMetric, InsideObstacle) {
   EXPECT_GT(c, 1.0 + kappa);
 }
 
-// (d) Monotonicity: conformal factor decreases with distance from obstacle.
+// (d) The conformal factor decreases with distance from the obstacle.
 TEST(SDFConformalMetric, MonotonicDecrease) {
   geodex::SE2LeftInvariantMetric base{1.0, 1.0, 0.5};
   CircleSDF sdf{5.0, 5.0, 1.0};
@@ -150,13 +150,13 @@ TEST(SDFConformalMetric, NormScaling) {
   EXPECT_NEAR(scaled_norm, std::sqrt(c) * base_norm, 1e-12);
 }
 
-// (g) Smooth-min SDF: agrees with true min for well-separated obstacles.
+// (g) The smooth-min SDF agrees with the true min for well-separated obstacles.
 TEST(CircleSmoothSDF, AgreesWithTrueMin) {
   CircleSmoothSDF smooth;
   smooth.circles = {{0.0, 0.0, 1.0}, {10.0, 0.0, 1.0}};
   smooth.beta_sdf = 20.0;
 
-  // Point near first obstacle only — smooth-min ≈ true min
+  // Near the first obstacle only, smooth-min ≈ true min.
   Eigen::Vector2d q_near(2.0, 0.0);
   double d_true = 1.0;  // dist to first circle surface = 2-1 = 1
   double d_smooth = smooth(q_near);
@@ -166,11 +166,11 @@ TEST(CircleSmoothSDF, AgreesWithTrueMin) {
   Eigen::Vector2d q_mid(5.0, 0.0);
   double d_true_mid = 4.0;  // dist to either surface = 5-1 = 4
   double d_smooth_mid = smooth(q_mid);
-  // Smooth-min slightly below true min at Voronoi boundary
+  // Smooth-min lies slightly below the true min at the Voronoi boundary.
   EXPECT_NEAR(d_smooth_mid, d_true_mid, 0.1);
 }
 
-// (h) Smooth-min SDF: smooth gradient at Voronoi boundary.
+// (h) The smooth-min SDF has a smooth gradient at the Voronoi boundary.
 TEST(CircleSmoothSDF, SmoothGradientAtVoronoi) {
   CircleSmoothSDF smooth;
   smooth.circles = {{0.0, 0.0, 1.0}, {6.0, 0.0, 1.0}};
@@ -184,10 +184,10 @@ TEST(CircleSmoothSDF, SmoothGradientAtVoronoi) {
 
   double grad_x = (smooth(q_plus) - smooth(q_minus)) / (2.0 * h);
 
-  // At midpoint between equal obstacles: gradient in x should be ~0 by symmetry
+  // At the midpoint between equal obstacles the x gradient is about 0 by symmetry.
   EXPECT_NEAR(grad_x, 0.0, 1e-3);
 
-  // Gradient should be continuous: check on both sides
+  // The gradient is continuous on both sides.
   Eigen::Vector2d q_left(2.9, 0.0);
   Eigen::Vector2d q_right(3.1, 0.0);
   Eigen::Vector2d q_left_p(2.9 + h, 0.0);
@@ -199,8 +199,8 @@ TEST(CircleSmoothSDF, SmoothGradientAtVoronoi) {
   double grad_right = (smooth(q_right_p) - smooth(q_right_m)) / (2.0 * h);
 
   // Gradients point away from nearest obstacle (SDF increases away from surface)
-  EXPECT_GT(grad_left, 0.0);   // closer to obstacle 1: gradient points right (away)
-  EXPECT_LT(grad_right, 0.0);  // closer to obstacle 2: gradient points left (away)
+  EXPECT_GT(grad_left, 0.0);   // Near obstacle 1 the gradient points right, away from it.
+  EXPECT_LT(grad_right, 0.0);  // Near obstacle 2 the gradient points left, away from it.
 }
 
 // (i) SDFConformalMetric works with ConfigurationSpace.
@@ -222,7 +222,7 @@ TEST(SDFConformalMetric, WorksWithConfigurationSpace) {
   EXPECT_NEAR(ip, expected, 1e-12);
 }
 
-// (j) Euclidean manifold: conformal metric produces longer paths near obstacles.
+// (j) On a Euclidean manifold the conformal metric produces longer paths near obstacles.
 TEST(SDFConformalMetric, EuclideanDistanceIncreasesNearObstacle) {
   using Euclidean2 = geodex::Euclidean<2>;
   geodex::IdentityMetric<2> base;
@@ -241,100 +241,4 @@ TEST(SDFConformalMetric, EuclideanDistanceIncreasesNearObstacle) {
 
   // Distance near obstacle should be larger (higher metric cost)
   EXPECT_GT(d_near, d_far);
-}
-
-// ---------------------------------------------------------------------------
-// Path smoothing tests
-// ---------------------------------------------------------------------------
-
-// (k) Shortcutting reduces path length on SE(2).
-TEST(PathSmoothing, ShortcuttingReducesVertices) {
-  geodex::SE2LeftInvariantMetric metric{1.0, 1.0, 0.5};
-  geodex::SE2<> manifold{metric};
-
-  // Create a zigzag path with redundant vertices.
-  std::vector<Eigen::Vector3d> path = {
-      {0.0, 0.0, 0.0}, {1.0, 1.0, 0.1},  {2.0, 0.5, 0.0},
-      {3.0, 1.5, 0.2}, {4.0, 0.0, -0.1}, {5.0, 1.0, 0.0},
-  };
-  auto validity = [](const Eigen::Vector3d&) { return true; };  // no obstacles
-
-  geodex::algorithm::PathSmoothingSettings settings;
-  settings.max_shortcut_attempts = 100;
-  settings.lbfgs_target_segments = 16;
-  settings.lbfgs_max_iterations = 50;
-
-  auto result = geodex::algorithm::smooth_path(manifold, validity, path, settings);
-
-  // Should have removed some vertices and reduced energy.
-  EXPECT_GE(result.vertices_removed, 0);
-  EXPECT_TRUE(result.collision_free);
-  EXPECT_GT(result.path.size(), 1u);
-}
-
-// (l) L-BFGS smoothing reduces energy on SE(2) with anisotropic metric.
-TEST(PathSmoothing, LBFGSReducesEnergy) {
-  geodex::SE2LeftInvariantMetric metric{1.0, 100.0, 0.5};
-  geodex::SE2<> manifold{metric};
-
-  // Straight-line path in coordinates — not a geodesic for anisotropic metric.
-  std::vector<Eigen::Vector3d> path;
-  for (int i = 0; i <= 10; ++i) {
-    double t = static_cast<double>(i) / 10.0;
-    path.push_back({t * 5.0, t * 2.0 + 0.5 * std::sin(t * 6.0), t * 0.5});
-  }
-
-  auto validity = [](const Eigen::Vector3d&) { return true; };
-
-  // Compute initial energy.
-  double E_before = 0.0;
-  for (std::size_t k = 0; k + 1 < path.size(); ++k) {
-    double d = manifold.distance(path[k], path[k + 1]);
-    E_before += d * d;
-  }
-  E_before *= static_cast<double>(path.size() - 1);
-
-  geodex::algorithm::PathSmoothingSettings settings;
-  settings.max_shortcut_attempts = 50;
-  settings.lbfgs_target_segments = 32;
-  settings.lbfgs_max_iterations = 100;
-
-  auto result = geodex::algorithm::smooth_path(manifold, validity, path, settings);
-
-  // Smoothed path should have lower energy.
-  EXPECT_LT(result.energy, E_before);
-  EXPECT_TRUE(result.collision_free);
-}
-
-// (m) Collision-constrained smoothing respects obstacles.
-TEST(PathSmoothing, RespectsObstacles) {
-  geodex::SE2LeftInvariantMetric metric{1.0, 1.0, 0.5};
-  geodex::SE2<> manifold{metric};
-
-  // Path that goes around an obstacle at (2.5, 0.5).
-  std::vector<Eigen::Vector3d> path = {
-      {0.0, 0.0, 0.0},  {1.0, -1.0, 0.0}, {2.0, -2.0, 0.0},
-      {3.0, -2.0, 0.0}, {4.0, -1.0, 0.0}, {5.0, 0.0, 0.0},
-  };
-
-  double obs_cx = 2.5, obs_cy = 0.5, obs_r = 0.8;
-  auto validity = [&](const Eigen::Vector3d& q) {
-    double dx = q[0] - obs_cx, dy = q[1] - obs_cy;
-    return dx * dx + dy * dy > obs_r * obs_r;
-  };
-
-  geodex::algorithm::PathSmoothingSettings settings;
-  settings.max_shortcut_attempts = 100;
-  settings.lbfgs_target_segments = 32;
-  settings.lbfgs_max_iterations = 100;
-
-  auto result = geodex::algorithm::smooth_path(manifold, validity, path, settings);
-
-  EXPECT_TRUE(result.collision_free);
-
-  // All path points should be outside the obstacle.
-  for (const auto& q : result.path) {
-    double dx = q[0] - obs_cx, dy = q[1] - obs_cy;
-    EXPECT_GT(dx * dx + dy * dy, obs_r * obs_r * 0.99);
-  }
 }
