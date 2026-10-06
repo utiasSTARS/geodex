@@ -1,0 +1,13 @@
+{
+  "name": "baxter",
+  "description": "Rethink Baxter, both arms, VAMP's own kernel",
+  "vamp_kernel": "{vamp}/src/impl/vamp/robots/baxter.hh",
+  "spherized_urdf": "{vamp}/resources/baxter/baxter_spherized.urdf",
+  "limits_urdfs": [
+    "data/robots/baxter/baxter.urdf"
+  ],
+  "crba": {
+    "name": "baxter",
+    "urdf": "data/robots/baxter/baxter.urdf"
+  }
+}

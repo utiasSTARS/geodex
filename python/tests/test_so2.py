@@ -51,3 +51,12 @@ class TestSO2:
         r = geodex.discrete_geodesic(self.so2, p, q)
         assert r.final_distance < 1e-2
         assert isinstance(r.path, np.ndarray)
+
+
+def test_coordinate_metric_periods_and_bound():
+    so2 = geodex.SO2(weight=4.0)
+    assert np.allclose(so2.coordinate_metric(np.zeros(1)), [[4.0]])
+    assert np.allclose(so2.periods(), [2.0 * np.pi])
+    h = so2.matrix_lower_bound()
+    # The bound wraps at the cut. Two angles on either side of it are close.
+    assert h(np.array([np.pi - 0.1]), np.array([-np.pi + 0.1])) == pytest.approx(0.4, rel=1e-3)

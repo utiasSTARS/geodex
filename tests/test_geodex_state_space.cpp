@@ -2,18 +2,28 @@
 /// @brief Tests for GeodexStateSpace OMPL integration.
 
 #include <cmath>
+#include <cstdint>
 
+#include <algorithm>
+#include <limits>
 #include <numbers>
+#include <stdexcept>
+#include <string>
+#include <thread>
+#include <vector>
 
 #include <gtest/gtest.h>
 #include <ompl/base/DiscreteMotionValidator.h>
 #include <ompl/base/SpaceInformation.h>
 #include <ompl/base/spaces/RealVectorBounds.h>
+#include <ompl/base/spaces/RealVectorStateSpace.h>
 
 #include "geodex/algorithm/interpolation.hpp"
+#include "geodex/core/sampler.hpp"
 #include "geodex/integration/ompl/geodex_state_space.hpp"
 #include "geodex/manifold/euclidean.hpp"
 #include "geodex/manifold/se2.hpp"
+#include "geodex/manifold/sphere.hpp"
 #include "geodex/metrics/constant_spd.hpp"
 
 namespace ob = ompl::base;
@@ -21,8 +31,8 @@ using SE2Manifold = geodex::SE2<>;
 using StateSpace = geodex::integration::ompl::GeodexStateSpace<SE2Manifold>;
 using StateType = geodex::integration::ompl::GeodexState<SE2Manifold>;
 
-// Anisotropic SE2 types (car-like: expensive lateral motion).
-using AnisotropicSE2 = geodex::SE2<geodex::SE2LeftInvariantMetric, geodex::SE2ExponentialMap>;
+// Anisotropic SE2 types, car-like with expensive lateral motion.
+using AnisotropicSE2 = geodex::SE2<geodex::SE2LeftInvariantMetric, geodex::SE2LeftExponentialMap>;
 using AnisotropicSE2Space = geodex::integration::ompl::GeodexStateSpace<AnisotropicSE2>;
 using AnisotropicSE2State = geodex::integration::ompl::GeodexState<AnisotropicSE2>;
 
@@ -31,7 +41,7 @@ using AnisotropicEuclidean = geodex::Euclidean<2, geodex::ConstantSPDMetric<2>>;
 using AnisotropicEuclideanSpace = geodex::integration::ompl::GeodexStateSpace<AnisotropicEuclidean>;
 using AnisotropicEuclideanState = geodex::integration::ompl::GeodexState<AnisotropicEuclidean>;
 
-/// Helper: create SE(2) OMPL bounds.
+/// Create SE(2) OMPL bounds.
 static ob::RealVectorBounds makeSE2Bounds(double x_lo, double x_hi, double y_lo, double y_hi) {
   ob::RealVectorBounds bounds(3);
   bounds.setLow(0, x_lo);
@@ -43,17 +53,17 @@ static ob::RealVectorBounds makeSE2Bounds(double x_lo, double x_hi, double y_lo,
   return bounds;
 }
 
-/// Helper: create a large SE(2) state space (mimicking Willow Garage scale).
+/// Create a large SE(2) state space.
 static std::shared_ptr<StateSpace> makeLargeSpace() {
   geodex::SE2LeftInvariantMetric metric{1.0, 1.0, 0.5};
-  geodex::SE2<> manifold{metric, geodex::SE2ExponentialMap{},
+  geodex::SE2<> manifold{metric, geodex::SE2LeftExponentialMap{},
                          Eigen::Vector3d(0.0, 0.0, -std::numbers::pi),
                          Eigen::Vector3d(60.0, 48.0, std::numbers::pi)};
 
   return std::make_shared<StateSpace>(manifold, makeSE2Bounds(0.0, 60.0, 0.0, 48.0));
 }
 
-/// Helper: set state values.
+/// Set state values.
 static void setState(ob::State* state, double x, double y, double theta) {
   auto* s = state->as<StateType>();
   s->values[0] = x;
@@ -68,8 +78,8 @@ static void setState(ob::State* state, double x, double y, double theta) {
 TEST(GeodexStateSpaceTest, ValidSegmentCount_DefaultMatchesOMPL) {
   auto space = makeLargeSpace();
 
-  // Must create SpaceInformation and call setup() so longestValidSegmentLength_
-  // is computed from longestValidSegmentFraction * maxExtent.
+  // SpaceInformation::setup() computes longestValidSegmentLength_ from
+  // longestValidSegmentFraction * maxExtent.
   auto si = std::make_shared<ob::SpaceInformation>(space);
   si->setStateValidityChecker([](const ob::State*) { return true; });
   si->setup();
@@ -79,7 +89,7 @@ TEST(GeodexStateSpaceTest, ValidSegmentCount_DefaultMatchesOMPL) {
   setState(s1, 2.0, 5.0, 0.0);
   setState(s2, 8.0, 5.0, 0.0);
 
-  // OMPL default: ceil(distance / (longestValidSegmentFraction * maxExtent))
+  // The OMPL default is ceil(distance / (longestValidSegmentFraction * maxExtent)).
   double dist = space->distance(s1, s2);
   double lvs = space->getLongestValidSegmentFraction() * space->getMaximumExtent();
   unsigned int expected = static_cast<unsigned int>(std::ceil(dist / lvs));
@@ -112,7 +122,7 @@ TEST(GeodexStateSpaceTest, ValidSegmentCount_CollisionResolutionIncreasesCount) 
 }
 
 // -----------------------------------------------------------------------
-// Test (c): Thin wall detection — the critical regression test
+// Test (c): Thin wall detection
 // -----------------------------------------------------------------------
 
 /// Validity checker that rejects states with 5.0 < x < 5.2 (a 0.2m wall).
@@ -133,7 +143,7 @@ TEST(GeodexStateSpaceTest, CollisionCheck_ThinWallDetected) {
   auto si = std::make_shared<ob::SpaceInformation>(space);
   si->setStateValidityChecker(std::make_shared<ThinWallChecker>(si));
 
-  // Without collision resolution: wall should be missed
+  // Without a collision resolution the check misses the wall.
   si->setup();
 
   auto* s1 = space->allocState();
@@ -142,11 +152,11 @@ TEST(GeodexStateSpaceTest, CollisionCheck_ThinWallDetected) {
   setState(s2, 8.0, 5.0, 0.0);
 
   auto mv_default = std::make_shared<ob::DiscreteMotionValidator>(si);
-  // The default segment length is ~0.78m, so the 0.2m wall is likely missed
+  // The default segment length is about 0.78 m, longer than the 0.2 m wall.
   EXPECT_TRUE(mv_default->checkMotion(s1, s2))
       << "Expected OMPL default to miss the thin wall (test setup issue if this fails)";
 
-  // With collision resolution: wall should be detected
+  // With a collision resolution the check detects the wall.
   space->setCollisionResolution(0.05);
   si->setup();  // recalculate internal state
 
@@ -194,7 +204,7 @@ TEST(GeodexStateSpaceTest, Interpolation_StaysCollisionFree) {
   si->setStateValidityChecker(std::make_shared<ThinWallChecker>(si));
   si->setup();
 
-  // Both states on the same side of the wall — valid edge
+  // Both states lie on the same side of the wall, and the edge is valid.
   auto* s1 = space->allocState();
   auto* s2 = space->allocState();
   setState(s1, 1.0, 5.0, 0.0);
@@ -222,36 +232,36 @@ TEST(GeodexStateSpaceTest, Interpolation_StaysCollisionFree) {
 // ========================================================================
 
 // -----------------------------------------------------------------------
-// Test (f): Identity metric takes the fast path (no discrete geodesic)
+// Test (f): an equal-weight Euler SE(2) takes the fast path without the discrete geodesic
 // -----------------------------------------------------------------------
 
-TEST(GeodexDiscreteGeodesicTest, IdentityMetric_InterpolateUnchanged) {
-  geodex::SE2LeftInvariantMetric metric{1.0, 1.0, 1.0};  // unit weights → fast path
-  geodex::SE2<> manifold{metric};
+TEST(GeodexDiscreteGeodesicTest, EqualWeightEuler_InterpolatesWithManifoldGeodesic) {
+  // Under equal translational weights the Euler chord is the metric's geodesic. Auto
+  // interpolates with manifold.geodesic().
+  using EulerSE2 = geodex::SE2<geodex::SE2LeftInvariantMetric, geodex::SE2EulerRetraction>;
+  using EulerState = geodex::integration::ompl::GeodexState<EulerSE2>;
+  EulerSE2 manifold{geodex::SE2LeftInvariantMetric{1.0, 1.0, 1.0}};
+  ASSERT_TRUE(geodex::is_riemannian_log(manifold));
 
-  auto bounds = makeSE2Bounds(0.0, 10.0, 0.0, 10.0);
-  auto space = std::make_shared<StateSpace>(manifold, bounds);
-
+  auto space = std::make_shared<geodex::integration::ompl::GeodexStateSpace<EulerSE2>>(
+      manifold, makeSE2Bounds(0.0, 10.0, 0.0, 10.0));
   auto* s1 = space->allocState();
   auto* s2 = space->allocState();
   auto* result = space->allocState();
-  setState(s1, 2.0, 3.0, 0.5);
-  setState(s2, 8.0, 7.0, -1.0);
-
-  // Auto mode: identity metric should take the fast path via is_riemannian_log
-  // (default is nullopt = auto)
-
-  // Compute expected result using manifold.geodesic() directly
-  auto p1 = s1->as<StateType>()->asEigen();
-  auto p2 = s2->as<StateType>()->asEigen();
+  const Eigen::Vector3d p1(2.0, 3.0, 0.5);
+  const Eigen::Vector3d p2(8.0, 7.0, -1.0);
+  for (int i = 0; i < 3; ++i) {
+    s1->as<EulerState>()->values[i] = p1[i];
+    s2->as<EulerState>()->values[i] = p2[i];
+  }
 
   for (int j = 1; j <= 10; ++j) {
-    double t = j / 10.0;
+    const double t = j / 10.0;
     space->interpolate(s1, s2, t, result);
-    auto expected = manifold.geodesic(p1, p2, t);
-    auto* r = result->as<StateType>();
+    const Eigen::Vector3d expected = manifold.geodesic(p1, p2, t);
     for (int i = 0; i < 3; ++i) {
-      EXPECT_DOUBLE_EQ(r->values[i], expected[i]) << "Mismatch at t=" << t << " dim=" << i;
+      EXPECT_DOUBLE_EQ(result->as<EulerState>()->values[i], expected[i])
+          << "Mismatch at t=" << t << " dim=" << i;
     }
   }
 
@@ -261,10 +271,10 @@ TEST(GeodexDiscreteGeodesicTest, IdentityMetric_InterpolateUnchanged) {
 }
 
 // -----------------------------------------------------------------------
-// Test (g): DisableFlag forces simple geodesic even for anisotropic metric
+// Test (g): BaseGeodesic mode follows the manifold geodesic even for an anisotropic metric
 // -----------------------------------------------------------------------
 
-TEST(GeodexDiscreteGeodesicTest, DisableFlag_ForcesSimpleGeodesic) {
+TEST(GeodexDiscreteGeodesicTest, BaseGeodesicMode_MatchesManifoldGeodesic) {
   geodex::SE2LeftInvariantMetric metric{1.0, 100.0, 0.5};
   AnisotropicSE2 manifold{metric};
 
@@ -282,7 +292,7 @@ TEST(GeodexDiscreteGeodesicTest, DisableFlag_ForcesSimpleGeodesic) {
   s2->as<AnisotropicSE2State>()->values[1] = 7.0;
   s2->as<AnisotropicSE2State>()->values[2] = 0.0;
 
-  // With discrete geodesic disabled, result should match manifold.geodesic()
+  // In BaseGeodesic mode the result matches manifold.geodesic().
   auto p1 = s1->as<AnisotropicSE2State>()->asEigen();
   auto p2 = s2->as<AnisotropicSE2State>()->asEigen();
 
@@ -293,7 +303,7 @@ TEST(GeodexDiscreteGeodesicTest, DisableFlag_ForcesSimpleGeodesic) {
     auto* r = result->as<AnisotropicSE2State>();
     for (int i = 0; i < 3; ++i) {
       EXPECT_NEAR(r->values[i], expected[i], 1e-12)
-          << "Disabled discrete geodesic should match manifold.geodesic() at t=" << t;
+          << "BaseGeodesic mode should match manifold.geodesic() at t=" << t;
     }
   }
 
@@ -346,7 +356,7 @@ TEST(GeodexDiscreteGeodesicTest, BoundaryValues_ExactEndpoints) {
 }
 
 // -----------------------------------------------------------------------
-// Test (i): Anisotropic Euclidean — monotone distance along interpolation
+// Test (i): Anisotropic Euclidean, monotone distance along interpolation
 // -----------------------------------------------------------------------
 
 TEST(GeodexDiscreteGeodesicTest, AnisotropicEuclidean_MonotoneDistance) {
@@ -386,7 +396,7 @@ TEST(GeodexDiscreteGeodesicTest, AnisotropicEuclidean_MonotoneDistance) {
 }
 
 // -----------------------------------------------------------------------
-// Test (j): Anisotropic SE2 — discrete geodesic path has lower energy
+// Test (j): Anisotropic SE2, discrete geodesic path has lower energy
 // -----------------------------------------------------------------------
 
 TEST(GeodexDiscreteGeodesicTest, AnisotropicSE2_BetterThanRetraction) {
@@ -445,7 +455,7 @@ TEST(GeodexDiscreteGeodesicTest, AnisotropicSE2_BetterThanRetraction) {
 }
 
 // -----------------------------------------------------------------------
-// Test (k): Anisotropic SE2 — thin wall still detected
+// Test (k): Anisotropic SE2, thin wall detected
 // -----------------------------------------------------------------------
 
 TEST(GeodexDiscreteGeodesicTest, AnisotropicSE2_ThinWallDetected) {
@@ -511,7 +521,7 @@ TEST(GeodexDiscreteGeodesicTest, ConvFailure_GracefulFallback) {
   s2->as<AnisotropicSE2State>()->values[1] = 9.0;
   s2->as<AnisotropicSE2State>()->values[2] = 2.0;
 
-  // Should not crash — falls back to simple geodesic or uses partial path
+  // The call does not crash. It falls back to the simple geodesic or a partial path.
   EXPECT_NO_FATAL_FAILURE({ space->interpolate(s1, s2, 0.5, result); });
 
   // Result should be a valid state (not NaN)
@@ -524,4 +534,143 @@ TEST(GeodexDiscreteGeodesicTest, ConvFailure_GracefulFallback) {
   space->freeState(result);
   space->freeState(s1);
   space->freeState(s2);
+}
+
+// Uniform sampling goes through the manifold's from_unit_cube map. A curved manifold is
+// sampled on the manifold, not in raw ambient coordinates.
+TEST(GeodexStateSamplerTest, UniformSamplesLieOnTheSphere) {
+  using SphereManifold = geodex::Sphere<>;
+  using SphereSpace = geodex::integration::ompl::GeodexStateSpace<SphereManifold>;
+  using SphereStateT = geodex::integration::ompl::GeodexState<SphereManifold>;
+
+  ob::RealVectorBounds bounds(3);
+  bounds.setLow(-1.0);
+  bounds.setHigh(1.0);
+  auto space = std::make_shared<SphereSpace>(SphereManifold{}, bounds);
+
+  auto sampler = space->allocDefaultStateSampler();
+  ob::State* s = space->allocState();
+  for (int i = 0; i < 500; ++i) {
+    sampler->sampleUniform(s);
+    const auto p = s->as<SphereStateT>()->asEigen();
+    EXPECT_NEAR(p.norm(), 1.0, 1e-9);
+  }
+  space->freeState(s);
+}
+
+TEST(GeodexStateSpaceTest, BoundsOfTheWrongSizeThrow) {
+  EXPECT_THROW(StateSpace(SE2Manifold{}, ob::RealVectorBounds(2)), std::invalid_argument);
+  ob::RealVectorBounds uneven(3);
+  uneven.high.pop_back();
+  EXPECT_THROW(StateSpace(SE2Manifold{}, uneven), std::invalid_argument);
+  EXPECT_NO_THROW(StateSpace(SE2Manifold{}, makeSE2Bounds(0.0, 1.0, 0.0, 1.0)));
+}
+
+namespace {
+
+using HaltonEuclidean =
+    geodex::Euclidean<2, geodex::EuclideanStandardMetric<2>, geodex::HaltonSampler>;
+using HaltonSpace = geodex::integration::ompl::GeodexStateSpace<HaltonEuclidean>;
+using HaltonState = geodex::integration::ompl::GeodexState<HaltonEuclidean>;
+
+// The first `n` uniform samples of a fresh state sampler of `space`.
+std::vector<Eigen::Vector2d> uniform_samples(const HaltonSpace& space, const int n) {
+  auto sampler = space.allocDefaultStateSampler();
+  ob::State* s = space.allocState();
+  std::vector<Eigen::Vector2d> out;
+  for (int i = 0; i < n; ++i) {
+    sampler->sampleUniform(s);
+    out.emplace_back(s->as<HaltonState>()->asEigen());
+  }
+  space.freeState(s);
+  return out;
+}
+
+ob::RealVectorBounds unit_box() {
+  ob::RealVectorBounds b(2);
+  b.setLow(-1.0);
+  b.setHigh(1.0);
+  return b;
+}
+
+}  // namespace
+
+// Each state sampler copies the manifold's sampler onto its own stream, seeded from the
+// space. The kind carries over, streams differ, and a seed repeats them.
+TEST(GeodexStateSamplerTest, SamplersAreSeededStreamsOfTheManifoldSampler) {
+  HaltonSpace space(HaltonEuclidean{}, unit_box());
+  space.setSamplerSeed(9);
+  const auto first = uniform_samples(space, 16);
+  const auto second = uniform_samples(space, 16);
+  EXPECT_NE(first, second);
+
+  HaltonSpace again(HaltonEuclidean{}, unit_box());
+  again.setSamplerSeed(9);
+  EXPECT_EQ(uniform_samples(again, 16), first);
+
+  // A Halton stream seeded to index i gives the Halton points from i + 1 on.
+  HaltonSpace probe(HaltonEuclidean{}, unit_box());
+  probe.setSamplerSeed(9);
+  geodex::HaltonSampler reference;
+  reference.seed(probe.nextStreamSeed());
+  Eigen::VectorXd u(2);
+  reference.sample(2, u);
+  EXPECT_LT((first.front() - (2.0 * u - Eigen::Vector2d::Ones())).norm(), 1e-12);
+}
+
+// The space rejects a negative or non-finite resolution. A very fine one gives the
+// largest count without overflow.
+TEST(GeodexStateSpaceTest, CollisionResolutionIsValidatedAndCountsDoNotOverflow) {
+  auto space = makeLargeSpace();
+  EXPECT_THROW(space->setCollisionResolution(-1.0), std::invalid_argument);
+  EXPECT_THROW(space->setCollisionResolution(std::numeric_limits<double>::quiet_NaN()),
+               std::invalid_argument);
+  EXPECT_THROW(space->setCollisionResolution(std::numeric_limits<double>::infinity()),
+               std::invalid_argument);
+  space->setCollisionResolution(1e-12);
+  space->setup();
+  auto* a = space->allocState();
+  auto* b = space->allocState();
+  setState(a, 1.0, 1.0, 0.0);
+  setState(b, 50.0, 40.0, 0.0);
+  EXPECT_EQ(space->validSegmentCount(a, b), std::numeric_limits<unsigned int>::max());
+  space->freeState(a);
+  space->freeState(b);
+}
+
+// GeodexStateSampler throws when built on another kind of space.
+TEST(GeodexStateSamplerTest, AnotherSpaceTypeIsRefused) {
+  ob::RealVectorStateSpace other(2);
+  try {
+    const geodex::integration::ompl::GeodexStateSampler<SE2Manifold> sampler(&other);
+    ADD_FAILURE() << "the sampler accepted another space type";
+  } catch (const std::invalid_argument& e) {
+    EXPECT_NE(std::string(e.what()).find("GeodexStateSampler"), std::string::npos) << e.what();
+  }
+}
+
+// Stream seeds taken from several threads are exactly the seeds one thread takes.
+TEST(GeodexStateSamplerTest, StreamSeedsAreThreadSafe) {
+  constexpr int kThreads = 4;
+  constexpr int kSeeds = 2000;
+  auto shared = makeLargeSpace();
+  shared->setSamplerSeed(21);
+  std::vector<std::vector<std::uint64_t>> taken(kThreads);
+  std::vector<std::thread> threads;
+  for (int t = 0; t < kThreads; ++t) {
+    threads.emplace_back([&, t] {
+      for (int k = 0; k < kSeeds; ++k) taken[t].push_back(shared->nextStreamSeed());
+    });
+  }
+  for (auto& th : threads) th.join();
+  std::vector<std::uint64_t> all;
+  for (const auto& d : taken) all.insert(all.end(), d.begin(), d.end());
+
+  auto alone = makeLargeSpace();
+  alone->setSamplerSeed(21);
+  std::vector<std::uint64_t> expected;
+  for (int k = 0; k < kThreads * kSeeds; ++k) expected.push_back(alone->nextStreamSeed());
+  std::sort(all.begin(), all.end());
+  std::sort(expected.begin(), expected.end());
+  EXPECT_EQ(all, expected);
 }

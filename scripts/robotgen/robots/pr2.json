@@ -1,0 +1,12 @@
+{
+  "name": "pr2",
+  "description": "Willow Garage PR2, both arms",
+  "spherized_urdf": "data/robots/pr2/pr2_spherized.urdf",
+  "limits_urdfs": [
+    "data/robots/pr2/pr2.urdf"
+  ],
+  "crba": {
+    "name": "pr2",
+    "urdf": "data/robots/pr2/pr2.urdf"
+  }
+}

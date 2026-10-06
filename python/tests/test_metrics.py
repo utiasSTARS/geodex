@@ -147,6 +147,26 @@ class TestConstantSPDMetric:
         assert "ConstantSPDMetric" in repr(self.metric)
 
 
+class TestSE2LeftInvariantMetric:
+    def test_drive_presets(self):
+        M = geodex.SE2LeftInvariantMetric
+        np.testing.assert_array_equal(M.holonomic().weights, [1.0, 1.0, 1.0])
+        np.testing.assert_array_equal(M.holonomic(wtheta=2.0).weights, [1.0, 1.0, 2.0])
+        np.testing.assert_array_equal(M.differential_drive().weights, [1.0, 100.0, 1.0])
+        np.testing.assert_array_equal(M.differential_drive(50.0, 3.0).weights, [1.0, 50.0, 3.0])
+
+    @pytest.mark.parametrize("weights", [(1.0, 1.0, 1.0), (1.0, 100.0, 1.0), (2.0, 0.5, 3.0)])
+    def test_coordinate_lower_bound_holds_at_every_heading(self, weights):
+        metric = geodex.SE2LeftInvariantMetric(*weights)
+        M = metric.coordinate_lower_bound()
+        m = min(weights[0], weights[1])
+        np.testing.assert_array_equal(M, np.diag([m, m, weights[2]]))
+        se2 = geodex.SE2(*weights)
+        for theta in np.linspace(-np.pi, np.pi, 63):
+            G = se2.coordinate_metric(np.array([0.0, 0.0, theta]))
+            assert np.linalg.eigvalsh(G - M).min() >= -1e-12
+
+
 class TestWeightedMetric:
     def setup_method(self):
         self.base = geodex.KineticEnergyMetric(lambda q: np.eye(len(q)))
@@ -233,7 +253,7 @@ class TestAffineCombinedMetric:
         assert "arity=2" in repr(acm)
 
     def test_kinetic_energy_summand(self):
-        # Pullback + beta * KE composite — the canonical use case for the paper.
+        # A constant metric plus a weighted kinetic-energy summand.
         ke = geodex.KineticEnergyMetric(lambda q: np.eye(2))
         identity = geodex.ConstantSPDMetric(np.eye(2))
         acm = geodex.AffineCombinedMetric([identity, ke], [1.0, 0.5])
@@ -268,7 +288,7 @@ class TestAffineCombinedMetric:
 
     def test_compose_with_configuration_space(self):
         # Plug an AffineCombinedMetric into a ConfigurationSpace and run
-        # discrete_geodesic — exercises the to_dynamic_metric() pipeline.
+        # discrete_geodesic. This exercises the to_dynamic_metric() pipeline.
         m1 = geodex.ConstantSPDMetric(np.eye(2))
         m2 = geodex.ConstantSPDMetric(np.diag([4.0, 1.0]))
         acm = geodex.AffineCombinedMetric([m1, m2], [0.5, 0.5])

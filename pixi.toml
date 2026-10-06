@@ -1,0 +1,143 @@
+[workspace]
+name = "geodex"
+version = "1.0.0"
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-arm64", "osx-64"]
+requires-pixi = ">=0.68"
+
+[dependencies]
+cmake = "4.4.*"
+ninja = "1.13.*"
+compilers = "1.11.*"
+patch = "2.8.*"
+eigen = "5.0.*"
+yaml-cpp = "0.8.*"
+libboost-devel = "1.91.*"
+python = "3.12.*"
+numpy = "2.5.*"
+pytest = "9.1.*"
+pip = "26.1.*"
+scikit-build-core = "1.0.3.*"
+pyyaml = "6.0.*"
+doxygen = "1.17.*"
+graphviz = "14.1.*"
+matplotlib-base = "3.10.*"
+
+[pypi-dependencies]
+viser = "==1.0.30"
+yourdfpy = "==0.0.60"
+sphinx = "==8.2.3"
+breathe = "==4.36.0"
+pydata-sphinx-theme = "==0.21.0"
+sphinx-design = "==0.7.0"
+sphinxcontrib-mermaid = "==2.1.0"
+sphinx-togglebutton = "==0.4.5"
+sphinxcontrib-bibtex = "==2.7.0"
+plotly = "==7.1.0"
+
+# The OMPL fork and the installed geodex live in a prefix of their own. The fork does not go
+# into the conda environment. It shares its library name and soname with stock OMPL 2.0.
+# Downstream CMake projects add $GEODEX_PREFIX to CMAKE_PREFIX_PATH.
+[activation.env]
+GEODEX_PREFIX = "$PIXI_PROJECT_ROOT/.pixi/prefix"
+CMAKE_PREFIX_PATH = "$PIXI_PROJECT_ROOT/.pixi/prefix:$CONDA_PREFIX"
+
+[tasks.build-ompl]
+cmd = "bash scripts/build_ompl.sh"
+description = "Build the pinned OMPL fork (static) into $GEODEX_PREFIX, once per pin"
+
+[tasks.check-ompl]
+cmd = "bash scripts/check_ompl.sh"
+depends-on = ["build-ompl"]
+description = "Fail unless the OMPL fork in $GEODEX_PREFIX carries the release patch"
+
+[tasks.fetch-vamp]
+cmd = "bash scripts/fetch_vamp.sh"
+description = "Fetch the pinned VAMP source into .pixi/vamp"
+
+[tasks.configure]
+cmd = """cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX=$GEODEX_PREFIX -DVAMP_DIR=$PIXI_PROJECT_ROOT/.pixi/vamp \
+  -DGEODEX_OMPL=ON -DGEODEX_VAMP=ON -DGEODEX_ROBOTS=ON -DBUILD_TESTING=ON \
+  -DBUILD_EXAMPLES=ON -DBUILD_OMPL_EXAMPLES=ON"""
+depends-on = ["check-ompl", "fetch-vamp"]
+description = "Configure the C++ build (library, tests, examples) in build/"
+
+[tasks.build-cpp]
+cmd = "cmake --build build"
+depends-on = ["configure"]
+description = "Build the C++ library, tests and examples"
+
+[tasks.test-cpp]
+cmd = "ctest --test-dir build --output-on-failure --timeout 900"
+depends-on = ["build-cpp"]
+description = "Run the C++ test suite"
+
+[tasks.install]
+cmd = "cmake --install build"
+depends-on = ["build-cpp"]
+description = "Install geodex into $GEODEX_PREFIX for downstream CMake projects"
+
+[tasks.check-package]
+cmd = "bash scripts/ci/check_package.sh $GEODEX_PREFIX"
+depends-on = ["install"]
+description = "Build and run a consumer of the installed CMake package"
+
+# The Python module builds in build/py against the fork in $GEODEX_PREFIX. The -C keys
+# replace the entries of the same name in pyproject.toml, whose defaults build the
+# self-contained wheel.
+[tasks.build-py]
+cmd = """pip install --no-build-isolation --no-deps -v . -C build-dir=build/py \
+  -C cmake.define.GEODEX_BUNDLE_DEPS=OFF -C cmake.define.GEODEX_PYTHON_STUBS=ON \
+  -C cmake.define.VAMP_DIR=$PIXI_PROJECT_ROOT/.pixi/vamp"""
+depends-on = ["check-ompl", "fetch-vamp"]
+description = "Build and install the Python module into the pixi environment"
+
+[tasks.test-py]
+cmd = "pytest python/tests -q"
+depends-on = ["build-py"]
+description = "Run the Python test suite"
+
+[tasks.stubs]
+cmd = "python scripts/stubs.py sync build/py/python/stubs python/geodex"
+depends-on = ["build-py"]
+description = "Replace the checked-in type stubs with ones generated from the built module"
+
+[tasks.check-stubs]
+cmd = "python scripts/stubs.py check build/py/python/stubs python/geodex"
+depends-on = ["build-py"]
+description = "Fail if the checked-in type stubs differ from the built module"
+
+[tasks.test]
+depends-on = ["test-cpp", "test-py", "check-stubs"]
+description = "Build everything, run the C++ and Python suites, and check the stubs"
+
+[tasks.quickstart]
+cmd = "python examples/getting_started/quickstart.py"
+depends-on = ["build-py"]
+description = "Plan the quickstart example, a Panda arm around a post"
+
+# Doxygen feeds the C++ pages. sphinx-build renders everything in the environment where the
+# module imports, and the Python API autodoc covers the full planning stack. Warnings are
+# errors. A missing snippet marker, figure or cross-reference fails the build.
+[tasks.docs]
+cmd = """cmake -S . -B build -DBUILD_DOCS=ON && cmake --build build --target docs \
+  && python docs/tools/api_cpp.py \
+  && sphinx-build -W --keep-going -b html -d build/docs/doctrees docs build/docs/sphinx"""
+depends-on = ["configure", "build-py"]
+description = "Build the documentation site into build/docs/sphinx"
+
+[tasks.test-docs]
+cmd = "pytest docs/tests -q"
+depends-on = ["build-cpp", "build-py"]
+description = "Run every docs example in Python and C++ and compare the two"
+
+[tasks.docs-assets]
+cmd = "python docs/tools/generate.py"
+depends-on = ["build-py"]
+description = "Regenerate the docs figures, plots and 3D recordings from seeded examples"
+
+[tasks.publish-docs]
+cmd = "bash scripts/ci/publish_docs.sh"
+depends-on = ["docs"]
+description = "Publish the rendered site to the docs-html branch"

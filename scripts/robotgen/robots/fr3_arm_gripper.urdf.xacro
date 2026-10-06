@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!-- Franka FR3 with a Robotiq 2F-85 on its ISO 9409-1-50-4-M6 coupling, built from the pinned
+     upstream macros. The coupling sits on the flange fr3_link8 turned a quarter turn, and the
+     fingers close along the flange y axis. -->
+<robot name="fr3_arm_gripper" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:include filename="$(find franka_description)/robots/common/franka_arm.xacro"/>
+  <xacro:include filename="$(find robotiq_description)/urdf/ur_to_robotiq_adapter.urdf.xacro"/>
+  <xacro:include filename="$(find robotiq_description)/urdf/robotiq_2f_85_macro.urdf.xacro"/>
+  <xacro:franka_arm robot_type="fr3" connected_to="" include_self_collision_geometry="false"/>
+  <xacro:ur_to_robotiq prefix="" parent="fr3_link8" child="robotiq_85_mount" rotation="${pi/2}"/>
+  <xacro:robotiq_gripper name="RobotiqGripperHardwareInterface" prefix="" parent="robotiq_85_mount"
+      include_ros2_control="false">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:robotiq_gripper>
+</robot>

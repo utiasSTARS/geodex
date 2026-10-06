@@ -5,6 +5,7 @@
 
 #include <cmath>
 
+#include <algorithm>
 #include <numbers>
 #include <type_traits>
 
@@ -24,12 +25,12 @@ namespace geodex {
 // Retraction policies
 // ---------------------------------------------------------------------------
 
-/// @brief True exponential and logarithmic maps on SE(2) (Lie group exp/log).
+/// @brief Left (body-frame) exponential and logarithmic maps on SE(2) (Lie group exp/log).
 ///
-/// @details Uses left translation: \f$ \exp_p(v) = p \cdot \mathrm{Exp}(v) \f$ where
+/// @details Uses left translation, \f$ \exp_p(v) = p \cdot \mathrm{Exp}(v) \f$, where
 /// \f$ \mathrm{Exp} \f$ is the Lie group exponential at the identity. The matrix
 /// \f$ V(\omega) \f$ relates the Lie algebra translation to the group translation.
-struct SE2ExponentialMap {
+struct SE2LeftExponentialMap {
   /// @brief Exponential map \f$ \exp_p(v) \f$ on SE(2).
   /// @param p Base pose \f$ (x, y, \theta) \f$.
   /// @param v Lie algebra velocity \f$ (v_x, v_y, \omega) \f$.
@@ -86,13 +87,20 @@ struct SE2ExponentialMap {
   }
 };
 
-/// @brief First-order Euler retraction on SE(2) (cheapest, treats as \f$ \mathbb{R}^2 \times S^1
-/// \f$).
+/// @brief Euler retraction on SE(2), which treats it as \f$ \mathbb{R}^2 \times S^1 \f$.
 ///
-/// @details Simply adds the tangent vector component-wise with angle wrapping.
-/// This is a valid first-order retraction but does not capture the group structure.
+/// @details Adds the tangent vector to the coordinates and wraps the angle. Its
+/// tangent vectors are world-frame rates \f$ (\dot x, \dot y, \dot\theta) \f$. Its
+/// curve \f$ \exp_p(t\,v) \f$ moves in a straight line while turning at a constant
+/// rate, which is the geodesic of an `SE2LeftInvariantMetric` with equal translational
+/// weights. It ignores the group structure and agrees with the group exponential to
+/// first order only at heading 0.
+///
+/// @warning The metric weights body-frame velocities. With unequal translational
+/// weights it measures this retraction's world-frame rates in the wrong frame away
+/// from heading 0.
 struct SE2EulerRetraction {
-  /// @brief Euler retraction: \f$ R_p(v) = (p_x + v_x, p_y + v_y, \mathrm{wrap}(p_\theta +
+  /// @brief Euler retraction \f$ R_p(v) = (p_x + v_x, p_y + v_y, \mathrm{wrap}(p_\theta +
   /// v_\theta)) \f$.
   /// @param p Base pose.
   /// @param v Tangent vector.
@@ -138,10 +146,10 @@ inline Eigen::Vector3d se2_inverse(const Eigen::Vector3d& a) {
 
 /// @brief Right (world-frame) exponential and logarithmic maps on SE(2).
 ///
-/// @details Uses right translation: \f$ \exp_g(\xi) = \mathrm{Exp}(\xi)\cdot g \f$ and
+/// @details Uses right translation, \f$ \exp_g(\xi) = \mathrm{Exp}(\xi)\cdot g \f$ and
 /// \f$ \log_g(h) = \mathrm{Log}(h\cdot g^{-1}) \f$, where \f$ \mathrm{Exp} \f$ and
-/// \f$ \mathrm{Log} \f$ are the Lie group exponential/logarithm at the identity (reused
-/// from SE2ExponentialMap).
+/// \f$ \mathrm{Log} \f$ are the Lie group exponential and logarithm at the identity
+/// (shared with SE2LeftExponentialMap).
 struct SE2RightExponentialMap {
   /// @brief Right exponential map \f$ \exp_g(\xi) = \mathrm{Exp}(\xi)\cdot g \f$.
   /// @param g Base pose \f$ (x, y, \theta) \f$.
@@ -149,7 +157,7 @@ struct SE2RightExponentialMap {
   /// @return The resulting pose on SE(2).
   EIGEN_STRONG_INLINE
   Eigen::Vector3d retract(const Eigen::Vector3d g, const Eigen::Vector3d xi) const {
-    const Eigen::Vector3d exp_xi = SE2ExponentialMap{}.retract(Eigen::Vector3d::Zero(), xi);
+    const Eigen::Vector3d exp_xi = SE2LeftExponentialMap{}.retract(Eigen::Vector3d::Zero(), xi);
     return detail::se2_compose(exp_xi, g);
   }
 
@@ -160,12 +168,12 @@ struct SE2RightExponentialMap {
   EIGEN_STRONG_INLINE
   Eigen::Vector3d inverse_retract(const Eigen::Vector3d g, const Eigen::Vector3d h) const {
     const Eigen::Vector3d rel = detail::se2_compose(h, detail::se2_inverse(g));
-    return SE2ExponentialMap{}.inverse_retract(Eigen::Vector3d::Zero(), rel);
+    return SE2LeftExponentialMap{}.inverse_retract(Eigen::Vector3d::Zero(), rel);
   }
 };
 
 // Verify retraction concepts.
-static_assert(Retraction<SE2ExponentialMap, Eigen::Vector3d, Eigen::Vector3d>);
+static_assert(Retraction<SE2LeftExponentialMap, Eigen::Vector3d, Eigen::Vector3d>);
 static_assert(Retraction<SE2EulerRetraction, Eigen::Vector3d, Eigen::Vector3d>);
 static_assert(Retraction<SE2RightExponentialMap, Eigen::Vector3d, Eigen::Vector3d>);
 
@@ -179,33 +187,33 @@ static_assert(Retraction<SE2RightExponentialMap, Eigen::Vector3d, Eigen::Vector3
 /// The manifold is parameterized by a metric policy and a retraction policy, following the
 /// same design as Sphere and Torus.
 ///
-/// @tparam MetricT Metric policy (default: SE2LeftInvariantMetric).
-/// @tparam RetractionT Retraction policy (default: SE2ExponentialMap).
-/// @tparam SamplerT Sampler policy for `random_point()` (default: `StochasticSampler`).
-template <typename MetricT = SE2LeftInvariantMetric, typename RetractionT = SE2ExponentialMap,
-          typename SamplerT = StochasticSampler>
+/// @tparam MetricT Metric policy (default SE2LeftInvariantMetric).
+/// @tparam RetractionT Retraction policy (default SE2LeftExponentialMap).
+/// @tparam SamplerT Sampler policy for `random_point()` (default `ScrambledHaltonSampler`).
+template <typename MetricT = SE2LeftInvariantMetric, typename RetractionT = SE2LeftExponentialMap,
+          typename SamplerT = ScrambledHaltonSampler>
 class SE2 {
  public:
   using Scalar = double;            ///< Scalar type.
   using Point = Eigen::Vector3d;    ///< Pose \f$ (x, y, \theta) \f$.
+  using SamplerType = SamplerT;     ///< Sampler policy backing random_point().
   using Tangent = Eigen::Vector3d;  ///< Tangent vector \f$ (v_x, v_y, \omega) \f$.
 
-  /// @brief Runtime query: is the currently-configured metric the bi-invariant
-  /// Lie group metric (unit weights on `SE2LeftInvariantMetric` paired with the
-  /// true `SE2ExponentialMap`)?
+  /// @brief Runtime check whether `log` is the Riemannian logarithm of the metric.
   ///
-  /// @details Only in this case is the Lie-group `log` the Riemannian logarithm
-  /// of the metric, so `discrete_geodesic` can safely take the log direction
-  /// as the natural gradient. `discrete_geodesic` calls this method to
-  /// activate the fast path on a per-call basis — anisotropic SE2 metrics
-  /// fall through to finite differences.
-  ///
-  /// Because `SE2LeftInvariantMetric::weights_` is a runtime value, this check
-  /// cannot be made at compile time.
+  /// @details True for `SE2EulerRetraction` under an `SE2LeftInvariantMetric` with
+  /// equal translational weights. That metric is the flat metric
+  /// \f$ w\,(\dot x^2 + \dot y^2) + w_\theta\,\dot\theta^2 \f$ of
+  /// \f$ \mathbb{R}^2 \times S^1 \f$ in either frame, whose geodesics are the Euler
+  /// retraction's curves. The group exponential maps follow the screw motion of a
+  /// constant twist, which is longer whenever it both turns and translates. For them
+  /// this is false under every weighting. `discrete_geodesic` takes its log step only
+  /// when this is true.
   bool has_riemannian_log_runtime() const {
     if constexpr (std::is_same_v<MetricT, SE2LeftInvariantMetric> &&
-                  std::is_same_v<RetractionT, SE2ExponentialMap>) {
-      return metric_.weights().isApprox(Eigen::Vector3d(1.0, 1.0, 1.0));
+                  std::is_same_v<RetractionT, SE2EulerRetraction>) {
+      const Eigen::Vector3d& w = metric_.weights();
+      return std::abs(w[0] - w[1]) <= 1e-12 * std::max(std::abs(w[0]), std::abs(w[1]));
     } else {
       return false;
     }
@@ -249,22 +257,52 @@ class SE2 {
     hi_ = hi;
   }
 
+  /// @brief Lower sampling bounds \f$(x_\min, y_\min, \theta_\min)\f$.
+  const Eigen::Vector3d& lo() const { return lo_; }
+
+  /// @brief Upper sampling bounds \f$(x_\max, y_\max, \theta_\max)\f$.
+  const Eigen::Vector3d& hi() const { return hi_; }
+
+  /// @brief Deck-group generators of the coordinate axes, \f$ (0, 0, 2\pi) \f$.
+  Eigen::Vector3d periods() const { return Eigen::Vector3d(0.0, 0.0, utils::two_pi); }
+
   /// @brief Return the intrinsic dimension (always 3).
   int dim() const { return 3; }
 
-  /// @brief Sample a random pose uniformly in the sampling bounds.
-  /// @return A random pose \f$ (x, y, \theta) \f$.
-  Point random_point() const {
-    sampler_.sample_box(3, sample_buf_);
-    return Point(lo_[0] + sample_buf_[0] * (hi_[0] - lo_[0]),
-                 lo_[1] + sample_buf_[1] * (hi_[1] - lo_[1]),
-                 lo_[2] + sample_buf_[2] * (hi_[2] - lo_[2]));
+  /// @brief Number of unit-cube coordinates that from_unit_cube consumes.
+  int unit_cube_dim() const { return 3; }
+
+  /// @brief Map unit-cube coordinates to a pose by affine rescaling to the bounds.
+  Point from_unit_cube(Eigen::Ref<const Eigen::VectorXd> u) const {
+    detail::require_unit_cube_size(u.size(), 3);
+    return Point(lo_[0] + u[0] * (hi_[0] - lo_[0]), lo_[1] + u[1] * (hi_[1] - lo_[1]),
+                 lo_[2] + u[2] * (hi_[2] - lo_[2]));
   }
+
+  /// @brief Sample a random pose uniformly in the sampling bounds.
+  Point random_point() const {
+    sample_buf_.resize(3);
+    sampler_.sample(3, sample_buf_);
+    return from_unit_cube(sample_buf_);
+  }
+
+  /// @brief Reseed the sampler for a reproducible random_point sequence.
+  void seed(std::uint64_t s)
+    requires SeedableSampler<SamplerT>
+  {
+    sampler_.seed(s);
+  }
+
+  /// @brief Replace the sampler.
+  void set_sampler(SamplerT s) { sampler_ = std::move(s); }
+
+  /// @brief The sampler behind random_point(). Planning samples through copies of it.
+  const SamplerT& sampler() const { return sampler_; }
 
   /// @brief Project an ambient vector onto the tangent space at \f$ p \f$.
   ///
   /// @details The tangent space of SE(2) is \f$ \mathbb{R}^3 \f$ (the Lie algebra
-  /// \f$ \mathfrak{se}(2) \f$), so the projection is the identity.
+  /// \f$ \mathfrak{se}(2) \f$), and the projection is the identity.
   Tangent project(const Point& /*p*/, const Tangent& v) const { return v; }
 
   /// @name Metric delegates
@@ -284,6 +322,34 @@ class SE2 {
     requires MetricHasInnerMatrix<MetricT, Point>
   {
     return metric_.inner_matrix(p, U, V);
+  }
+
+  /// @brief The frame Jacobian \f$ J(\theta) = \mathrm{blockdiag}(R(-\theta), 1) \f$.
+  ///
+  /// @details Maps a coordinate velocity \f$ (\dot x, \dot y, \dot\theta) \f$ to the
+  /// body velocity \f$ (v_x, v_y, \omega) \f$ that `inner` and `inner_matrix` measure.
+  /// This is the geometry fact any metric overlay pulls back through.
+  Eigen::Matrix3d coordinate_jacobian(const Point& q) const {
+    const double c = std::cos(q[2]), s = std::sin(q[2]);
+    Eigen::Matrix3d J;
+    J << c, s, 0.0, -s, c, 0.0, 0.0, 0.0, 1.0;
+    return J;
+  }
+
+  /// @brief The metric on coordinate velocities \f$ (\dot x, \dot y, \dot\theta) \f$.
+  ///
+  /// @details The frame pullback
+  /// \f[
+  ///   G(\theta) = J(\theta)^\top M(q)\, J(\theta)
+  ///             = R(\theta)\,\mathrm{diag}(w_x, w_y)\,R(\theta)^\top \oplus w_\theta,
+  /// \f]
+  /// which agrees with the body form only at \f$ \theta = 0 \f$.
+  Eigen::Matrix3d coordinate_metric(const Point& q) const
+    requires MetricHasInnerMatrix<MetricT, Point>
+  {
+    const Eigen::MatrixXd J = coordinate_jacobian(q);
+    const Eigen::Matrix3d G = metric_.inner_matrix(q, J, J);
+    return 0.5 * (G + G.transpose());
   }
 
   /// @}
@@ -308,10 +374,18 @@ class SE2 {
   /// @name Derived operations
   /// @{
 
-  /// @brief Geodesic distance \f$ d(p, q) \f$ via the midpoint approximation.
+  /// @brief Length of `geodesic(p, q, .)` under the metric, through the midpoint formula.
+  ///
+  /// @details For the group exponential maps this is the norm of the constant twist,
+  /// the length of its screw motion, which is at least the Riemannian distance. With
+  /// equal translational weights the two agree only when the motion does not both
+  /// turn and translate.
   Scalar distance(const Point& p, const Point& q) const { return distance_midpoint(*this, p, q); }
 
-  /// @brief Geodesic interpolation between \f$ p \f$ and \f$ q \f$ at parameter \f$ t \f$.
+  /// @brief The curve \f$ \exp_p(t\,\log_p(q)) \f$ at parameter \f$ t \f$.
+  ///
+  /// @details For the group exponential maps this is the screw motion of the constant
+  /// twist, not a geodesic of the metric (see `has_riemannian_log_runtime`).
   /// @param p Start pose.
   /// @param q End pose.
   /// @param t Interpolation parameter in \f$ [0, 1] \f$.
@@ -338,17 +412,18 @@ static_assert(RiemannianManifold<SE2<>>);
 static_assert(RiemannianManifold<SE2<SE2LeftInvariantMetric, SE2EulerRetraction>>);
 static_assert(RiemannianManifold<SE2<SE2LeftInvariantMetric, SE2RightExponentialMap>>);
 
+// The flat-quotient facts consumed by precompute, the heuristic, and the sampler.
+static_assert(HasCoordinateMetric<SE2<>>);
+static_assert(HasPeriods<SE2<>>);
+
 // ---------------------------------------------------------------------------
 // distance_midpoint overloads for SE(2)
 // ---------------------------------------------------------------------------
 //
-// The implementation shares trig across the log→exp→log→log chain:
-//   - 2 utils::sincos calls
-//   - sincos(mid.θ) derived via angle-addition (no trig)
-//   - tan(dθ/4) derived via half-angle formula (no trig)
-//   - fma() for single-cycle FMADD on ARM
-//   - NEON 2-wide for log(m,a) and log(m,b) in parallel
-// Only norm() is called from the manifold — preserves metric evaluation.
+// The implementation uses two sincos calls and evaluates both midpoint logs in one
+// 2-wide pass. sincos(mid.θ) follows from the angle-addition formula and tan(dθ/4)
+// from the half-angle formula. Only norm() comes from the manifold, which keeps the
+// metric evaluation.
 
 #ifdef __ARM_NEON
 #include <arm_neon.h>
@@ -358,8 +433,8 @@ static_assert(RiemannianManifold<SE2<SE2LeftInvariantMetric, SE2RightExponential
 
 namespace detail {
 
-/// @brief SE(2) fused midpoint retraction: computes midpoint + v_diff with
-///        minimal trig, then delegates norm to the manifold.
+/// @brief SE(2) fused midpoint retraction. Computes the midpoint and v_diff with
+///        minimal trig and delegates the norm to the manifold.
 template <RiemannianManifold M>
 auto distance_midpoint_se2_impl(const M& m, const Eigen::Vector3d& a, const Eigen::Vector3d& b) ->
     typename M::Scalar {
@@ -505,13 +580,13 @@ auto distance_midpoint_se2_impl(const M& m, const Eigen::Vector3d& a, const Eige
 
 namespace detail {
 
-/// @brief Trait: true only for a body-frame SE(2), i.e. one paired with the left/body
-/// SE2ExponentialMap retraction.
+/// @brief Trait that is true only for a body-frame SE(2), one paired with the
+/// SE2LeftExponentialMap retraction.
 template <typename T>
 struct is_se2_body_frame : std::false_type {};
 
 template <typename MetricT, typename SamplerT>
-struct is_se2_body_frame<SE2<MetricT, SE2ExponentialMap, SamplerT>> : std::true_type {};
+struct is_se2_body_frame<SE2<MetricT, SE2LeftExponentialMap, SamplerT>> : std::true_type {};
 
 template <typename T>
 inline constexpr bool is_se2_body_frame_v = is_se2_body_frame<T>::value;
@@ -520,7 +595,7 @@ inline constexpr bool is_se2_body_frame_v = is_se2_body_frame<T>::value;
 
 /// @brief Fused distance_midpoint overload for a body-frame SE2.
 template <typename MetricT, typename RetractionT, typename SamplerT>
-  requires std::is_same_v<RetractionT, SE2ExponentialMap>
+  requires std::is_same_v<RetractionT, SE2LeftExponentialMap>
 auto distance_midpoint(const SE2<MetricT, RetractionT, SamplerT>& m, const Eigen::Vector3d& a,
                        const Eigen::Vector3d& b) -> double {
   return detail::distance_midpoint_se2_impl(m, a, b);
@@ -529,9 +604,9 @@ auto distance_midpoint(const SE2<MetricT, RetractionT, SamplerT>& m, const Eigen
 /// @brief Fused distance_midpoint overload for ConfigurationSpace wrapping a body-frame SE(2)
 /// base.
 ///
-/// @note ConfigurationSpace is forward-declared here; the full definition is in
+/// @note ConfigurationSpace is forward-declared here and defined in
 ///       configuration_space.hpp. This overload is instantiated only when both
-///       headers are included, which is the normal usage pattern.
+///       headers are included, as in normal use.
 template <typename BaseM, typename MetricT>
   requires detail::is_se2_body_frame_v<BaseM>
 auto distance_midpoint(const ConfigurationSpace<BaseM, MetricT>& m, const Eigen::Vector3d& a,

@@ -1,5 +1,6 @@
-"""Tests for algorithm bindings: InterpolationSettings, distance_midpoint,
-discrete_geodesic, simplify_path, precompute_matrix_lower_bound."""
+"""Tests for the algorithm bindings InterpolationSettings, distance_midpoint,
+discrete_geodesic and precompute_matrix_lower_bound. test_path_smoothing.py tests
+smooth_path."""
 
 import numpy as np
 import pytest
@@ -32,7 +33,7 @@ class TestInterpolationSettings:
         # Other fields keep defaults
         assert s.convergence_tol == pytest.approx(1e-4)
 
-    def test_new_fields_keyword_construction(self):
+    def test_force_log_and_guard_tau_keywords(self):
         s = geodex.InterpolationSettings(force_log_direction=True, fd_midpoint_guard_tau=0.1)
         assert s.force_log_direction is True
         assert s.fd_midpoint_guard_tau == pytest.approx(0.1)
@@ -356,7 +357,7 @@ class TestInterpolationStatus:
         assert r.iterations == 2
 
     def test_cut_locus_status(self):
-        # Antipodal points on the sphere — log collapses to zero.
+        # Antipodal points on the sphere, where log collapses to zero.
         p = np.array([0.0, 0.0, 1.0])
         q = np.array([0.0, 0.0, -1.0])
         r = geodex.discrete_geodesic(self.sphere, p, q)
@@ -388,7 +389,7 @@ class TestInterpolationStatus:
 
 
 # ---------------------------------------------------------------------------
-# force_log_direction: skip the FD fallback even when the metric is non-Riemannian
+# force_log_direction skips the FD fallback, also under a non-Riemannian metric
 # ---------------------------------------------------------------------------
 
 
@@ -409,11 +410,11 @@ class TestForceLogDirection:
         settings = geodex.InterpolationSettings(step_size=0.1, max_steps=500)
         r = geodex.discrete_geodesic(self.cs, self.p, self.q, settings)
         assert r.status == geodex.InterpolationStatus.Converged
-        assert r.fd_midpoint_fallbacks >= 0  # field readable, value meaningful
+        assert r.fd_midpoint_fallbacks >= 0  # the field is readable
 
     def test_force_log_skips_fd(self):
-        """With force_log_direction=True the FD path never runs, so the
-        midpoint fallback counter stays at zero."""
+        """With force_log_direction=True the FD path does not run, and the midpoint
+        fallback counter stays at zero."""
         settings = geodex.InterpolationSettings(
             step_size=0.1, max_steps=500, force_log_direction=True
         )
@@ -429,7 +430,7 @@ class TestForceLogDirection:
 
 class TestFdMidpointGuard:
     def test_fallbacks_zero_on_clean_sphere_geodesic(self):
-        """Clean round sphere uses the fast path; FD never runs."""
+        """The round sphere uses the fast path, and the FD gradient does not run."""
         sphere = geodex.Sphere()
         p = np.array([0.0, 0.0, 1.0])
         q = np.array([np.sin(1.0), 0.0, np.cos(1.0)])
@@ -438,9 +439,8 @@ class TestFdMidpointGuard:
         assert r.fd_midpoint_fallbacks == 0
 
     def test_guard_tau_zero_forces_via_log_samples(self):
-        """``fd_midpoint_guard_tau = 0`` rejects every midpoint sample, so
-        every FD basis direction falls back to |log|_R and the counter
-        increments throughout the walk."""
+        """``fd_midpoint_guard_tau = 0`` rejects every midpoint sample. Every FD basis
+        direction falls back to |log|_R, and the counter grows throughout the walk."""
         sphere = geodex.Sphere()
         metric = geodex.ConstantSPDMetric(np.diag([4.0, 1.0, 1.0]))
         cs = geodex.ConfigurationSpace(sphere, metric)
@@ -452,69 +452,6 @@ class TestFdMidpointGuard:
         r = geodex.discrete_geodesic(cs, p, q, settings)
         assert r.status == geodex.InterpolationStatus.Converged
         assert r.fd_midpoint_fallbacks > 0
-
-
-# ---------------------------------------------------------------------------
-# simplify_path
-# ---------------------------------------------------------------------------
-
-
-class TestSimplifyPathSettings:
-    def test_defaults(self):
-        s = geodex.SimplifyPathSettings()
-        assert s.max_shortcut_attempts == 200
-        assert s.smooth_target_segments == 128
-        assert s.max_displacement == pytest.approx(0.0)
-
-
-class TestSimplifyPathEuclidean:
-    def setup_method(self):
-        self.euc = geodex.Euclidean(2)
-        self.cs = geodex.ConfigurationSpace(self.euc, geodex.ConstantSPDMetric(np.eye(2)))
-
-    def test_collinear_path_collapses(self):
-        # Three points along the x-axis, middle redundant.
-        path = [np.array([0.0, 0.0]), np.array([0.5, 0.0]), np.array([1.0, 0.0])]
-        settings = geodex.SimplifyPathSettings()
-        settings.max_shortcut_attempts = 50
-        settings.smooth_target_segments = 4
-        settings.max_iter_per_level = 50
-        r = geodex.simplify_path(self.cs, lambda q: True, path, settings)
-        assert isinstance(r, geodex.SimplifyPathResult)
-        assert r.collision_free is True
-        assert r.distance == pytest.approx(1.0, abs=2e-2)
-
-    def test_validity_fn_respected(self):
-        # Block any q with x in [0.45, 0.55]: shortcut from (0,0) to (1,0)
-        # passes through that band, so the middle vertex must survive.
-        def validity(q):
-            return not (0.45 <= q[0] <= 0.55 and abs(q[1]) < 0.1)
-
-        path = [
-            np.array([0.0, 0.0]),
-            np.array([0.5, -0.5]),  # detour avoiding the band
-            np.array([1.0, 0.0]),
-        ]
-        settings = geodex.SimplifyPathSettings()
-        settings.max_shortcut_attempts = 100
-        settings.smooth_target_segments = 4
-        settings.max_iter_per_level = 50
-        r = geodex.simplify_path(self.cs, validity, path, settings)
-        # Result must remain collision-free under the same predicate.
-        for q in r.path:
-            assert validity(q)
-
-    def test_endpoints_preserved(self):
-        path = [
-            np.array([0.0, 0.0]),
-            np.array([0.5, 0.5]),
-            np.array([1.0, 1.0]),
-        ]
-        settings = geodex.SimplifyPathSettings()
-        settings.smooth_target_segments = 4
-        r = geodex.simplify_path(self.cs, lambda q: True, path, settings)
-        np.testing.assert_allclose(r.path[0], path[0], atol=1e-12)
-        np.testing.assert_allclose(r.path[-1], path[-1], atol=1e-12)
 
 
 # ---------------------------------------------------------------------------
@@ -603,3 +540,8 @@ class TestPrecomputeMatrixLowerBound:
             diff = metric(q) - result.M_lower
             evals = np.linalg.eigvalsh(diff)
             assert evals.min() > -1e-6  # M(q) - M_lower ⪰ 0 (Loewner)
+
+
+def test_package_keeps_its_imports_private():
+    for name in ("os", "sys", "platform", "types", "importlib"):
+        assert not hasattr(geodex, name), name

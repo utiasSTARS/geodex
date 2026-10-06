@@ -1,7 +1,9 @@
 /// @file se2_left_invariant.hpp
-/// @brief Left-invariant metric on SE(2) — thin wrapper over ConstantSPDMetric<3>.
+/// @brief Left-invariant metric on SE(2), a thin wrapper over ConstantSPDMetric<3>.
 
 #pragma once
+
+#include <algorithm>
 
 #include <Eigen/Core>
 
@@ -12,15 +14,14 @@ namespace geodex {
 
 /// @brief Left-invariant metric on SE(2).
 ///
-/// @details The inner product is constant (left-invariant):
+/// @details The inner product is constant (left-invariant),
 /// \f$ \langle u, v \rangle = w_x u_x v_x + w_y u_y v_y + w_\theta u_\theta v_\theta \f$.
-/// The weights \f$ (w_x, w_y, w_\theta) \f$ allow anisotropic cost, e.g. penalizing
-/// lateral motion for car-like robots.
+/// The weights \f$ (w_x, w_y, w_\theta) \f$ allow anisotropic cost, for example a
+/// penalty on lateral motion for car-like robots.
 ///
-/// Implementation: this is `ConstantSPDMetric<3>` with `A = diag(w_x, w_y, w_\theta)`.
-/// The `weights_` field is preserved alongside the base metric so that
-/// `SE2::has_riemannian_log_runtime()` can quickly check unit weights without
-/// inspecting the full SPD matrix.
+/// The class wraps `ConstantSPDMetric<3>` with `A = diag(w_x, w_y, w_\theta)` and keeps
+/// the weights. `SE2::has_riemannian_log_runtime()` compares the translational weights
+/// without inspecting the full SPD matrix.
 class SE2LeftInvariantMetric {
  public:
   /// @brief Construct with unit weights (isotropic).
@@ -34,15 +35,49 @@ class SE2LeftInvariantMetric {
   /// \f$ r_{\mathrm{eff}} \approx \sqrt{w_\theta / w_x} \f$.
   ///
   /// @param turning_radius Desired effective turning radius.
-  /// @param lateral_penalty Weight for lateral (y) motion — higher values more
-  ///        strongly suppress sideslip (default 100.0).
+  /// @param lateral_penalty Weight for lateral (y) motion. Higher values suppress
+  ///        sideslip more strongly (default 100.0).
   /// @return An SE2LeftInvariantMetric configured for car-like behavior.
-  /// @note Soft constraint only: the metric penalizes but does not forbid motions
-  /// violating the turning radius. Near start/goal the planner may produce in-place
-  /// rotations.
+  /// @note A soft constraint. The metric penalizes motions that violate the turning
+  /// radius and does not forbid them. Near the start and goal the planner may produce
+  /// in-place rotations.
   static SE2LeftInvariantMetric car_like(const double turning_radius,
                                          const double lateral_penalty = 100.0) {
     return SE2LeftInvariantMetric(1.0, lateral_penalty, turning_radius * turning_radius);
+  }
+
+  /// @brief The metric of a holonomic base, equal forward and lateral weights.
+  ///
+  /// @details The weights are \f$ (1, 1, w_\theta) \f$. Omniwheel and mecanum bases move
+  /// sideways as easily as forward.
+  /// @param wtheta Heading weight \f$ w_\theta \f$.
+  static SE2LeftInvariantMetric holonomic(const double wtheta = 1.0) {
+    return SE2LeftInvariantMetric(1.0, 1.0, wtheta);
+  }
+
+  /// @brief The metric of a differential-drive base, a large lateral weight.
+  ///
+  /// @details The weights are \f$ (1, w_y, w_\theta) \f$. A large \f$ w_y \f$ makes
+  /// sideways motion expensive, a soft nonholonomic constraint. With \f$ w_y = 100 \f$ a
+  /// meter of sliding costs as much as ten meters of driving.
+  /// @param lateral_weight Lateral weight \f$ w_y \f$.
+  /// @param wtheta Heading weight \f$ w_\theta \f$.
+  static SE2LeftInvariantMetric differential_drive(const double lateral_weight = 100.0,
+                                                   const double wtheta = 1.0) {
+    return SE2LeftInvariantMetric(1.0, lateral_weight, wtheta);
+  }
+
+  /// @brief Loewner lower bound of the metric on coordinate velocities at every heading.
+  ///
+  /// @details On coordinate velocities \f$ (\dot x, \dot y, \dot\theta) \f$ the metric is
+  /// \f$ R(\theta)\,\mathrm{diag}(w_x, w_y)\,R(\theta)^\top \oplus w_\theta \f$
+  /// (`SE2::coordinate_metric`). The constant matrix
+  /// \f$ \mathrm{diag}(\min(w_x, w_y), \min(w_x, w_y), w_\theta) \f$ lies below it at every
+  /// heading \f$ \theta \f$. `heuristics::MatrixLowerBound` takes it with the manifold's
+  /// `periods()`.
+  Eigen::Matrix3d coordinate_lower_bound() const {
+    const double m = std::min(weights_[0], weights_[1]);
+    return Eigen::Vector3d(m, m, weights_[2]).asDiagonal();
   }
 
   /// @brief Construct with explicit weights.

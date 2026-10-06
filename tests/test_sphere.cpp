@@ -16,8 +16,7 @@ static_assert(RiemannianManifold<Sphere<2, SphereRoundMetric, SphereProjectionRe
 static_assert(Retraction<SphereExponentialMap, Eigen::Vector3d, Eigen::Vector3d>);
 static_assert(Retraction<SphereProjectionRetraction, Eigen::Vector3d, Eigen::Vector3d>);
 
-// HasInjectivityRadius is now unconditional on Sphere (topological).
-// The default metric (ConstantSPDMetric<3> identity) gives the canonical π.
+// Sphere has injectivity radius π for every metric and retraction.
 static_assert(HasInjectivityRadius<Sphere<>>);
 static_assert(HasInjectivityRadius<Sphere<2, SphereRoundMetric, SphereProjectionRetraction>>);
 
@@ -25,6 +24,41 @@ static_assert(HasInjectivityRadius<Sphere<2, SphereRoundMetric, SphereProjection
 // North pole to a point at latitude θ on the great circle through x-axis.
 static Eigen::Vector3d point_at_theta(double theta) {
   return Eigen::Vector3d(std::sin(theta), 0.0, std::cos(theta));
+}
+
+// ---------------------------------------------------------------------------
+// Unit-cube map (Archimedes equal-area)
+// ---------------------------------------------------------------------------
+
+TEST(Sphere, UnitCubeDimIsTwo) {
+  Sphere<2> s;
+  EXPECT_EQ(s.unit_cube_dim(), 2);
+}
+
+TEST(Sphere, FromUnitCubeEqualAreaKnownValues) {
+  Sphere<2> s;
+  Eigen::VectorXd u(2);
+  // z = 2*0.5 - 1 = 0, phi = 0  ->  (1, 0, 0)
+  u << 0.5, 0.0;
+  Eigen::Vector3d p = s.from_unit_cube(u);
+  EXPECT_NEAR(p[0], 1.0, 1e-12);
+  EXPECT_NEAR(p[1], 0.0, 1e-12);
+  EXPECT_NEAR(p[2], 0.0, 1e-12);
+  // z = 2*0 - 1 = -1  ->  south pole (0, 0, -1)
+  u << 0.0, 0.37;
+  p = s.from_unit_cube(u);
+  EXPECT_NEAR(p[2], -1.0, 1e-12);
+}
+
+TEST(Sphere, FromUnitCubeIsUnitNorm) {
+  Sphere<2> s;
+  Eigen::VectorXd u(2);
+  for (double a = 0.05; a < 1.0; a += 0.13) {
+    for (double b = 0.05; b < 1.0; b += 0.17) {
+      u << a, b;
+      EXPECT_NEAR(s.from_unit_cube(u).norm(), 1.0, 1e-12);
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------

@@ -27,6 +27,32 @@ Eigen::VectorXd V5(double a, double b, double c, double d, double e) {
 }  // namespace
 
 // ===========================================================================
+// Halton joint sequence, one sequence spans all blocks with no per-block collapse.
+// ===========================================================================
+
+TEST(ProductManifold, HaltonJointSequenceDoesNotCollapse) {
+  auto prod = make_product(Euclidean<2>{}, Euclidean<2>{});
+  prod.set_sampler(DynamicSampler{HaltonSampler{}});
+  for (int i = 0; i < 10; ++i) {
+    const Eigen::VectorXd p = prod.random_point();
+    ASSERT_EQ(p.size(), 4);
+    // A single joint low-discrepancy sequence gives each block distinct primes, so
+    // the two identical-bounds blocks are never equal.
+    EXPECT_GT((p.head<2>() - p.tail<2>()).norm(), 1e-6);
+  }
+}
+
+TEST(ProductManifold, HaltonJointSequenceIsDeterministic) {
+  auto a = make_product(Euclidean<2>{}, Euclidean<2>{});
+  auto b = make_product(Euclidean<2>{}, Euclidean<2>{});
+  a.set_sampler(DynamicSampler{HaltonSampler{}});
+  b.set_sampler(DynamicSampler{HaltonSampler{}});
+  for (int i = 0; i < 20; ++i) {
+    EXPECT_EQ(a.random_point(), b.random_point());
+  }
+}
+
+// ===========================================================================
 // Euclidean(2) x SE2 : point size == dim for both blocks (total 2 + 3 == 5).
 // ===========================================================================
 

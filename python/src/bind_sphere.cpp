@@ -13,10 +13,13 @@ void bind_sphere(nb::module_& m) {
                        "The 2-sphere S^2 with interchangeable retraction policy.\n\n"
                        "Points are unit vectors in R^3. Tangent vectors lie in the\n"
                        "orthogonal complement of the base point.")
-      .def(nb::init<const std::string&>(), nb::arg("retraction") = "exponential",
+      .def(nb::init<const std::string&, const std::string&>(),
+           nb::arg("retraction") = "exponential", nb::arg("sampler") = "scrambled",
            "Create a Sphere with the round metric.\n\n"
            "Args:\n"
-           "    retraction: 'exponential' (true exp/log) or 'projection' (first-order).")
+           "    retraction: 'exponential' (true exp/log) or 'projection', which normalizes\n"
+           "        p + v and agrees with the exponential map to second order.\n"
+           "    sampler: 'scrambled' (default), 'halton', or 'random'.")
       .def("dim", &PySphere::dim, "Return the intrinsic dimension (always 2).")
       .def("random_point", &PySphere::random_point, "Sample a uniformly random point on S^2.")
       .def("project", &PySphere::project, nb::arg("p"), nb::arg("v"),
@@ -32,18 +35,24 @@ void bind_sphere(nb::module_& m) {
            "Geodesic distance d(p, q).")
       .def("geodesic", &PySphere::geodesic, nb::arg("p"), nb::arg("q"), nb::arg("t"),
            "Geodesic interpolation at parameter t in [0, 1].")
+      .def("seed", &PySphere::seed, nb::arg("seed"),
+           "Reseed the sampler for reproducible sampling.")
+      .def("set_sampler", &PySphere::set_sampler, nb::arg("sampler"),
+           "Switch the sampler to 'scrambled', 'halton' or 'random'.")
       .def("__repr__", &PySphere::repr);
 
   nb::class_<PySphereN>(m, "SphereN",
                         "The n-sphere S^n with interchangeable retraction policy.\n\n"
                         "Points are unit vectors in R^(n+1). The dimension n is set\n"
                         "at construction time.")
-      .def(nb::init<int, const std::string&>(), nb::arg("dim"),
-           nb::arg("retraction") = "exponential",
+      .def(nb::init<int, const std::string&, const std::string&>(), nb::arg("dim"),
+           nb::arg("retraction") = "exponential", nb::arg("sampler") = "scrambled",
            "Create an n-sphere with the round metric.\n\n"
            "Args:\n"
            "    dim: Intrinsic dimension n of S^n.\n"
-           "    retraction: 'exponential' (true exp/log) or 'projection' (first-order).")
+           "    retraction: 'exponential' (true exp/log) or 'projection', which normalizes\n"
+           "        p + v and agrees with the exponential map to second order.\n"
+           "    sampler: 'scrambled' (default), 'halton', or 'random'.")
       .def("dim", &PySphereN::dim, "Return the intrinsic dimension n.")
       .def("random_point", &PySphereN::random_point, "Sample a uniformly random point on S^n.")
       .def("project", &PySphereN::project, nb::arg("p"), nb::arg("v"),
@@ -59,5 +68,9 @@ void bind_sphere(nb::module_& m) {
            "Geodesic distance d(p, q).")
       .def("geodesic", &PySphereN::geodesic, nb::arg("p"), nb::arg("q"), nb::arg("t"),
            "Geodesic interpolation at parameter t in [0, 1].")
+      .def("seed", &PySphereN::seed, nb::arg("seed"),
+           "Reseed the sampler for reproducible sampling.")
+      .def("set_sampler", &PySphereN::set_sampler, nb::arg("sampler"),
+           "Switch the sampler to 'scrambled', 'halton' or 'random'.")
       .def("__repr__", &PySphereN::repr);
 }

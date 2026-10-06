@@ -12,7 +12,7 @@
 ///   \f$(3K \times n_v)\f$.
 ///
 /// Passing an empty frame name auto-detects the last BODY frame attached to
-/// the final movable joint — the common case for single-arm manipulators.
+/// the final movable joint, the common case for single-arm manipulators.
 ///
 /// Not thread-safe: each callable owns a mutable pinocchio::Data buffer and
 /// returns a reference into that buffer.

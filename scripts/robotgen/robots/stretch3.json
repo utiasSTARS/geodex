@@ -1,0 +1,77 @@
+{
+  "name": "stretch3",
+  "description": "Hello Robot Stretch 3 with the DexWrist 3 and the SG3 gripper, differential-drive base",
+  "vamp_struct": "Stretch3",
+  "source": {
+    "package": "STRETCH_URDF",
+    "urdf": "stretch_urdf/SE3/stretch_description_SE3_eoa_wrist_dw3_tool_sg3.urdf"
+  },
+  "base_link": "base_link",
+  "drive": "differential",
+  "planning_joints": [
+    "joint_lift",
+    "joint_arm",
+    "joint_wrist_yaw",
+    "joint_wrist_pitch",
+    "joint_wrist_roll"
+  ],
+  "couplings": [
+    {
+      "joint": "joint_arm",
+      "segments": [
+        "joint_arm_l3",
+        "joint_arm_l2",
+        "joint_arm_l1",
+        "joint_arm_l0"
+      ]
+    }
+  ],
+  "end_effector": "link_grasp_center",
+  "drop_collision_links": [
+    "link_aruco_right_base",
+    "link_aruco_left_base",
+    "link_aruco_shoulder",
+    "link_aruco_top_wrist",
+    "link_aruco_inner_wrist",
+    "link_aruco_fingertip_right",
+    "link_aruco_fingertip_left",
+    "link_aruco_d405",
+    "base_imu"
+  ],
+  "spherize": {
+    "branch": 8,
+    "link_scale": {
+      "base_link": 6.0,
+      "link_mast": 2.0,
+      "link_lift": 3.0,
+      "link_right_wheel": 4.0,
+      "link_left_wheel": 4.0,
+      "link_head": 2.0,
+      "link_arm_l0": 4.0,
+      "link_gripper_s3_body": 4.0,
+      "link_wrist_yaw": 3.0,
+      "link_wrist_yaw_bottom": 3.0,
+      "link_wrist_pitch": 3.0
+    }
+  },
+  "nested_groups": [
+    [
+      "link_lift",
+      "link_arm_l4",
+      "link_arm_l3",
+      "link_arm_l2",
+      "link_arm_l1",
+      "link_arm_l0"
+    ]
+  ],
+  "overlapping_pairs": [
+    {
+      "links": [
+        "link_arm_l0",
+        "link_wrist_pitch"
+      ],
+      "reason": "the collision meshes overlap around the yaw axis at every yaw for pitch in -1.3 to -0.5 rad, inside the -1.57 to 0.56 rad range the DexWrist 3 reaches"
+    }
+  ],
+  "base_height": 0.0
+}

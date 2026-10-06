@@ -3,13 +3,11 @@
 ///
 /// Provides:
 ///   - Portable sincos() wrapper (macOS __sincos, POSIX ::sincos)
-///   - Schraudolph fast_exp() approximation (~5x faster, ~4% max relative error)
+///   - Schraudolph fast_exp() approximation (about 4% max relative error)
 ///   - ARM NEON 2-wide helpers and x86 SSE2 2-wide helpers with scalar fallbacks
 ///
-/// SIMD portability: The x86 path requires only SSE2 (baseline x86_64). When
-/// SSE4.1 or FMA are available (detected via __SSE4_1__ / __FMA__), faster
-/// intrinsics are used automatically. Compile with -march=native for best
-/// performance on your machine.
+/// The x86 path requires only SSE2 (baseline x86_64). When SSE4.1 or FMA are
+/// available (detected via __SSE4_1__ / __FMA__), the code uses their intrinsics.
 ///
 /// Used by geodex::collision (SDF evaluation), geodex::SE2 (distance),
 /// and anywhere fast transcendental approximations are acceptable.
@@ -56,7 +54,7 @@ inline void sincos(const double angle, double* s, double* c) {
 /// @brief Fast exp() approximation via Schraudolph's IEEE 754 bit trick.
 ///
 /// Maps `x` to `2^(x/ln2)` by writing directly into the exponent bits of a
-/// double. ~5x faster than std::exp on ARM. Max relative error ~4% (3.9%).
+/// double. The max relative error is 3.9%.
 ///
 /// Schraudolph's paper writes to the upper 32-bit int of a double using
 /// `a = 2^20/ln(2)`, `b = 1023*2^20`, `c = 60801`. The 64-bit adaptation

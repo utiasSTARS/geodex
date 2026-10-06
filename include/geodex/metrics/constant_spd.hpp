@@ -23,12 +23,10 @@ namespace geodex {
 template <int Dim = Eigen::Dynamic>
 class ConstantSPDMetric {
  public:
-  /// @brief Default: identity weight matrix (only for static Dim).
+  /// @brief Identity weight matrix (only for static Dim).
   ///
-  /// @details The default metric is the standard ambient inner product, which
-  /// is the "natural" choice for every built-in manifold (Sphere/Euclidean/Torus).
-  /// For `Dim == Eigen::Dynamic` the size is unknown at compile time, so use the
-  /// `int n` constructor below instead.
+  /// @details The identity gives the standard ambient inner product. For
+  /// `Dim == Eigen::Dynamic` use the `int n` constructor below.
   ConstantSPDMetric()
     requires(Dim != Eigen::Dynamic)
       : A_(Eigen::Matrix<double, Dim, Dim>::Identity()) {}
@@ -62,12 +60,10 @@ class ConstantSPDMetric {
 
   /// @brief Batched inner product: \f$U^\top A\, V\f$ in a single matrix multiply.
   ///
-  /// @details Provides the `HasBatchInnerMatrix` fast path for algorithms that
+  /// @details Provides the `HasBatchInnerMatrix` path for algorithms that
   /// evaluate a tangent-metric tensor in a basis (e.g., `natural_gradient_fd`).
-  /// For `ConstantSPDMetric` this is a simple linear-algebra shortcut; the
-  /// bigger win is for point-dependent metrics like `KineticEnergyMetric`
-  /// where the expensive mass matrix is evaluated once instead of \f$d^2\f$
-  /// times.
+  /// Point-dependent metrics such as `KineticEnergyMetric` evaluate \f$M(p)\f$ once
+  /// for the whole tensor.
   Eigen::MatrixXd inner_matrix(const Eigen::Vector<double, Dim>& /*p*/, const Eigen::MatrixXd& U,
                                const Eigen::MatrixXd& V) const {
     return U.transpose() * A_ * V;

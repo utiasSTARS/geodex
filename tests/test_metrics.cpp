@@ -1,11 +1,16 @@
 /// @file test_metrics.cpp
-/// @brief Tests for extracted and new metric types.
+/// @brief Tests for the metric policies.
 
 #include <cmath>
 
+#include <algorithm>
+#include <numbers>
+
 #include <Eigen/Core>
+#include <Eigen/Eigenvalues>
 #include <gtest/gtest.h>
 
+#include "geodex/manifold/se2.hpp"
 #include "geodex/metrics/constant_spd.hpp"
 #include "geodex/metrics/jacobi.hpp"
 #include "geodex/metrics/kinetic_energy.hpp"
@@ -89,6 +94,34 @@ TEST(SE2LeftInvariantMetric, InnerProductProperties) {
   check_symmetry(metric, p, u, v);
   check_bilinearity(metric, p, u, v, w, 2.5, -1.3);
   check_positive_definite(metric, p, u);
+}
+
+TEST(SE2LeftInvariantMetric, DrivePresets) {
+  EXPECT_EQ(geodex::SE2LeftInvariantMetric::holonomic().weights(), Eigen::Vector3d(1, 1, 1));
+  EXPECT_EQ(geodex::SE2LeftInvariantMetric::holonomic(2.0).weights(), Eigen::Vector3d(1, 1, 2));
+  EXPECT_EQ(geodex::SE2LeftInvariantMetric::differential_drive().weights(),
+            Eigen::Vector3d(1, 100, 1));
+  EXPECT_EQ(geodex::SE2LeftInvariantMetric::differential_drive(50.0, 3.0).weights(),
+            Eigen::Vector3d(1, 50, 3));
+}
+
+TEST(SE2LeftInvariantMetric, CoordinateLowerBoundHoldsAtEveryHeading) {
+  for (const auto& metric : {geodex::SE2LeftInvariantMetric::holonomic(),
+                             geodex::SE2LeftInvariantMetric::differential_drive(),
+                             geodex::SE2LeftInvariantMetric{2.0, 0.5, 3.0}}) {
+    const Eigen::Matrix3d M = metric.coordinate_lower_bound();
+    const Eigen::Vector3d& w = metric.weights();
+    EXPECT_EQ(M, Eigen::Vector3d(std::min(w[0], w[1]), std::min(w[0], w[1]), w[2])
+                     .asDiagonal()
+                     .toDenseMatrix());
+    const geodex::SE2<> se2(metric);
+    for (double theta = -std::numbers::pi; theta <= std::numbers::pi; theta += 0.1) {
+      const Eigen::Matrix3d G = se2.coordinate_metric(Eigen::Vector3d(0.0, 0.0, theta));
+      const double lowest =
+          Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d>(G - M).eigenvalues().minCoeff();
+      EXPECT_GE(lowest, -1e-12) << "theta " << theta;
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -220,7 +253,7 @@ TEST(PullbackMetric, WithRegularization) {
 // WeightedMetric
 // ---------------------------------------------------------------------------
 
-TEST(WeightedMetric, ScalesBaseMetric) {
+TEST(WeightedMetric, ScalesTheWrappedMetric) {
   geodex::SE2LeftInvariantMetric base{1.0, 1.0, 1.0};
   geodex::WeightedMetric metric{base, 3.0};
 
@@ -248,7 +281,7 @@ TEST(WeightedMetric, InnerProductProperties) {
 }
 
 // ---------------------------------------------------------------------------
-// inner_matrix batch consistency — each metric's `inner_matrix` must agree
+// inner_matrix batch consistency. Each metric's `inner_matrix` must agree
 // with d^2 scalar `inner` calls.
 // ---------------------------------------------------------------------------
 

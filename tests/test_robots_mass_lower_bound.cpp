@@ -1,15 +1,15 @@
-// Verifies the precompiled Loewner lower bounds shipped in
-// src/robots/generated/<robot>_bound.hpp against the exact generated CRBA.
+// Checks the precompiled Loewner lower bounds in src/robots/generated/<robot>_bound.hpp
+// against the generated CRBA at every vertex of each joint box, on its faces and inside it.
 //
-// The core guarantee is admissibility: for every q in the joint-limit box,
-// M(q) >= M_lower in the Loewner order, where M(q) is robots::MassMatrix<R>
-// (the same precompiled CRBA the planner evaluates) and M_lower is
-// robots::MassLowerBound<R>::matrix(). This is what makes the
-// MatrixLowerBound heuristic an admissible lower bound on geodesic distance.
+// A bound is admissible when M(q) >= M_lower in the Loewner order for every q in the joint
+// box. M(q) is robots::MassMatrix<R>, the CRBA the planner evaluates, and M_lower is
+// robots::MassLowerBound<R>::matrix().
 //
-// Needs no Pinocchio — it consumes only the committed generated sources.
+// The test does not need Pinocchio. It reads only the committed generated sources.
 
+#include <limits>
 #include <random>
+#include <string>
 
 #include <Eigen/Cholesky>
 #include <Eigen/Core>
@@ -18,6 +18,7 @@
 
 #include "geodex/robots/mass_lower_bound.hpp"
 #include "geodex/robots/mass_matrix.hpp"
+#include "geodex/utils/random.hpp"
 
 namespace {
 
@@ -25,56 +26,66 @@ using geodex::robots::MassLowerBound;
 using geodex::robots::MassMatrix;
 using geodex::robots::Robot;
 
-// Min eigenvalue of M(q) - M_lower below this counts as a domination failure.
-// A real inadmissible bound produces violations on the order of the mass-matrix
-// entries themselves (1e-3 and up), far below this floor; the floor only
-// absorbs eigensolver / FP noise and the precompute's finite search accuracy.
-constexpr double kDominationFloor = -1e-6;
+// The tolerance covers the rounding in evaluating M(q). Each bound has a proved margin of
+// at least 0.3 percent.
+constexpr double kTolerance = 1e-9;
 
 template <Robot R>
 void verify_bound() {
   using LB = MassLowerBound<R>;
   using Mat = typename LB::Mat;
+  constexpr int n = LB::Nv;
 
   const Mat M_lower = LB::matrix();
 
-  // Structure: symmetric and SPD.
+  // M_lower is symmetric and SPD.
   EXPECT_LT((M_lower - M_lower.transpose()).norm(), 1e-12) << "M_lower not symmetric";
   Eigen::LLT<Mat> llt(M_lower);
   ASSERT_EQ(llt.info(), Eigen::Success) << "M_lower not SPD";
+  const Mat Ci = Mat(llt.matrixL()).inverse();
 
-  // Provenance: the shipped bound should be a converged certificate near 1.
-  EXPECT_TRUE(LB::converged) << "bound precompute did not converge";
-  EXPECT_GE(LB::certificate, 0.99) << "certificate too low: " << LB::certificate;
+  // The header records a proof with a certificate of at least 1.
+  EXPECT_TRUE(LB::converged) << "bound was not proved";
+  EXPECT_GE(LB::certificate, 1.0) << "certificate " << LB::certificate;
 
-  // Admissibility sweep: M(q) - M_lower must be PSD across the box.
+  // lambda_min(C^-1 M(q) C^-T) >= 1 at every vertex of the joint box, on its faces and
+  // inside it.
   MassMatrix<R> mm;
   const auto [lo, hi] = MassMatrix<R>::joint_limits();
-  std::mt19937 rng(12345);
-  typename MassMatrix<R>::Vec q;
-
-  double worst_min_eig = std::numeric_limits<double>::infinity();
-  constexpr int kSamples = 500;
-  for (int s = 0; s < kSamples; ++s) {
-    for (int i = 0; i < LB::Nv; ++i) {
-      std::uniform_real_distribution<double> dist(lo[i], hi[i]);
-      q[i] = dist(rng);
-    }
-    const Mat Mq = mm(q);  // copy out: operator() reuses an internal buffer
-    Eigen::SelfAdjointEigenSolver<Mat> es(Mq - M_lower, Eigen::EigenvaluesOnly);
+  std::mt19937_64 rng(12345);
+  double worst = std::numeric_limits<double>::infinity();
+  auto check = [&](const typename MassMatrix<R>::Vec& q) {
+    const Mat Mq = mm(q);  // operator() reuses an internal buffer.
+    Eigen::SelfAdjointEigenSolver<Mat> es(Ci * Mq * Ci.transpose(), Eigen::EigenvaluesOnly);
     ASSERT_EQ(es.info(), Eigen::Success);
-    worst_min_eig = std::min(worst_min_eig, es.eigenvalues().minCoeff());
+    worst = std::min(worst, es.eigenvalues().minCoeff());
+  };
+  typename MassMatrix<R>::Vec q;
+  for (long v = 0; v < (1L << n); ++v) {
+    for (int i = 0; i < n; ++i) q[i] = (v >> i) & 1 ? hi[i] : lo[i];
+    check(q);
   }
-  EXPECT_GE(worst_min_eig, kDominationFloor)
-      << "M(q) does not dominate M_lower over the box; worst min eigenvalue of "
-         "M(q) - M_lower = "
-      << worst_min_eig;
+  for (int s = 0; s < 4000; ++s) {
+    for (int i = 0; i < n; ++i) q[i] = geodex::utils::uniform_real(rng, lo[i], hi[i]);
+    const auto face = static_cast<int>(geodex::utils::uniform_index(rng, n));
+    q[face] = s % 2 ? hi[face] : lo[face];
+    check(q);
+  }
+  for (int s = 0; s < 4000; ++s) {
+    for (int i = 0; i < n; ++i) q[i] = geodex::utils::uniform_real(rng, lo[i], hi[i]);
+    check(q);
+  }
+  EXPECT_GE(worst, 1.0 - kTolerance)
+      << "M(q) does not dominate M_lower over the box; smallest lambda_min of "
+         "M_lower^-1 M(q) = "
+      << worst;
 }
 
 }  // namespace
 
-TEST(RobotsMassLowerBound, PandaIsAdmissible) { verify_bound<Robot::Panda>(); }
-TEST(RobotsMassLowerBound, Ur5IsAdmissible) { verify_bound<Robot::Ur5>(); }
-TEST(RobotsMassLowerBound, FetchIsAdmissible) { verify_bound<Robot::Fetch>(); }
-TEST(RobotsMassLowerBound, BaxterIsAdmissible) { verify_bound<Robot::Baxter>(); }
-TEST(RobotsMassLowerBound, Pr2IsAdmissible) { verify_bound<Robot::Pr2>(); }
+TEST(RobotsMassLowerBound, EveryRegisteredRobotIsAdmissible) {
+  for (const Robot r : geodex::robots::registered_robots()) {
+    SCOPED_TRACE(std::string(geodex::robots::name(r)));
+    geodex::robots::visit(r, []<Robot R>() { verify_bound<R>(); });
+  }
+}

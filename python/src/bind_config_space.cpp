@@ -1,56 +1,53 @@
+#include <memory>
+#include <optional>
+#include <stdexcept>
+#include <string>
+#include <utility>
+
 #include <nanobind/eigen/dense.h>
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/string.h>
 
 #include "wrappers/dynamic_manifold.hpp"
 #include "wrappers/extract_manifold.hpp"
+#include "wrappers/extract_metric.hpp"
+#include "wrappers/py_callable.hpp"
 #include "wrappers/py_config_space.hpp"
-#include "wrappers/py_metrics.hpp"
+#include "wrappers/py_se2.hpp"
 
 namespace nb = nanobind;
 using namespace geodex::python;
-
-namespace {
-
-/// Extract a DynamicMetric from any known Python metric type.
-DynamicMetric extract_dynamic_metric(nb::object obj) {
-  if (nb::isinstance<PyKineticEnergyMetric>(obj))
-    return nb::cast<const PyKineticEnergyMetric&>(obj).to_dynamic_metric();
-  if (nb::isinstance<PyJacobiMetric>(obj))
-    return nb::cast<const PyJacobiMetric&>(obj).to_dynamic_metric();
-  if (nb::isinstance<PyPullbackMetric>(obj))
-    return nb::cast<const PyPullbackMetric&>(obj).to_dynamic_metric();
-  if (nb::isinstance<PyConstantSPDMetric>(obj))
-    return nb::cast<const PyConstantSPDMetric&>(obj).to_dynamic_metric();
-  if (nb::isinstance<PyWeightedMetric>(obj))
-    return nb::cast<const PyWeightedMetric&>(obj).to_dynamic_metric();
-  if (nb::isinstance<PyAffineCombinedMetric>(obj))
-    return nb::cast<const PyAffineCombinedMetric&>(obj).to_dynamic_metric();
-  if (nb::isinstance<PyClearanceMetric>(obj))
-    return nb::cast<const PyClearanceMetric&>(obj).to_dynamic_metric();
-  throw std::invalid_argument(
-      "Unknown metric type. Expected KineticEnergyMetric, JacobiMetric, "
-      "PullbackMetric, ConstantSPDMetric, WeightedMetric, AffineCombinedMetric, "
-      "or ClearanceMetric.");
-}
-
-}  // namespace
 
 void bind_config_space(nb::module_& m) {
   nb::class_<PyConfigurationSpace>(
       m, "ConfigurationSpace",
       "A configuration space combining a base manifold's topology with a custom metric.\n\n"
       "Topology operations (exp, log, dim, random_point) come from the base manifold.\n"
-      "Geometry operations (inner, norm, distance) come from the custom metric.")
+      "Geometry operations (inner, norm, distance) come from the custom metric.",
+      nb::type_slots(callable_owner_slots))
       .def(
           "__init__",
           [](PyConfigurationSpace* self, nb::object base, nb::object metric) {
             auto dm = extract_dynamic_manifold(base);
-            auto dmet = extract_dynamic_metric(metric);
+            // The space calls the metric object through a reference that the garbage
+            // collector sees, and the collector frees a cycle through a metric callable.
+            // Every manifold that the space hands out holds its own reference.
+            auto own = std::make_shared<const PyOwnedRef>(metric, self);
+            auto dmet = borrow_dynamic_metric(own);
+            auto metric_for_copies = [own]() {
+              if (!own->get()) {
+                throw std::runtime_error("metric was released by the garbage collector");
+              }
+              return borrow_dynamic_metric(
+                  std::make_shared<const PyOwnedRef>(nb::handle(own->get()), nullptr));
+            };
             std::string base_name = nb::repr(base).c_str();
             std::string metric_name = nb::repr(metric).c_str();
+            std::optional<PySE2> se2;
+            if (nb::isinstance<PySE2>(base)) se2 = nb::cast<const PySE2&>(base);
             new (self) PyConfigurationSpace(std::move(dm), std::move(dmet), std::move(base_name),
-                                            std::move(metric_name));
+                                            std::move(metric_name), std::move(metric_for_copies));
+            self->set_sources(std::move(se2), own);
           },
           nb::arg("base_manifold"), nb::arg("metric"),
           "Create a configuration space.\n\n"

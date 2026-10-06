@@ -14,6 +14,8 @@
 
 #include <cmath>
 
+#include <numbers>
+
 #include <Eigen/Core>
 
 namespace geodex::utils {
@@ -126,6 +128,20 @@ inline Eigen::Matrix3d quat_to_rotmat(const Eigen::Vector4d& q) {
              2.0 * (xz - wy),       2.0 * (yz + wx), 1.0 - 2.0 * (xx + yy);
   // clang-format on
   return R;
+}
+
+/// @brief A Haar-uniform unit quaternion from three unit-cube coordinates
+/// (Shoemake 1992).
+/// @param u1 First unit-cube coordinate in [0, 1).
+/// @param u2 Second unit-cube coordinate in [0, 1).
+/// @param u3 Third unit-cube coordinate in [0, 1).
+/// @return A unit quaternion \f$ [x, y, z, w] \f$ distributed by the Haar measure.
+inline Eigen::Vector4d uniform_quaternion(double u1, double u2, double u3) {
+  const double a = std::sqrt(1.0 - u1);
+  const double b = std::sqrt(u1);
+  const double t1 = 2.0 * std::numbers::pi * u2;
+  const double t2 = 2.0 * std::numbers::pi * u3;
+  return Eigen::Vector4d(a * std::sin(t1), a * std::cos(t1), b * std::sin(t2), b * std::cos(t2));
 }
 
 // ---------------------------------------------------------------------------

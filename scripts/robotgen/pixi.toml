@@ -1,0 +1,44 @@
+# Environment for regenerating the built-in robot data (sphere models, VAMP kernels,
+# self-collision pairs, CRBA sources, Loewner bounds). See scripts/robotgen/README.md.
+[workspace]
+name = "geodex-robotgen"
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[dependencies]
+python = "3.11.*"
+cmake = "3.31.*"
+ninja = "1.13.*"
+make = "4.4.*"
+compilers = "1.11.*"
+pkg-config = "0.29.*"
+git = "2.51.*"
+patch = "2.8.*"
+eigen = "3.4.0.*"
+pinocchio = "3.9.0.*"
+coal = "3.0.*"
+cppad = "20240000.6.*"
+cppadcodegen = "2.5.0.*"
+cgal-cpp = "6.0.*"
+fmt = "11.*"
+nlohmann_json = "3.12.*"
+libboost-devel = "1.88.*"
+numpy = "2.2.*"
+scipy = "1.15.*"
+trimesh = "4.5.*"
+networkx = "3.4.*"
+pyyaml = "6.0.*"
+lxml = "5.4.*"
+rtree = "1.4.*"
+
+[pypi-dependencies]
+fire = "==0.7.0"
+xmltodict = "==0.14.2"
+termcolor = "==2.5.0"
+vhacdx = "==0.0.10"
+xacro = "==2.1.1"
+yourdfpy = "==0.0.58"
+
+[activation.env]
+CPPADCG_HOME = "$CONDA_PREFIX"
+CPPAD_HOME = "$CONDA_PREFIX"

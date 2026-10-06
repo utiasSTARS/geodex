@@ -1,6 +1,7 @@
 #include <cmath>
 
 #include <numbers>
+#include <vector>
 
 #include <Eigen/Core>
 #include <gtest/gtest.h>
@@ -57,9 +58,8 @@ TEST_F(InterpolationRoundTest, PathLength) {
 }
 
 TEST_F(InterpolationRoundTest, Antipodal) {
-  // At the cut locus, log returns zero, so we report CutLocus status and
-  // return a single-point path. The distance between start and target is
-  // still pi, but log can't give us a direction.
+  // At the cut locus log returns zero. The walk reports CutLocus and returns a
+  // single-point path.
   Eigen::Vector3d south(0.0, 0.0, -1.0);
   auto r = discrete_geodesic(sphere, north, south);
 
@@ -109,7 +109,7 @@ TEST_F(InterpolationRoundTest, RespectsMaxSteps) {
 
   auto r = discrete_geodesic(sphere, north, target, settings);
 
-  // Path should have at most max_steps + 1 points (start + up to max_steps steps).
+  // The path has at most max_steps + 1 points, the start and up to max_steps steps.
   EXPECT_LE(static_cast<int>(r.path.size()), settings.max_steps + 1);
 }
 
@@ -129,7 +129,7 @@ TEST_F(InterpolationRoundTest, ReportsConvergedOnSuccess) {
 }
 
 TEST_F(InterpolationRoundTest, ReportsMaxStepsOnTightBudget) {
-  // Walk across ~2.5 rad with step_size 0.1 needs ~25 steps; give only 2.
+  // A walk across about 2.5 rad with step_size 0.1 needs about 25 steps. Allow only 2.
   auto target = point_at_theta(2.5);
   InterpolationSettings settings;
   settings.max_steps = 2;
@@ -183,13 +183,12 @@ TEST_F(InterpolationRoundTest, MonotoneDistanceDecrease) {
 }
 
 // ---------------------------------------------------------------------------
-// Non-Riemannian retraction — projection retract on the sphere
+// Non-Riemannian retraction (projection retraction on the sphere)
 // ---------------------------------------------------------------------------
 
 TEST(InterpolationNonRiemannian, SphereProjectionRetractionConverges) {
-  // Projection retraction is first-order, not the true exp map. The log-fast-path
-  // will still make progress (strict monotone decrease), but may be less accurate
-  // per step than the true exp map.
+  // The projection retraction is first-order, not the true exp map. The log fast path
+  // still decreases the distance strictly at every step.
   using SphereProj = Sphere<2, SphereRoundMetric, SphereProjectionRetraction>;
   SphereProj sphere;
   Eigen::Vector3d north(0.0, 0.0, 1.0);
@@ -214,8 +213,8 @@ TEST(InterpolationNonRiemannian, SphereProjectionRetractionConverges) {
 }
 
 TEST(InterpolationNonRiemannian, SE2EulerRetractionConverges) {
-  // Euler retraction treats SE(2) as R^2 x S^1 — ignores group structure, but the
-  // log-fast-path should still reach target under strict monotone decrease.
+  // The Euler retraction treats SE(2) as R^2 x S^1 and ignores the group structure. The
+  // log fast path still reaches the target with a strict monotone decrease.
   using SE2Euler = SE2<SE2LeftInvariantMetric, SE2EulerRetraction>;
   SE2Euler se2;
   Eigen::Vector3d start(1.0, 1.0, 0.0);
@@ -229,8 +228,8 @@ TEST(InterpolationNonRiemannian, SE2EulerRetractionConverges) {
 }
 
 TEST(InterpolationNonRiemannian, SE2AnisotropicWeights) {
-  // Anisotropic weights on SE(2) make the Lie group exp/log disagree with the
-  // Riemannian geodesic, but the algorithm should still reach the target.
+  // Anisotropic weights on SE(2) make the Lie group exp and log disagree with the
+  // Riemannian geodesic. The walk still reaches the target.
   SE2<SE2LeftInvariantMetric> se2(SE2LeftInvariantMetric{1.0, 1.0, 5.0});
   Eigen::Vector3d start(1.0, 1.0, 0.0);
   Eigen::Vector3d target(4.0, 3.0, 1.0);
@@ -275,9 +274,9 @@ TEST(InterpolationDynamic, TorusDynamicMatchesFixed) {
 // ---------------------------------------------------------------------------
 
 TEST(InterpolationConfigSpace, TorusConstantKineticEnergyConverges) {
-  // Constant mass matrix = diag(2, 1). The KE metric is flat (point-independent),
-  // so the base log is still the Riemannian log of the KE metric (same geodesics).
-  // The fast path should apply and the walk should reach the target.
+  // The constant mass matrix diag(2, 1) gives a flat KE metric. The base log is the
+  // Riemannian log of the KE metric, the fast path applies, and the walk reaches the
+  // target.
   auto mass_matrix_fn = [](const Eigen::Vector2d& /*q*/) {
     Eigen::Matrix2d M;
     M << 2.0, 0.0, 0.0, 1.0;
@@ -295,10 +294,10 @@ TEST(InterpolationConfigSpace, TorusConstantKineticEnergyConverges) {
   EXPECT_EQ(r.status, InterpolationStatus::Converged);
   EXPECT_LT(r.final_distance, 1e-2);
 
-  // For a constant mass matrix, the geodesic is still linear in base coordinates.
-  // Check that intermediate path points lie approximately on the line segment.
+  // For a constant mass matrix the geodesic is linear in base coordinates. Intermediate
+  // path points lie close to the line segment.
   for (const auto& p : r.path) {
-    // Parameterize: start + t * (target - start), solve for t.
+    // Solve start + t * (target - start) for t.
     Eigen::Vector2d delta = target - start;
     double t = (p - start).dot(delta) / delta.squaredNorm();
     Eigen::Vector2d on_line = start + t * delta;
@@ -324,7 +323,7 @@ TEST_F(InterpolationRoundTest, WorkspaceReuseProducesIdenticalResults) {
   EXPECT_EQ(r_no_ws.status, r_with_ws.status);
   EXPECT_EQ(r_no_ws.iterations, r_with_ws.iterations);
 
-  // Reuse across multiple calls — should still produce identical results.
+  // Reusing the workspace across calls gives identical results.
   auto r_reused = discrete_geodesic(sphere, north, target, {}, &ws);
   ASSERT_EQ(r_with_ws.path.size(), r_reused.path.size());
 }
@@ -333,8 +332,8 @@ TEST_F(InterpolationRoundTest, WorkspaceReuseProducesIdenticalResults) {
 // Midpoint FD surrogate with runtime guard
 // ---------------------------------------------------------------------------
 
-// Arc cost = sum of per-segment Riemannian norms along the path, measured with
-// the given manifold's metric. Useful for comparing surrogate quality.
+// Arc cost, the sum of per-segment Riemannian norms along the path under the
+// manifold's metric.
 template <typename M>
 static double arc_cost(const M& m, const std::vector<typename M::Point>& path) {
   double sum = 0.0;
@@ -346,20 +345,20 @@ static double arc_cost(const M& m, const std::vector<typename M::Point>& path) {
 }
 
 TEST(InterpolationGuardedMidpoint, SE2SDFConformalConverges) {
-  // SE(2) with a mild SDFConformalMetric over a circular obstacle. Both the
-  // midpoint FD (default) and via-log FD (tau=0) should converge, and the new
-  // counter should be exposed and correctly reporting.
+  // SE(2) with a mild SDFConformalMetric over a circular obstacle. The midpoint FD
+  // (default) and the via-log FD (tau=0) both converge, and the fallback counter
+  // reports correctly.
   auto sdf = [](const Eigen::Vector3d& q) {
     const double r = std::sqrt(q[0] * q[0] + q[1] * q[1]);
     return r - 1.0;  // unit circle at origin, positive outside
   };
 
   SE2LeftInvariantMetric base_metric{1.0, 1.0, 0.5};
-  SE2<SE2LeftInvariantMetric, SE2ExponentialMap> se2{base_metric};
+  SE2<SE2LeftInvariantMetric, SE2LeftExponentialMap> se2{base_metric};
   SDFConformalMetric clearance_metric{base_metric, sdf, 2.0, 2.0};
   ConfigurationSpace cspace{se2, clearance_metric};
 
-  // Path above the obstacle; the straight-line path only grazes high-c region.
+  // The path passes above the obstacle. The straight line only grazes the high-c region.
   const Eigen::Vector3d start(-2.0, 1.5, 0.0);
   const Eigen::Vector3d target(2.0, 1.5, 0.0);
 
@@ -378,20 +377,17 @@ TEST(InterpolationGuardedMidpoint, SE2SDFConformalConverges) {
   EXPECT_EQ(r_midpoint.status, InterpolationStatus::Converged);
   EXPECT_EQ(r_vialog.status, InterpolationStatus::Converged);
 
-  // SE(2) + SE2ExponentialMap gives v_ma + v_mb = 0 exactly (group midpoint
-  // identity), so the default-tau guard should not trip.
+  // SE(2) with SE2LeftExponentialMap gives v_ma + v_mb = 0 exactly by the group midpoint
+  // identity. The default-tau guard does not trip.
   EXPECT_EQ(r_midpoint.fd_midpoint_fallbacks, 0);
 
-  // Every FD sample trips under tau=0 (any nonzero imbalance exceeds zero);
-  // counter should be nonzero.
+  // Every FD sample trips under tau=0, and the counter is nonzero.
   EXPECT_GT(r_vialog.fd_midpoint_fallbacks, 0);
 }
 
 TEST(InterpolationGuardedMidpoint, IdenticalResultsOnRiemannianLog) {
-  // For manifolds whose base log IS the Riemannian log of the metric, the FD
-  // path isn't even exercised (fast path wins). This is a sanity check: the
-  // presence of the midpoint/guard machinery must not perturb the result for
-  // Riemannian-log configurations.
+  // When the base log is the Riemannian log of the metric, the walk takes the fast path
+  // and does not run the FD path. The midpoint guard does not change the result.
   Sphere<> sphere;
   const Eigen::Vector3d north(0.0, 0.0, 1.0);
   const Eigen::Vector3d target = point_at_theta(1.0);
@@ -407,8 +403,7 @@ TEST(InterpolationGuardedMidpoint, IdenticalResultsOnRiemannianLog) {
   EXPECT_EQ(r_default.status, InterpolationStatus::Converged);
   EXPECT_EQ(r_tau_zero.status, InterpolationStatus::Converged);
 
-  // Fast path only — FD path never runs, so the fallback counter stays at zero
-  // regardless of tau.
+  // Only the fast path runs. The fallback counter stays at zero for every tau.
   EXPECT_EQ(r_default.fd_midpoint_fallbacks, 0);
   EXPECT_EQ(r_tau_zero.fd_midpoint_fallbacks, 0);
 
@@ -416,4 +411,96 @@ TEST(InterpolationGuardedMidpoint, IdenticalResultsOnRiemannianLog) {
   for (size_t i = 0; i < r_default.path.size(); ++i) {
     EXPECT_LT((r_default.path[i] - r_tau_zero.path[i]).norm(), 1e-12);
   }
+}
+
+namespace {
+
+// Length of a path of SE(2) poses under the unit-weight metric, which is the flat
+// metric of R^2 x S^1 in coordinates.
+double flat_se2_length(const std::vector<Eigen::Vector3d>& path) {
+  double len = 0.0;
+  for (std::size_t k = 1; k < path.size(); ++k) {
+    const Eigen::Vector3d d(path[k][0] - path[k - 1][0], path[k][1] - path[k - 1][1],
+                            utils::wrap_to_pi(path[k][2] - path[k - 1][2]));
+    len += d.norm();
+  }
+  return len;
+}
+
+// Length of a path of SE(3) poses under the unit-weight metric, the translation's
+// arc length combined with the rotation angle of each step.
+double flat_se3_length(const std::vector<Eigen::Matrix<double, 7, 1>>& path) {
+  double len = 0.0;
+  for (std::size_t k = 1; k < path.size(); ++k) {
+    const Eigen::Vector3d dt = path[k].head<3>() - path[k - 1].head<3>();
+    const Eigen::Quaterniond a(path[k - 1][6], path[k - 1][3], path[k - 1][4], path[k - 1][5]);
+    const Eigen::Quaterniond b(path[k][6], path[k][3], path[k][4], path[k][5]);
+    len += std::hypot(dt.norm(), a.angularDistance(b));
+  }
+  return len;
+}
+
+}  // namespace
+
+// With unit weights the left-invariant metric of SE(2) is the flat metric of
+// R^2 x S^1, whose geodesic drives straight while turning at a constant rate. The
+// group log follows the longer screw motion, and the walk must not take it as the
+// Riemannian log. With the Euler retraction the log is the flat chord.
+TEST(InterpolationSE2Flat, DiscreteGeodesicHasTheFlatGeodesicLength) {
+  const Eigen::Vector3d a(0.0, 0.0, 0.0);
+  InterpolationSettings settings;
+  settings.step_size = 0.01;
+  settings.max_steps = 2000;
+  for (const Eigen::Vector3d b :
+       {Eigen::Vector3d(1.0, 0.0, std::numbers::pi / 2), Eigen::Vector3d(2.0, 1.0, -2.0),
+        Eigen::Vector3d(0.5, -1.5, 1.0)}) {
+    const double flat = std::hypot(b.head<2>().norm(), b[2]);
+    const SE2<> group;
+    EXPECT_FALSE(is_riemannian_log(group));
+    const auto r = discrete_geodesic(group, a, b, settings);
+    ASSERT_EQ(r.status, InterpolationStatus::Converged) << b.transpose();
+    EXPECT_NEAR(flat_se2_length(r.path), flat, 2e-3 * flat) << b.transpose();
+    // The screw motion of the constant twist is longer.
+    EXPECT_GT(group.distance(a, b), flat + 1e-2) << b.transpose();
+
+    const SE2<SE2LeftInvariantMetric, SE2EulerRetraction> euler;
+    EXPECT_TRUE(is_riemannian_log(euler));
+    const auto e = discrete_geodesic(euler, a, b, settings);
+    ASSERT_EQ(e.status, InterpolationStatus::Converged) << b.transpose();
+    // The walk stops within its convergence tolerance, short of the target.
+    EXPECT_NEAR(flat_se2_length(e.path), flat, 2e-3 * flat) << b.transpose();
+    EXPECT_LE(flat_se2_length(e.path), flat + 1e-12) << b.transpose();
+    EXPECT_NEAR(euler.distance(a, b), flat, 1e-12) << b.transpose();
+  }
+}
+
+// The Euler retraction's chord is a geodesic under any weights with equal
+// translational parts, and the group exponentials never give the Riemannian log.
+TEST(InterpolationSE2Flat, RiemannianLogFlagFollowsTheGeometry) {
+  using Euler = SE2<SE2LeftInvariantMetric, SE2EulerRetraction>;
+  EXPECT_TRUE(is_riemannian_log(Euler{SE2LeftInvariantMetric{2.0, 2.0, 5.0}}));
+  EXPECT_FALSE(is_riemannian_log(Euler{SE2LeftInvariantMetric{1.0, 3.0, 1.0}}));
+  EXPECT_FALSE(is_riemannian_log(SE2<>{SE2LeftInvariantMetric{2.0, 2.0, 5.0}}));
+  EXPECT_FALSE(is_riemannian_log(SE2<SE2LeftInvariantMetric, SE2RightExponentialMap>{}));
+  EXPECT_FALSE(is_riemannian_log(SE3<>{}));
+  EXPECT_FALSE(is_riemannian_log(SE3<SE3InvariantMetric, SE3RightExponentialMap>{}));
+}
+
+// On SE(3) with unit weights the geodesic moves the origin in a straight line while
+// rotating at a constant rate, and the discrete geodesic has its length.
+TEST(InterpolationSE3Flat, DiscreteGeodesicHasTheFlatGeodesicLength) {
+  const SE3<> se3;
+  Eigen::Matrix<double, 7, 1> a;
+  a << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0;
+  Eigen::Matrix<double, 7, 1> b;
+  const double angle = std::numbers::pi / 2;
+  b << 1.0, 0.0, 0.0, 0.0, 0.0, std::sin(angle / 2), std::cos(angle / 2);
+  InterpolationSettings settings;
+  settings.step_size = 0.01;
+  settings.max_steps = 2000;
+  const auto r = discrete_geodesic(se3, a, b, settings);
+  ASSERT_EQ(r.status, InterpolationStatus::Converged);
+  const double flat = std::hypot(1.0, angle);
+  EXPECT_NEAR(flat_se3_length(r.path), flat, 2e-3 * flat);
+  EXPECT_GT(se3.distance(a, b), flat + 1e-2);
 }

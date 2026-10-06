@@ -11,7 +11,11 @@ void bind_torus(nb::module_& m) {
   nb::class_<PyTorus>(m, "Torus",
                       "Flat torus T^n with periodic angle coordinates in [0, 2*pi)^n.\n\n"
                       "Exp wraps to [0, 2*pi), log wraps differences to [-pi, pi).")
-      .def(nb::init<int>(), nb::arg("dim"), "Create a flat torus of the given dimension.")
+      .def(nb::init<int, const std::string&>(), nb::arg("dim"), nb::arg("sampler") = "scrambled",
+           "Create a flat torus of the given dimension.\n\n"
+           "Args:\n"
+           "    dim: Dimension n.\n"
+           "    sampler: 'scrambled' (default), 'halton', or 'random'.")
       .def("dim", &PyTorus::dim, "Return the dimension.")
       .def("random_point", &PyTorus::random_point,
            "Sample a uniformly random point in [0, 2*pi)^n.")
@@ -19,12 +23,23 @@ void bind_torus(nb::module_& m) {
            "Flat inner product <u, v> = u . v.")
       .def("norm", &PyTorus::norm, nb::arg("p"), nb::arg("v"), "Flat norm ||v||.")
       .def("exp", &PyTorus::exp, nb::arg("p"), nb::arg("v"),
-           "Exponential map: wrap(p + v) to [0, 2*pi)^n.")
+           "Exponential map wrap(p + v) into [0, 2*pi)^n.")
       .def("log", &PyTorus::log, nb::arg("p"), nb::arg("q"),
-           "Logarithmic map: shortest-path tangent in [-pi, pi)^n.")
+           "Logarithmic map, the shortest-path tangent in [-pi, pi)^n.")
       .def("distance", &PyTorus::distance, nb::arg("p"), nb::arg("q"),
            "Geodesic distance on the flat torus.")
       .def("geodesic", &PyTorus::geodesic, nb::arg("p"), nb::arg("q"), nb::arg("t"),
            "Geodesic interpolation at parameter t in [0, 1].")
+      .def("periods", &PyTorus::periods,
+           "Period of every angle, 2*pi each. Pass this to heuristics.MatrixLowerBound to\n"
+           "wrap the bound at the cuts.")
+      .def("coordinate_metric", &PyTorus::coordinate_metric, nb::arg("q"),
+           "The metric on angle velocities, an n by n matrix.")
+      .def("matrix_lower_bound", &PyTorus::matrix_lower_bound,
+           "Certify a periods-aware Loewner lower bound for this metric. plan() uses it as\n"
+           "the default heuristic on Torus.")
+      .def("seed", &PyTorus::seed, nb::arg("seed"), "Reseed the sampler for reproducible sampling.")
+      .def("set_sampler", &PyTorus::set_sampler, nb::arg("sampler"),
+           "Switch the sampler to 'scrambled', 'halton' or 'random'.")
       .def("__repr__", &PyTorus::repr);
 }

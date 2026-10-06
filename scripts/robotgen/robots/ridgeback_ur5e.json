@@ -1,0 +1,63 @@
+{
+  "name": "ridgeback_ur5e",
+  "description": "Clearpath Ridgeback (R100) with a Universal Robots UR5e on the default mount, mecanum holonomic base",
+  "vamp_struct": "RidgebackUR5e",
+  "source": {
+    "xacro_file": "ridgeback_ur5e.urdf.xacro",
+    "packages": {
+      "clearpath_platform_description": [
+        "CLEARPATH_COMMON",
+        "clearpath_platform_description"
+      ],
+      "clearpath_control": [
+        "CLEARPATH_COMMON",
+        "clearpath_control"
+      ],
+      "ur_description": [
+        "UR_DESCRIPTION",
+        ""
+      ]
+    },
+    "package": "CLEARPATH_COMMON"
+  },
+  "base_link": "base_link",
+  "base_height": 0.0259,
+  "drive": "holonomic",
+  "planning_joints": [
+    "arm_0_shoulder_pan_joint",
+    "arm_0_shoulder_lift_joint",
+    "arm_0_elbow_joint",
+    "arm_0_wrist_1_joint",
+    "arm_0_wrist_2_joint",
+    "arm_0_wrist_3_joint"
+  ],
+  "limit_overrides": {},
+  "end_effector": "arm_0_tool0",
+  "spherize": {
+    "branch": 8,
+    "link_scale": {
+      "arm_0_base_link_inertia": 4.0,
+      "arm_0_shoulder_link": 4.0,
+      "arm_0_upper_arm_link": 3.0,
+      "arm_0_forearm_link": 2.0,
+      "arm_0_wrist_1_link": 2.0,
+      "arm_0_wrist_2_link": 2.0,
+      "arm_0_wrist_3_link": 2.0
+    }
+  },
+  "box_covers": [
+    {
+      "link": "chassis_link",
+      "links": [
+        "chassis_link",
+        "riser_link",
+        "top_link"
+      ],
+      "cells": [
+        6,
+        5,
+        2
+      ]
+    }
+  ]
+}

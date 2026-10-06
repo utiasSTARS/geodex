@@ -1,3 +1,6 @@
+import gc
+import weakref
+
 import numpy as np
 import pytest
 
@@ -107,7 +110,7 @@ class TestConfigurationSpaceWeightedMetric:
         q2 = np.array([0.0, 0.1])
         d1 = self.cs.distance(p, q1)
         d2 = self.cs.distance(p, q2)
-        # First direction is 4x heavier, so d1 should be ~2x d2
+        # The first direction is 4x heavier, and d1 is about 2x d2
         assert d1 > d2
 
 
@@ -158,3 +161,67 @@ class TestConfigurationSpaceInvalidArgs:
         torus = geodex.Torus(2)
         with pytest.raises(Exception):
             geodex.ConfigurationSpace(torus, "not_a_metric")
+
+
+# ---------------------------------------------------------------------------
+# Reference cycles through metric callables are collected
+# ---------------------------------------------------------------------------
+
+
+class _Holder:
+    pass
+
+
+def _cycle(build):
+    """Build an object whose metric callable refers back to it, then drop it.
+
+    Returns a weak reference that is dead once the garbage collector has freed
+    the cycle.
+    """
+    holder = _Holder()
+
+    def mass(q):
+        return np.eye(2)
+
+    # A function attribute, unlike a closure cell, survives `del holder` below.
+    mass.holder = holder
+    holder.obj = build(mass)
+    probe = weakref.ref(holder)
+    del holder, mass
+    gc.collect()
+    return probe
+
+
+class TestReferenceCycles:
+    def test_configuration_space_cycle_is_collected(self):
+        probe = _cycle(
+            lambda mass: geodex.ConfigurationSpace(
+                geodex.Euclidean(2), geodex.KineticEnergyMetric(mass)
+            )
+        )
+        assert probe() is None
+
+    @pytest.mark.parametrize(
+        "compose",
+        [
+            lambda m: geodex.WeightedMetric(m, 2.0),
+            lambda m: geodex.AffineCombinedMetric([m, geodex.ConstantSPDMetric(np.eye(2))],
+                                                  [1.0, 0.5]),
+            lambda m: geodex.ClearanceMetric(m, lambda q: 1.0),
+        ],
+    )
+    def test_composed_metric_cycle_is_collected(self, compose):
+        probe = _cycle(lambda mass: compose(geodex.KineticEnergyMetric(mass)))
+        assert probe() is None
+
+    def test_copies_outlive_the_space(self):
+        # A product built from the space keeps its own reference to the metric.
+        space = geodex.ConfigurationSpace(
+            geodex.Euclidean(2), geodex.KineticEnergyMetric(lambda q: 4.0 * np.eye(2))
+        )
+        product = geodex.Product([space])
+        del space
+        gc.collect()
+        p = np.zeros(2)
+        v = np.array([1.0, 0.0])
+        assert product.norm(p, v) == pytest.approx(2.0)

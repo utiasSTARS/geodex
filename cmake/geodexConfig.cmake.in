@@ -1,5 +1,31 @@
 @PACKAGE_INIT@
 
+include(CMakeFindDependencyMacro)
+
+# These flags record the optional parts of this installation. Request them as components,
+# for example find_package(geodex 1.0 CONFIG REQUIRED COMPONENTS ompl vamp).
+set(geodex_ompl_FOUND @GEODEX_OMPL@)
+set(geodex_vamp_FOUND @GEODEX_VAMP@)
+set(geodex_robots_FOUND @GEODEX_ROBOTS@)
+set(geodex_pinocchio_FOUND @GEODEX_PINOCCHIO@)
+
+# The OMPL adapters and geodex::vamp need the OMPL fork, and the VAMP archive also links
+# yaml-cpp. A fork that GEODEX_BUILD_OMPL installed in the geodex prefix takes precedence
+# over a stock OMPL with the same package name on the search path.
+if(geodex_ompl_FOUND)
+  if(EXISTS "${PACKAGE_PREFIX_DIR}/share/ompl/cmake/omplConfig.cmake")
+    find_dependency(ompl CONFIG PATHS "${PACKAGE_PREFIX_DIR}/share/ompl/cmake" NO_DEFAULT_PATH)
+  else()
+    find_dependency(ompl)
+  endif()
+endif()
+if(geodex_vamp_FOUND)
+  find_dependency(yaml-cpp CONFIG)
+endif()
+if(geodex_pinocchio_FOUND)
+  find_dependency(pinocchio)
+endif()
+
 include("${CMAKE_CURRENT_LIST_DIR}/geodexTargets.cmake")
 
 check_required_components(geodex)

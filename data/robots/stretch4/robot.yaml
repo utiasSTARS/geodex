@@ -1,0 +1,28 @@
+name: stretch4
+urdf: stretch4_spherized.urdf
+dynamics_urdf: stretch4_dynamics.urdf
+srdf: stretch4.srdf
+vamp_name: stretch4
+mass_matrix: stretch4
+base: holonomic
+
+planning_groups:
+  whole_body:
+    default_ee_link: grasp_center_link
+    joints:
+      - base_x_joint
+      - base_y_joint
+      - base_theta_joint
+      - lift_joint
+      - arm_joint
+      - wrist_yaw_joint
+      - wrist_pitch_joint
+      - wrist_roll_joint
+  arm:
+    default_ee_link: grasp_center_link
+    joints:
+      - lift_joint
+      - arm_joint
+      - wrist_yaw_joint
+      - wrist_pitch_joint
+      - wrist_roll_joint

@@ -1,33 +1,20 @@
 /// @file ur5.hpp
-/// @brief Internal: factory functions for the UR5 6-DOF VAMP collision
-///        checker and motion validator.
+/// @brief VAMP model of the Universal Robots UR5 with a Robotiq gripper, 6 joints. It uses VAMP's
+/// own kernel.
 ///
-/// Pulls in VAMP's UR5 model + SIMD intrinsics; included only by the
-/// @c vamp_impl.cpp source file in the @c geodex_vamp static archive.
+/// This internal header pulls in the kernel and its SIMD intrinsics. Only the robot's own
+/// translation unit in the @c geodex_vamp static archive includes it and builds the registry
+/// entry from `ur5_model` and `generated::ur5_sweep`.
 
 #pragma once
 
-#include <memory>
-#include <utility>
-
 #include <vamp/robots/ur5.hh>
 
-#include "geodex/integration/vamp/registry.hpp"
-#include "geodex/integration/vamp/detail/robot_impl.hpp"
+#include "geodex/integration/vamp/robots/generated/ur5_sweep.hh"
 
 namespace geodex::integration::vamp::detail {
 
-inline auto make_ur5_checker(EnvHandle env)
-    -> std::unique_ptr<CollisionChecker> {
-  return std::make_unique<VampCollisionCheckerImpl<::vamp::robots::UR5>>(
-      std::move(env));
-}
-
-inline auto make_ur5_motion_validator(
-    const ompl::base::SpaceInformationPtr& si, EnvHandle env)
-    -> std::unique_ptr<ompl::base::MotionValidator> {
-  return std::make_unique<VampMotionValidatorImpl<::vamp::robots::UR5>>(
-      si, std::move(env));
-}
+/// @brief VAMP model of this robot.
+using ur5_model = ::vamp::robots::UR5;
 
 }  // namespace geodex::integration::vamp::detail

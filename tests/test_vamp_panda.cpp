@@ -124,8 +124,7 @@ TEST(VampPanda, MotionValidatorRejectsBlockedMotion) {
 
 #ifdef GEODEX_TEST_HAS_PINOCCHIO
 TEST(VampPanda, PinocchioVampLinkTogether) {
-  // Sanity link test: catches Eigen-alignment ABI regressions when an AVX
-  // VAMP TU and a non-AVX Pinocchio TU end up in the same binary.
+  // Pinocchio and VAMP code run correctly in one binary.
   geodex::integration::pinocchio::MassMatrix mass(GEODEX_PANDA_URDF);
   Eigen::VectorXd q = Eigen::VectorXd::Zero(mass.model().nq);
   const Eigen::MatrixXd& M = mass(q);

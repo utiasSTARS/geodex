@@ -4,26 +4,27 @@
 /// @details Multi-start gradient descent finds the worst-case configuration
 /// \f$ q^* \f$ that minimizes \f$ \lambda_{\min}(L^{-1} M(q) L^{-\top}) \f$,
 /// then tightens \f$ M_{\mathrm{lower}} \f$ via Loewner meet against
-/// \f$ M(q^*) \f$. Converges when \f$ \lambda_{\min} \ge 1 - \mathrm{tol} \f$
-/// over the configuration space, providing a convergence certificate.
+/// \f$ M(q^*) \f$. The loop stops when \f$ \lambda_{\min} \ge 1 - \mathrm{tol} \f$
+/// over the configuration space, which certifies convergence.
 
 #pragma once
+
+#include <cstdint>
+
+#include <algorithm>
+#include <chrono>
+#include <limits>
+#include <random>
+#include <utility>
 
 #include <Eigen/Cholesky>
 #include <Eigen/Core>
 #include <Eigen/Eigenvalues>
 
-#include <algorithm>
-#include <chrono>
-#include <cstdint>
-#include <iostream>
-#include <limits>
-#include <random>
-#include <utility>
-
 #include "geodex/core/concepts.hpp"
 #include "geodex/core/metric.hpp"
 #include "geodex/heuristics/matrix_lower_bound.hpp"
+#include "geodex/utils/random.hpp"
 
 namespace geodex::algorithm {
 
@@ -31,12 +32,11 @@ namespace geodex::algorithm {
 struct PrecomputeMatrixLowerBoundSettings {
   int max_outer = 50;             ///< Maximum outer constraint-generation iterations.
   double tol = 1e-6;              ///< Stop when \f$ \lambda_{\min} \ge 1 - \mathrm{tol} \f$.
-  int n_starts_per_iter = 0;      ///< Multi-start seeds per outer iter (0 = auto: max(20, 10*dim)).
+  int n_starts_per_iter = 0;      ///< Multi-start seeds per outer iter (0 picks max(20, 10*dim)).
   int max_iters_per_start = 200;  ///< Max gradient-descent iterations per start.
   double grad_tol = 1e-7;         ///< Gradient-norm convergence for inner gradient descent.
   double fd_eps = 1e-5;           ///< Finite-difference step for \f$ \nabla \lambda_{\min} \f$.
   uint64_t seed = 42;             ///< RNG seed for multi-start initial points.
-  bool verbose = false;           ///< Print outer-iteration diagnostics to stderr.
 };
 
 /// @brief Result of `precompute_matrix_lower_bound`.
@@ -47,14 +47,20 @@ struct PrecomputeMatrixLowerBoundResult {
   int n_metric_evals = 0;               ///< Total \f$ M(q) \f$ evaluations.
   bool converged = false;               ///< True when `lambda_min_certificate >= 1 - tol`.
   double elapsed_ms = 0.0;              ///< Wall-clock duration of the precompute.
+  Eigen::VectorXd periods;              ///< The manifold's coordinate periods, empty when none.
+
+  /// @brief The certified bound as an informed-sampling heuristic, wrapped at
+  /// the periodic axes.
+  geodex::heuristics::MatrixLowerBound<Eigen::Dynamic> heuristic() const {
+    return {M_lower, periods};
+  }
 };
 
 namespace detail {
 
-/// @brief Internal-only implementation of `precompute_matrix_lower_bound`. All
-/// helpers are private static methods; only `run` is reachable from outside,
-/// and only via the public `geodex::algorithm::precompute_matrix_lower_bound`
-/// free function.
+/// @brief Implementation of `precompute_matrix_lower_bound` (internal). All helpers
+/// are private static methods, and only the public
+/// `geodex::algorithm::precompute_matrix_lower_bound` free function calls `run`.
 struct PrecomputeMatrixLowerBoundImpl {
  public:
   template <typename ManifoldT>
@@ -87,11 +93,6 @@ struct PrecomputeMatrixLowerBoundImpl {
                           eval_count);
       last_lambda_min = lambda_min;
 
-      if (settings.verbose) {
-        std::cerr << "  iter=" << outer << " lambda_min=" << lambda_min
-                  << " det=" << heuristic.det() << " evals=" << eval_count << "\n";
-      }
-
       if (lambda_min >= convergence_tol) break;
 
       const Eigen::MatrixXd M_star = metric_matrix(manifold, q_star);
@@ -113,6 +114,10 @@ struct PrecomputeMatrixLowerBoundImpl {
 
  private:
   /// @brief Form the metric tensor \f$ M(q) \f$ as a dense \f$ d \times d \f$ matrix.
+  ///
+  /// @details The bound is certified against coordinate chords and reads the metric
+  /// on coordinate velocities. Flat manifolds do not have a frame to convert and use
+  /// `inner_matrix`.
   template <typename ManifoldT>
   static Eigen::MatrixXd metric_matrix(const ManifoldT& manifold,
                                        const Eigen::VectorXd& q_vec) {
@@ -122,8 +127,13 @@ struct PrecomputeMatrixLowerBoundImpl {
     if constexpr (Point::SizeAtCompileTime == Eigen::Dynamic) q.resize(d);
     for (int i = 0; i < d; ++i) q[i] = q_vec[i];
 
-    const Eigen::MatrixXd I = Eigen::MatrixXd::Identity(d, d);
-    Eigen::MatrixXd M = manifold.inner_matrix(q, I, I);
+    Eigen::MatrixXd M;
+    if constexpr (HasCoordinateMetric<ManifoldT>) {
+      M = manifold.coordinate_metric(q);
+    } else {
+      const Eigen::MatrixXd I = Eigen::MatrixXd::Identity(d, d);
+      M = manifold.inner_matrix(q, I, I);
+    }
     return 0.5 * (M + M.transpose());  // symmetrize against FP noise
   }
 
@@ -212,10 +222,7 @@ struct PrecomputeMatrixLowerBoundImpl {
 
     for (int s = 0; s < n_starts; ++s) {
       Eigen::VectorXd q0(dim);
-      for (int i = 0; i < dim; ++i) {
-        std::uniform_real_distribution<double> dist(lo[i], hi[i]);
-        q0[i] = dist(rng);
-      }
+      for (int i = 0; i < dim; ++i) q0[i] = utils::uniform_real(rng, lo[i], hi[i]);
       auto [q, f] = gradient_descent(manifold, llt, q0, lo, hi, max_iters_per_start, grad_tol,
                                      fd_eps, eval_count);
       if (f < best_f) {
@@ -231,20 +238,14 @@ struct PrecomputeMatrixLowerBoundImpl {
 
 /// @brief Compute a constant SPD Loewner lower bound on \f$ M(q) \f$ via constraint generation.
 ///
-/// @details Iteratively tightens \f$ M_{\mathrm{lower}} \f$ by:
-///   1. solving \f$ q^* = \arg\min_{q \in [\mathrm{lo}, \mathrm{hi}]^d}
-///      \lambda_{\min}(L^{-1} M(q) L^{-\top}) \f$ via multi-start gradient descent;
-///   2. updating \f$ M_{\mathrm{lower}} \f$ with the Loewner meet against
-///      \f$ M(q^*) \f$ (`heuristics::MatrixLowerBound::update`).
-///
-/// Terminates when the worst-case eigenvalue stays \f$ \ge 1 - \mathrm{tol} \f$ across the
-/// configuration space, providing a convergence certificate. The bound is then ready
-/// for use by `geodex::heuristics::MatrixLowerBound`.
+/// @details Multi-start gradient descent solves \f$ q^* = \arg\min_{q \in [\mathrm{lo},
+/// \mathrm{hi}]^d} \lambda_{\min}(L^{-1} M(q) L^{-\top}) \f$, and the Loewner meet against
+/// \f$ M(q^*) \f$ (`heuristics::MatrixLowerBound::update`) tightens \f$ M_{\mathrm{lower}} \f$.
+/// The loop stops when the worst-case eigenvalue stays \f$ \ge 1 - \mathrm{tol} \f$.
 ///
 /// @see Phone Thiha Kyaw, Jonathan Kelly. "Direct Informed Sampling on
-///   Riemannian Manifolds via Loewner Order Lower Bounds." arXiv:2606.02879
-///   (2026). Derives the constraint-generation scheme and its convergence
-///   certificate.
+///   Riemannian Manifolds via Loewner Order Lower Bounds." IEEE Robotics and
+///   Automation Letters (RA-L), 2026. arXiv:2606.02879.
 ///
 /// @tparam ManifoldT A `RiemannianManifold` that provides the batched
 ///   `inner_matrix(p, U, V)` (`HasBatchInnerMatrix`) and per-dimension sampling
@@ -260,7 +261,19 @@ template <typename ManifoldT>
            }
 PrecomputeMatrixLowerBoundResult precompute_matrix_lower_bound(
     const ManifoldT& manifold, const PrecomputeMatrixLowerBoundSettings& settings = {}) {
-  return detail::PrecomputeMatrixLowerBoundImpl::run(manifold, settings);
+  auto result = detail::PrecomputeMatrixLowerBoundImpl::run(manifold, settings);
+  if constexpr (HasPeriods<ManifoldT>) result.periods = Eigen::VectorXd(manifold.periods());
+  return result;
 }
+
+/// @brief A manifold that certifies its own Loewner lower bound, with a coordinate metric,
+/// per-axis periods and box bounds.
+template <typename M>
+concept CertifiesOwnMatrixLowerBound =
+    RiemannianManifold<M> && HasCoordinateMetric<M> && HasPeriods<M> && HasBatchInnerMatrix<M> &&
+    requires(const M& m) {
+      { m.lo() } -> std::convertible_to<Eigen::VectorXd>;
+      { m.hi() } -> std::convertible_to<Eigen::VectorXd>;
+    };
 
 }  // namespace geodex::algorithm

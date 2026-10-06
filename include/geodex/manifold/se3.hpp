@@ -1,5 +1,6 @@
 /// @file se3.hpp
-/// @brief SE(3) manifold — a genuine Lie group with coupled screw geodesics.
+/// @brief SE(3) manifold, a Lie group whose `geodesic` follows the screw motion of a
+/// constant twist.
 
 #pragma once
 
@@ -27,11 +28,11 @@ namespace geodex {
 
 /// @brief Body-frame (left) group exponential/logarithm on SE(3).
 ///
-/// @details Uses left translation of the group exponential:
+/// @details Uses left translation of the group exponential,
 /// \f$ \exp_g(\xi) = g \cdot \mathrm{Exp}(\xi) \f$ and
 /// \f$ \log_g(h) = \mathrm{Log}(g^{-1} h) \f$, where \f$ \mathrm{Exp}/\mathrm{Log} \f$
 /// are the SE(3) group exp/log at the identity (`utils::se3_exp` / `utils::se3_log`).
-/// The twist \f$ \xi \f$ is therefore expressed in the body frame of \f$ g \f$.
+/// The twist \f$ \xi \f$ is expressed in the body frame of \f$ g \f$.
 struct SE3LeftExponentialMap {
   using Point = Eigen::Matrix<double, 7, 1>;    ///< Pose \f$ [t;\,q] \f$.
   using Tangent = Eigen::Matrix<double, 6, 1>;  ///< Body twist \f$ [v;\,\omega] \f$.
@@ -57,7 +58,7 @@ struct SE3LeftExponentialMap {
 
 /// @brief World-frame (right) group exponential/logarithm on SE(3).
 ///
-/// @details Uses right translation of the group exponential:
+/// @details Uses right translation of the group exponential,
 /// \f$ \exp_g(\xi) = \mathrm{Exp}(\xi) \cdot g \f$ and
 /// \f$ \log_g(h) = \mathrm{Log}(h\, g^{-1}) \f$. The twist \f$ \xi \f$ is
 /// expressed in the fixed world/spatial frame.
@@ -96,41 +97,35 @@ static_assert(Retraction<SE3RightExponentialMap, Eigen::Matrix<double, 7, 1>,
 
 /// @brief The special Euclidean group \f$ \mathrm{SE}(3) = \mathbb{R}^3 \rtimes \mathrm{SO}(3) \f$.
 ///
-/// @details A genuine Lie group whose geodesics are coupled screw motions. Poses
-/// are represented as \f$ [t_x, t_y, t_z,\; q_x, q_y, q_z, q_w] \f$ (translation +
+/// @details `exp`, `log` and `geodesic` follow the screw motion of a constant twist,
+/// which is not a geodesic of the metric (see `has_riemannian_log_runtime`). Poses
+/// are represented as \f$ [t_x, t_y, t_z,\; q_x, q_y, q_z, q_w] \f$ (translation and
 /// scalar-last unit quaternion) and tangents as twists \f$ [v;\,\omega] \f$. The
 /// class composes a metric policy and a retraction policy, following the same
 /// design as Sphere, Torus, and SE(2).
 ///
-/// @tparam MetricT Metric policy (default: `SE3InvariantMetric`).
-/// @tparam RetractionT Retraction policy (default: `SE3LeftExponentialMap`).
-/// @tparam SamplerT Sampler policy for `random_point()` (default: `StochasticSampler`).
+/// @tparam MetricT Metric policy (default `SE3InvariantMetric`).
+/// @tparam RetractionT Retraction policy (default `SE3LeftExponentialMap`).
+/// @tparam SamplerT Sampler policy for `random_point()` (default `ScrambledHaltonSampler`).
 template <typename MetricT = SE3InvariantMetric, typename RetractionT = SE3LeftExponentialMap,
-          typename SamplerT = StochasticSampler>
+          typename SamplerT = ScrambledHaltonSampler>
 class SE3 {
  public:
   using Scalar = double;                        ///< Scalar type.
   using Point = Eigen::Matrix<double, 7, 1>;    ///< Pose \f$ [t;\,q] \f$.
   using Tangent = Eigen::Matrix<double, 6, 1>;  ///< Twist \f$ [v;\,\omega] \f$.
+  using SamplerType = SamplerT;                 ///< Sampler policy backing random_point().
 
-  /// @brief Runtime query: is the group `log` the Riemannian logarithm of the
-  /// currently-configured metric?
+  /// @brief Runtime check whether `log` is the Riemannian logarithm of the metric,
+  /// always false.
   ///
-  /// @details True only when the metric is `SE3InvariantMetric` with unit weights
-  /// AND the retraction is one of the group-exponential maps (left or right). In
-  /// that case `-log_x(q)` is the length-minimizing descent direction of
-  /// \f$ \tfrac12 d^2(\cdot, q) \f$, so `discrete_geodesic` can take the fast
-  /// log-based step; anisotropic weights or a non-group retraction fall through to
-  /// the finite-difference natural gradient.
-  bool has_riemannian_log_runtime() const {
-    if constexpr (std::is_same_v<MetricT, SE3InvariantMetric> &&
-                  (std::is_same_v<RetractionT, SE3LeftExponentialMap> ||
-                   std::is_same_v<RetractionT, SE3RightExponentialMap>)) {
-      return metric_.weights().isApprox(Eigen::Matrix<double, 6, 1>::Ones());
-    } else {
-      return false;
-    }
-  }
+  /// @details SE(3) does not have a bi-invariant Riemannian metric. With unit weights
+  /// the invariant metric is \f$ |\dot t|^2 + |\omega|^2 \f$, whose geodesics move the
+  /// origin in a straight line while rotating at a constant rate. The screw motion of a
+  /// constant twist is longer whenever it rotates while its linear velocity has a
+  /// component across the rotation axis. `discrete_geodesic` takes finite-difference
+  /// steps on SE(3).
+  bool has_riemannian_log_runtime() const { return false; }
 
   /// @brief Default constructor. Users must call `set_sampling_bounds()` before
   /// using `random_point()` if the default translation box \f$[0,10]^3\f$ is unsuitable.
@@ -171,50 +166,57 @@ class SE3 {
   /// @brief Return the intrinsic dimension (always 6).
   int dim() const { return 6; }
 
-  /// @brief Sample a random pose: translation uniform in the box, rotation uniform on SO(3).
-  ///
-  /// @details The translation is drawn uniformly in \f$[\mathrm{lo}, \mathrm{hi}]\f$.
-  /// The rotation is a Haar-uniform unit quaternion, obtained by drawing four
-  /// standard normals (via the Box-Muller transform over the configurable
-  /// sampler) and normalizing — a point uniform on \f$ S^3 \f$, which is exactly
-  /// the uniform (bi-invariant Haar) distribution on SO(3).
-  /// @return A random pose \f$ [t;\,q] \f$ with a unit quaternion part.
-  Point random_point() const {
+  /// @brief Number of unit-cube coordinates that from_unit_cube consumes.
+  int unit_cube_dim() const { return 6; }
+
+  /// @brief Map six unit-cube coordinates to a pose. The first three rescale to
+  /// the translation box, the last three give a Haar-uniform rotation via
+  /// Shoemake's method (Shoemake 1992).
+  /// @param u Unit-cube coordinates.
+  /// @return A pose \f$ [t;\,q] \f$ with a unit quaternion part.
+  Point from_unit_cube(Eigen::Ref<const Eigen::VectorXd> u) const {
+    detail::require_unit_cube_size(u.size(), 6);
     Point g;
-
-    // Translation: 3 uniforms mapped into the box [lo_, hi_].
-    sampler_.sample_box(3, sample_buf_);
-    g[0] = lo_[0] + sample_buf_[0] * (hi_[0] - lo_[0]);
-    g[1] = lo_[1] + sample_buf_[1] * (hi_[1] - lo_[1]);
-    g[2] = lo_[2] + sample_buf_[2] * (hi_[2] - lo_[2]);
-
-    // Rotation: 4 uniforms -> 4 normals (Box-Muller) -> normalize onto S^3.
-    sampler_.sample_box(4, sample_buf_);
-    double n[4];
-    for (int i = 0; i < 2; ++i) {
-      const double u1 = std::max(sample_buf_[2 * i], 1e-300);  // avoid log(0)
-      const double u2 = sample_buf_[2 * i + 1];
-      const double r = std::sqrt(-2.0 * std::log(u1));
-      const double ang = 2.0 * std::numbers::pi * u2;
-      n[2 * i] = r * std::cos(ang);
-      n[2 * i + 1] = r * std::sin(ang);
-    }
-    g.tail<4>() = Eigen::Vector4d(n[0], n[1], n[2], n[3]).normalized();
+    g[0] = lo_[0] + u[0] * (hi_[0] - lo_[0]);
+    g[1] = lo_[1] + u[1] * (hi_[1] - lo_[1]);
+    g[2] = lo_[2] + u[2] * (hi_[2] - lo_[2]);
+    g.tail<4>() = utils::uniform_quaternion(u[3], u[4], u[5]);
     return g;
   }
+
+  /// @brief Sample a random pose, translation uniform in the box and rotation
+  /// Haar-uniform on SO(3).
+  Point random_point() const {
+    sample_buf_.resize(6);
+    sampler_.sample(6, sample_buf_);
+    return from_unit_cube(sample_buf_);
+  }
+
+  /// @brief Reseed the sampler for a reproducible random_point sequence.
+  void seed(std::uint64_t s)
+    requires SeedableSampler<SamplerT>
+  {
+    sampler_.seed(s);
+  }
+
+  /// @brief Replace the sampler.
+  void set_sampler(SamplerT s) { sampler_ = std::move(s); }
+
+  /// @brief The sampler behind random_point(). Planning samples through copies of it.
+  const SamplerT& sampler() const { return sampler_; }
 
   /// @brief Project an ambient vector onto the tangent space at \f$ p \f$.
   ///
   /// @details The tangent space of SE(3) is the Lie algebra
-  /// \f$ \mathfrak{se}(3) \cong \mathbb{R}^6 \f$, so the projection is the identity.
+  /// \f$ \mathfrak{se}(3) \cong \mathbb{R}^6 \f$, and the projection is the identity.
   Tangent project(const Point& /*p*/, const Tangent& v) const { return v; }
 
   /// @name Metric delegates
   /// @{
   ///
   /// @note The metric acts on 6-vector twists and ignores its base-point
-  /// argument (it is left-invariant / constant), so the manifold's 7-vector
-  /// point is not forwarded; a zero twist is passed as the metric's `p`.
+  /// argument, as a constant left-invariant metric. The manifold passes a zero
+  /// twist as the metric's `p`, not its 7-vector point.
 
   /// @brief Riemannian inner product of two twists at \f$ p \f$.
   Scalar inner(const Point& /*p*/, const Tangent& u, const Tangent& v) const {
@@ -239,7 +241,7 @@ class SE3 {
   /// @name Retraction delegates
   /// @{
 
-  /// @brief Exponential map (or retraction) \f$ \exp_p(v) \f$ — a screw motion.
+  /// @brief Exponential map \f$ \exp_p(v) \f$, the screw motion of the twist \f$ v \f$.
   /// @param p Base pose.
   /// @param v Twist.
   /// @return Resulting pose on SE(3).
@@ -256,12 +258,16 @@ class SE3 {
   /// @name Derived operations
   /// @{
 
-  /// @brief Geodesic distance \f$ d(p, q) \f$ via the midpoint approximation.
+  /// @brief Length of `geodesic(p, q, .)` under the metric, through the midpoint formula.
+  ///
+  /// @details This is the norm of the constant twist, the length of its screw motion,
+  /// which is at least the Riemannian distance.
   Scalar distance(const Point& p, const Point& q) const { return distance_midpoint(*this, p, q); }
 
-  /// @brief Geodesic interpolation between \f$ p \f$ and \f$ q \f$ at parameter \f$ t \f$.
+  /// @brief The screw motion \f$ \exp_p(t\,\log_p(q)) \f$ at parameter \f$ t \f$.
   ///
-  /// @details Traces the coupled screw motion \f$ \exp_p(t\,\log_p(q)) \f$.
+  /// @details The screw motion of the constant twist from \f$ p \f$ to \f$ q \f$, not a
+  /// geodesic of the metric (see `has_riemannian_log_runtime`).
   /// @param p Start pose.
   /// @param q End pose.
   /// @param t Interpolation parameter in \f$ [0, 1] \f$.
@@ -276,7 +282,7 @@ class SE3 {
   Eigen::Vector3d lo_{0.0, 0.0, 0.0};     ///< Lower translation sampling bounds.
   Eigen::Vector3d hi_{10.0, 10.0, 10.0};  ///< Upper translation sampling bounds.
   mutable SamplerT sampler_;
-  mutable Eigen::VectorXd sample_buf_{4};  ///< Preallocated buffer (max of 3 trans + 4 quat draws).
+  mutable Eigen::VectorXd sample_buf_{6};  ///< Preallocated buffer for unit-cube samples.
 };
 
 // Verify the composed types satisfy RiemannianManifold (both retractions).

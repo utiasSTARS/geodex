@@ -1,5 +1,5 @@
 /// @file so2_canonical.hpp
-/// @brief Canonical metric on SO(2) — thin wrapper over ConstantSPDMetric<1>.
+/// @brief Canonical metric on SO(2), a thin wrapper over ConstantSPDMetric<1>.
 
 #pragma once
 

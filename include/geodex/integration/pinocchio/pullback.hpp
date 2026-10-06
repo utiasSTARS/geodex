@@ -1,19 +1,19 @@
 /// @file integration/pinocchio/pullback.hpp
-/// @brief URDF-driven pullback metric factory built on Pinocchio primitives.
+/// @brief Pullback metric factory from a URDF, built on Pinocchio primitives.
 ///
 /// @details `make_pullback_metric` composes an end-effector pullback metric
 /// \f$ J(q)^\top W J(q) \f$ from a URDF, delegating Jacobian evaluation to
-/// `integration::pinocchio` primitives and reusing master's `PullbackMetric`
-/// and `AffineCombinedMetric` policies.
+/// `integration::pinocchio` primitives and using the `PullbackMetric` and
+/// `AffineCombinedMetric` policies.
 ///
-/// Regularization is opt-in via a tag parameter:
+/// A tag parameter turns on regularization.
 /// - no tag: returns an unregularized `PullbackMetric`.
 /// - `IsotropicRegularization{lambda}`: returns
 ///   \f$ \text{AffineCombinedMetric}(\{1, \lambda\}, \text{pullback}, I) \f$.
 /// - `KineticEnergyRegularization{beta}`: returns
 ///   \f$ \text{AffineCombinedMetric}(\{1, \beta\}, \text{pullback}, M_{\text{CRBA}}) \f$.
 ///
-/// Each overload returns a distinct concrete type; users deduce via `auto`.
+/// Each overload returns a distinct concrete type. Deduce it with `auto`.
 
 #pragma once
 
@@ -40,10 +40,9 @@ namespace geodex::integration::pinocchio {
 /// @brief End-effector selection and task-space shaping for
 ///        `make_pullback_metric`.
 struct PullbackOptions {
-  /// End-effector frame names, in stacking order. An empty vector — or a
-  /// single-element vector holding an empty string — triggers auto-detect of
-  /// the last BODY frame attached to the final movable joint (the common
-  /// single-arm case).
+  /// End-effector frame names, in stacking order. An empty vector, or one that
+  /// holds a single empty string, selects the last BODY frame attached to the
+  /// final movable joint, the common single-arm case.
   std::vector<std::string> ee_frames{};
 
   /// Per-axis task-space weights in `LOCAL_WORLD_ALIGNED` coordinates,
@@ -55,16 +54,16 @@ struct PullbackOptions {
   std::array<double, 6> task_weights = {1.0, 1.0, 1.0, 0.1, 0.1, 0.1};
 };
 
-/// @brief Tag requesting isotropic regularization: adds \f$\lambda I\f$ to the
+/// @brief Tag that requests isotropic regularization, adding \f$\lambda I\f$ to the
 ///        pullback metric.
 struct IsotropicRegularization {
-  double lambda;
+  double lambda;  ///< Weight of the identity.
 };
 
-/// @brief Tag requesting kinetic-energy regularization: adds
+/// @brief Tag that requests kinetic-energy regularization, adding
 ///        \f$\beta M_{\text{CRBA}}(q)\f$ to the pullback metric.
 struct KineticEnergyRegularization {
-  double beta;
+  double beta;  ///< Weight of the mass matrix.
 };
 
 namespace detail {
@@ -72,8 +71,8 @@ namespace detail {
 /// @brief Point-independent task-metric callable used by the pullback factory.
 ///
 /// @details Captures a precomputed SPD weight matrix \f$W\f$ and returns it by
-/// const reference for every configuration \f$q\f$ — matches the callable
-/// contract `q \mapsto W(q)` expected by `PullbackMetric::task_metric_fn_`.
+/// const reference for every configuration \f$q\f$, matching the callable
+/// contract `q \mapsto W(q)` of `PullbackMetric::task_metric_fn_`.
 class ConstantTaskMetric {
  public:
   explicit ConstantTaskMetric(Eigen::MatrixXd W) : W_(std::move(W)) {}

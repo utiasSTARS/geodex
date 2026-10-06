@@ -1,0 +1,73 @@
+{
+  "name": "stretch4",
+  "description": "Hello Robot Stretch 4 with the DexWrist 4 and the SG4 gripper, three-omniwheel holonomic base",
+  "vamp_struct": "Stretch4",
+  "source": {
+    "package": "STRETCH4_URDF",
+    "xacro_call": {
+      "module": "stretch4_urdf",
+      "function": "get_urdf",
+      "kwargs": {
+        "model_name": "SE4",
+        "batch_name": "francis",
+        "tool_name": "eoa_wrist_dw4_tool_sg4",
+        "do_add_file_prefix_to_absolute_paths": false
+      }
+    }
+  },
+  "base_link": "base_footprint",
+  "base_height": 0.0,
+  "drive": "holonomic",
+  "planning_joints": [
+    "lift_joint",
+    "arm_joint",
+    "wrist_yaw_joint",
+    "wrist_pitch_joint",
+    "wrist_roll_joint"
+  ],
+  "couplings": [
+    {
+      "joint": "arm_joint",
+      "segments": [
+        "arm_l1_joint",
+        "arm_l2_joint",
+        "arm_l3_joint",
+        "arm_l4_joint"
+      ]
+    }
+  ],
+  "end_effector": "grasp_center_link",
+  "drop_collision_links": [
+    "wrist_aruco_link",
+    "aruco_fingertip_right_link",
+    "aruco_fingertip_left_link",
+    "wrist_reflector_link",
+    "docking_contact_link",
+    "base_footprint"
+  ],
+  "nested_groups": [
+    [
+      "lift_link",
+      "arm_l0_link",
+      "arm_l1_link",
+      "arm_l2_link",
+      "arm_l3_link",
+      "arm_l4_link"
+    ]
+  ],
+  "spherize": {
+    "branch": 8,
+    "link_scale": {
+      "base_link": 12.0,
+      "mast_link": 2.0,
+      "lift_link": 3.0,
+      "wheel_0_link": 2.0,
+      "wheel_1_link": 2.0,
+      "wheel_2_link": 2.0,
+      "head_link": 2.0,
+      "wrist_link": 6.0,
+      "wrist_yaw_link": 6.0,
+      "wrist_pitch_link": 6.0
+    }
+  }
+}

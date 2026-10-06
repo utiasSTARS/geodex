@@ -20,4 +20,10 @@ Source material:
   `rtb-data/rtbdata/xacro/pr2_description`.
 - SRDF: `ros-planning/moveit_pr2/pr2_moveit_config/config/pr2.srdf`.
 - Spherized URDF seed: cricket's PR2 resource, normalized by
-  `scripts/prepare_pr2_assets.py`.
+  `scripts/robotgen/prepare_pr2_assets.py`.
+
+License:
+
+- PR2 description (URDF lineage and meshes): BSD-3-Clause, Copyright (c) 2008 Willow Garage. All 128 mesh and material files are byte-identical to `pr2_description` of `PR2/pr2_common` at commit `9a8e4fbcf66523ca14faf651c23513ee1ac29ccb`. The package declares BSD in its package.xml and carries the full license text as the header of `pr2_description/test/test_urdf.cpp`. The `robotics-toolbox-python` repository that redistributed it is MIT.
+- SRDF: byte-identical to `pr2_moveit_config/config/pr2.srdf` of `ros-planning/moveit_pr2` at commit `db22fd2ecd216ad9ec30b2aa2355082b4701c16b` (BSD, Willow Garage).
+- Full texts in the `pr2-description` section of `THIRD_PARTY_LICENSES.txt`.

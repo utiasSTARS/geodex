@@ -12,8 +12,7 @@ namespace geodex {
 /// @brief Stateless identity metric: \f$ \langle u, v \rangle_p = u \cdot v \f$.
 ///
 /// @details A zero-storage alternative to `ConstantSPDMetric<Dim>` with the
-/// identity weight matrix. Uses O(1) memory instead of O(n^2) for the
-/// identity-metric case. All manifold default-metric aliases
+/// identity weight matrix. All manifold default-metric aliases
 /// (`SphereRoundMetric`, `TorusFlatMetric`, `EuclideanStandardMetric`) point here.
 ///
 /// @tparam Dim Compile-time vector dimension, or `Eigen::Dynamic`.
@@ -41,20 +40,6 @@ class IdentityMetric {
   Eigen::MatrixXd inner_matrix(const Eigen::Vector<double, Dim>& /*p*/, const Eigen::MatrixXd& U,
                                const Eigen::MatrixXd& V) const {
     return U.transpose() * V;
-  }
-
-  /// @brief Identity weight matrix (runtime-sized identity, for API compatibility).
-  /// @details Returns a dynamically-sized identity matrix of the given dimension.
-  ///   Provided so that `has_riemannian_log_runtime()` can call `weight_matrix()`
-  ///   uniformly on any metric.  Unlike `ConstantSPDMetric`, this allocates only
-  ///   when called — which should be rare.
-  Eigen::MatrixXd weight_matrix() const {
-    if constexpr (Dim != Eigen::Dynamic) {
-      return Eigen::MatrixXd::Identity(Dim, Dim);
-    } else {
-      // Dynamic case: callers must not rely on this for hot paths.
-      return Eigen::MatrixXd::Identity(1, 1);
-    }
   }
 };
 

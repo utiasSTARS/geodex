@@ -19,12 +19,20 @@
 #include "py_sphere_n.hpp"
 #include "py_torus.hpp"
 
+#ifdef GEODEX_PYTHON_HAS_ROBOTS
+#include "py_robot_model.hpp"
+#endif
+
 namespace geodex::python {
 
-/// @brief Extract a DynamicManifold from any known Python manifold type.
-/// @throws std::invalid_argument if `obj` is not a recognised manifold.
-inline DynamicManifold extract_dynamic_manifold(nanobind::object obj) {
+namespace detail {
+
+inline DynamicManifold extract_unsized(nanobind::object obj) {
   namespace nb = nanobind;
+#ifdef GEODEX_PYTHON_HAS_ROBOTS
+  if (nb::isinstance<PyRobotModel>(obj))
+    return nb::cast<const PyRobotModel&>(obj).to_dynamic_manifold();
+#endif
   if (nb::isinstance<PySphere>(obj)) return nb::cast<const PySphere&>(obj).to_dynamic_manifold();
   if (nb::isinstance<PySphereN>(obj)) return nb::cast<const PySphereN&>(obj).to_dynamic_manifold();
   if (nb::isinstance<PyEuclidean>(obj))
@@ -40,6 +48,17 @@ inline DynamicManifold extract_dynamic_manifold(nanobind::object obj) {
   throw std::invalid_argument(
       "Unknown manifold type. Expected Sphere, SphereN, Euclidean, Torus, SE2, "
       "SO2, SO3, SE3, ConfigurationSpace, or Product.");
+}
+
+}  // namespace detail
+
+/// @brief Extract a DynamicManifold from any known Python manifold type. It checks
+/// the sizes of the points and tangent vectors it is called with.
+/// @throws std::invalid_argument if `obj` is not a recognized manifold.
+inline DynamicManifold extract_dynamic_manifold(nanobind::object obj) {
+  DynamicManifold dm = detail::extract_unsized(std::move(obj));
+  dm.probe_sizes();
+  return dm;
 }
 
 }  // namespace geodex::python

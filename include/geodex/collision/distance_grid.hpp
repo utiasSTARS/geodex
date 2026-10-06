@@ -9,11 +9,16 @@
 #pragma once
 
 #include <cmath>
+#include <cstdint>
 
 #include <algorithm>
+#include <atomic>
+#include <bit>
 #include <fstream>
-#include <iostream>
+#include <memory>
+#include <numbers>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "geodex/utils/math.hpp"
@@ -30,11 +35,43 @@ namespace geodex::collision {
 // Distance grid
 // ---------------------------------------------------------------------------
 
+namespace detail {
+
+/// @brief A flag computed on first use and kept until cleared. Copies carry the value.
+class LazyFlag {
+ public:
+  LazyFlag() = default;
+  LazyFlag(const LazyFlag& other) : state_(other.state_.load(std::memory_order_relaxed)) {}
+  LazyFlag& operator=(const LazyFlag& other) {
+    state_.store(other.state_.load(std::memory_order_relaxed), std::memory_order_relaxed);
+    return *this;
+  }
+
+  /// @brief The flag, computed by `compute` when it is not known yet.
+  template <typename F>
+  bool get(const F& compute) const {
+    int s = state_.load(std::memory_order_acquire);
+    if (s < 0) {
+      s = compute() ? 1 : 0;
+      state_.store(s, std::memory_order_release);
+    }
+    return s == 1;
+  }
+
+  /// @brief Forget the value. The next `get` computes it again.
+  void clear() { state_.store(-1, std::memory_order_release); }
+
+ private:
+  mutable std::atomic<int> state_{-1};
+};
+
+}  // namespace detail
+
 /// @brief A 2D precomputed distance transform with bilinear interpolation.
 ///
-/// Stores obstacle distances at regular grid points. Queried in world
-/// coordinates (meters); returns interpolated distance to nearest obstacle.
-/// Positive = free space, zero/negative = obstacle.
+/// Stores obstacle distances at regular grid points. A query takes world coordinates
+/// in meters and returns the interpolated distance to the nearest obstacle, positive
+/// in free space and zero or negative in an obstacle.
 class DistanceGrid {
  public:
   DistanceGrid() = default;
@@ -43,32 +80,42 @@ class DistanceGrid {
   /// @param width Grid width in cells.
   /// @param height Grid height in cells.
   /// @param resolution Meters per cell.
-  /// @param data Row-major distance values: data[r * width + c].
+  /// @param data Row-major distance values, data[r * width + c].
   DistanceGrid(const int width, const int height, const double resolution, std::vector<double> data)
       : width_(width), height_(height), resolution_(resolution), data_(std::move(data)) {}
 
+  /// @brief Resize for a rebuild and hand back the value array to fill.
+  ///
+  /// @details Keeps the allocation the grid already holds. A host that rebuilds the
+  /// field every cycle does not pay for fresh pages. The returned array holds
+  /// `width * height` values in row-major order, unspecified until the caller writes
+  /// them.
+  std::vector<double>& reset(const int width, const int height, const double resolution) {
+    width_ = width;
+    height_ = height;
+    resolution_ = resolution;
+    data_.resize(static_cast<size_t>(width) * height);
+    signed_.clear();
+    return data_;
+  }
+
   /// @brief Load from the geodex distance transform file format.
   ///
-  /// Format: `width height resolution` on the first line, followed by
-  /// `height * width` double values in row-major order.
+  /// The first line holds `width height resolution`, followed by `height * width`
+  /// double values in row-major order.
+  /// @return `false` when the file cannot be opened or read.
   bool load(const std::string& filename) {
     std::ifstream in(filename);
-    if (!in) {
-      std::cerr << "Error: cannot open " << filename << "\n";
-      return false;
-    }
+    if (!in) return false;
     in >> width_ >> height_ >> resolution_;
     data_.resize(static_cast<size_t>(width_) * height_);
+    signed_.clear();
     for (int r = 0; r < height_; ++r) {
       for (int c = 0; c < width_; ++c) {
         in >> data_[static_cast<size_t>(r) * width_ + c];
       }
     }
-    if (!in) {
-      std::cerr << "Error: failed to read distance grid data\n";
-      return false;
-    }
-    return true;
+    return static_cast<bool>(in);
   }
 
   /// @brief Query distance at world coordinates using bilinear interpolation.
@@ -93,7 +140,7 @@ class DistanceGrid {
            fx * fy * d11;
   }
 
-  /// @brief Batch query: evaluate distance at N world-coordinate points.
+  /// @brief Evaluate the distance at N world-coordinate points.
   ///
   /// On ARM NEON and x86 SSE2, processes 2 points per iteration with
   /// vectorized bilinear interpolation math. Grid value gathering remains
@@ -124,7 +171,7 @@ class DistanceGrid {
       const float64x2_t vfx = vsubq_f64(vcx, fc0);
       const float64x2_t vfy = vsubq_f64(vcy, fr0);
 
-      // Extract integer indices (scalar gather — no ARM NEON gather instruction).
+      // Extract integer indices with a scalar gather. NEON does not have a gather instruction.
       const int c0_a = static_cast<int>(vgetq_lane_f64(fc0, 0));
       const int c0_b = static_cast<int>(vgetq_lane_f64(fc0, 1));
       const int r0_a = static_cast<int>(vgetq_lane_f64(fr0, 0));
@@ -229,6 +276,23 @@ class DistanceGrid {
   int height() const { return height_; }
   /// @brief Cell size in meters.
   double resolution() const { return resolution_; }
+
+  /// @brief Additive slack of the interpolated field over a 1-Lipschitz bound, with
+  /// \f$ |d(p) - d(q)| \le \|p - q\| + \mathrm{slack} \f$ for any two points.
+  ///
+  /// @details With resolution \f$ h \f$, the bilinear weights keep the corner nodes
+  /// within \f$ \sqrt{2}\,h/2 \f$ of the query on average. Node values within \f$ e \f$
+  /// of a 1-Lipschitz function give a slack of \f$ 2e + \sqrt{2}\,h \f$. An unsigned
+  /// transform has \f$ e = 0 \f$. A grid with a negative node is a signed transform, the
+  /// distance to the nearest occupied node minus the distance to the nearest free one,
+  /// with \f$ e = \sqrt{2}\,h/2 \f$. The
+  /// first call after construction, `load` or `reset` reads every node once.
+  double lipschitz_slack() const {
+    const bool has_negative = signed_.get([this] {
+      return std::any_of(data_.begin(), data_.end(), [](const double v) { return v < 0.0; });
+    });
+    return (has_negative ? 2.0 : 1.0) * std::numbers::sqrt2 * resolution_;
+  }
   /// @brief Raw distance data array.
   const std::vector<double>& data() const { return data_; }
 
@@ -236,6 +300,7 @@ class DistanceGrid {
   int width_ = 0, height_ = 0;
   double resolution_ = 0.05;
   std::vector<double> data_;
+  detail::LazyFlag signed_;  ///< some node value is negative
 };
 
 // ---------------------------------------------------------------------------
@@ -266,8 +331,8 @@ class GridSDF {
 
 /// @brief Wraps any SDF and subtracts a constant inflation radius.
 ///
-/// Equivalent to Minkowski expansion of all obstacles by @p inflation.
-/// Useful for point-robot queries that need to account for robot radius.
+/// Equivalent to a Minkowski expansion of all obstacles by @p inflation, for
+/// point-robot queries that account for the robot radius.
 template <typename SDFType>
 class InflatedSDF {
  public:
@@ -288,6 +353,72 @@ class InflatedSDF {
  private:
   SDFType sdf_;
   double inflation_;
+};
+
+// ---------------------------------------------------------------------------
+// Memoized SDF wrapper
+// ---------------------------------------------------------------------------
+
+/// @brief Wraps an SDF with a small table of recently queried poses.
+///
+/// @details Entries are keyed on the exact bit pattern of the first `Dim` coordinates,
+/// and a hit returns exactly what the wrapped SDF returned for that pose. Copies share
+/// one table, which belongs to the constructing thread. Calls from other threads
+/// evaluate the wrapped SDF directly and leave the table alone. Call `clear()` after
+/// the wrapped SDF changes, for example after a grid rebuild.
+///
+/// @tparam SDFType Callable `double(const Point&)`.
+/// @tparam Dim Number of leading pose coordinates that identify a query.
+/// @tparam Entries Table size, a power of two.
+template <typename SDFType, int Dim = 3, int Entries = 256>
+class MemoizedSDF {
+  static_assert(Dim > 0 && Entries > 0 && (Entries & (Entries - 1)) == 0,
+                "MemoizedSDF needs a positive Dim and a power-of-two table size");
+
+ public:
+  /// @brief Construct with a base SDF and an empty table owned by this thread.
+  explicit MemoizedSDF(SDFType sdf) : sdf_(std::move(sdf)), table_(std::make_shared<Table>()) {}
+
+  /// @brief Evaluate the wrapped SDF at `q`, from the table when `q` was seen recently.
+  template <typename Point>
+  double operator()(const Point& q) const {
+    if (std::this_thread::get_id() != table_->owner) return sdf_(q);
+    std::uint64_t key[Dim];
+    std::uint64_t h = 0x9E3779B97F4A7C15ull;
+    for (int i = 0; i < Dim; ++i) {
+      key[i] = std::bit_cast<std::uint64_t>(static_cast<double>(q[i]));
+      h = (h ^ key[i]) * 0xC2B2AE3D27D4EB4Full;
+      h ^= h >> 29;
+    }
+    Entry& e = table_->entries[static_cast<std::size_t>(h & (Entries - 1))];
+    if (e.used && std::equal(key, key + Dim, e.key)) return e.value;
+    e.value = sdf_(q);
+    std::copy(key, key + Dim, e.key);
+    e.used = true;
+    return e.value;
+  }
+
+  /// @brief Forget every cached value. Call from the owning thread.
+  void clear() const {
+    for (auto& e : table_->entries) e.used = false;
+  }
+
+  /// @brief Get the underlying base SDF.
+  const SDFType& base() const { return sdf_; }
+
+ private:
+  struct Entry {
+    std::uint64_t key[Dim] = {};
+    double value = 0.0;
+    bool used = false;
+  };
+  struct Table {
+    std::thread::id owner = std::this_thread::get_id();
+    Entry entries[Entries];
+  };
+
+  SDFType sdf_;
+  std::shared_ptr<Table> table_;
 };
 
 }  // namespace geodex::collision

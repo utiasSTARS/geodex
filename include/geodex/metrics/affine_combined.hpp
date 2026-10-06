@@ -28,7 +28,7 @@ namespace geodex {
 /// summand. This underpins composite metrics such as
 /// "pullback + \f$ \beta \f$ · kinetic-energy".
 ///
-/// The class makes no `Manifold` claims of its own — it is a metric *policy*
+/// The class makes no `Manifold` claims of its own. It is a metric *policy*
 /// like `IdentityMetric`, `ConstantSPDMetric`, or `KineticEnergyMetric`. Plug
 /// it into a `ConfigurationSpace` (or any consumer of `inner` / `norm`) the
 /// same way as the underlying policies.

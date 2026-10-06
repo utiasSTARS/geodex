@@ -1,11 +1,11 @@
 /// @file zero.hpp
-/// @brief Zero heuristic — trivially admissible, completely uninformative.
+/// @brief Zero heuristic, trivially admissible and completely uninformative.
 
 #pragma once
 
 namespace geodex::heuristics {
 
-/// @brief Zero heuristic — returns \f$ h(a,b) = 0 \f$ for every pair.
+/// @brief Zero heuristic that returns \f$ h(a,b) = 0 \f$ for every pair.
 ///
 /// @details The weakest possible admissible heuristic: admissible for any
 /// non-negative distance, but carries no information. When used with an
@@ -13,9 +13,7 @@ namespace geodex::heuristics {
 /// space (uniform sampling), no vertices are pruned, and vertex ordering
 /// becomes uninformed.
 struct Zero {
-  /// @brief Compute \f$ h(a,b) = 0 \f$.
-  /// @param a First point (unused).
-  /// @param b Second point (unused).
+  /// @brief Compute \f$ h(a,b) = 0 \f$ for any two points.
   /// @return 0.
   template <typename PointA, typename PointB>
   auto operator()(const PointA&, const PointB&) const -> double {

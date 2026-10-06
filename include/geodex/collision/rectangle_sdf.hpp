@@ -1,5 +1,5 @@
 /// @file rectangle_sdf.hpp
-/// @brief Oriented rectangle obstacles: SDF, SAT collision, and SIMD acceleration.
+/// @brief Oriented rectangle obstacles with an SDF, SAT collision and SIMD acceleration.
 ///
 /// Provides:
 ///   - RectObstacle: oriented rectangle descriptor
@@ -34,8 +34,11 @@ namespace geodex::collision {
 
 /// @brief An oriented rectangle obstacle defined by center, rotation, and half-extents.
 struct RectObstacle {
-  double cx, cy, theta;
-  double half_length, half_width;
+  double cx;           ///< Center x.
+  double cy;           ///< Center y.
+  double theta;        ///< Rotation of the local x axis, in radians.
+  double half_length;  ///< Half extent along the local x axis.
+  double half_width;   ///< Half extent along the local y axis.
 };
 
 /// @brief Compute the 4 corners of an oriented rectangle.
@@ -150,15 +153,15 @@ class RectObstacleSoA {
 /// @brief Fused SDF + log-sum-exp for oriented rectangles with SIMD acceleration.
 ///
 /// SIMD strategy (ARM NEON, 2-wide float64):
-///   - SoA layout: cache-line-friendly, NEON-loadable
-///   - 2-wide processing: 2 obstacles per iteration, branchless via vbslq
-///   - Bounding sphere early-out: skip obstacles where center distance exceeds
+///   - Structure-of-arrays layout for 2-wide loads
+///   - 2 obstacles per iteration, branchless via vbslq
+///   - Bounding sphere early-out that skips obstacles whose center distance exceeds
 ///     diagonal + skip_dist (where exp(-beta*d) ~ 0)
-///   - Inflation applied inside the SIMD loop (no separate wrapper needed)
-///   - fast_exp_neon for the log-sum-exp accumulation
+///   - Inflation applied inside the SIMD loop, without a separate wrapper
+///   - `utils::fast_exp` (2-wide overload) for the log-sum-exp sum
 ///
-/// Scalar fallback provided for platforms without SIMD.
-/// x86 SSE2 path uses 2-wide float64 processing with optional SSE4.1/FMA.
+/// Platforms without SIMD use a scalar fallback. The x86 SSE2 path uses 2-wide
+/// float64 processing with optional SSE4.1/FMA.
 class RectSmoothSDF {
  public:
   /// @brief Construct from obstacles with smoothing and optional inflation.
@@ -250,11 +253,11 @@ class RectSmoothSDF {
       const float64x2_t iy = vsubq_f64(vhw, aly);
       const float64x2_t int_d = vnegq_f64(vminq_f64(ix, iy));
 
-      // Branchless select: ext2 > 0 → exterior, else interior.
+      // Branchless select of exterior when ext2 > 0, else interior.
       const uint64x2_t is_outside = vcgtq_f64(ext2, vzero);
       float64x2_t d = vbslq_f64(is_outside, ext_d, int_d);
 
-      // Inflation: subtract so clearance triggers at robot edge.
+      // Subtract the inflation to measure clearance from the robot edge.
       d = vsubq_f64(d, vinfl);
 
       // Mask out-of-range obstacles to skip_dist.
@@ -337,11 +340,11 @@ class RectSmoothSDF {
       const __m128d iy = _mm_sub_pd(vhw, aly);
       const __m128d int_d = _mm_xor_pd(_mm_min_pd(ix, iy), sign_mask);
 
-      // Branchless select: ext2 > 0 → exterior, else interior.
+      // Branchless select of exterior when ext2 > 0, else interior.
       const __m128d is_outside = _mm_cmpgt_pd(ext2, vzero);
       __m128d d = geodex::utils::geodex_blendv_pd(int_d, ext_d, is_outside);
 
-      // Inflation: subtract so clearance triggers at robot edge.
+      // Subtract the inflation to measure clearance from the robot edge.
       d = _mm_sub_pd(d, vinfl);
 
       // Mask out-of-range obstacles to skip_dist.

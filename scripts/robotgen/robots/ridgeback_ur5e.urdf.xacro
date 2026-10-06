@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!-- Clearpath Ridgeback (R100) with a Universal Robots UR5e on the default mount, built
+     from the pinned upstream macros. -->
+<robot name="ridgeback_ur5e" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:arg name="use_platform_controllers" default="false"/>
+  <xacro:include filename="$(find clearpath_platform_description)/urdf/r100/r100.urdf.xacro"/>
+  <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro"/>
+  <xacro:r100/>
+  <xacro:ur_robot name="arm_0" tf_prefix="arm_0_" parent="default_mount"
+      joint_limits_parameters_file="$(find ur_description)/config/ur5e/joint_limits.yaml"
+      kinematics_parameters_file="$(find ur_description)/config/ur5e/default_kinematics.yaml"
+      physical_parameters_file="$(find ur_description)/config/ur5e/physical_parameters.yaml"
+      visual_parameters_file="$(find ur_description)/config/ur5e/visual_parameters.yaml">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:ur_robot>
+</robot>

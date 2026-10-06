@@ -1,33 +1,19 @@
 /// @file panda.hpp
-/// @brief Internal: factory functions for the Panda 7-DOF VAMP collision
-///        checker and motion validator.
+/// @brief VAMP model of the Franka Emika Panda, 7 joints. It uses VAMP's own kernel.
 ///
-/// Pulls in VAMP's Panda model + SIMD intrinsics; included only by the
-/// @c vamp_impl.cpp source file in the @c geodex_vamp static archive.
+/// This internal header pulls in the kernel and its SIMD intrinsics. Only the robot's own
+/// translation unit in the @c geodex_vamp static archive includes it and builds the registry
+/// entry from `panda_model` and `generated::panda_sweep`.
 
 #pragma once
 
-#include <memory>
-#include <utility>
-
 #include <vamp/robots/panda.hh>
 
-#include "geodex/integration/vamp/registry.hpp"
-#include "geodex/integration/vamp/detail/robot_impl.hpp"
+#include "geodex/integration/vamp/robots/generated/panda_sweep.hh"
 
 namespace geodex::integration::vamp::detail {
 
-inline auto make_panda_checker(EnvHandle env)
-    -> std::unique_ptr<CollisionChecker> {
-  return std::make_unique<VampCollisionCheckerImpl<::vamp::robots::Panda>>(
-      std::move(env));
-}
-
-inline auto make_panda_motion_validator(
-    const ompl::base::SpaceInformationPtr& si, EnvHandle env)
-    -> std::unique_ptr<ompl::base::MotionValidator> {
-  return std::make_unique<VampMotionValidatorImpl<::vamp::robots::Panda>>(
-      si, std::move(env));
-}
+/// @brief VAMP model of this robot.
+using panda_model = ::vamp::robots::Panda;
 
 }  // namespace geodex::integration::vamp::detail

@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<!-- Self-collision pairs the VAMP kernel for husky_ur5e skips: rigid and adjacent bodies, nested parts, and pairs always or never in collision over 100000 configurations of the mesh model. -->
+<robot name="husky_ur5e">
+  <disable_collisions link1="arm_0_base_link_inertia" link2="arm_0_shoulder_link" reason="Adjacent"/>
+  <disable_collisions link1="arm_0_base_link_inertia" link2="base_link" reason="Default"/>
+  <disable_collisions link1="arm_0_base_link_inertia" link2="front_left_wheel_link" reason="Default"/>
+  <disable_collisions link1="arm_0_base_link_inertia" link2="front_right_wheel_link" reason="Default"/>
+  <disable_collisions link1="arm_0_base_link_inertia" link2="rear_left_wheel_link" reason="Default"/>
+  <disable_collisions link1="arm_0_base_link_inertia" link2="rear_right_wheel_link" reason="Default"/>
+  <disable_collisions link1="arm_0_base_link_inertia" link2="top_plate_link" reason="Default"/>
+  <disable_collisions link1="arm_0_forearm_link" link2="arm_0_upper_arm_link" reason="Adjacent"/>
+  <disable_collisions link1="arm_0_forearm_link" link2="arm_0_wrist_1_link" reason="Adjacent"/>
+  <disable_collisions link1="arm_0_forearm_link" link2="arm_0_wrist_2_link" reason="Never"/>
+  <disable_collisions link1="arm_0_shoulder_link" link2="arm_0_upper_arm_link" reason="Adjacent"/>
+  <disable_collisions link1="arm_0_shoulder_link" link2="base_link" reason="Adjacent"/>
+  <disable_collisions link1="arm_0_shoulder_link" link2="front_left_wheel_link" reason="Adjacent"/>
+  <disable_collisions link1="arm_0_shoulder_link" link2="front_right_wheel_link" reason="Adjacent"/>
+  <disable_collisions link1="arm_0_shoulder_link" link2="rear_left_wheel_link" reason="Adjacent"/>
+  <disable_collisions link1="arm_0_shoulder_link" link2="rear_right_wheel_link" reason="Adjacent"/>
+  <disable_collisions link1="arm_0_shoulder_link" link2="top_plate_link" reason="Adjacent"/>
+  <disable_collisions link1="arm_0_wrist_1_link" link2="arm_0_wrist_2_link" reason="Adjacent"/>
+  <disable_collisions link1="arm_0_wrist_1_link" link2="arm_0_wrist_3_link" reason="Never"/>
+  <disable_collisions link1="arm_0_wrist_2_link" link2="arm_0_wrist_3_link" reason="Adjacent"/>
+  <disable_collisions link1="base_link" link2="front_left_wheel_link" reason="Default"/>
+  <disable_collisions link1="base_link" link2="front_right_wheel_link" reason="Default"/>
+  <disable_collisions link1="base_link" link2="rear_left_wheel_link" reason="Default"/>
+  <disable_collisions link1="base_link" link2="rear_right_wheel_link" reason="Default"/>
+  <disable_collisions link1="base_link" link2="top_plate_link" reason="Default"/>
+  <disable_collisions link1="front_left_wheel_link" link2="front_right_wheel_link" reason="Default"/>
+  <disable_collisions link1="front_left_wheel_link" link2="rear_left_wheel_link" reason="Default"/>
+  <disable_collisions link1="front_left_wheel_link" link2="rear_right_wheel_link" reason="Default"/>
+  <disable_collisions link1="front_left_wheel_link" link2="top_plate_link" reason="Default"/>
+  <disable_collisions link1="front_right_wheel_link" link2="rear_left_wheel_link" reason="Default"/>
+  <disable_collisions link1="front_right_wheel_link" link2="rear_right_wheel_link" reason="Default"/>
+  <disable_collisions link1="front_right_wheel_link" link2="top_plate_link" reason="Default"/>
+  <disable_collisions link1="rear_left_wheel_link" link2="rear_right_wheel_link" reason="Default"/>
+  <disable_collisions link1="rear_left_wheel_link" link2="top_plate_link" reason="Default"/>
+  <disable_collisions link1="rear_right_wheel_link" link2="top_plate_link" reason="Default"/>
+</robot>

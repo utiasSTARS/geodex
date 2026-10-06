@@ -1,0 +1,20 @@
+{
+  "name": "ur5",
+  "description": "Universal Robots UR5 with a Robotiq 2F-85 and FT 300, VAMP's own kernel",
+  "vamp_kernel": "{vamp}/src/impl/vamp/robots/ur5.hh",
+  "spherized_urdf": "{vamp}/resources/ur5/ur5_spherized.urdf",
+  "limits_urdfs": [
+    "data/robots/ur5/ur5.urdf"
+  ],
+  "crba": {
+    "name": "ur5",
+    "urdf": "data/robots/ur5/ur5.urdf",
+    "expansion": "scripts/robotgen/robots/ur5_expansion.urdf",
+    "header": "Expanded from ur/robots/ur5_robotiq_robot_limited.urdf.xacro of KavrakiLab robowflex_resources at fb37f07. scripts/robotgen/mesh_boxes.py replaced the Robotiq and FT 300 meshes with their bounding boxes.",
+    "mesh_dirs": [
+      "robotiq/85_gripper/meshes/arg",
+      "robotiq/force_torque_sensor/meshes/collision"
+    ],
+    "mesh_source": "ROBOWFLEX_RESOURCES"
+  }
+}

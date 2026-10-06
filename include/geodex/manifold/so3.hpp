@@ -1,6 +1,6 @@
 /// @file so3.hpp
-/// @brief SO(3) manifold — the rotation group as unit quaternions with a
-///        canonical (left-/bi-invariant) metric and body/world retractions.
+/// @brief SO(3) manifold, the rotation group as unit quaternions with a canonical
+///        (left- and bi-invariant) metric and body and world retractions.
 
 #pragma once
 
@@ -26,9 +26,9 @@ namespace geodex {
 // Retraction policies
 // ---------------------------------------------------------------------------
 //
-// Points are unit quaternions `[x, y, z, w]` (Point = Eigen::Vector4d); tangents
-// are body angular velocities `omega` (Tangent = Eigen::Vector3d), so Point and
-// Tangent differ in size (4 vs 3).
+// Points are unit quaternions `[x, y, z, w]` (Point = Eigen::Vector4d), and tangents
+// are body angular velocities `omega` (Tangent = Eigen::Vector3d). Point and Tangent
+// differ in size (4 vs 3).
 
 /// @brief Body-frame (left-translation) exponential/logarithm on SO(3).
 ///
@@ -92,34 +92,34 @@ static_assert(Retraction<SO3RightExponentialMap, Eigen::Vector4d, Eigen::Vector3
 ///
 /// @details Rotations are represented as unit quaternions
 /// \f$ q = [x, y, z, w] \in S^3 \subset \mathbb{R}^4 \f$ (scalar-last, matching
-/// `Eigen::Quaterniond::coeffs()`); the double cover \f$ q \sim -q \f$ represents
-/// the same rotation. Tangent vectors are body angular velocities
-/// \f$ \omega \in \mathfrak{so}(3) \cong \mathbb{R}^3 \f$, so the intrinsic
-/// dimension is 3 while a point occupies 4 coordinates.
+/// `Eigen::Quaterniond::coeffs()`), and \f$ q \f$ and \f$ -q \f$ represent the same
+/// rotation. Tangent vectors are body angular velocities
+/// \f$ \omega \in \mathfrak{so}(3) \cong \mathbb{R}^3 \f$. The intrinsic dimension is 3,
+/// and a point occupies 4 coordinates.
 ///
 /// The manifold composes a metric policy and a retraction policy following the
 /// same design as Sphere, Torus, and SE(2). With the default `SO3CanonicalMetric`
 /// (unit weights) the metric is bi-invariant and `geodesic` is quaternion SLERP.
 ///
-/// @tparam MetricT Metric policy (default: `SO3CanonicalMetric`).
-/// @tparam RetractionT Retraction policy (default: `SO3LeftExponentialMap`).
-/// @tparam SamplerT Sampler policy for `random_point()` (default: `StochasticSampler`).
+/// @tparam MetricT Metric policy (default `SO3CanonicalMetric`).
+/// @tparam RetractionT Retraction policy (default `SO3LeftExponentialMap`).
+/// @tparam SamplerT Sampler policy for `random_point()` (default `ScrambledHaltonSampler`).
 template <typename MetricT = SO3CanonicalMetric, typename RetractionT = SO3LeftExponentialMap,
-          typename SamplerT = StochasticSampler>
+          typename SamplerT = ScrambledHaltonSampler>
 class SO3 {
  public:
   using Scalar = double;            ///< Scalar type.
   using Point = Eigen::Vector4d;    ///< Unit quaternion \f$ [x, y, z, w] \f$.
+  using SamplerType = SamplerT;     ///< Sampler policy backing random_point().
   using Tangent = Eigen::Vector3d;  ///< Body angular velocity \f$ \omega \f$.
 
-  /// @brief Runtime query: is the Lie-group `log` the Riemannian logarithm of
-  /// the currently-configured metric?
+  /// @brief Runtime check whether the Lie-group `log` is the Riemannian logarithm of
+  /// the configured metric.
   ///
-  /// @details True exactly when the metric is isotropic — all three
-  /// `SO3CanonicalMetric` weights equal — AND the retraction is one of the two
-  /// group exponential maps. In that case the group `log` is the Riemannian
-  /// logarithm and `discrete_geodesic` can take the log direction as the natural
-  /// gradient; anisotropic weights fall back to finite differences.
+  /// @details True exactly when all three `SO3CanonicalMetric` weights are equal and
+  /// the retraction is one of the two group exponential maps. `discrete_geodesic` then
+  /// takes the log direction as the natural gradient. Anisotropic weights fall back to
+  /// finite differences.
   bool has_riemannian_log_runtime() const {
     if constexpr ((std::is_same_v<RetractionT, SO3LeftExponentialMap> ||
                    std::is_same_v<RetractionT, SO3RightExponentialMap>) &&
@@ -147,39 +147,50 @@ class SO3 {
   /// @brief Return the intrinsic dimension (always 3).
   int dim() const { return 3; }
 
-  /// @brief Injectivity radius of the round SO(3): \f$ \pi \f$.
+  /// @brief Injectivity radius of the round SO(3), \f$ \pi \f$.
   ///
   /// @details The exponential map is a diffeomorphism for rotation angles below
-  /// \f$ \pi \f$; at \f$ \pi \f$ (antipodal on \f$ S^3 \f$) the log direction is
-  /// non-unique. Returned for the bi-invariant metric; anisotropic metrics have
-  /// a smaller effective radius. `discrete_geodesic` uses this to cap steps.
+  /// \f$ \pi \f$. At \f$ \pi \f$ (antipodal on \f$ S^3 \f$) the log direction is not
+  /// unique. The value holds for the bi-invariant metric, and anisotropic metrics have
+  /// a smaller effective radius. `discrete_geodesic` caps steps with it.
   Scalar injectivity_radius() const { return std::numbers::pi; }
 
-  /// @brief Sample a rotation uniformly (w.r.t. the Haar measure) on SO(3).
-  ///
-  /// @details Draws four standard normals via the Box-Muller transform over the
-  /// sampler's uniform box and normalizes the resulting 4-vector — Marsaglia's
-  /// method for a uniform point on \f$ S^3 \f$, which projects to the uniform
-  /// (Haar) distribution on SO(3).
-  /// @return A valid unit quaternion \f$ [x, y, z, w] \f$.
-  Point random_point() const {
-    sampler_.sample_box(4, sample_buf_);
-    const double u1 = std::max(sample_buf_[0], 1e-300);  // avoid log(0)
-    const double u2 = sample_buf_[1];
-    const double u3 = std::max(sample_buf_[2], 1e-300);
-    const double u4 = sample_buf_[3];
-    const double r1 = std::sqrt(-2.0 * std::log(u1));
-    const double r2 = std::sqrt(-2.0 * std::log(u3));
-    const double a1 = 2.0 * std::numbers::pi * u2;
-    const double a2 = 2.0 * std::numbers::pi * u4;
-    Point q(r1 * std::cos(a1), r1 * std::sin(a1), r2 * std::cos(a2), r2 * std::sin(a2));
-    return q.normalized();
+  /// @brief Number of unit-cube coordinates that from_unit_cube consumes.
+  int unit_cube_dim() const { return 3; }
+
+  /// @brief Map three unit-cube coordinates to a Haar-uniform rotation via
+  /// Shoemake's method (Shoemake 1992).
+  /// @param u Unit-cube coordinates.
+  /// @return A unit quaternion \f$ [x, y, z, w] \f$.
+  Point from_unit_cube(Eigen::Ref<const Eigen::VectorXd> u) const {
+    detail::require_unit_cube_size(u.size(), 3);
+    return utils::uniform_quaternion(u[0], u[1], u[2]);
   }
+
+  /// @brief Sample a rotation uniformly (Haar measure) on SO(3).
+  Point random_point() const {
+    sample_buf_.resize(3);
+    sampler_.sample(3, sample_buf_);
+    return from_unit_cube(sample_buf_);
+  }
+
+  /// @brief Reseed the sampler for a reproducible random_point sequence.
+  void seed(std::uint64_t s)
+    requires SeedableSampler<SamplerT>
+  {
+    sampler_.seed(s);
+  }
+
+  /// @brief Replace the sampler.
+  void set_sampler(SamplerT s) { sampler_ = std::move(s); }
+
+  /// @brief The sampler behind random_point(). Planning samples through copies of it.
+  const SamplerT& sampler() const { return sampler_; }
 
   /// @brief Project an ambient vector onto the tangent space at \f$ p \f$.
   ///
   /// @details Tangent vectors are already the minimal body algebra
-  /// \f$ \mathfrak{so}(3) \cong \mathbb{R}^3 \f$, so the projection is the
+  /// \f$ \mathfrak{so}(3) \cong \mathbb{R}^3 \f$, and the projection is the
   /// identity.
   Tangent project(const Point& /*p*/, const Tangent& v) const { return v; }
 
@@ -187,8 +198,8 @@ class SO3 {
   /// @{
   //
   // The metric acts on the body algebra (a 3-vector) and ignores its base-point
-  // argument, so the manifold's 4-vector quaternion point is not forwarded; a
-  // zero 3-vector is passed as the metric's `p`.
+  // argument. The manifold passes a zero 3-vector as the metric's `p`, not its
+  // 4-vector quaternion.
 
   /// @brief Riemannian inner product at \f$ p \f$.
   Scalar inner(const Point& /*p*/, const Tangent& u, const Tangent& v) const {
@@ -232,15 +243,15 @@ class SO3 {
 
   /// @brief Geodesic distance \f$ d(p, q) \f$ via the midpoint approximation.
   ///
-  /// @details Exact here: with the true exp/log the midpoint formula reproduces
-  /// the metric geodesic length. For the default isotropic metric this equals
-  /// the rotation angle between \f$ p \f$ and \f$ q \f$ in \f$ [0, \pi] \f$.
+  /// @details Exact here. With the true exp and log, the midpoint formula reproduces
+  /// the metric geodesic length. For the default isotropic metric this equals the
+  /// rotation angle between \f$ p \f$ and \f$ q \f$ in \f$ [0, \pi] \f$.
   Scalar distance(const Point& p, const Point& q) const { return distance_midpoint(*this, p, q); }
 
   /// @brief Geodesic interpolation between \f$ p \f$ and \f$ q \f$ at parameter \f$ t \f$.
   ///
-  /// @details \f$ \exp_p(t\,\log_p(q)) \f$; for the bi-invariant metric this is
-  /// exactly quaternion SLERP.
+  /// @details Returns \f$ \exp_p(t\,\log_p(q)) \f$, which is exactly quaternion SLERP
+  /// for the bi-invariant metric.
   /// @param p Start unit quaternion.
   /// @param q End unit quaternion.
   /// @param t Interpolation parameter in \f$ [0, 1] \f$.
@@ -253,7 +264,7 @@ class SO3 {
   MetricT metric_;
   RetractionT retraction_;
   mutable SamplerT sampler_;
-  mutable Eigen::VectorXd sample_buf_{4};  ///< Preallocated buffer for Box-Muller uniform samples.
+  mutable Eigen::VectorXd sample_buf_{3};  ///< Preallocated buffer for unit-cube samples.
 };
 
 // Verify the composed types satisfy RiemannianManifold.

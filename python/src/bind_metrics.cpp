@@ -1,9 +1,17 @@
+#include <memory>
+#include <optional>
+#include <utility>
+#include <vector>
+
 #include <nanobind/eigen/dense.h>
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/function.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/vector.h>
 
+#include "wrappers/extract_metric.hpp"
+#include "wrappers/native_collision.hpp"
+#include "wrappers/py_callable.hpp"
 #include "wrappers/py_metrics.hpp"
 
 namespace nb = nanobind;
@@ -11,26 +19,10 @@ using namespace geodex::python;
 
 namespace {
 
-/// Extract a DynamicMetric from any known Python metric type.
-DynamicMetric extract_dynamic_metric(nb::object obj) {
-  if (nb::isinstance<PyKineticEnergyMetric>(obj))
-    return nb::cast<const PyKineticEnergyMetric&>(obj).to_dynamic_metric();
-  if (nb::isinstance<PyJacobiMetric>(obj))
-    return nb::cast<const PyJacobiMetric&>(obj).to_dynamic_metric();
-  if (nb::isinstance<PyPullbackMetric>(obj))
-    return nb::cast<const PyPullbackMetric&>(obj).to_dynamic_metric();
-  if (nb::isinstance<PyConstantSPDMetric>(obj))
-    return nb::cast<const PyConstantSPDMetric&>(obj).to_dynamic_metric();
-  if (nb::isinstance<PyWeightedMetric>(obj))
-    return nb::cast<const PyWeightedMetric&>(obj).to_dynamic_metric();
-  if (nb::isinstance<PyAffineCombinedMetric>(obj))
-    return nb::cast<const PyAffineCombinedMetric&>(obj).to_dynamic_metric();
-  if (nb::isinstance<PyClearanceMetric>(obj))
-    return nb::cast<const PyClearanceMetric&>(obj).to_dynamic_metric();
-  throw std::invalid_argument(
-      "Unknown metric type. Expected KineticEnergyMetric, JacobiMetric, "
-      "PullbackMetric, ConstantSPDMetric, WeightedMetric, AffineCombinedMetric, "
-      "or ClearanceMetric.");
+/// A composed metric calls its base metric object through a reference registered under the
+/// composed metric. The garbage collector sees this edge.
+DynamicMetric borrow_base_metric(nb::handle base, const void* owner) {
+  return borrow_dynamic_metric(std::make_shared<const PyOwnedRef>(base, owner));
 }
 
 }  // namespace
@@ -39,11 +31,18 @@ void bind_metrics(nb::module_& m) {
   // --- KineticEnergyMetric ---
   nb::class_<PyKineticEnergyMetric>(
       m, "KineticEnergyMetric",
-      "Kinetic energy metric g(q) = M(q).\n\n"
+      "Kinetic-energy metric g(q) = M(q).\n\n"
       "The inner product at q is <u, v>_q = u^T M(q) v where M(q) is a\n"
-      "symmetric positive-definite mass matrix returned by the callable.")
-      .def(nb::init<MassMatrixFn>(), nb::arg("mass_matrix_fn"),
-           "Create a kinetic energy metric.\n\n"
+      "symmetric positive-definite mass matrix returned by the callable.",
+      nb::type_slots(callable_owner_slots))
+      .def(
+          "__init__",
+          [](PyKineticEnergyMetric* self, nb::callable mass_matrix_fn) {
+            new (self)
+                PyKineticEnergyMetric(PyCallable<Eigen::MatrixXd>(std::move(mass_matrix_fn), self));
+          },
+          nb::arg("mass_matrix_fn"),
+           "Create a kinetic-energy metric.\n\n"
            "Args:\n"
            "    mass_matrix_fn: Callable(q) -> np.ndarray returning the SPD mass matrix.")
       .def("inner", &PyKineticEnergyMetric::inner, nb::arg("p"), nb::arg("u"), nb::arg("v"),
@@ -56,9 +55,17 @@ void bind_metrics(nb::module_& m) {
   nb::class_<PyJacobiMetric>(m, "JacobiMetric",
                              "Jacobi metric for minimum-time geodesics under a potential field.\n\n"
                              "The inner product at q is <u, v>_q = 2(H - P(q)) u^T M(q) v\n"
-                             "where H is the total energy and P(q) is the potential energy.")
-      .def(nb::init<MassMatrixFn, PotentialFn, double>(), nb::arg("mass_matrix_fn"),
-           nb::arg("potential_fn"), nb::arg("total_energy"),
+                             "where H is the total energy and P(q) is the potential energy.",
+                             nb::type_slots(callable_owner_slots))
+      .def(
+          "__init__",
+          [](PyJacobiMetric* self, nb::callable mass_matrix_fn, nb::callable potential_fn,
+             double total_energy) {
+            new (self) PyJacobiMetric(PyCallable<Eigen::MatrixXd>(std::move(mass_matrix_fn), self),
+                                      PyCallable<double>(std::move(potential_fn), self),
+                                      total_energy);
+          },
+          nb::arg("mass_matrix_fn"), nb::arg("potential_fn"), nb::arg("total_energy"),
            "Create a Jacobi metric.\n\n"
            "Args:\n"
            "    mass_matrix_fn: Callable(q) -> np.ndarray returning the SPD mass matrix.\n"
@@ -73,9 +80,17 @@ void bind_metrics(nb::module_& m) {
   nb::class_<PyPullbackMetric>(
       m, "PullbackMetric",
       "Pullback metric from task space to configuration space via the Jacobian.\n\n"
-      "The inner product at q is <u, v>_q = u^T J(q)^T G(q) J(q) v + lambda * u^T v.")
-      .def(nb::init<JacobianFn, TaskMetricFn, double>(), nb::arg("jacobian_fn"),
-           nb::arg("task_metric_fn"), nb::arg("regularization") = 0.0,
+      "The inner product at q is <u, v>_q = u^T J(q)^T G(q) J(q) v + lambda * u^T v.",
+      nb::type_slots(callable_owner_slots))
+      .def(
+          "__init__",
+          [](PyPullbackMetric* self, nb::callable jacobian_fn, nb::callable task_metric_fn,
+             double regularization) {
+            new (self) PyPullbackMetric(PyCallable<Eigen::MatrixXd>(std::move(jacobian_fn), self),
+                                        PyCallable<Eigen::MatrixXd>(std::move(task_metric_fn), self),
+                                        regularization);
+          },
+          nb::arg("jacobian_fn"), nb::arg("task_metric_fn"), nb::arg("regularization") = 0.0,
            "Create a pullback metric.\n\n"
            "Args:\n"
            "    jacobian_fn: Callable(q) -> np.ndarray returning the Jacobian matrix.\n"
@@ -101,14 +116,47 @@ void bind_metrics(nb::module_& m) {
            "Riemannian norm sqrt(v^T A v).")
       .def("__repr__", &PyConstantSPDMetric::repr);
 
+  // --- SE2LeftInvariantMetric ---
+  nb::class_<PySE2LeftInvariantMetric>(
+      m, "SE2LeftInvariantMetric",
+      "Left-invariant metric on SE(2) with the constant diagonal inner product\n"
+      "<u, v> = wx ux vx + wy uy vy + wtheta utheta vtheta on the (x, y, theta) tangent.\n\n"
+      "High wy suppresses lateral sliding (differential-drive or car-like behavior).\n"
+      "Pass it as the base metric of a ClearanceMetric for obstacle-aware SE(2) planning.")
+      .def(nb::init<double, double, double>(), nb::arg("wx") = 1.0, nb::arg("wy") = 1.0,
+           nb::arg("wtheta") = 1.0,
+           "Create a left-invariant metric with weights (wx, wy, wtheta).")
+      .def_static("car_like", &PySE2LeftInvariantMetric::car_like, nb::arg("turning_radius"),
+                  nb::arg("lateral_penalty") = 100.0,
+                  "Car-like weights with wtheta = turning_radius^2 and wy = lateral_penalty.\n"
+                  "The geodesic turning radius is about sqrt(wtheta / wx).")
+      .def_static("holonomic", &PySE2LeftInvariantMetric::holonomic, nb::arg("wtheta") = 1.0,
+                  "Metric of a holonomic base, weights (1, 1, wtheta).")
+      .def_static("differential_drive", &PySE2LeftInvariantMetric::differential_drive,
+                  nb::arg("lateral_weight") = 100.0, nb::arg("wtheta") = 1.0,
+                  "Metric of a differential-drive base, weights (1, lateral_weight, wtheta).\n"
+                  "A large lateral weight makes sideways motion expensive.")
+      .def("coordinate_lower_bound", &PySE2LeftInvariantMetric::coordinate_lower_bound,
+           "Constant matrix below the metric on (x, y, theta) velocities at every heading,\n"
+           "diag(min(wx, wy), min(wx, wy), wtheta). heuristics.MatrixLowerBound and\n"
+           "heuristics.product_lower_bound take it with SE2.periods().")
+      .def("inner", &PySE2LeftInvariantMetric::inner, nb::arg("p"), nb::arg("u"), nb::arg("v"),
+           "Left-invariant inner product.")
+      .def("norm", &PySE2LeftInvariantMetric::norm, nb::arg("p"), nb::arg("v"),
+           "Left-invariant norm.")
+      .def_prop_ro("weights", &PySE2LeftInvariantMetric::weights, nb::rv_policy::copy,
+                   "The diagonal weight vector (wx, wy, wtheta).")
+      .def("__repr__", &PySE2LeftInvariantMetric::repr);
+
   // --- WeightedMetric ---
   nb::class_<PyWeightedMetric>(m, "WeightedMetric",
                                "Uniformly scaled metric wrapper.\n\n"
-                               "The inner product is <u, v>_q = alpha * <u, v>^base_q.")
+                               "The inner product is <u, v>_q = alpha * <u, v>^base_q.",
+                               nb::type_slots(callable_owner_slots))
       .def(
           "__init__",
           [](PyWeightedMetric* self, nb::object base_metric, double alpha) {
-            new (self) PyWeightedMetric(extract_dynamic_metric(base_metric), alpha);
+            new (self) PyWeightedMetric(borrow_base_metric(base_metric, self), alpha);
           },
           nb::arg("base_metric"), nb::arg("alpha"),
           "Create a weighted metric.\n\n"
@@ -127,17 +175,15 @@ void bind_metrics(nb::module_& m) {
       "Positive linear combination of N Riemannian metric policies.\n\n"
       "Composes N metric policies g_1, ..., g_N with non-negative coefficients\n"
       "c_1, ..., c_N into the metric <u, v>_p = sum_k c_k <u, v>_p^{g_k}.\n"
-      "Useful for composite metrics like 'pullback + beta * kinetic-energy'.\n\n"
-      "Preconditions: at least one summand, all coefficients non-negative,\n"
-      "at least one coefficient > 0.")
+      "Use it for composite metrics such as 'pullback + beta * kinetic-energy'. It needs\n"
+      "at least one summand, non-negative coefficients and at least one positive one.",
+      nb::type_slots(callable_owner_slots))
       .def(
           "__init__",
           [](PyAffineCombinedMetric* self, nb::list metrics, std::vector<double> coeffs) {
             std::vector<DynamicMetric> bases;
             bases.reserve(nb::len(metrics));
-            for (auto handle : metrics) {
-              bases.push_back(extract_dynamic_metric(nb::borrow<nb::object>(handle)));
-            }
+            for (auto handle : metrics) bases.push_back(borrow_base_metric(handle, self));
             new (self) PyAffineCombinedMetric(std::move(bases), std::move(coeffs));
           },
           nb::arg("metrics"), nb::arg("coeffs"),
@@ -155,19 +201,27 @@ void bind_metrics(nb::module_& m) {
   nb::class_<PyClearanceMetric>(
       m, "ClearanceMetric",
       "SDF-based conformal metric that scales a base metric by obstacle proximity.\n\n"
-      "Inner product: <u,v>_q = (1 + kappa * exp(-beta * sdf(q))) * <u,v>^base_q.")
+      "The inner product is <u,v>_q = (1 + kappa * exp(-beta * sdf(q))) * <u,v>^base_q.",
+      nb::type_slots(callable_owner_slots))
       .def(
           "__init__",
-          [](PyClearanceMetric* self, nb::object base_metric, SDFFn sdf, double kappa,
+          [](PyClearanceMetric* self, nb::object base_metric, nb::callable sdf, double kappa,
              double beta) {
-            new (self)
-                PyClearanceMetric(extract_dynamic_metric(base_metric), std::move(sdf), kappa, beta);
+            std::optional<geodex::SE2LeftInvariantMetric> se2_base;
+            if (nb::isinstance<PySE2LeftInvariantMetric>(base_metric)) {
+              se2_base = nb::cast<const PySE2LeftInvariantMetric&>(base_metric).impl();
+            }
+            new (self) PyClearanceMetric(borrow_base_metric(base_metric, self),
+                                         SdfFunction(std::move(sdf), self), kappa, beta,
+                                         std::move(se2_base));
           },
           nb::arg("base_metric"), nb::arg("sdf"), nb::arg("kappa") = 5.0, nb::arg("beta") = 3.0,
           "Create an SDF-based conformal metric.\n\n"
           "Args:\n"
           "    base_metric: Any geodex metric to scale.\n"
-          "    sdf: Callable(q) -> float returning signed distance (positive = free).\n"
+          "    sdf: Callable(q) -> float returning signed distance (positive = free). A\n"
+          "        geodex.collision SDF, such as a FootprintGridChecker or a GridSDF, runs\n"
+          "        in C++ without calling into Python.\n"
           "    kappa: Strength of obstacle repulsion (default 5.0).\n"
           "    beta: Falloff rate (default 3.0).")
       .def("inner", &PyClearanceMetric::inner, nb::arg("p"), nb::arg("u"), nb::arg("v"),

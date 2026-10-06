@@ -96,6 +96,33 @@ class TestSE2Retractions:
         with pytest.raises(Exception):
             geodex.SE2(retraction="invalid")
 
+
+class TestSE2Frames:
+    """Test body- and world-frame (left- and right-invariant) metrics."""
+
+    def test_world_frame_repr(self):
+        assert "world" in repr(geodex.SE2(frame="world"))
+
+    def test_body_vs_world_differ(self):
+        # SE(2) has no bi-invariant metric, so the two frames disagree for a
+        # general pose pair.
+        p = np.array([1.0, 2.0, 0.0])
+        q = np.array([3.0, 4.0, 1.57])
+        db = geodex.SE2(frame="body").distance(p, q)
+        dw = geodex.SE2(frame="world").distance(p, q)
+        assert abs(db - dw) > 1e-3
+
+    def test_body_is_default(self):
+        p = np.array([1.0, 2.0, 0.3])
+        q = np.array([3.0, 4.0, 1.2])
+        default = geodex.SE2().distance(p, q)
+        body = geodex.SE2(frame="body").distance(p, q)
+        assert default == pytest.approx(body, abs=1e-12)
+
+    def test_invalid_frame_raises(self):
+        with pytest.raises(Exception):
+            geodex.SE2(frame="invalid")
+
     def test_euler_agrees_at_identity_orientation(self):
         # Euler retraction ignores group structure (no rotation of v),
         # so it only agrees with exp when theta=0
@@ -115,3 +142,51 @@ class TestSE2CustomBounds:
             p = se2.random_point()
             assert -5.0 <= p[0] <= 5.0
             assert -5.0 <= p[1] <= 5.0
+
+
+class TestSE2CoordinateMetricAndPeriods:
+    TWO_PI = 2.0 * np.pi
+
+    def test_periods_are_theta_only(self):
+        se2 = geodex.SE2()
+        np.testing.assert_allclose(se2.periods(), [0.0, 0.0, self.TWO_PI])
+
+    def test_coordinate_metric_matches_the_body_metric_at_zero(self):
+        se2 = geodex.SE2(wx=1.0, wy=20.0, wtheta=2.25)
+        G = se2.coordinate_metric(np.array([3.0, 4.0, 0.0]))
+        np.testing.assert_allclose(G, np.diag([1.0, 20.0, 2.25]), atol=1e-12)
+
+    def test_coordinate_metric_rotates_with_theta(self):
+        # At theta = pi/2 the coordinate frame has swapped, so the weights swap.
+        se2 = geodex.SE2(wx=1.0, wy=20.0, wtheta=2.25)
+        G = se2.coordinate_metric(np.array([0.0, 0.0, np.pi / 2.0]))
+        np.testing.assert_allclose(G, np.diag([20.0, 1.0, 2.25]), atol=1e-10)
+
+    def test_coordinate_metric_is_the_frame_pullback(self):
+        se2 = geodex.SE2(wx=1.0, wy=20.0, wtheta=2.25)
+        M = np.diag([1.0, 20.0, 2.25])
+        for theta in np.linspace(-np.pi, np.pi, 17):
+            c, s = np.cos(theta), np.sin(theta)
+            J = np.array([[c, s, 0.0], [-s, c, 0.0], [0.0, 0.0, 1.0]])
+            expected = J.T @ M @ J
+            G = se2.coordinate_metric(np.array([1.0, 2.0, theta]))
+            np.testing.assert_allclose(G, expected, atol=1e-12)
+
+    def test_matrix_lower_bound_meets_to_the_isotropic_block(self):
+        se2 = geodex.SE2.car_like(turning_radius=1.5, lateral_penalty=20.0)
+        h = se2.matrix_lower_bound()
+        np.testing.assert_allclose(h.matrix(), np.diag([1.0, 1.0, 2.25]), atol=1e-6)
+        np.testing.assert_allclose(h.periods, [0.0, 0.0, self.TWO_PI])
+
+    def test_derived_bound_never_exceeds_the_planner_distance(self):
+        se2 = geodex.SE2.car_like(turning_radius=1.5, lateral_penalty=20.0,
+                                  x_hi=30.0, y_hi=12.0)
+        h = se2.matrix_lower_bound()
+        rng = np.random.default_rng(31337)
+        for i in range(600):
+            at_cut = i % 4 == 0
+            ta = rng.uniform(np.pi - 0.4, np.pi) if at_cut else rng.uniform(-np.pi, np.pi)
+            tb = -rng.uniform(np.pi - 0.4, np.pi) if at_cut else rng.uniform(-np.pi, np.pi)
+            a = np.array([rng.uniform(0, 30), rng.uniform(0, 12), ta])
+            b = np.array([rng.uniform(0, 30), rng.uniform(0, 12), tb])
+            assert h(a, b) <= se2.distance(a, b) * (1.0 + 1e-9)

@@ -1,0 +1,10 @@
+# One box in the Panda workspace with full extents 0.2 x 0.3 x 0.4 m.
+world:
+  collision_objects:
+    - id: block
+      primitive_poses:
+        - position: [0.45, 0.0, 0.4]
+          orientation: [0.0, 0.0, 0.0, 1.0]
+      primitives:
+        - type: box
+          dimensions: [0.2, 0.3, 0.4]

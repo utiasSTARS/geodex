@@ -3,13 +3,13 @@
 ///
 /// The polygon perimeter is discretized into uniformly-spaced sample points at
 /// construction time, stored in SoA layout for SIMD-friendly access. At query
-/// time, a single sincos call rotates all samples to world frame — amortizing
-/// the expensive trig across the entire polygon.
+/// time, one sincos call rotates all samples of the polygon to the world frame.
 
 #pragma once
 
 #include <cmath>
 
+#include <algorithm>
 #include <vector>
 
 #include <Eigen/Core>
@@ -31,8 +31,8 @@ namespace geodex::collision {
 /// and translates all samples to world frame using a single sincos call and
 /// NEON vectorized rotation.
 ///
-/// @note Only convex polygons are supported. For non-convex shapes, interior
-/// sampling would be needed (future work).
+/// @note Supports convex polygons only. Non-convex shapes would need interior
+/// sampling.
 class PolygonFootprint {
  public:
   /// @brief Construct from polygon vertices with a specified number of samples per edge.
@@ -61,14 +61,25 @@ class PolygonFootprint {
       }
     }
 
-    // Bounding radius: max distance from origin across all samples.
-    // Track max(r²) then sqrt once — avoids n-1 unnecessary sqrt calls.
+    // Bounding radius, the largest distance from the origin over all samples.
+    // Track the largest r² and take one sqrt at the end.
     double max_r2 = 0.0;
     for (int i = 0; i < n_; ++i) {
       const double r2 = body_x_[i] * body_x_[i] + body_y_[i] * body_y_[i];
       max_r2 = std::max(max_r2, r2);
     }
     bounding_radius_ = std::sqrt(max_r2);
+
+    // Consecutive samples are one edge length over samples_per_edge apart, the
+    // last sample of an edge included, and the next edge starts at its end vertex.
+    // A 1-Lipschitz function falls by at most this much between two of them. An
+    // interpolated distance grid falls by up to its lipschitz_slack() more.
+    max_sample_gap_ = 0.0;
+    for (int e = 0; e < n_edges; ++e) {
+      const auto& v0 = vertices[e];
+      const auto& v1 = vertices[(e + 1) % n_edges];
+      max_sample_gap_ = std::max(max_sample_gap_, (v1 - v0).norm() / samples_per_edge);
+    }
   }
 
   /// @brief Convenience factory for a rectangular footprint.
@@ -100,6 +111,15 @@ class PolygonFootprint {
 
   /// @brief Bounding radius from origin (for early-out tests).
   double bounding_radius() const { return bounding_radius_; }
+
+  /// @brief Largest distance between two consecutive perimeter samples.
+  double max_sample_gap() const { return max_sample_gap_; }
+
+  /// @brief Body-frame x of sample `i`, for callers that read only a few samples.
+  double body_x(const int i) const { return body_x_[i]; }
+
+  /// @brief Body-frame y of sample `i`, see `body_x(int)`.
+  double body_y(const int i) const { return body_y_[i]; }
 
   /// @brief Transform body-frame samples to world frame at pose (x, y, theta).
   ///
@@ -167,6 +187,7 @@ class PolygonFootprint {
   int n_ = 0, n_padded_ = 0;
   int samples_per_edge_ = 0;
   double bounding_radius_ = 0.0;
+  double max_sample_gap_ = 0.0;
 };
 
 }  // namespace geodex::collision

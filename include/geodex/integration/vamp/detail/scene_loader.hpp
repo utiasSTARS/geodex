@@ -1,18 +1,18 @@
 /// @file scene_loader.hpp
-/// @brief Internal: header-only implementation of the scene-loader body.
+/// @brief Header-only implementation of the scene-loader body (internal).
 ///
-/// Pulls in VAMP collision types; included only by @c vamp_impl.cpp inside
-/// the @c geodex_vamp static archive (which has the matching SIMD compile
-/// options applied to that single source file). Consumer translation units
-/// reach this code via the public @c load_scene declaration in
-/// @c registry.hpp; they never include this header.
+/// Pulls in VAMP collision types. Only translation units inside the @c geodex_vamp
+/// static archive, which carries the matching SIMD compile options, include it.
+/// Consumer translation units reach this code through the public @c load_scene
+/// declaration in @c registry.hpp and do not include this header.
 
 #pragma once
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
-#include <iostream>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <utility>
 
@@ -43,51 +43,81 @@ inline auto compose_pose(const Eigen::Vector3d& obj_t,
   return {obj_R * local_t + obj_t, obj_R * local_q.toRotationMatrix()};
 }
 
+// Typed primitive builders shared by the YAML loader and the SceneBuilder. Each shape
+// takes its min_distance from VAMP's own constructor or compute_min_distance(), the
+// distance from the world origin to the nearest point of the shape, which orders
+// env.sort().
+inline void add_box_shape(::vamp::collision::Environment<float>& env,
+                          const Eigen::Vector3d& center,
+                          const Eigen::Vector3d& half_extents,
+                          const Eigen::Matrix3d& R) {
+  ::vamp::collision::Cuboid<float> cuboid(
+      center.x(), center.y(), center.z(),
+      R(0, 0), R(1, 0), R(2, 0),
+      R(0, 1), R(1, 1), R(2, 1),
+      R(0, 2), R(1, 2), R(2, 2),
+      half_extents.x(), half_extents.y(), half_extents.z());
+  cuboid.min_distance = cuboid.compute_min_distance();
+  env.cuboids.push_back(cuboid);
+}
+
+/// @brief Add a cylinder as the capsule on the same axis and radius.
+///
+/// VAMP's validity check reads `capsules` and `z_aligned_capsules` and does not read
+/// `cylinders`. The capsule contains the cylinder and extends @p radius beyond each
+/// flat cap, and the check stays conservative.
+inline void add_cylinder_shape(::vamp::collision::Environment<float>& env,
+                               const Eigen::Vector3d& center, double radius,
+                               double height, const Eigen::Matrix3d& R) {
+  const Eigen::Vector3d axis = R.col(2);
+  const Eigen::Vector3d p1 = center - axis * (height / 2.0);
+  const Eigen::Vector3d vec = axis * height;
+  ::vamp::collision::Capsule<float> capsule(
+      static_cast<float>(p1.x()), static_cast<float>(p1.y()), static_cast<float>(p1.z()),
+      static_cast<float>(vec.x()), static_cast<float>(vec.y()), static_cast<float>(vec.z()),
+      static_cast<float>(radius), static_cast<float>(1.0 / vec.squaredNorm()));
+  // Compute min_distance from the closest point on the axis segment. VAMP's
+  // compute_min_distance divides by the origin's distance to the axis and gives NaN when
+  // the axis passes through the origin. The check then skips the whole list on some
+  // platforms.
+  const double s = std::clamp(-p1.dot(vec) / vec.squaredNorm(), 0.0, 1.0);
+  capsule.min_distance = static_cast<float>(std::max(0.0, (p1 + s * vec).norm() - radius));
+  if (capsule.xv == 0.0F && capsule.yv == 0.0F) {
+    env.z_aligned_capsules.push_back(capsule);
+  } else {
+    env.capsules.push_back(capsule);
+  }
+}
+
+inline void add_sphere_shape(::vamp::collision::Environment<float>& env,
+                             const Eigen::Vector3d& center, double radius) {
+  env.spheres.emplace_back(static_cast<float>(center.x()), static_cast<float>(center.y()),
+                           static_cast<float>(center.z()), static_cast<float>(radius));
+}
+
 inline void add_primitive(::vamp::collision::Environment<float>& env,
                           const std::string& type, const YAML::Node& dims,
-                          const Eigen::Vector3d& t, const Eigen::Matrix3d& R,
-                          int& count) {
+                          const Eigen::Vector3d& t, const Eigen::Matrix3d& R) {
   if (type == "box") {
     const double hx = dims[0].as<double>() / 2.0;
     const double hy = dims[1].as<double>() / 2.0;
     const double hz = dims[2].as<double>() / 2.0;
-    ::vamp::collision::Cuboid<float> cuboid(
-        t.x(), t.y(), t.z(),
-        R(0, 0), R(1, 0), R(2, 0),
-        R(0, 1), R(1, 1), R(2, 1),
-        R(0, 2), R(1, 2), R(2, 2),
-        hx, hy, hz);
-    cuboid.min_distance = cuboid.compute_min_distance();
-    env.cuboids.push_back(cuboid);
-    ++count;
+    add_box_shape(env, t, Eigen::Vector3d(hx, hy, hz), R);
   } else if (type == "cylinder") {
     const double height = dims[0].as<double>();
     const double radius = dims[1].as<double>();
-    const Eigen::Vector3d axis = R.col(2);
-    const Eigen::Vector3d p1 = t - axis * (height / 2.0);
-    const Eigen::Vector3d vec = axis * height;
-    ::vamp::collision::Cylinder<float> cyl;
-    cyl.x1 = p1.x(); cyl.y1 = p1.y(); cyl.z1 = p1.z();
-    cyl.xv = vec.x(); cyl.yv = vec.y(); cyl.zv = vec.z();
-    cyl.r = radius;
-    cyl.rdv = 1.0 / vec.squaredNorm();
-    cyl.min_distance = std::sqrt(t.x() * t.x() + t.y() * t.y() + t.z() * t.z());
-    env.cylinders.push_back(cyl);
-    ++count;
+    add_cylinder_shape(env, t, radius, height, R);
   } else if (type == "sphere") {
     const double radius = dims[0].as<double>();
-    ::vamp::collision::Sphere<float> sph;
-    sph.x = t.x(); sph.y = t.y(); sph.z = t.z();
-    sph.r = radius;
-    sph.min_distance = std::sqrt(t.x() * t.x() + t.y() * t.y() + t.z() * t.z());
-    env.spheres.push_back(sph);
-    ++count;
+    add_sphere_shape(env, t, radius);
+  } else {
+    throw std::invalid_argument("load_scene: unsupported primitive type '" + type +
+                                "'; the scene takes box, cylinder and sphere");
   }
 }
 
 inline void add_mesh_aabb(::vamp::collision::Environment<float>& env,
-                          const YAML::Node& mesh, const YAML::Node& pose,
-                          int& count) {
+                          const YAML::Node& mesh, const YAML::Node& pose) {
   const auto& vertices = mesh["vertices"];
   const auto& pos = pose["position"];
   const auto& ori = pose["orientation"];
@@ -114,7 +144,6 @@ inline void add_mesh_aabb(::vamp::collision::Environment<float>& env,
       half.x(), half.y(), half.z());
   cuboid.min_distance = cuboid.compute_min_distance();
   env.cuboids.push_back(cuboid);
-  ++count;
 }
 
 inline auto load_scene_impl(const std::string& yaml_path) -> EnvHandle {
@@ -126,7 +155,6 @@ inline auto load_scene_impl(const std::string& yaml_path) -> EnvHandle {
     return EnvHandle{std::static_pointer_cast<void>(p)};
   }
 
-  int count = 0;
   for (const auto& obj : config["world"]["collision_objects"]) {
     Eigen::Vector3d obj_t = Eigen::Vector3d::Zero();
     Eigen::Matrix3d obj_R = Eigen::Matrix3d::Identity();
@@ -148,7 +176,7 @@ inline auto load_scene_impl(const std::string& yaml_path) -> EnvHandle {
         const auto& prim = primitives[i];
         const std::string type = prim["type"].as<std::string>();
         const auto [t, R] = compose_pose(obj_t, obj_R, poses[i]);
-        add_primitive(env, type, prim["dimensions"], t, R, count);
+        add_primitive(env, type, prim["dimensions"], t, R);
       }
     }
 
@@ -156,16 +184,12 @@ inline auto load_scene_impl(const std::string& yaml_path) -> EnvHandle {
       const auto& meshes = obj["meshes"];
       const auto& poses = obj["mesh_poses"];
       for (std::size_t i = 0; i < meshes.size(); ++i) {
-        add_mesh_aabb(env, meshes[i], poses[i], count);
+        add_mesh_aabb(env, meshes[i], poses[i]);
       }
     }
   }
 
   env.sort();
-  std::cerr << "geodex::integration::vamp: loaded " << count << " obstacles ("
-            << env.spheres.size() << " spheres, "
-            << env.cuboids.size() << " cuboids, "
-            << env.cylinders.size() << " cylinders)\n";
 
   auto p = std::make_shared<VampEnvT>(env);
   return EnvHandle{std::static_pointer_cast<void>(p)};

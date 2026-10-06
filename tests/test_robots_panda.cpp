@@ -1,9 +1,9 @@
 /// @file tests/test_robots_panda.cpp
-/// @brief Parity, SPD, symmetry, and energy cross-checks for the precompiled
-///        Panda CRBA against `pinocchio::crba` (the oracle).
+/// @brief Checks the precompiled Panda CRBA against `pinocchio::crba` for parity, SPD,
+///        symmetry and energy.
 ///
-/// Compiled when GEODEX_PINOCCHIO=ON (Pinocchio is needed only for the
-/// parity oracle; the geodex_robots target itself is always built).
+/// The test builds when GEODEX_PINOCCHIO=ON. Only the `pinocchio::crba` oracle needs
+/// Pinocchio.
 
 #include <random>
 #include <stdexcept>
@@ -25,15 +25,12 @@
 
 namespace {
 
-constexpr const char* kFixturesDir = GEODEX_TEST_FIXTURES_DIR;
-
 std::string panda_urdf() { return GEODEX_PANDA_URDF; }
 
 std::string pr2_urdf() { return GEODEX_PR2_URDF; }
 
 using PandaMM = geodex::robots::MassMatrix<geodex::robots::Robot::Panda>;
 using Ur5MM = geodex::robots::MassMatrix<geodex::robots::Robot::Ur5>;
-using FetchMM = geodex::robots::MassMatrix<geodex::robots::Robot::Fetch>;
 using BaxterMM = geodex::robots::MassMatrix<geodex::robots::Robot::Baxter>;
 using Pr2MM = geodex::robots::MassMatrix<geodex::robots::Robot::Pr2>;
 using PandaVec = PandaMM::Vec;  // Eigen::Matrix<double, 7, 1>
@@ -81,15 +78,18 @@ class PandaRobotsFixture : public ::testing::Test {
 TEST_F(PandaRobotsFixture, RegisteredAndConstants) {
   using geodex::robots::Robot;
   const auto names = geodex::robots::registered_robots();
-  ASSERT_EQ(names.size(), 5u);
-  EXPECT_EQ(names[0], Robot::Panda);
-  EXPECT_EQ(names[1], Robot::Ur5);
-  EXPECT_EQ(names[2], Robot::Fetch);
-  EXPECT_EQ(names[3], Robot::Baxter);
+  ASSERT_EQ(names.size(), 9u);
+  EXPECT_EQ(names[0], Robot::Baxter);
+  EXPECT_EQ(names[1], Robot::Fr3Gripper);
+  EXPECT_EQ(names[2], Robot::HuskyUr5e);
+  EXPECT_EQ(names[3], Robot::Panda);
   EXPECT_EQ(names[4], Robot::Pr2);
+  EXPECT_EQ(names[5], Robot::RidgebackUr5e);
+  EXPECT_EQ(names[6], Robot::Stretch3);
+  EXPECT_EQ(names[7], Robot::Stretch4);
+  EXPECT_EQ(names[8], Robot::Ur5);
   static_assert(PandaMM::nq() == 7);
   static_assert(Ur5MM::nq() == 6);
-  static_assert(FetchMM::nq() == 8);
   static_assert(BaxterMM::nq() == 14);
   static_assert(Pr2MM::nq() == 14);
 
@@ -98,33 +98,24 @@ TEST_F(PandaRobotsFixture, RegisteredAndConstants) {
   static_assert(decltype(hi)::SizeAtCompileTime == 7);
   expect_joint_limits_valid<PandaMM>("panda");
   expect_joint_limits_valid<Ur5MM>("ur5");
-  expect_joint_limits_valid<FetchMM>("fetch");
   expect_joint_limits_valid<BaxterMM>("baxter");
   expect_joint_limits_valid<Pr2MM>("pr2");
   EXPECT_NEAR(lo[0], -2.8973, 1e-6);
   EXPECT_NEAR(hi[0], 2.8973, 1e-6);
 }
 
-// Note: the previous `UnknownRobotThrows` test is gone — invalid `Robot`
-// values are now a compile-time error (no `RobotTraits<R>` specialization),
-// which is strictly better than the old runtime throw.
-
 TEST_F(PandaRobotsFixture, ParityVsPinocchioCRBA_Random) {
   const auto [lo, hi] = PandaMM::joint_limits();
   std::mt19937 rng(2024);
 
-  double max_abs_err = 0.0;
   constexpr int kTrials = 1000;
   for (int t = 0; t < kTrials; ++t) {
     const PandaVec q = uniform_in_limits(rng, lo, hi);
-    const Eigen::MatrixXd M_cg = mm_(q);
+    const Eigen::MatrixXd M_robots = mm_(q);
     const Eigen::MatrixXd M_pin = pin_crba(q);
-    const double err = (M_cg - M_pin).cwiseAbs().maxCoeff();
-    max_abs_err = std::max(max_abs_err, err);
+    const double err = (M_robots - M_pin).cwiseAbs().maxCoeff();
     ASSERT_LT(err, 1e-12) << "trial " << t << " q=" << q.transpose();
   }
-  std::cout << "Max |M_robots - M_pin| over " << kTrials << " random q: " << max_abs_err
-            << std::endl;
 }
 
 TEST_F(PandaRobotsFixture, ParityVsPinocchioCRBA_Boundary) {
@@ -137,9 +128,9 @@ TEST_F(PandaRobotsFixture, ParityVsPinocchioCRBA_Boundary) {
       {"mid", 0.5 * (lo + hi)},
   };
   for (const auto& [name, q] : cases) {
-    const Eigen::MatrixXd M_cg = mm_(q);
+    const Eigen::MatrixXd M_robots = mm_(q);
     const Eigen::MatrixXd M_pin = pin_crba(q);
-    const double err = (M_cg - M_pin).cwiseAbs().maxCoeff();
+    const double err = (M_robots - M_pin).cwiseAbs().maxCoeff();
     EXPECT_LT(err, 1e-12) << "boundary case: " << name;
   }
 }
@@ -198,9 +189,8 @@ TEST_F(PandaRobotsFixture, Determinism) {
 TEST_F(PandaRobotsFixture, ConcurrencySmoke_OneInstancePerThread) {
   const auto [lo, hi] = PandaMM::joint_limits();
 
-  // Each thread owns its own MassMatrix instance (per the not-thread-safe
-  // contract). Check that two threads can run simultaneously without crashing
-  // or producing wrong results.
+  // Two threads, each with its own MassMatrix, run at once and return correct results.
+  // MassMatrix is not thread-safe.
   auto worker = [&](int seed, std::vector<Eigen::MatrixXd>& out) {
     PandaMM mm{};
     std::mt19937 rng(seed);
@@ -241,17 +231,14 @@ TEST(Pr2Robots, ParityVsPinocchioCRBA_Random) {
   const auto [lo, hi] = Pr2MM::joint_limits();
   std::mt19937 rng(2025);
 
-  double max_abs_err = 0.0;
   constexpr int kTrials = 200;
   for (int t = 0; t < kTrials; ++t) {
     const Pr2Vec q = uniform_in_limits(rng, lo, hi);
-    const Eigen::MatrixXd M_cg = mm(q);
+    const Eigen::MatrixXd M_robots = mm(q);
     const Eigen::MatrixXd M_pin = pin_crba(q);
-    const double err = (M_cg - M_pin).cwiseAbs().maxCoeff();
-    max_abs_err = std::max(max_abs_err, err);
+    const double err = (M_robots - M_pin).cwiseAbs().maxCoeff();
     ASSERT_LT(err, 1e-12) << "trial " << t << " q=" << q.transpose();
   }
-  std::cout << "Max |M_pr2 - M_pin| over " << kTrials << " random q: " << max_abs_err << std::endl;
 }
 
 TEST(Pr2Robots, SymmetricAndSPD) {
