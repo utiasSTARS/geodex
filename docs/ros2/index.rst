@@ -162,8 +162,8 @@ commands from the plugin's clone, for example under ``~/ros2_ws/src``.
 
       .. literalinclude:: sources/geodex_moveit/README.md
          :language: bash
-         :start-at: bash scripts/build_geodex.sh
-         :end-at: bash scripts/build_geodex.sh
+         :start-at: bash scripts/build_deps.sh
+         :end-at: bash scripts/build_deps.sh
          :dedent: 3
 
       .. literalinclude:: sources/geodex_moveit/README.md

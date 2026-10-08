@@ -113,6 +113,17 @@ joints instead.
 
    The same move under the Euclidean metric.
 
+On a real FR3, the joints at the base stay almost still under the kinetic-energy metric, and
+they swing the arm under the Euclidean metric.
+
+.. video-figure:: real-fr3-shelf-metrics
+   :alt: Two recordings of a real FR3 arm moving a cracker box from the middle compartment of a
+         white shelf to the top compartment. On the left, the lower arm stays in place and the
+         wrist turns the box. On the right, the whole arm swings from its base.
+
+   The move on a real FR3 under the kinetic-energy metric (left) and the Euclidean metric
+   (right).
+
 Switch the metric per robot
 ---------------------------
 

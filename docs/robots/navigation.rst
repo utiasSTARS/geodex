@@ -45,10 +45,29 @@ lies in a gap between two desks.
 
 .. code-pair:: robots/navigation/bases plan
 
-It prints ``solved=True cost=23.457 waypoints=1972``. On a laptop CPU (Intel Core i7-10875H), the
-planner finds a first path in 1.0 ms, after 145 iterations. The 1000 iterations take 30 ms, and
-smoothing takes 16 ms. ``result.first_solution_ms``, ``result.time_ms`` and
-``result.smooth_ms`` hold these times.
+It prints ``solved=True cost=23.457 waypoints=1972``.
+
+.. grid:: 3
+   :gutter: 2
+
+   .. grid-item-card:: 46 ms
+      :class-card: geodex-stat
+
+      planning time
+
+   .. grid-item-card:: 1.0 ms
+      :class-card: geodex-stat
+
+      first solution
+
+   .. grid-item-card:: 1000
+      :class-card: geodex-stat
+
+      iterations
+
+The times are from a laptop CPU (Intel Core i7-10875H). The planner finds the first path after
+145 iterations. The 1000 iterations take 30 ms, and smoothing takes 16 ms.
+``result.first_solution_ms``, ``result.time_ms`` and ``result.smooth_ms`` hold these times.
 
 In the figure at the top, the Jackal drives along the lower aisle and turns up between the two
 middle desks into the upper aisle. It follows the upper aisle and turns down into the goal.

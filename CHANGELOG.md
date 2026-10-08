@@ -8,8 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- The MoveIt 2 page shows the shelf move on a real FR3 under the kinetic-energy metric and under the Euclidean metric, side by side.
+- The README and the documentation cite the geodex paper with its arXiv identifier.
 
 ### Changed
+- The robot guides show the planning time, the time to the first solution and the iteration budget of each plan in tiles.
+- The FR3 recording on the landing page and in the README shows the move from the middle compartment of the shelf to the top compartment, the move of the MoveIt 2 demo.
 
 ### Fixed
 
