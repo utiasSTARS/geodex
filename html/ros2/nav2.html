@@ -1,0 +1,1292 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Nav2 Global Planner &#8212; geodex</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=28229f57" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme.css?v=26c09b9b" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../_static/documentation_options.js?v=8d563738"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=b8b12719"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>window.MathJax = {"loader": {"paths": {"mathjax-termes": "[mathjax]/fonts/termes"}}, "chtml": {"font": "mathjax-termes"}, "options": {"enableSpeech": false, "enableBraille": false, "enableEnrichment": false, "enableExplorer": false, "menuOptions": {"settings": {"speech": false, "braille": false, "enrich": false}}}}</script>
+    <script defer="defer" src="../_static/mathjax/tex-mml-chtml.js?v=4a2f07e4"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'ros2/nav2';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <script src="../_static/mermaid-intrinsic-size.js?v=f42d09f7"></script>
+    <script src="../_static/geodex.js?v=d44686ee"></script>
+    <link rel="icon" href="../_static/favicon.svg"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="MoveIt 2 Planner" href="moveit.html" />
+    <link rel="prev" title="ROS 2" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="1.0.0" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/logo-light.svg" class="logo__image only-light" alt=""/>
+    <img src="../_static/logo-dark.svg" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">geodex</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting-started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../concepts/index.html">
+    Core Concepts
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../robots/index.html">
+    Robot Guides
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    ROS 2
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/utiasSTARS/geodex" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pygeodex/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting-started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../concepts/index.html">
+    Core Concepts
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../robots/index.html">
+    Robot Guides
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    ROS 2
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/utiasSTARS/geodex" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pygeodex/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Nav2 Global Planner</a></li>
+<li class="toctree-l1"><a class="reference internal" href="moveit.html">MoveIt 2 Planner</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">ROS 2</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Nav2 Global Planner</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="nav2-global-planner">
+<h1>Nav2 Global Planner<a class="headerlink" href="#nav2-global-planner" title="Link to this heading">#</a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">geodex_nav2_planner</span></code> is a global planner plugin for <a class="reference external" href="https://docs.nav2.org">Nav2</a>. It plans
+a path on <span class="math notranslate nohighlight">\(\mathrm{SE}(2)\)</span> for the robot’s footprint, under a metric that weights forward,
+sideways and turning motion. In this guide, we plan a path for a Clearpath Jackal between the
+desks of an office, and plan again for a holonomic base.</p>
+<figure class="align-default" id="id1">
+<a class="reference internal image-reference" href="../_images/rviz_jackal.png"><img alt="RViz in top-down view of an office map with purple lethal costmap cells around rows of desks, a blue path from the lower left that climbs the aisle left of the desks, runs along the upper aisle and turns down into a gap between two desks on the right, and green footprint rectangles along the path." src="../_images/rviz_jackal.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">The plan for a Jackal on the office map, with its footprint along the path.</span><a class="headerlink" href="#id1" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<section id="build-the-plugin">
+<h2>1. Build the plugin<a class="headerlink" href="#build-the-plugin" title="Link to this heading">#</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/utiasSTARS/geodex_nav2_planner.git
+<span class="nb">cd</span><span class="w"> </span>geodex_nav2_planner
+pixi<span class="w"> </span>run<span class="w"> </span>-e<span class="w"> </span>jazzy<span class="w"> </span>build
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="index.html"><span class="doc">ROS 2</span></a> for the build in a colcon workspace.</p>
+</section>
+<section id="launch-the-demo">
+<h2>2. Launch the demo<a class="headerlink" href="#launch-the-demo" title="Link to this heading">#</a></h2>
+<p>The launch starts a map server with the office map, a planner server with the plugin and the
+Jackal’s parameters, and RViz.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pixi<span class="w"> </span>shell<span class="w"> </span>-e<span class="w"> </span>jazzy
+<span class="nb">source</span><span class="w"> </span>install/jazzy/setup.bash
+ros2<span class="w"> </span>launch<span class="w"> </span>geodex_nav2_planner<span class="w"> </span>office.launch.py<span class="w"> </span>robot:<span class="o">=</span>jackal<span class="w"> </span>rviz:<span class="o">=</span><span class="nb">true</span>
+</pre></div>
+</div>
+</section>
+<section id="request-a-path">
+<h2>3. Request a path<a class="headerlink" href="#request-a-path" title="Link to this heading">#</a></h2>
+<p>In a second shell of the same environment, send the request.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>run<span class="w"> </span>geodex_nav2_planner<span class="w"> </span>office_plan.py
+</pre></div>
+</div>
+<p>It prints the result, and RViz shows the path of the figure at the top.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>error_code=0 poses=6615 length=14.421 m planning_time=34 ms
+</pre></div>
+</div>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-3 sd-row-cols-xs-3 sd-row-cols-sm-3 sd-row-cols-md-3 sd-row-cols-lg-3 sd-g-2 sd-g-xs-2 sd-g-sm-2 sd-g-md-2 sd-g-lg-2 docutils">
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm geodex-stat docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+34 ms</div>
+<p class="sd-card-text">planning time</p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm geodex-stat docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+1000</div>
+<p class="sd-card-text">iterations</p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm geodex-stat docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+14.42 m</div>
+<p class="sd-card-text">path length</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p>The time is from an Intel Core i7-10875H. The demo sets a seed, the iteration budget and the
+planner’s range. Request the path again and you get the same poses.</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">config/office.yaml</span><a class="headerlink" href="#id2" title="Link to this code">#</a></div>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">planner_server</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">ros__parameters</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">GridBased</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">seed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">      </span><span class="nt">refine_iterations</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1000</span>
+<span class="w">      </span><span class="nt">range</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10.5</span>
+<span class="w">      </span><span class="nt">solve_time</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60.0</span>
+<span class="w">      </span><span class="nt">refine_time</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60.0</span>
+<span class="w">      </span><span class="nt">publish_footprints</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">      </span><span class="nt">marker_spacing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.8</span>
+<span class="w">      </span><span class="nt">marker_z</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.02</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="try-it-plan-for-a-dingo-o">
+<h2>4. Try it: plan for a Dingo-O<a class="headerlink" href="#try-it-plan-for-a-dingo-o" title="Link to this heading">#</a></h2>
+<p>Stop the launch, start it again with <code class="docutils literal notranslate"><span class="pre">robot:=dingo_o</span></code>, and request the path again.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>launch<span class="w"> </span>geodex_nav2_planner<span class="w"> </span>office.launch.py<span class="w"> </span>robot:<span class="o">=</span>dingo_o<span class="w"> </span>rviz:<span class="o">=</span><span class="nb">true</span>
+ros2<span class="w"> </span>run<span class="w"> </span>geodex_nav2_planner<span class="w"> </span>office_plan.py
+</pre></div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>error_code=0 poses=898 length=14.573 m planning_time=28 ms
+</pre></div>
+</div>
+<p>Only the robot file changes. The Dingo-O’s file sets equal forward and sideways weights, and its
+footprint slides sideways up the aisle where the Jackal turns and drives forward.</p>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-3 sd-row-cols-xs-3 sd-row-cols-sm-3 sd-row-cols-md-3 sd-row-cols-lg-3 sd-g-2 sd-g-xs-2 sd-g-sm-2 sd-g-md-2 sd-g-lg-2 docutils">
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm geodex-stat docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+28 ms</div>
+<p class="sd-card-text">planning time</p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm geodex-stat docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+1000</div>
+<p class="sd-card-text">iterations</p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm geodex-stat docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+14.57 m</div>
+<p class="sd-card-text">path length</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<figure class="align-default" id="id3">
+<a class="reference internal image-reference" href="../_images/rviz_dingo_o.png"><img alt="RViz in top-down view of the same office map with a blue path for a wider footprint whose green rectangles face right while the path climbs the aisle left of the desks." src="../_images/rviz_dingo_o.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">The same request for a Dingo-O. Its footprint slides sideways up the aisle.</span><a class="headerlink" href="#id3" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="switch-the-metric-per-robot">
+<h2>Switch the metric per robot<a class="headerlink" href="#switch-the-metric-per-robot" title="Link to this heading">#</a></h2>
+<p>The metric weights <code class="docutils literal notranslate"><span class="pre">wx</span></code>, <code class="docutils literal notranslate"><span class="pre">wy</span></code> and <code class="docutils literal notranslate"><span class="pre">wtheta</span></code> weigh forward, sideways and turning motion.
+Use a large sideways weight, 50 by default, for a differential-drive or skid-steer base, and
+equal forward and sideways weights for a holonomic base. For a holonomic base, also set
+<code class="docutils literal notranslate"><span class="pre">max_reverse_run:</span> <span class="pre">-1.0</span></code>. The plugin’s <code class="docutils literal notranslate"><span class="pre">config/robots</span></code> has a file for each of four Clearpath
+bases.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 16.0%" />
+<col style="width: 30.0%" />
+<col style="width: 8.0%" />
+<col style="width: 8.0%" />
+<col style="width: 10.0%" />
+<col style="width: 12.0%" />
+<col style="width: 16.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>File</p></th>
+<th class="head"><p>Base</p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">wx</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">wy</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">wtheta</span></code></p></th>
+<th class="head"><p>Direction stage</p></th>
+<th class="head"><p>Footprint (m)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">jackal.yaml</span></code></p></td>
+<td><p>Skid-steer base driven as a differential drive</p></td>
+<td><p>1.0</p></td>
+<td><p>50.0</p></td>
+<td><p>2.0</p></td>
+<td><p>on</p></td>
+<td><p>0.508 x 0.430</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">husky.yaml</span></code></p></td>
+<td><p>Skid-steer base driven as a differential drive</p></td>
+<td><p>1.0</p></td>
+<td><p>50.0</p></td>
+<td><p>4.0</p></td>
+<td><p>on</p></td>
+<td><p>0.990 x 0.698</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ridgeback.yaml</span></code></p></td>
+<td><p>Holonomic base on mecanum wheels</p></td>
+<td><p>1.0</p></td>
+<td><p>1.0</p></td>
+<td><p>2.0</p></td>
+<td><p>off</p></td>
+<td><p>0.960 x 0.793</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dingo_o.yaml</span></code></p></td>
+<td><p>Holonomic base on mecanum wheels</p></td>
+<td><p>1.0</p></td>
+<td><p>1.0</p></td>
+<td><p>2.0</p></td>
+<td><p>off</p></td>
+<td><p>0.686 x 0.517</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-0">
+Jackal, skid steer</label><div class="sd-tab-content docutils">
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">planner_server</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">ros__parameters</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">planner_plugins</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"GridBased"</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">GridBased</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="s">"geodex_nav2_planner::GeodexSE2Planner"</span>
+<span class="w">      </span><span class="nt">wx</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
+<span class="w">      </span><span class="nt">wy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">50.0</span>
+<span class="w">      </span><span class="nt">wtheta</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2.0</span>
+<span class="w">      </span><span class="nt">max_reverse_run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.2</span>
+<span class="w">      </span><span class="nt">forward_repair</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
+<span class="nt">global_costmap</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">global_costmap</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">ros__parameters</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">footprint</span><span class="p">:</span><span class="w"> </span><span class="s">"[[0.254,</span><span class="nv"> </span><span class="s">0.215],</span><span class="nv"> </span><span class="s">[0.254,</span><span class="nv"> </span><span class="s">-0.215],</span><span class="nv"> </span><span class="s">[-0.254,</span><span class="nv"> </span><span class="s">-0.215],</span><span class="nv"> </span><span class="s">[-0.254,</span><span class="nv"> </span><span class="s">0.215]]"</span>
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-1">
+Ridgeback, mecanum</label><div class="sd-tab-content docutils">
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">planner_server</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">ros__parameters</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">planner_plugins</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"GridBased"</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">GridBased</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="s">"geodex_nav2_planner::GeodexSE2Planner"</span>
+<span class="w">      </span><span class="nt">wx</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
+<span class="w">      </span><span class="nt">wy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
+<span class="w">      </span><span class="nt">wtheta</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2.0</span>
+<span class="w">      </span><span class="nt">max_reverse_run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-1.0</span>
+<span class="w">      </span><span class="nt">forward_repair</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+
+<span class="nt">global_costmap</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">global_costmap</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">ros__parameters</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">footprint</span><span class="p">:</span><span class="w"> </span><span class="s">"[[0.480,</span><span class="nv"> </span><span class="s">0.3965],</span><span class="nv"> </span><span class="s">[0.480,</span><span class="nv"> </span><span class="s">-0.3965],</span><span class="nv"> </span><span class="s">[-0.480,</span><span class="nv"> </span><span class="s">-0.3965],</span><span class="nv"> </span><span class="s">[-0.480,</span><span class="nv"> </span><span class="s">0.3965]]"</span>
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-2" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-2">
+Husky, skid steer</label><div class="sd-tab-content docutils">
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">planner_server</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">ros__parameters</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">planner_plugins</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"GridBased"</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">GridBased</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="s">"geodex_nav2_planner::GeodexSE2Planner"</span>
+<span class="w">      </span><span class="nt">wx</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
+<span class="w">      </span><span class="nt">wy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">50.0</span>
+<span class="w">      </span><span class="nt">wtheta</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4.0</span>
+<span class="w">      </span><span class="nt">max_reverse_run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.2</span>
+<span class="w">      </span><span class="nt">forward_repair</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
+<span class="nt">global_costmap</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">global_costmap</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">ros__parameters</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">footprint</span><span class="p">:</span><span class="w"> </span><span class="s">"[[0.495,</span><span class="nv"> </span><span class="s">0.349],</span><span class="nv"> </span><span class="s">[0.495,</span><span class="nv"> </span><span class="s">-0.349],</span><span class="nv"> </span><span class="s">[-0.495,</span><span class="nv"> </span><span class="s">-0.349],</span><span class="nv"> </span><span class="s">[-0.495,</span><span class="nv"> </span><span class="s">0.349]]"</span>
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-3" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-3">
+Dingo-O, mecanum</label><div class="sd-tab-content docutils">
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">planner_server</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">ros__parameters</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">planner_plugins</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"GridBased"</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">GridBased</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">plugin</span><span class="p">:</span><span class="w"> </span><span class="s">"geodex_nav2_planner::GeodexSE2Planner"</span>
+<span class="w">      </span><span class="nt">wx</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
+<span class="w">      </span><span class="nt">wy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
+<span class="w">      </span><span class="nt">wtheta</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2.0</span>
+<span class="w">      </span><span class="nt">max_reverse_run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-1.0</span>
+<span class="w">      </span><span class="nt">forward_repair</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+
+<span class="nt">global_costmap</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">global_costmap</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">ros__parameters</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">footprint</span><span class="p">:</span><span class="w"> </span><span class="s">"[[0.3432,</span><span class="nv"> </span><span class="s">0.2586],</span><span class="nv"> </span><span class="s">[0.3432,</span><span class="nv"> </span><span class="s">-0.2586],</span><span class="nv"> </span><span class="s">[-0.3432,</span><span class="nv"> </span><span class="s">-0.2586],</span><span class="nv"> </span><span class="s">[-0.3432,</span><span class="nv"> </span><span class="s">0.2586]]"</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>The planner checks the footprint against the lethal cells of the global costmap. The costmap
+does not need an inflation layer.</p>
+</section>
+<section id="visualization">
+<h2>Visualization<a class="headerlink" href="#visualization" title="Link to this heading">#</a></h2>
+<p>With <code class="docutils literal notranslate"><span class="pre">publish_footprints:</span> <span class="pre">true</span></code>, the plugin publishes the footprint outline and an orientation
+frame at poses along the path, as a <code class="docutils literal notranslate"><span class="pre">visualization_msgs/MarkerArray</span></code> on
+<code class="docutils literal notranslate"><span class="pre">/planner_server/&lt;plugin</span> <span class="pre">name&gt;/path_footprints</span></code>. <code class="docutils literal notranslate"><span class="pre">marker_spacing</span></code> sets the distance between
+the markers.</p>
+</section>
+<section id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="geodex-param-table docutils table" id="id4">
+<caption><span class="caption-text">Metric</span><a class="headerlink" href="#id4" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 31.0%" />
+<col style="width: 9.0%" />
+<col style="width: 11.0%" />
+<col style="width: 16.0%" />
+<col style="width: 33.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Range</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">wx</span></code></p></td>
+<td><p>double</p></td>
+<td><p>1.0</p></td>
+<td><p>0.01 to 100.0</p></td>
+<td><p>Metric weight on forward motion in the body frame.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">wy</span></code></p></td>
+<td><p>double</p></td>
+<td><p>50.0</p></td>
+<td><p>0.01 to 1000.0</p></td>
+<td><p>Metric weight on sideways motion in the body frame, large for a differential drive and near wx for a holonomic base.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">wtheta</span></code></p></td>
+<td><p>double</p></td>
+<td><p>2.0</p></td>
+<td><p>0.001 to 100.0</p></td>
+<td><p>Metric weight on rotation.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="pst-scrollable-table-container"><table class="geodex-param-table docutils table" id="id5">
+<caption><span class="caption-text">Search</span><a class="headerlink" href="#id5" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 31.0%" />
+<col style="width: 9.0%" />
+<col style="width: 11.0%" />
+<col style="width: 16.0%" />
+<col style="width: 33.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Range</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">solve_time</span></code></p></td>
+<td><p>double</p></td>
+<td><p>5.0</p></td>
+<td><p>0.001 to 60.0</p></td>
+<td><p>Time limit in seconds for all searches of one request, the first solution and its refinement together, without the distance transform, smoothing and publishing.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">refine_time</span></code></p></td>
+<td><p>double</p></td>
+<td><p>0.01</p></td>
+<td><p>0.0 to 60.0</p></td>
+<td><p>Seconds of refinement after the first exact solution, within solve_time.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">refine_iterations</span></code></p></td>
+<td><p>int</p></td>
+<td><p>0</p></td>
+<td><p>0 to 100000000</p></td>
+<td><p>Refinement budget in planner iterations after the first exact solution, or 0 for refine_time alone.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">stop_at_first_solution</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>false</p></td>
+<td></td>
+<td><p>Return the first exact solution without refining it.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">range</span></code></p></td>
+<td><p>double</p></td>
+<td><p>12.0</p></td>
+<td><p>0.0 to 1000.0</p></td>
+<td><p>G-RRT* extension step in the planning metric, or 0 to let OMPL choose.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">greedy_ratio</span></code></p></td>
+<td><p>double</p></td>
+<td><p>0.9</p></td>
+<td><p>0.0 to 1.0</p></td>
+<td><p>Fraction of informed samples taken from the greedy set.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">narrow_to_heuristic_path_cost</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>false</p></td>
+<td></td>
+<td><p>Let the informed sampler narrow its bound to the heuristic cost of the current solution.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">rewire_factor</span></code></p></td>
+<td><p>double</p></td>
+<td><p>1.1</p></td>
+<td><p>0.1 to 5.0</p></td>
+<td><p>Scale of the RRT* rewiring neighborhood.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">nn_metric</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>false</p></td>
+<td></td>
+<td><p>Find nearest neighbors by the metric distance, or by the coordinate Euclidean distance with a wrapped heading when false.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">k_nearest</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>true</p></td>
+<td></td>
+<td><p>Use a k-nearest rewiring neighborhood, or an r-disc when false.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">goal_tolerance</span></code></p></td>
+<td><p>double</p></td>
+<td><p>0.0</p></td>
+<td><p>0.0 to 2.0</p></td>
+<td><p>Accepted metric distance to the goal, where 0 requires the exact goal pose.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">seed</span></code></p></td>
+<td><p>int</p></td>
+<td><p>0</p></td>
+<td><p>0 to 4294967295</p></td>
+<td><p>Seed of every random generator a plan uses, or 0 for a fresh search seed and the smoother’s fixed default seed.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="pst-scrollable-table-container"><table class="geodex-param-table docutils table" id="id6">
+<caption><span class="caption-text">Collision</span><a class="headerlink" href="#id6" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 31.0%" />
+<col style="width: 9.0%" />
+<col style="width: 11.0%" />
+<col style="width: 16.0%" />
+<col style="width: 33.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Range</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">collision_check_resolution</span></code></p></td>
+<td><p>double</p></td>
+<td><p>0.0</p></td>
+<td><p>0.0 to 1.0</p></td>
+<td><p>Spacing of motion checks in meters, or 0 for the costmap resolution.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">safety_margin</span></code></p></td>
+<td><p>double</p></td>
+<td><p>0.0</p></td>
+<td><p>0.0 to 0.5</p></td>
+<td><p>Clearance in meters that every lethal cell center keeps from the footprint outline along the whole path, where half a cell diagonal (resolution / sqrt(2)) keeps the footprint off every lethal cell square.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">footprint_samples_per_edge</span></code></p></td>
+<td><p>int</p></td>
+<td><p>8</p></td>
+<td><p>1 to 64</p></td>
+<td><p>Minimum number of samples per footprint edge, which the checker raises until samples are at most one cell apart.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">lethal_cost_threshold</span></code></p></td>
+<td><p>int</p></td>
+<td><p>254</p></td>
+<td><p>1 to 254</p></td>
+<td><p>Costmap cost at or above which a cell is an obstacle, with unknown cells (255) always obstacles.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">max_reverse_length</span></code></p></td>
+<td><p>double</p></td>
+<td><p>-1.0</p></td>
+<td><p>-1.0 to 5.0</p></td>
+<td><p>Per-edge budget of backward motion in meters during the search, where 0 forbids backward motion and a negative value disables the check.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">initial_path</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>false</p></td>
+<td></td>
+<td><p>With max_reverse_length set, first find a path without the reverse budget and start the constrained search from its greedy cost.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="pst-scrollable-table-container"><table class="geodex-param-table docutils table" id="id7">
+<caption><span class="caption-text">Direction stage</span><a class="headerlink" href="#id7" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 31.0%" />
+<col style="width: 9.0%" />
+<col style="width: 11.0%" />
+<col style="width: 16.0%" />
+<col style="width: 33.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Range</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">max_reverse_run</span></code></p></td>
+<td><p>double</p></td>
+<td><p>0.2</p></td>
+<td><p>-1.0 to 5.0</p></td>
+<td><p>Limit in meters on the backward run of the smoothed path outside the start and goal allowances, or negative to switch off the direction stage. The direction stage runs after the search and turns backward runs into forward driving (forward_repair). A run that the repair cannot turn stays in the path, and the smoother does not lengthen it.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">reverse_allow_start</span></code></p></td>
+<td><p>double</p></td>
+<td><p>1.0</p></td>
+<td><p>0.0 to 10.0</p></td>
+<td><p>Path length in meters from the start within which backward driving is free.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">reverse_allow_goal</span></code></p></td>
+<td><p>double</p></td>
+<td><p>1.0</p></td>
+<td><p>0.0 to 10.0</p></td>
+<td><p>Path length in meters before the goal within which backward driving is free.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">forward_repair</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>true</p></td>
+<td></td>
+<td><p>Turn backward runs of the raw path into forward driving with a spin in place at each end.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">reverse_spin_cost</span></code></p></td>
+<td><p>double</p></td>
+<td><p>0.5</p></td>
+<td><p>0.05 to 10.0</p></td>
+<td><p>Meters of backward driving that one spin in place is worth, where a run is turned only when it is longer than two spins.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="pst-scrollable-table-container"><table class="geodex-param-table docutils table" id="id8">
+<caption><span class="caption-text">Clearance</span><a class="headerlink" href="#id8" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 31.0%" />
+<col style="width: 9.0%" />
+<col style="width: 11.0%" />
+<col style="width: 16.0%" />
+<col style="width: 33.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Range</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">clearance_kappa</span></code></p></td>
+<td><p>double</p></td>
+<td><p>1.5</p></td>
+<td><p>0.0 to 50.0</p></td>
+<td><p>Strength of the clearance factor, or 0 to plan on the plain SE(2) metric.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">clearance_beta</span></code></p></td>
+<td><p>double</p></td>
+<td><p>3.0</p></td>
+<td><p>0.1 to 100.0</p></td>
+<td><p>Decay rate of the clearance factor in 1/m.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">clearance_in_search</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>true</p></td>
+<td></td>
+<td><p>Search on the clearance metric, or on plain SE(2) with the clearance metric for smoothing only when false.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="pst-scrollable-table-container"><table class="geodex-param-table docutils table" id="id9">
+<caption><span class="caption-text">Smoothing</span><a class="headerlink" href="#id9" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 31.0%" />
+<col style="width: 9.0%" />
+<col style="width: 11.0%" />
+<col style="width: 16.0%" />
+<col style="width: 33.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Range</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">smoothing_enabled</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>true</p></td>
+<td></td>
+<td><p>Smooth the path on the planning metric, and publish the unsmoothed path when the smoothed path fails the collision or backward-driving checks of the search.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">smoothing_output_spacing</span></code></p></td>
+<td><p>double</p></td>
+<td><p>0.1</p></td>
+<td><p>0.0 to 2.0</p></td>
+<td><p>Longest step between the smoother’s returned waypoints, as the coordinate norm of the SE(2) twist, or 0 for no limit. The waypoints lie at equal steps between the corners the smoother keeps, within smoothing_corner_tolerance of the smoothed path.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">smoothing_round_corners</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>true</p></td>
+<td></td>
+<td><p>Round each corner of the smoothed path into a twice continuously differentiable curve that leaves and joins its two edges tangentially, or keep every corner when false.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">smoothing_corner_tolerance</span></code></p></td>
+<td><p>double</p></td>
+<td><p>0.0001</p></td>
+<td><p>1e-06 to 0.1</p></td>
+<td><p>Largest distance between a rounding curve and the edges between its samples, and between the smoothed path and its evenly spaced edges, in the coordinate norm of the SE(2) twist. A corner stays sharp when its rounding curve would lie within this distance of the corner. A larger value gives a longer step between the returned waypoints.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">smoothing_corner_max_angle</span></code></p></td>
+<td><p>double</p></td>
+<td><p>π/2</p></td>
+<td><p>0.0 to π</p></td>
+<td><p>Largest turning angle in radians of a rounded corner, measured under the planning metric, pi/2 (90 degrees) by default. A corner that turns further, such as a reversal, stays a cusp.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="pst-scrollable-table-container"><table class="geodex-param-table docutils table" id="id10">
+<caption><span class="caption-text">Output</span><a class="headerlink" href="#id10" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 31.0%" />
+<col style="width: 9.0%" />
+<col style="width: 11.0%" />
+<col style="width: 16.0%" />
+<col style="width: 33.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Range</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">waypoint_spacing</span></code></p></td>
+<td><p>double</p></td>
+<td><p>0.05</p></td>
+<td><p>0.01 to 1.0</p></td>
+<td><p>Largest metric arclength step between published poses, where every waypoint of the final path is published and each edge splits into equal steps.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="pst-scrollable-table-container"><table class="geodex-param-table docutils table" id="id11">
+<caption><span class="caption-text">Sampling region</span><a class="headerlink" href="#id11" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 31.0%" />
+<col style="width: 9.0%" />
+<col style="width: 11.0%" />
+<col style="width: 16.0%" />
+<col style="width: 33.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Range</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">static_map_topic</span></code></p></td>
+<td><p>string</p></td>
+<td><p>map</p></td>
+<td></td>
+<td><p>Topic of the static map, an occupancy grid with transient-local durability, whose area bounds the samples taken before a solution exists, or empty to sample the whole costmap.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="pst-scrollable-table-container"><table class="geodex-param-table docutils table" id="id12">
+<caption><span class="caption-text">Visualization</span><a class="headerlink" href="#id12" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 31.0%" />
+<col style="width: 9.0%" />
+<col style="width: 11.0%" />
+<col style="width: 16.0%" />
+<col style="width: 33.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Range</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">publish_footprints</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>false</p></td>
+<td></td>
+<td><p>Publish the footprint outline with an orientation frame at poses along the path, as a MarkerArray on path_footprints.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">marker_spacing</span></code></p></td>
+<td><p>double</p></td>
+<td><p>0.25</p></td>
+<td><p>0.0 to 5.0</p></td>
+<td><p>Metric arclength between footprint markers, or 0 for a marker at every pose.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">marker_z</span></code></p></td>
+<td><p>double</p></td>
+<td><p>0.0</p></td>
+<td><p>-10.0 to 10.0</p></td>
+<td><p>Height of the footprint markers in meters.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="where-to-go-next">
+<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../robots/navigation.html"><span class="doc">Navigation</span></a> plans the same query on the same map with geodex directly.</p></li>
+<li><p><a class="reference internal" href="../concepts/smoothing.html"><span class="doc">Path Smoothing</span></a> covers the smoother and what it checks.</p></li>
+<li><p><a class="reference internal" href="moveit.html"><span class="doc">MoveIt 2 Planner</span></a> plans arm motions through MoveIt 2.</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">ROS 2</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="moveit.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">MoveIt 2 Planner</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-the-plugin">1. Build the plugin</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#launch-the-demo">2. Launch the demo</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#request-a-path">3. Request a path</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#try-it-plan-for-a-dingo-o">4. Try it: plan for a Dingo-O</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#switch-the-metric-per-robot">Switch the metric per robot</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visualization">Visualization</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#parameters">Parameters</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#where-to-go-next">Where to go next</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Space and Terrestrial Autonomous Robotic Systems (STARS) Lab.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

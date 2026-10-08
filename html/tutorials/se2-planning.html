@@ -1,0 +1,1440 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>SE(2) Motion Planning &#8212; geodex</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=28229f57" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme.css?v=26c09b9b" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../_static/documentation_options.js?v=8d563738"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=b8b12719"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>window.MathJax = {"loader": {"paths": {"mathjax-termes": "[mathjax]/fonts/termes"}}, "chtml": {"font": "mathjax-termes"}, "options": {"enableSpeech": false, "enableBraille": false, "enableEnrichment": false, "enableExplorer": false, "menuOptions": {"settings": {"speech": false, "braille": false, "enrich": false}}}}</script>
+    <script defer="defer" src="../_static/mathjax/tex-mml-chtml.js?v=4a2f07e4"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'tutorials/se2-planning';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <script src="../_static/mermaid-intrinsic-size.js?v=f42d09f7"></script>
+    <script src="../_static/geodex.js?v=d44686ee"></script>
+    <link rel="icon" href="../_static/favicon.svg"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Robot Guides" href="../robots/index.html" />
+    <link rel="prev" title="Minimum-Energy Planning on Configuration Manifolds" href="minimum-energy-planning.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="1.0.0" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/logo-light.svg" class="logo__image only-light" alt=""/>
+    <img src="../_static/logo-dark.svg" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">geodex</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting-started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../concepts/index.html">
+    Core Concepts
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../robots/index.html">
+    Robot Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../ros2/index.html">
+    ROS 2
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/utiasSTARS/geodex" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pygeodex/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting-started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../concepts/index.html">
+    Core Concepts
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../robots/index.html">
+    Robot Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../ros2/index.html">
+    ROS 2
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/utiasSTARS/geodex" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pygeodex/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="geodex-basics.html">geodex Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minimum-energy-planning.html">Minimum-Energy Planning on Configuration Manifolds</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">SE(2) Motion Planning</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Tutorials</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">SE(2) Motion Planning</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="se-2-motion-planning">
+<h1>SE(2) Motion Planning<a class="headerlink" href="#se-2-motion-planning" title="Link to this heading">#</a></h1>
+<p>In this tutorial, we plan motions in <span class="math notranslate nohighlight">\(\mathrm{SE}(2)\)</span> for three robots, a holonomic disc
+robot, a differential-drive robot with a rectangular footprint in an office corridor, and
+a car that parks between two parked cars. We also check footprints against a distance grid
+and keep the robots away from walls with a clearance metric.</p>
+<figure class="align-center" id="id1">
+<a class="reference internal image-reference" href="../_images/diff_clearance_result.svg"><img alt="Differential-drive robot with clearance metric" src="../_images/diff_clearance_result.svg" style="width: 67%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">The differential-drive robot under the clearance metric, the result of step 6. The
+planner’s path is dashed, the returned path solid, with footprints along it.</span><a class="headerlink" href="#id1" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>The full script is <code class="docutils literal notranslate"><span class="pre">examples/tutorials/se2_planning.py</span></code>, and the C++ version is
+<code class="docutils literal notranslate"><span class="pre">examples/tutorials/se2_planning.cpp</span></code>. Run it from <code class="docutils literal notranslate"><span class="pre">examples/tutorials</span></code>, where the corridor
+map lives. Planning needs the Linux or macOS wheel (see
+<a class="reference internal" href="../getting-started/installation.html"><span class="doc">Installation</span></a>).</p>
+<section id="describe-poses-and-footprints">
+<h2>1. Describe poses and footprints<a class="headerlink" href="#describe-poses-and-footprints" title="Link to this heading">#</a></h2>
+<p>A pose in <span class="math notranslate nohighlight">\(\mathrm{SE}(2)\)</span> is a triple <span class="math notranslate nohighlight">\((x, y, \theta)\)</span>, a planar position and a
+heading.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-0">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">geodex</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geodex</span><span class="w"> </span><span class="kn">import</span> <span class="n">collision</span> <span class="k">as</span> <span class="n">gc</span>
+
+<span class="n">se2</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2</span><span class="p">()</span>
+<span class="n">pose</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">4.0</span><span class="p">])</span>  <span class="c1"># (x, y, theta)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.py">examples/tutorials/se2_planning.py</a></p>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-1">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;geodex/collision/collision.hpp&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;geodex/geodex.hpp&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;geodex/planning/plan.hpp&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ompl/base/DiscreteMotionValidator.h&gt;</span>
+
+<span class="n">geodex</span><span class="o">::</span><span class="n">SE2</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">se2</span><span class="p">;</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">pose</span><span class="p">{</span><span class="mf">5.0</span><span class="p">,</span><span class="w"> </span><span class="mf">3.0</span><span class="p">,</span><span class="w"> </span><span class="n">M_PI</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">4.0</span><span class="p">};</span><span class="w">  </span><span class="c1">// (x, y, theta)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.cpp">examples/tutorials/se2_planning.cpp</a></p>
+</div>
+</div>
+</div>
+<p>A robot’s <strong>footprint</strong> is its outline, a set of body-frame points that move rigidly with
+the pose. A disc needs only its radius. <a class="reference internal" href="../api/cpp.html#_CPPv4N6geodex9collision16PolygonFootprintE" title="geodex::collision::PolygonFootprint"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">geodex::collision::PolygonFootprint</span></code></a>
+stores sample points along the edges of a convex polygon, <code class="docutils literal notranslate"><span class="pre">samples_per_edge</span></code> per edge.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-2" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-2">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># A circular footprint is a single radius. Collision reduces to a point query</span>
+<span class="c1"># against an obstacle distance field inflated by this value.</span>
+<span class="n">robot_radius</span> <span class="o">=</span> <span class="mf">0.3</span>
+
+<span class="c1"># Build a rectangular footprint with the factory.</span>
+<span class="n">rect_fp</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">PolygonFootprint</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">half_length</span><span class="o">=</span><span class="mf">0.35</span><span class="p">,</span> <span class="n">half_width</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>
+                                        <span class="n">samples_per_edge</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+
+<span class="c1"># Build any convex polygon from body-frame vertices in counter-clockwise order.</span>
+<span class="n">verts</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">0.35</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.30</span><span class="p">]),</span>  <span class="c1"># rear right</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.35</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.20</span><span class="p">]),</span>   <span class="c1"># front right</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.35</span><span class="p">,</span> <span class="mf">0.20</span><span class="p">]),</span>    <span class="c1"># front left</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">0.35</span><span class="p">,</span> <span class="mf">0.30</span><span class="p">]),</span>   <span class="c1"># rear left</span>
+<span class="p">]</span>
+<span class="n">poly_fp</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">PolygonFootprint</span><span class="p">(</span><span class="n">verts</span><span class="p">,</span> <span class="n">samples_per_edge</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.py">examples/tutorials/se2_planning.py</a></p>
+</div>
+<input id="sd-tab-item-3" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-3">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// A circular footprint is a single radius. Collision reduces to a point query</span>
+<span class="c1">// against an obstacle distance field inflated by this value.</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">robot_radius</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.3</span><span class="p">;</span>
+
+<span class="c1">// Build a rectangular footprint with the factory.</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">rect_fp</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="n">gc</span><span class="o">::</span><span class="n">PolygonFootprint</span><span class="o">::</span><span class="n">rectangle</span><span class="p">(</span><span class="cm">/*half_length=*/</span><span class="mf">0.35</span><span class="p">,</span><span class="w"> </span><span class="cm">/*half_width=*/</span><span class="mf">0.25</span><span class="p">,</span>
+<span class="w">                                    </span><span class="cm">/*samples_per_edge=*/</span><span class="mi">6</span><span class="p">);</span>
+
+<span class="c1">// Build any convex polygon from body-frame vertices in counter-clockwise order.</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="o">&gt;</span><span class="w"> </span><span class="n">verts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">{</span><span class="mf">-0.35</span><span class="p">,</span><span class="w"> </span><span class="mf">-0.30</span><span class="p">},</span><span class="w">  </span><span class="c1">// rear right</span>
+<span class="w">    </span><span class="p">{</span><span class="mf">0.35</span><span class="p">,</span><span class="w"> </span><span class="mf">-0.20</span><span class="p">},</span><span class="w">   </span><span class="c1">// front right</span>
+<span class="w">    </span><span class="p">{</span><span class="mf">0.35</span><span class="p">,</span><span class="w"> </span><span class="mf">0.20</span><span class="p">},</span><span class="w">    </span><span class="c1">// front left</span>
+<span class="w">    </span><span class="p">{</span><span class="mf">-0.35</span><span class="p">,</span><span class="w"> </span><span class="mf">0.30</span><span class="p">},</span><span class="w">   </span><span class="c1">// rear left</span>
+<span class="p">};</span>
+<span class="n">gc</span><span class="o">::</span><span class="n">PolygonFootprint</span><span class="w"> </span><span class="nf">poly_fp</span><span class="p">(</span><span class="n">verts</span><span class="p">,</span><span class="w"> </span><span class="cm">/*samples_per_edge=*/</span><span class="mi">4</span><span class="p">);</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.cpp">examples/tutorials/se2_planning.cpp</a></p>
+</div>
+</div>
+</div>
+<figure class="align-center" id="id2">
+<a class="reference internal image-reference" href="../_images/poses_and_footprints.svg"><img alt="Three robot types with poses and footprints" src="../_images/poses_and_footprints.svg" style="width: 67%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">The three robots at a pose, with the body axes <span class="math notranslate nohighlight">\(x\)</span> (red, forward) and <span class="math notranslate nohighlight">\(y\)</span>
+(green, left).</span><a class="headerlink" href="#id2" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>Four to six samples per edge suit most footprints on a centimeter-scale grid.</p>
+</section>
+<section id="choose-a-metric">
+<h2>2. Choose a metric<a class="headerlink" href="#choose-a-metric" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="../api/cpp.html#_CPPv4N6geodex22SE2LeftInvariantMetricE" title="geodex::SE2LeftInvariantMetric"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">geodex::SE2LeftInvariantMetric</span></code></a> weighs the forward, sideways and turning speeds
+of the robot,</p>
+<div class="math notranslate nohighlight">
+\[\langle u, v \rangle_q = w_x\, u_x v_x + w_y\, u_y v_y + w_\theta\, u_\theta v_\theta ,\]</div>
+<p>and a weight <span class="math notranslate nohighlight">\(w\)</span> makes a unit of that motion cost <span class="math notranslate nohighlight">\(\sqrt{w}\)</span>.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 12.0%" />
+<col style="width: 12.0%" />
+<col style="width: 12.0%" />
+<col style="width: 42.0%" />
+<col style="width: 22.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p><span class="math notranslate nohighlight">\(w_x\)</span></p></th>
+<th class="head"><p><span class="math notranslate nohighlight">\(w_y\)</span></p></th>
+<th class="head"><p><span class="math notranslate nohighlight">\(w_\theta\)</span></p></th>
+<th class="head"><p>Effect</p></th>
+<th class="head"><p>Robot</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1.0</p></td>
+<td><p>1.0</p></td>
+<td><p>1.0</p></td>
+<td><p>Every direction and turning cost the same</p></td>
+<td><p>Holonomic</p></td>
+</tr>
+<tr class="row-odd"><td><p>1.0</p></td>
+<td><p>10.0</p></td>
+<td><p>1.0</p></td>
+<td><p>A meter of sliding costs about 3.2 meters of driving</p></td>
+<td><p>Differential drive</p></td>
+</tr>
+<tr class="row-even"><td><p>1.0</p></td>
+<td><p>20.0</p></td>
+<td><p>2.25</p></td>
+<td><p>Turning traded against driving at a radius of 1.5 m</p></td>
+<td><p>Car-like</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-4" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-4">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Holonomic. Every direction and turning cost the same.</span>
+<span class="n">metric_holo</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2LeftInvariantMetric</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+
+<span class="c1"># Differential drive. A meter of sliding costs sqrt(10), about 3.2 meters of</span>
+<span class="c1"># driving.</span>
+<span class="n">metric_diff</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2LeftInvariantMetric</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+
+<span class="c1"># Car-like. Turning trades against driving at a radius of 1.5 m.</span>
+<span class="n">metric_car</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2LeftInvariantMetric</span><span class="o">.</span><span class="n">car_like</span><span class="p">(</span><span class="n">turning_radius</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
+                                                    <span class="n">lateral_penalty</span><span class="o">=</span><span class="mf">20.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.py">examples/tutorials/se2_planning.py</a></p>
+</div>
+<input id="sd-tab-item-5" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-5">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// Holonomic. Every direction and turning cost the same.</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftInvariantMetric</span><span class="w"> </span><span class="n">metric_holo</span><span class="p">{</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">};</span>
+
+<span class="c1">// Differential drive. A meter of sliding costs sqrt(10), about 3.2 meters of</span>
+<span class="c1">// driving.</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftInvariantMetric</span><span class="w"> </span><span class="n">metric_diff</span><span class="p">{</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">10.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">};</span>
+
+<span class="c1">// Car-like. Turning trades against driving at a radius of 1.5 m.</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">metric_car</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftInvariantMetric</span><span class="o">::</span><span class="n">car_like</span><span class="p">(</span><span class="cm">/*turning_radius=*/</span><span class="mf">1.5</span><span class="p">,</span>
+<span class="w">                                             </span><span class="cm">/*lateral_penalty=*/</span><span class="mf">20.0</span><span class="p">);</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.cpp">examples/tutorials/se2_planning.cpp</a></p>
+</div>
+</div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">car_like(turning_radius,</span> <span class="pre">lateral_penalty)</span></code> sets <span class="math notranslate nohighlight">\(w_\theta = r^2\)</span> for the turning
+radius <span class="math notranslate nohighlight">\(r\)</span> and <span class="math notranslate nohighlight">\(w_y\)</span> to the lateral penalty. With <span class="math notranslate nohighlight">\(w_x = 1\)</span>, turning on the
+spot through an angle <span class="math notranslate nohighlight">\(\varphi\)</span> costs <span class="math notranslate nohighlight">\(r \varphi\)</span>, as much as driving
+<span class="math notranslate nohighlight">\(r \varphi\)</span> straight ahead. The metric makes tight turns and sideslip expensive and
+does not forbid them.</p>
+</section>
+<section id="load-the-corridor-map">
+<h2>3. Load the corridor map<a class="headerlink" href="#load-the-corridor-map" title="Link to this heading">#</a></h2>
+<p>A <strong>distance grid</strong> stores the signed distance to the nearest obstacle at every cell of an
+occupancy map, and <a class="reference internal" href="../api/cpp.html#_CPPv4N6geodex9collision12DistanceGridE" title="geodex::collision::DistanceGrid"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">geodex::collision::DistanceGrid</span></code></a> loads and queries it with
+bilinear interpolation. The corridor is an 18 m by 12 m section of the Willow Garage map at
+0.05 m per cell.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-6" name="sd-tab-set-3" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-6">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">grid</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">DistanceGrid</span><span class="p">()</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"willow_corridor_dist.txt"</span><span class="p">)</span>
+
+<span class="c1"># World dimensions in meters.</span>
+<span class="n">world_w</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">width</span><span class="p">()</span> <span class="o">*</span> <span class="n">grid</span><span class="o">.</span><span class="n">resolution</span><span class="p">()</span>
+<span class="n">world_h</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">height</span><span class="p">()</span> <span class="o">*</span> <span class="n">grid</span><span class="o">.</span><span class="n">resolution</span><span class="p">()</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.py">examples/tutorials/se2_planning.py</a></p>
+</div>
+<input id="sd-tab-item-7" name="sd-tab-set-3" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-7">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">gc</span><span class="o">::</span><span class="n">DistanceGrid</span><span class="w"> </span><span class="n">grid</span><span class="p">;</span>
+<span class="n">grid</span><span class="p">.</span><span class="n">load</span><span class="p">(</span><span class="s">"willow_corridor_dist.txt"</span><span class="p">);</span>
+
+<span class="c1">// World dimensions in meters.</span>
+<span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">world_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">grid</span><span class="p">.</span><span class="n">width</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">grid</span><span class="p">.</span><span class="n">resolution</span><span class="p">();</span>
+<span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">world_h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">grid</span><span class="p">.</span><span class="n">height</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">grid</span><span class="p">.</span><span class="n">resolution</span><span class="p">();</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.cpp">examples/tutorials/se2_planning.cpp</a></p>
+</div>
+</div>
+</div>
+<figure class="align-center" id="id3">
+<a class="reference internal image-reference" href="../_images/willow_corridor.svg"><img alt="Cropped Willow Garage corridor with distance heatmap" src="../_images/willow_corridor.svg" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">The corridor. Left, the occupancy grid. Right, the distance transform over the free
+space, with walls in black and lighter colors for higher clearance.</span><a class="headerlink" href="#id3" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="plan-for-a-disc-robot">
+<h2>4. Plan for a disc robot<a class="headerlink" href="#plan-for-a-disc-robot" title="Link to this heading">#</a></h2>
+<p>A disc of radius <span class="math notranslate nohighlight">\(r\)</span> is collision-free when the distance at its center exceeds
+<span class="math notranslate nohighlight">\(r\)</span>. The check below asks for a safety buffer of 10 cm on top.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-8" name="sd-tab-set-4" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-8">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">robot_radius</span> <span class="o">=</span> <span class="mf">0.3</span>
+<span class="n">safety_margin</span> <span class="o">=</span> <span class="mf">0.10</span>  <span class="c1"># extra buffer beyond the robot radius</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">is_valid</span><span class="p">(</span><span class="n">q</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">grid</span><span class="o">.</span><span class="n">distance_at</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">robot_radius</span> <span class="o">+</span> <span class="n">safety_margin</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.py">examples/tutorials/se2_planning.py</a></p>
+</div>
+<input id="sd-tab-item-9" name="sd-tab-set-4" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-9">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">constexpr</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">robot_radius</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.3</span><span class="p">;</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">safety_margin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.10</span><span class="p">;</span><span class="w">  </span><span class="c1">// extra buffer beyond the robot radius</span>
+
+<span class="k">auto</span><span class="w"> </span><span class="n">is_valid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="n">grid</span><span class="p">](</span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="o">&amp;</span><span class="w"> </span><span class="n">q</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">grid</span><span class="p">.</span><span class="n">distance_at</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">robot_radius</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">safety_margin</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.cpp">examples/tutorials/se2_planning.cpp</a></p>
+</div>
+</div>
+</div>
+<figure class="align-center" id="id4">
+<a class="reference internal image-reference" href="../_images/inflation.svg"><img alt="Inflation of obstacle boundary by robot radius" src="../_images/inflation.svg" style="width: 56%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Inflating an obstacle by the robot radius <span class="math notranslate nohighlight">\(r\)</span>. A disc whose center lies outside
+the dashed line is collision-free.</span><a class="headerlink" href="#id4" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p><code class="docutils literal notranslate"><span class="pre">plan</span></code> wraps the manifold as an OMPL state space, runs G-RRT*, and smooths the result.
+<code class="docutils literal notranslate"><span class="pre">iterations=6000</span></code> and <code class="docutils literal notranslate"><span class="pre">seed=1</span></code> give the same path on every run.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-10" name="sd-tab-set-5" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-10">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># A manifold whose workspace bounds span the corridor map.</span>
+<span class="n">se2</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2</span><span class="p">(</span><span class="n">wx</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">wy</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">wtheta</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                 <span class="n">x_lo</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">x_hi</span><span class="o">=</span><span class="n">world_w</span><span class="p">,</span> <span class="n">y_lo</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">y_hi</span><span class="o">=</span><span class="n">world_h</span><span class="p">)</span>
+
+<span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+<span class="n">goal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">12.0</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">])</span>
+
+<span class="n">settings</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">PlanSettings</span><span class="p">(</span>
+    <span class="n">iterations</span><span class="o">=</span><span class="mi">6000</span><span class="p">,</span>
+    <span class="n">planner</span><span class="o">=</span><span class="n">geodex</span><span class="o">.</span><span class="n">planners</span><span class="o">.</span><span class="n">GreedyRRTstar</span><span class="p">(</span><span class="nb">range</span><span class="o">=</span><span class="mf">4.5</span><span class="p">,</span> <span class="n">greedy_ratio</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+                                          <span class="n">rewire_factor</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+    <span class="n">collision_check_resolution</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">resolution</span><span class="p">(),</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">plan</span><span class="p">(</span><span class="n">se2</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">goal</span><span class="p">,</span> <span class="n">is_valid</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"holonomic: solved=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">solved</span><span class="si">}</span><span class="s2"> cost=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">cost</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.py">examples/tutorials/se2_planning.py</a></p>
+</div>
+<input id="sd-tab-item-11" name="sd-tab-set-5" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-11">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// A manifold whose workspace bounds span the corridor map.</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">SE2</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">se2</span><span class="p">{</span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftInvariantMetric</span><span class="p">{</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">},</span>
+<span class="w">                  </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftExponentialMap</span><span class="p">{},</span>
+<span class="w">                  </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">M_PI</span><span class="p">),</span>
+<span class="w">                  </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="p">(</span><span class="n">world_w</span><span class="p">,</span><span class="w"> </span><span class="n">world_h</span><span class="p">,</span><span class="w"> </span><span class="n">M_PI</span><span class="p">)};</span>
+
+<span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">start</span><span class="p">{</span><span class="mf">2.0</span><span class="p">,</span><span class="w"> </span><span class="mf">5.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">};</span>
+<span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">goal</span><span class="p">{</span><span class="mf">12.0</span><span class="p">,</span><span class="w"> </span><span class="mf">6.0</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">M_PI</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">2.0</span><span class="p">};</span>
+
+<span class="n">gp</span><span class="o">::</span><span class="n">PlanSettings</span><span class="w"> </span><span class="n">settings</span><span class="p">;</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">iterations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">6000</span><span class="p">;</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">planner</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gp</span><span class="o">::</span><span class="n">planners</span><span class="o">::</span><span class="n">GreedyRRTstar</span><span class="p">{</span>
+<span class="w">    </span><span class="p">.</span><span class="n">range</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">4.5</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">greedy_ratio</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.9</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">rewire_factor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.5</span><span class="p">};</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">collision_check_resolution</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">grid</span><span class="p">.</span><span class="n">resolution</span><span class="p">();</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">seed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gp</span><span class="o">::</span><span class="n">plan</span><span class="p">(</span><span class="n">se2</span><span class="p">,</span><span class="w"> </span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="n">goal</span><span class="p">,</span><span class="w"> </span><span class="n">is_valid</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"holonomic: solved=%d cost=%.3f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">solved</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">cost</span><span class="p">);</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.cpp">examples/tutorials/se2_planning.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">holonomic:</span> <span class="pre">solved=True</span> <span class="pre">cost=18.399</span></code>, the length of the path under the metric.</p>
+<figure class="align-center" id="id5">
+<a class="reference internal image-reference" href="../_images/holonomic_result.svg"><img alt="Holonomic circular robot planning result" src="../_images/holonomic_result.svg" style="width: 67%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">The holonomic plan. The planner’s path is dashed, the returned path solid, with the disc
+drawn along it.</span><a class="headerlink" href="#id5" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id6">
+<video class="geodex-video" style="width:60%" poster="../_static/videos/se2-holonomic-sweep.png" aria-label="Animated holonomic robot sweep" autoplay loop muted playsinline disablepictureinpicture><source src="../_static/videos/se2-holonomic-sweep.webm" type="video/webm"><source src="../_static/videos/se2-holonomic-sweep.mp4" type="video/mp4"><img src="../_static/videos/se2-holonomic-sweep.png" alt="Animated holonomic robot sweep"></video><figcaption>
+<p><span class="caption-text">The disc robot following the returned path.</span><a class="headerlink" href="#id6" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>A robot that must answer in time sets a <code class="docutils literal notranslate"><span class="pre">time</span></code> budget in seconds instead, and leaves
+<code class="docutils literal notranslate"><span class="pre">iterations</span></code> at 0. The path can then change from run to run (see
+<a class="reference internal" href="../getting-started/reproducibility.html"><span class="doc">Reproducibility</span></a>).</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-12" name="sd-tab-set-6" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-12">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">settings</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">PlanSettings</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>  <span class="c1"># seconds, used when iterations is 0</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.py">examples/tutorials/se2_planning.py</a></p>
+</div>
+<input id="sd-tab-item-13" name="sd-tab-set-6" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-13">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">gp</span><span class="o">::</span><span class="n">PlanSettings</span><span class="w"> </span><span class="n">settings</span><span class="p">;</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="p">;</span><span class="w">  </span><span class="c1">// seconds, used when iterations is 0</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.cpp">examples/tutorials/se2_planning.cpp</a></p>
+</div>
+</div>
+</div>
+</section>
+<section id="plan-for-a-differential-drive-robot">
+<h2>5. Plan for a differential-drive robot<a class="headerlink" href="#plan-for-a-differential-drive-robot" title="Link to this heading">#</a></h2>
+<p>Whether a rectangle collides depends on its position and its heading.
+<a class="reference internal" href="../api/cpp.html#_CPPv4N6geodex9collision20FootprintGridCheckerE" title="geodex::collision::FootprintGridChecker"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">geodex::collision::FootprintGridChecker</span></code></a> moves the footprint’s samples to the
+pose, reads the distance grid at each, and returns the smallest distance minus the safety
+margin. A pose is valid when every sample is clear. The spacing of the samples and the
+margin decide how close an obstacle can come between two samples.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-14" name="sd-tab-set-7" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-14">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">footprint</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">PolygonFootprint</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">half_length</span><span class="o">=</span><span class="mf">0.35</span><span class="p">,</span> <span class="n">half_width</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>
+                                          <span class="n">samples_per_edge</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">checker</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">FootprintGridChecker</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">footprint</span><span class="p">,</span> <span class="n">safety_margin</span><span class="o">=</span><span class="mf">0.10</span><span class="p">)</span>
+
+<span class="n">is_valid</span> <span class="o">=</span> <span class="n">checker</span><span class="o">.</span><span class="n">is_valid</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.py">examples/tutorials/se2_planning.py</a></p>
+</div>
+<input id="sd-tab-item-15" name="sd-tab-set-7" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-15">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">auto</span><span class="w"> </span><span class="n">footprint</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="n">gc</span><span class="o">::</span><span class="n">PolygonFootprint</span><span class="o">::</span><span class="n">rectangle</span><span class="p">(</span><span class="cm">/*half_length=*/</span><span class="mf">0.35</span><span class="p">,</span><span class="w"> </span><span class="cm">/*half_width=*/</span><span class="mf">0.25</span><span class="p">,</span>
+<span class="w">                                    </span><span class="cm">/*samples_per_edge=*/</span><span class="mi">6</span><span class="p">);</span>
+<span class="n">gc</span><span class="o">::</span><span class="n">FootprintGridChecker</span><span class="w"> </span><span class="n">checker</span><span class="p">{</span><span class="o">&amp;</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="n">footprint</span><span class="p">,</span><span class="w"> </span><span class="cm">/*safety_margin=*/</span><span class="mf">0.10</span><span class="p">};</span>
+
+<span class="k">auto</span><span class="w"> </span><span class="n">is_valid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="n">checker</span><span class="p">](</span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="o">&amp;</span><span class="w"> </span><span class="n">q</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">checker</span><span class="p">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">q</span><span class="p">);</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.cpp">examples/tutorials/se2_planning.cpp</a></p>
+</div>
+</div>
+</div>
+<figure class="align-center" id="id7">
+<a class="reference internal image-reference" href="../_images/footprint_checking.svg"><img alt="Polygon footprint collision checking" src="../_images/footprint_checking.svg" style="width: 68%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Left, the perimeter samples in the body frame. Right, the samples at a pose on the
+distance grid, with the distance query from some of them to the nearest wall.</span><a class="headerlink" href="#id7" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>The differential-drive metric makes sliding expensive.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-16" name="sd-tab-set-8" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-16">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">se2</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2</span><span class="p">(</span><span class="n">wx</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">wy</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">wtheta</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                 <span class="n">x_lo</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">x_hi</span><span class="o">=</span><span class="n">world_w</span><span class="p">,</span> <span class="n">y_lo</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">y_hi</span><span class="o">=</span><span class="n">world_h</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.py">examples/tutorials/se2_planning.py</a></p>
+</div>
+<input id="sd-tab-item-17" name="sd-tab-set-8" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-17">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">se2</span><span class="p">{</span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftInvariantMetric</span><span class="p">{</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">10.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">},</span>
+<span class="w">                  </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftExponentialMap</span><span class="p">{},</span>
+<span class="w">                  </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">M_PI</span><span class="p">),</span>
+<span class="w">                  </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="p">(</span><span class="n">world_w</span><span class="p">,</span><span class="w"> </span><span class="n">world_h</span><span class="p">,</span><span class="w"> </span><span class="n">M_PI</span><span class="p">)};</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.cpp">examples/tutorials/se2_planning.cpp</a></p>
+</div>
+</div>
+</div>
+<p>The metric charges driving backward as much as driving forward.
+<a class="reference internal" href="../api/cpp.html#_CPPv4I0EN6geodex11integration4ompl26DirectionalMotionValidatorE" title="geodex::integration::ompl::DirectionalMotionValidator"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">geodex::integration::ompl::DirectionalMotionValidator</span></code></a> rejects any tree edge
+whose body-forward component, the first entry of the SE(2) logarithm, is below minus the
+reverse budget, -0.5 m here.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-18" name="sd-tab-set-9" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-18">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">settings</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">PlanSettings</span><span class="p">(</span>
+    <span class="n">iterations</span><span class="o">=</span><span class="mi">6000</span><span class="p">,</span>
+    <span class="n">planner</span><span class="o">=</span><span class="n">geodex</span><span class="o">.</span><span class="n">planners</span><span class="o">.</span><span class="n">GreedyRRTstar</span><span class="p">(</span><span class="nb">range</span><span class="o">=</span><span class="mf">7.0</span><span class="p">,</span> <span class="n">greedy_ratio</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+                                          <span class="n">rewire_factor</span><span class="o">=</span><span class="mf">1.1</span><span class="p">),</span>
+    <span class="n">collision_check_resolution</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">resolution</span><span class="p">(),</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">plan</span><span class="p">(</span>
+    <span class="n">se2</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">goal</span><span class="p">,</span> <span class="n">checker</span><span class="o">.</span><span class="n">is_valid</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">,</span>
+    <span class="n">motion_validator</span><span class="o">=</span><span class="n">geodex</span><span class="o">.</span><span class="n">DirectionalMotionValidator</span><span class="p">(</span><span class="n">max_reverse_length</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"differential drive: solved=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">solved</span><span class="si">}</span><span class="s2"> cost=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">cost</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.py">examples/tutorials/se2_planning.py</a></p>
+</div>
+<input id="sd-tab-item-19" name="sd-tab-set-9" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-19">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">using</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">integration</span><span class="o">::</span><span class="n">ompl</span><span class="o">::</span><span class="n">DirectionalMotionValidator</span><span class="p">;</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">directional</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="n">se2</span><span class="p">](</span><span class="k">const</span><span class="w"> </span><span class="n">ompl</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">SpaceInformationPtr</span><span class="o">&amp;</span><span class="w"> </span><span class="n">si</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">DirectionalMotionValidator</span><span class="o">&lt;</span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2</span><span class="o">&lt;&gt;&gt;&gt;</span><span class="p">(</span>
+<span class="w">      </span><span class="n">si</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span><span class="w"> </span><span class="n">se2</span><span class="p">,</span>
+<span class="w">      </span><span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">ompl</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">DiscreteMotionValidator</span><span class="o">&gt;</span><span class="p">(</span><span class="n">si</span><span class="p">.</span><span class="n">get</span><span class="p">()),</span>
+<span class="w">      </span><span class="cm">/*max_reverse_length=*/</span><span class="mf">0.5</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="n">gp</span><span class="o">::</span><span class="n">PlanSettings</span><span class="w"> </span><span class="n">settings</span><span class="p">;</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">iterations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">6000</span><span class="p">;</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">planner</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gp</span><span class="o">::</span><span class="n">planners</span><span class="o">::</span><span class="n">GreedyRRTstar</span><span class="p">{</span>
+<span class="w">    </span><span class="p">.</span><span class="n">range</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">7.0</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">greedy_ratio</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.9</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">rewire_factor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.1</span><span class="p">};</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">collision_check_resolution</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">grid</span><span class="p">.</span><span class="n">resolution</span><span class="p">();</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">seed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="n">gp</span><span class="o">::</span><span class="n">plan</span><span class="p">(</span><span class="n">se2</span><span class="p">,</span><span class="w"> </span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="n">goal</span><span class="p">,</span><span class="w"> </span><span class="n">is_valid</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">,</span>
+<span class="w">             </span><span class="cm">/*heuristic=*/</span><span class="n">geodex</span><span class="o">::</span><span class="n">heuristics</span><span class="o">::</span><span class="n">Euclidean</span><span class="p">{},</span><span class="w"> </span><span class="n">directional</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"differential drive: solved=%d cost=%.3f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">solved</span><span class="p">,</span>
+<span class="w">            </span><span class="n">result</span><span class="p">.</span><span class="n">cost</span><span class="p">);</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.cpp">examples/tutorials/se2_planning.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">differential</span> <span class="pre">drive:</span> <span class="pre">solved=True</span> <span class="pre">cost=22.292</span></code>.</p>
+<figure class="align-center" id="id8">
+<a class="reference internal image-reference" href="../_images/diff_drive_result.svg"><img alt="Differential-drive robot planning result" src="../_images/diff_drive_result.svg" style="width: 67%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">The differential-drive robot in the corridor, driving forward along arcs.</span><a class="headerlink" href="#id8" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id9">
+<video class="geodex-video" style="width:60%" poster="../_static/videos/se2-diff-drive-sweep.png" aria-label="Animated differential-drive robot sweep" autoplay loop muted playsinline disablepictureinpicture><source src="../_static/videos/se2-diff-drive-sweep.webm" type="video/webm"><source src="../_static/videos/se2-diff-drive-sweep.mp4" type="video/mp4"><img src="../_static/videos/se2-diff-drive-sweep.png" alt="Animated differential-drive robot sweep"></video><figcaption>
+<p><span class="caption-text">The differential-drive robot following the returned path.</span><a class="headerlink" href="#id9" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="keep-away-from-walls">
+<h2>6. Keep away from walls<a class="headerlink" href="#keep-away-from-walls" title="Link to this heading">#</a></h2>
+<p>The <strong>clearance metric</strong> (<a class="reference internal" href="../api/cpp.html#_CPPv4I00EN6geodex18SDFConformalMetricE" title="geodex::SDFConformalMetric"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">geodex::SDFConformalMetric</span></code></a>,
+<a class="reference internal" href="../api/python.html#geodex.ClearanceMetric" title="geodex.ClearanceMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">geodex.ClearanceMetric</span></code></a> in Python) scales a base metric by a factor that grows
+near obstacles,</p>
+<div class="math notranslate nohighlight">
+\[c(q) = 1 + \kappa \exp\bigl(-\beta \cdot \mathrm{sdf}(q)\bigr), \qquad
+\langle u, v \rangle_q^{\text{clear}} = c(q) \cdot \langle u, v \rangle_q^{\text{base}},\]</div>
+<p>where <span class="math notranslate nohighlight">\(\mathrm{sdf}(q)\)</span> is the signed distance from the robot to the nearest obstacle,
+<span class="math notranslate nohighlight">\(\kappa\)</span> the strength and <span class="math notranslate nohighlight">\(\beta\)</span> the falloff. A motion at <span class="math notranslate nohighlight">\(q\)</span> is
+<span class="math notranslate nohighlight">\(\sqrt{c(q)}\)</span> times as long as under the base metric, 1.58 times at zero clearance for
+<span class="math notranslate nohighlight">\(\kappa = 1.5\)</span>. For the disc robot, <a class="reference internal" href="../api/cpp.html#_CPPv4N6geodex9collision7GridSDFE" title="geodex::collision::GridSDF"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">geodex::collision::GridSDF</span></code></a> wraps the
+distance grid as a callable, and <a class="reference internal" href="../api/cpp.html#_CPPv4I0EN6geodex9collision11InflatedSDFE" title="geodex::collision::InflatedSDF"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">geodex::collision::InflatedSDF</span></code></a> subtracts the
+robot radius. A <code class="docutils literal notranslate"><span class="pre">ConfigurationSpace</span></code> puts the clearance metric on the SE(2) manifold.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-20" name="sd-tab-set-10" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-20">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Base metric, and an SDF inflated by the robot radius for a circular robot.</span>
+<span class="n">base_metric</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2LeftInvariantMetric</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+<span class="n">inflated_sdf</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">InflatedSDF</span><span class="p">(</span><span class="n">gc</span><span class="o">.</span><span class="n">GridSDF</span><span class="p">(</span><span class="n">grid</span><span class="p">),</span> <span class="mf">0.3</span><span class="p">)</span>
+
+<span class="c1"># Conformal clearance metric with kappa = 1.5 and beta = 3.0.</span>
+<span class="n">clearance_metric</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">ClearanceMetric</span><span class="p">(</span><span class="n">base_metric</span><span class="p">,</span> <span class="n">inflated_sdf</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">)</span>
+
+<span class="c1"># SE(2) topology with the clearance geometry.</span>
+<span class="n">se2</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2</span><span class="p">(</span><span class="n">x_lo</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">x_hi</span><span class="o">=</span><span class="n">world_w</span><span class="p">,</span> <span class="n">y_lo</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">y_hi</span><span class="o">=</span><span class="n">world_h</span><span class="p">)</span>
+<span class="n">cspace</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">ConfigurationSpace</span><span class="p">(</span><span class="n">se2</span><span class="p">,</span> <span class="n">clearance_metric</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.py">examples/tutorials/se2_planning.py</a></p>
+</div>
+<input id="sd-tab-item-21" name="sd-tab-set-10" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-21">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// Base metric, and an SDF inflated by the robot radius for a circular robot.</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftInvariantMetric</span><span class="w"> </span><span class="n">base_metric</span><span class="p">{</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">};</span>
+<span class="n">gc</span><span class="o">::</span><span class="n">InflatedSDF</span><span class="w"> </span><span class="n">inflated_sdf</span><span class="p">{</span><span class="n">gc</span><span class="o">::</span><span class="n">GridSDF</span><span class="p">{</span><span class="o">&amp;</span><span class="n">grid</span><span class="p">},</span><span class="w"> </span><span class="mf">0.3</span><span class="p">};</span>
+
+<span class="c1">// Conformal clearance metric with kappa = 1.5 and beta = 3.0.</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">SDFConformalMetric</span><span class="w"> </span><span class="n">clearance_metric</span><span class="p">{</span><span class="n">base_metric</span><span class="p">,</span><span class="w"> </span><span class="n">inflated_sdf</span><span class="p">,</span><span class="w"> </span><span class="mf">1.5</span><span class="p">,</span>
+<span class="w">                                            </span><span class="mf">3.0</span><span class="p">};</span>
+
+<span class="c1">// SE(2) topology with the clearance geometry.</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">SE2</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">se2</span><span class="p">{</span><span class="n">base_metric</span><span class="p">,</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftExponentialMap</span><span class="p">{},</span>
+<span class="w">                  </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">M_PI</span><span class="p">),</span>
+<span class="w">                  </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="p">(</span><span class="n">world_w</span><span class="p">,</span><span class="w"> </span><span class="n">world_h</span><span class="p">,</span><span class="w"> </span><span class="n">M_PI</span><span class="p">)};</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">ConfigurationSpace</span><span class="w"> </span><span class="n">cspace</span><span class="p">{</span><span class="n">se2</span><span class="p">,</span><span class="w"> </span><span class="n">clearance_metric</span><span class="p">};</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.cpp">examples/tutorials/se2_planning.cpp</a></p>
+</div>
+</div>
+</div>
+<figure class="align-center" id="id10">
+<a class="reference internal image-reference" href="../_images/conformal_factor.svg"><img alt="Conformal factor heatmap" src="../_images/conformal_factor.svg" style="width: 64%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">The factor <span class="math notranslate nohighlight">\(c(q)\)</span> over the corridor with <span class="math notranslate nohighlight">\(\kappa = 1.5\)</span> and <span class="math notranslate nohighlight">\(\beta = 3\)</span>.
+Warm colors near walls mark a large factor.</span><a class="headerlink" href="#id10" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id11">
+<a class="reference internal image-reference" href="../_images/clearance_comparison.svg"><img alt="Planning with and without clearance metric" src="../_images/clearance_comparison.svg" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">The disc robot. Left, the plain metric, whose path cuts close to walls. Right, the
+clearance metric with <span class="math notranslate nohighlight">\(\kappa = 1.5\)</span> and <span class="math notranslate nohighlight">\(\beta = 3\)</span>, whose path keeps its
+distance from the walls.</span><a class="headerlink" href="#id11" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>The footprint checker’s <code class="docutils literal notranslate"><span class="pre">operator()</span></code> returns the signed clearance of the footprint, and
+the same object serves as the planner’s validity check and the metric’s distance field.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-22" name="sd-tab-set-11" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-22">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">footprint</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">PolygonFootprint</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="mf">0.35</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="n">checker</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">FootprintGridChecker</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">footprint</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)</span>
+
+<span class="c1"># Binary validity for the planner.</span>
+<span class="n">is_valid</span> <span class="o">=</span> <span class="n">checker</span><span class="o">.</span><span class="n">is_valid</span>
+
+<span class="c1"># Continuous signed distance for the clearance metric, from the same object.</span>
+<span class="n">base_metric</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2LeftInvariantMetric</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+<span class="n">clearance_metric</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">ClearanceMetric</span><span class="p">(</span><span class="n">base_metric</span><span class="p">,</span> <span class="n">checker</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">)</span>
+
+<span class="n">se2</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2</span><span class="p">(</span><span class="n">wx</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">wy</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">wtheta</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                 <span class="n">x_lo</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">x_hi</span><span class="o">=</span><span class="n">world_w</span><span class="p">,</span> <span class="n">y_lo</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">y_hi</span><span class="o">=</span><span class="n">world_h</span><span class="p">)</span>
+<span class="n">cspace</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">ConfigurationSpace</span><span class="p">(</span><span class="n">se2</span><span class="p">,</span> <span class="n">clearance_metric</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.py">examples/tutorials/se2_planning.py</a></p>
+</div>
+<input id="sd-tab-item-23" name="sd-tab-set-11" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-23">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">auto</span><span class="w"> </span><span class="n">footprint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gc</span><span class="o">::</span><span class="n">PolygonFootprint</span><span class="o">::</span><span class="n">rectangle</span><span class="p">(</span><span class="mf">0.35</span><span class="p">,</span><span class="w"> </span><span class="mf">0.25</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">);</span>
+<span class="n">gc</span><span class="o">::</span><span class="n">FootprintGridChecker</span><span class="w"> </span><span class="n">checker</span><span class="p">{</span><span class="o">&amp;</span><span class="n">grid</span><span class="p">,</span><span class="w"> </span><span class="n">footprint</span><span class="p">,</span><span class="w"> </span><span class="mf">0.01</span><span class="p">};</span>
+
+<span class="c1">// Binary validity for the planner.</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">is_valid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="n">checker</span><span class="p">](</span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="o">&amp;</span><span class="w"> </span><span class="n">q</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">checker</span><span class="p">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">q</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="c1">// Continuous signed distance for the clearance metric, from the same object.</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftInvariantMetric</span><span class="w"> </span><span class="n">base_metric</span><span class="p">{</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">10.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">};</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">SDFConformalMetric</span><span class="w"> </span><span class="n">clearance_metric</span><span class="p">{</span><span class="n">base_metric</span><span class="p">,</span><span class="w"> </span><span class="n">checker</span><span class="p">,</span><span class="w"> </span><span class="mf">1.5</span><span class="p">,</span><span class="w"> </span><span class="mf">3.0</span><span class="p">};</span>
+
+<span class="n">geodex</span><span class="o">::</span><span class="n">SE2</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">se2</span><span class="p">{</span><span class="n">base_metric</span><span class="p">,</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftExponentialMap</span><span class="p">{},</span>
+<span class="w">                  </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">M_PI</span><span class="p">),</span>
+<span class="w">                  </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="p">(</span><span class="n">world_w</span><span class="p">,</span><span class="w"> </span><span class="n">world_h</span><span class="p">,</span><span class="w"> </span><span class="n">M_PI</span><span class="p">)};</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">ConfigurationSpace</span><span class="w"> </span><span class="n">cspace</span><span class="p">{</span><span class="n">se2</span><span class="p">,</span><span class="w"> </span><span class="n">clearance_metric</span><span class="p">};</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.cpp">examples/tutorials/se2_planning.cpp</a></p>
+</div>
+</div>
+</div>
+<figure class="align-center" id="id12">
+<video class="geodex-video" style="width:60%" poster="../_static/videos/se2-diff-clearance-sweep.png" aria-label="Animated differential-drive robot with clearance" autoplay loop muted playsinline disablepictureinpicture><source src="../_static/videos/se2-diff-clearance-sweep.webm" type="video/webm"><source src="../_static/videos/se2-diff-clearance-sweep.mp4" type="video/mp4"><img src="../_static/videos/se2-diff-clearance-sweep.png" alt="Animated differential-drive robot with clearance"></video><figcaption>
+<p><span class="caption-text">The differential-drive robot following the path under the clearance metric.</span><a class="headerlink" href="#id12" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="park-a-car">
+<h2>7. Park a car<a class="headerlink" href="#park-a-car" title="Link to this heading">#</a></h2>
+<p>The parking lot is a list of oriented rectangles (<a class="reference internal" href="../api/cpp.html#_CPPv4N6geodex9collision12RectObstacleE" title="geodex::collision::RectObstacle"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">geodex::collision::RectObstacle</span></code></a>),
+four parked cars along a curb with a gap between cars 2 and 3.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-24" name="sd-tab-set-12" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-24">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">car_hl</span><span class="p">,</span> <span class="n">car_hw</span> <span class="o">=</span> <span class="mf">2.25</span><span class="p">,</span> <span class="mf">0.9</span>  <span class="c1"># a 4.5 m x 1.8 m car</span>
+
+<span class="n">obstacles</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">gc</span><span class="o">.</span><span class="n">RectObstacle</span><span class="p">(</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">1.35</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">car_hl</span><span class="p">,</span> <span class="n">car_hw</span><span class="p">),</span>   <span class="c1"># parked car 1</span>
+    <span class="n">gc</span><span class="o">.</span><span class="n">RectObstacle</span><span class="p">(</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">1.35</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">car_hl</span><span class="p">,</span> <span class="n">car_hw</span><span class="p">),</span>  <span class="c1"># parked car 2</span>
+    <span class="n">gc</span><span class="o">.</span><span class="n">RectObstacle</span><span class="p">(</span><span class="mf">21.0</span><span class="p">,</span> <span class="mf">1.35</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">car_hl</span><span class="p">,</span> <span class="n">car_hw</span><span class="p">),</span>  <span class="c1"># parked car 3</span>
+    <span class="n">gc</span><span class="o">.</span><span class="n">RectObstacle</span><span class="p">(</span><span class="mf">26.0</span><span class="p">,</span> <span class="mf">1.35</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">car_hl</span><span class="p">,</span> <span class="n">car_hw</span><span class="p">),</span>  <span class="c1"># parked car 4</span>
+    <span class="n">gc</span><span class="o">.</span><span class="n">RectObstacle</span><span class="p">(</span><span class="mf">15.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">15.0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">),</span>     <span class="c1"># curb</span>
+    <span class="n">gc</span><span class="o">.</span><span class="n">RectObstacle</span><span class="p">(</span><span class="mf">15.0</span><span class="p">,</span> <span class="mf">10.05</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">15.0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">),</span>     <span class="c1"># sidewalk</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.py">examples/tutorials/se2_planning.py</a></p>
+</div>
+<input id="sd-tab-item-25" name="sd-tab-set-12" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-25">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">using</span><span class="w"> </span><span class="n">RectObstacle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gc</span><span class="o">::</span><span class="n">RectObstacle</span><span class="p">;</span>
+<span class="k">constexpr</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">car_hl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.25</span><span class="p">,</span><span class="w"> </span><span class="n">car_hw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.9</span><span class="p">;</span><span class="w">  </span><span class="c1">// a 4.5 m x 1.8 m car</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">RectObstacle</span><span class="o">&gt;</span><span class="w"> </span><span class="n">obstacles</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">{</span><span class="mf">5.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.35</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="n">car_hl</span><span class="p">,</span><span class="w"> </span><span class="n">car_hw</span><span class="p">},</span><span class="w">   </span><span class="c1">// parked car 1</span>
+<span class="w">    </span><span class="p">{</span><span class="mf">10.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.35</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="n">car_hl</span><span class="p">,</span><span class="w"> </span><span class="n">car_hw</span><span class="p">},</span><span class="w">  </span><span class="c1">// parked car 2</span>
+<span class="w">    </span><span class="p">{</span><span class="mf">21.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.35</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="n">car_hl</span><span class="p">,</span><span class="w"> </span><span class="n">car_hw</span><span class="p">},</span><span class="w">  </span><span class="c1">// parked car 3</span>
+<span class="w">    </span><span class="p">{</span><span class="mf">26.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.35</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="n">car_hl</span><span class="p">,</span><span class="w"> </span><span class="n">car_hw</span><span class="p">},</span><span class="w">  </span><span class="c1">// parked car 4</span>
+<span class="w">    </span><span class="p">{</span><span class="mf">15.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-0.05</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">15.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.05</span><span class="p">},</span><span class="w">     </span><span class="c1">// curb</span>
+<span class="w">    </span><span class="p">{</span><span class="mf">15.0</span><span class="p">,</span><span class="w"> </span><span class="mf">10.05</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">15.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.05</span><span class="p">},</span><span class="w">     </span><span class="c1">// sidewalk</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.cpp">examples/tutorials/se2_planning.cpp</a></p>
+</div>
+</div>
+</div>
+<figure class="align-center" id="id13">
+<a class="reference internal image-reference" href="../_images/parking_lot.svg"><img alt="Synthetic parking lot environment" src="../_images/parking_lot.svg" style="width: 67%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">The parking lot. The car starts on the right (green) and parks in the gap (orange star).</span><a class="headerlink" href="#id13" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>The car-like metric trades turning against driving at a turning radius of 1.5 m.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-26" name="sd-tab-set-13" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-26">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">metric</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2LeftInvariantMetric</span><span class="o">.</span><span class="n">car_like</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">)</span>
+<span class="c1"># Weights wx = 1.0, wy = 20.0, w_theta = 2.25 (= 1.5^2)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.py">examples/tutorials/se2_planning.py</a></p>
+</div>
+<input id="sd-tab-item-27" name="sd-tab-set-13" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-27">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">auto</span><span class="w"> </span><span class="n">metric</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftInvariantMetric</span><span class="o">::</span><span class="n">car_like</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span><span class="w"> </span><span class="mf">20.0</span><span class="p">);</span>
+<span class="c1">// Weights wx = 1.0, wy = 20.0, w_theta = 2.25 (= 1.5^2)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.cpp">examples/tutorials/se2_planning.cpp</a></p>
+</div>
+</div>
+</div>
+<p><a class="reference internal" href="../api/cpp.html#_CPPv4N6geodex9collision13RectSmoothSDFE" title="geodex::collision::RectSmoothSDF"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">geodex::collision::RectSmoothSDF</span></code></a> is a smooth signed distance to the rectangles,
+a log-sum-exp approximation of the minimum. Its <code class="docutils literal notranslate"><span class="pre">inflation</span></code> subtracts the car’s half width
+from every distance.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-28" name="sd-tab-set-14" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-28">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sdf</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">RectSmoothSDF</span><span class="p">(</span><span class="n">obstacles</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="n">car_hw</span><span class="p">)</span>
+<span class="c1"># beta = 20 (smoothness), inflation = car_hw (half-width of the ego vehicle)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.py">examples/tutorials/se2_planning.py</a></p>
+</div>
+<input id="sd-tab-item-29" name="sd-tab-set-14" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-29">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">gc</span><span class="o">::</span><span class="n">RectSmoothSDF</span><span class="w"> </span><span class="n">sdf</span><span class="p">{</span><span class="n">obstacles</span><span class="p">,</span><span class="w"> </span><span class="mf">20.0</span><span class="p">,</span><span class="w"> </span><span class="n">car_hw</span><span class="p">};</span>
+<span class="c1">// beta = 20 (smoothness), inflation = car_hw (half-width of the ego vehicle)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.cpp">examples/tutorials/se2_planning.cpp</a></p>
+</div>
+</div>
+</div>
+<p>The validity check tests the car’s rectangle against every obstacle with the
+separating-axis test <a class="reference internal" href="../api/cpp.html#_CPPv4N6geodex9collision13rects_overlapERK12RectObstacleRK12RectObstacle" title="geodex::collision::rects_overlap"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">geodex::collision::rects_overlap()</span></code></a>.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-30" name="sd-tab-set-15" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-30">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">is_valid</span><span class="p">(</span><span class="n">q</span><span class="p">):</span>
+    <span class="n">ego</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">RectObstacle</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">q</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">car_hl</span><span class="p">,</span> <span class="n">car_hw</span><span class="p">)</span>
+    <span class="k">return</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">gc</span><span class="o">.</span><span class="n">rects_overlap</span><span class="p">(</span><span class="n">ego</span><span class="p">,</span> <span class="n">obs</span><span class="p">)</span> <span class="k">for</span> <span class="n">obs</span> <span class="ow">in</span> <span class="n">obstacles</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.py">examples/tutorials/se2_planning.py</a></p>
+</div>
+<input id="sd-tab-item-31" name="sd-tab-set-15" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-31">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">auto</span><span class="w"> </span><span class="n">is_valid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="p">](</span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="o">&amp;</span><span class="w"> </span><span class="n">q</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">RectObstacle</span><span class="w"> </span><span class="n">ego</span><span class="p">{</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="n">q</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="w"> </span><span class="n">car_hl</span><span class="p">,</span><span class="w"> </span><span class="n">car_hw</span><span class="p">};</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">obs</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">obstacles</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">gc</span><span class="o">::</span><span class="n">rects_overlap</span><span class="p">(</span><span class="n">ego</span><span class="p">,</span><span class="w"> </span><span class="n">obs</span><span class="p">))</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.cpp">examples/tutorials/se2_planning.cpp</a></p>
+</div>
+</div>
+</div>
+<p>The clearance metric with <span class="math notranslate nohighlight">\(\kappa = 8\)</span> keeps the car away from the parked cars. The
+parking maneuver reverses into the gap, and the plan does not use a directional validator.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-32" name="sd-tab-set-16" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-32">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">base_metric</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2LeftInvariantMetric</span><span class="o">.</span><span class="n">car_like</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">)</span>
+<span class="n">sdf</span> <span class="o">=</span> <span class="n">gc</span><span class="o">.</span><span class="n">RectSmoothSDF</span><span class="p">(</span><span class="n">obstacles</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="n">car_hw</span><span class="p">)</span>
+<span class="n">clearance_metric</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">ClearanceMetric</span><span class="p">(</span><span class="n">base_metric</span><span class="p">,</span> <span class="n">sdf</span><span class="p">,</span> <span class="mf">8.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">)</span>
+
+<span class="n">se2</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2</span><span class="o">.</span><span class="n">car_like</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="n">x_lo</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">x_hi</span><span class="o">=</span><span class="mf">30.0</span><span class="p">,</span> <span class="n">y_lo</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">y_hi</span><span class="o">=</span><span class="mf">12.0</span><span class="p">)</span>
+<span class="n">cspace</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">ConfigurationSpace</span><span class="p">(</span><span class="n">se2</span><span class="p">,</span> <span class="n">clearance_metric</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.py">examples/tutorials/se2_planning.py</a></p>
+</div>
+<input id="sd-tab-item-33" name="sd-tab-set-16" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-33">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">auto</span><span class="w"> </span><span class="n">base_metric</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftInvariantMetric</span><span class="o">::</span><span class="n">car_like</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span><span class="w"> </span><span class="mf">20.0</span><span class="p">);</span>
+<span class="n">gc</span><span class="o">::</span><span class="n">RectSmoothSDF</span><span class="w"> </span><span class="n">sdf</span><span class="p">{</span><span class="n">obstacles</span><span class="p">,</span><span class="w"> </span><span class="mf">20.0</span><span class="p">,</span><span class="w"> </span><span class="n">car_hw</span><span class="p">};</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">SDFConformalMetric</span><span class="w"> </span><span class="n">clearance_metric</span><span class="p">{</span><span class="n">base_metric</span><span class="p">,</span><span class="w"> </span><span class="n">sdf</span><span class="p">,</span><span class="w"> </span><span class="mf">8.0</span><span class="p">,</span><span class="w"> </span><span class="mf">3.0</span><span class="p">};</span>
+
+<span class="n">geodex</span><span class="o">::</span><span class="n">SE2</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">se2</span><span class="p">{</span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftInvariantMetric</span><span class="o">::</span><span class="n">car_like</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span><span class="w"> </span><span class="mf">20.0</span><span class="p">),</span>
+<span class="w">                  </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftExponentialMap</span><span class="p">{},</span>
+<span class="w">                  </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">M_PI</span><span class="p">),</span>
+<span class="w">                  </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="p">(</span><span class="mf">30.0</span><span class="p">,</span><span class="w"> </span><span class="mf">12.0</span><span class="p">,</span><span class="w"> </span><span class="n">M_PI</span><span class="p">)};</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">ConfigurationSpace</span><span class="w"> </span><span class="n">cspace</span><span class="p">{</span><span class="n">se2</span><span class="p">,</span><span class="w"> </span><span class="n">clearance_metric</span><span class="p">};</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.cpp">examples/tutorials/se2_planning.cpp</a></p>
+</div>
+</div>
+</div>
+<figure class="align-center" id="id14">
+<a class="reference internal image-reference" href="../_images/parking_result.svg"><img alt="Car-like parallel parking result" src="../_images/parking_result.svg" style="width: 67%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">The car approaches from the right and reverses into the gap between the parked cars.</span><a class="headerlink" href="#id14" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id15">
+<video class="geodex-video" style="width:70%" poster="../_static/videos/se2-parking-footprints.png" aria-label="Animated parking footprint sweep" autoplay loop muted playsinline disablepictureinpicture><source src="../_static/videos/se2-parking-footprints.webm" type="video/webm"><source src="../_static/videos/se2-parking-footprints.mp4" type="video/mp4"><img src="../_static/videos/se2-parking-footprints.png" alt="Animated parking footprint sweep"></video><figcaption>
+<p><span class="caption-text">The car’s footprint along the parking path.</span><a class="headerlink" href="#id15" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>Near the start and the goal, the path can turn in place where a real car would need a
+multi-point turn.</p>
+</section>
+<section id="try-it-plan-without-the-directional-validator">
+<h2>8. Try it: plan without the directional validator<a class="headerlink" href="#try-it-plan-without-the-directional-validator" title="Link to this heading">#</a></h2>
+<p>Plan the differential-drive robot of step 5 again without <code class="docutils literal notranslate"><span class="pre">motion_validator</span></code> and measure
+how far each path drives backward.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-34" name="sd-tab-set-17" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-34">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">reverse_travel</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Distance the robot drives backward, from the SE(2) logarithm of each edge."""</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="n">se2</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">path</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+
+<span class="n">free</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">plan</span><span class="p">(</span><span class="n">se2</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">goal</span><span class="p">,</span> <span class="n">checker</span><span class="o">.</span><span class="n">is_valid</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"backward driving: </span><span class="si">{</span><span class="n">reverse_travel</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">path</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> m with the validator, "</span>
+      <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">reverse_travel</span><span class="p">(</span><span class="n">free</span><span class="o">.</span><span class="n">path</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> m without"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.py">examples/tutorials/se2_planning.py</a></p>
+</div>
+<input id="sd-tab-item-35" name="sd-tab-set-17" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-35">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// Distance the robot drives backward, from the SE(2) logarithm of each edge.</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">reverse_travel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="n">se2</span><span class="p">](</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kt">double</span><span class="w"> </span><span class="n">reverse</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">path</span><span class="p">.</span><span class="n">size</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">reverse</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">se2</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="w"> </span><span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">]);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">reverse</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">free</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gp</span><span class="o">::</span><span class="n">plan</span><span class="p">(</span><span class="n">se2</span><span class="p">,</span><span class="w"> </span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="n">goal</span><span class="p">,</span><span class="w"> </span><span class="n">is_valid</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"backward driving: %.3f m with the validator, %.3f m without</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+<span class="w">            </span><span class="n">reverse_travel</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">path</span><span class="p">),</span><span class="w"> </span><span class="n">reverse_travel</span><span class="p">(</span><span class="n">free</span><span class="p">.</span><span class="n">path</span><span class="p">));</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/se2_planning.cpp">examples/tutorials/se2_planning.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">backward</span> <span class="pre">driving:</span> <span class="pre">0.147</span> <span class="pre">m</span> <span class="pre">with</span> <span class="pre">the</span> <span class="pre">validator,</span> <span class="pre">15.984</span> <span class="pre">m</span> <span class="pre">without</span></code>. Without the
+validator, the robot drives most of the corridor backward.</p>
+</section>
+<section id="where-to-go-next">
+<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../robots/navigation.html"><span class="doc">Navigation</span></a> plans three Clearpath bases with these tools.</p></li>
+<li><p><a class="reference internal" href="../concepts/metrics.html"><span class="doc">Metrics as Robot Models</span></a> covers the left-invariant and clearance metrics.</p></li>
+<li><p><a class="reference internal" href="../concepts/smoothing.html"><span class="doc">Path Smoothing</span></a> covers the smoother and what it checks.</p></li>
+<li><p><a class="reference internal" href="geodex-basics.html"><span class="doc">geodex Basics</span></a> introduces manifolds, metrics and geodesics.</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="minimum-energy-planning.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Minimum-Energy Planning on Configuration Manifolds</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../robots/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Robot Guides</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#describe-poses-and-footprints">1. Describe poses and footprints</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#choose-a-metric">2. Choose a metric</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#load-the-corridor-map">3. Load the corridor map</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plan-for-a-disc-robot">4. Plan for a disc robot</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plan-for-a-differential-drive-robot">5. Plan for a differential-drive robot</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#keep-away-from-walls">6. Keep away from walls</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#park-a-car">7. Park a car</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#try-it-plan-without-the-directional-validator">8. Try it: plan without the directional validator</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#where-to-go-next">Where to go next</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Space and Terrestrial Autonomous Robotic Systems (STARS) Lab.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

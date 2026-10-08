@@ -1,0 +1,1391 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Planning &#8212; geodex</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/robot-viewer/robot-viewer.css?v=77e37a9e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=28229f57" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme.css?v=26c09b9b" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../_static/documentation_options.js?v=8d563738"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=b8b12719"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>window.MathJax = {"loader": {"paths": {"mathjax-termes": "[mathjax]/fonts/termes"}}, "chtml": {"font": "mathjax-termes"}, "options": {"enableSpeech": false, "enableBraille": false, "enableEnrichment": false, "enableExplorer": false, "menuOptions": {"settings": {"speech": false, "braille": false, "enrich": false}}}}</script>
+    <script defer="defer" src="../_static/mathjax/tex-mml-chtml.js?v=4a2f07e4"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
+
+
+
+const initStyles = () => {
+    const defaultStyle = document.createElement('style');
+    defaultStyle.textContent = "pre.mermaid {\n    /* Same as .mermaid-container > pre */\n    display: block;\n    width: 100%;\n}\n\npre.mermaid > svg {\n    /* Same as .mermaid-container > pre > svg */\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}";
+    document.head.appendChild(defaultStyle);
+
+    const fullscreenStyle = document.createElement('style');
+    fullscreenStyle.textContent = ".mermaid-container {\n    position: relative;\n    display: flex;\n    flex-direction: row;\n    width: 100%;\n}\n\n.mermaid-container > pre {\n    display: block;\n    width: 100%;\n}\n\n.mermaid-container > pre > svg {\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}\n\n.mermaid-fullscreen-btn {\n    position: absolute;\n    width: 28px;\n    height: 28px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.3);\n    border-radius: 4px;\n    cursor: pointer;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    transition: all 0.2s;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);\n    font-size: 14px;\n    line-height: 1;\n    padding: 0;\n    color: #333;\n}\n\n.mermaid-fullscreen-btn:hover {\n    opacity: 100% !important;\n    background: rgba(255, 255, 255, 1);\n    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-btn.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-btn.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal {\n    display: none;\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 95vw;\n    height: 100vh;\n    background: rgba(255, 255, 255, 0.98);\n    z-index: 9999;\n    padding: 20px;\n    overflow: auto;\n}\n\n.mermaid-fullscreen-modal.dark-theme {\n    background: rgba(0, 0, 0, 0.98);\n}\n\n.mermaid-fullscreen-modal.active {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen {\n    position: relative;\n    width: 95vw;\n    height: 90vh;\n    max-width: 95vw;\n    max-height: 90vh;\n    background: white;\n    border-radius: 8px;\n    padding: 20px;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);\n    overflow: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen.dark-theme {\n    background: #1a1a1a;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);\n}\n\n.mermaid-container-fullscreen pre.mermaid {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen .mermaid svg {\n    height: 100% !important;\n    width: 100% !important;\n    cursor: grab;\n}\n\n.mermaid-fullscreen-close {\n    position: fixed !important;\n    top: 20px !important;\n    right: 20px !important;\n    width: 40px;\n    height: 40px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.2);\n    border-radius: 50%;\n    cursor: pointer;\n    z-index: 10000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);\n    transition: all 0.2s;\n    font-size: 24px;\n    line-height: 1;\n    color: #333;\n}\n\n.mermaid-fullscreen-close:hover {\n    background: white;\n    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-close.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-close.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal .mermaid-fullscreen-btn {\n    display: none !important;\n}";
+    document.head.appendChild(fullscreenStyle);
+}
+
+// Detect if page has dark background
+const isDarkTheme = () => {
+    // We use a set of heuristics:
+    // 1. Check for common dark mode classes or attributes
+    // 2. Check computed background color brightness
+    if (document.documentElement.classList.contains('dark') ||
+        document.documentElement.getAttribute('data-theme') === 'dark' ||
+        document.body.classList.contains('dark') ||
+        document.body.getAttribute('data-theme') === 'dark') {
+        // console.log("Dark theme detected via class/attribute");
+        return true;
+    }
+    if (document.documentElement.classList.contains('light') ||
+        document.documentElement.getAttribute('data-theme') === 'light' ||
+        document.body.classList.contains('light') ||
+        document.body.getAttribute('data-theme') === 'light') {
+        // console.log("Light theme detected via class/attribute");
+        return false;
+    }
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        // console.log("Dark theme detected via prefers-color-scheme");
+        return true;
+    }
+    const bgColor = window.getComputedStyle(document.body).backgroundColor;
+    const match = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+        const r = parseInt(match[1]);
+        const g = parseInt(match[2]);
+        const b = parseInt(match[3]);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        // console.log("Background color brightness:", brightness);
+        return brightness < 128;
+    }
+    // console.log("No dark or light theme detected, defaulting to light theme");
+    return false;
+};
+
+let darkTheme = isDarkTheme();
+let modal = null;
+let modalContent = null;
+let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+let closeModal = () => {};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
+
+const runMermaid = async (rerun) => {
+    console.log("Running mermaid diagrams, rerun =", rerun);
+    // clear all existing mermaid charts
+    let all_mermaids = document.querySelectorAll(".mermaid");
+
+    if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
+        all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
+            if(!el.hasAttribute("data-original-code")) {
+                // store original code
+                // console.log(`Storing original code for first run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+            if(el.getAttribute("data-processed") === "true") {
+                // remove and restore original
+                el.removeAttribute("data-processed");
+                // console.log(`Restoring original code for re-run: `, el.getAttribute('data-original-code'));
+                el.innerHTML = el.getAttribute('data-original-code');
+            } else {
+                // store original code
+                // console.log(`Storing original code for re-run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+        });
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if (false) {
+                                        addZoomToSvgs(d3.selectAll("").select(function() {
+                                            return this.querySelector("svg");
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
+    }
+
+    all_mermaids = document.querySelectorAll(".mermaid");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
+
+    if (false) {
+        const mermaids_to_add_zoom = 0 === -1 ? mermaids_active.length : 0;
+        if(mermaids_to_add_zoom > 0) {
+            var svgs = d3.selectAll("").select(function() {
+                return this.querySelector("svg");
+            });
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
+                setTimeout(() => runMermaid(false), 200);
+                return;
+            }
+            addZoomToSvgs(svgs);
+        }
+    } else if(mermaids_active.length !== mermaids_processed.length) {
+        // Wait for mermaid to process all diagrams
+        setTimeout(() => runMermaid(false), 200);
+        return;
+    }
+
+    // Stop here if not adding fullscreen capability
+    if (!true) return;
+
+    if (modal !== null ) {
+        // Destroy existing modal
+        modal.remove();
+        modal = null;
+        modalContent = null;
+    }
+
+    modal = document.createElement('div');
+    modal.className = 'mermaid-fullscreen-modal' + (darkTheme ? ' dark-theme' : '');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Fullscreen diagram viewer');
+    modal.innerHTML = `
+        <button class="mermaid-fullscreen-close${darkTheme ? ' dark-theme' : ''}" aria-label="Close fullscreen">✕</button>
+        <div class="mermaid-container-fullscreen${darkTheme ? ' dark-theme' : ''}"></div>
+    `;
+    document.body.appendChild(modal);
+
+    modalContent = modal.querySelector('.mermaid-container-fullscreen');
+    const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
+
+    closeModal = () => {
+        modal.classList.remove('active');
+        modalContent.innerHTML = '';
+        document.body.style.overflow = ''
+        window.scrollTo({left: previousScrollOffset[0], top: previousScrollOffset[1], behavior: 'instant'});
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+    document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
+        if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
+            mermaidDiv.closest('.mermaid-fullscreen-modal')) {
+            // Already processed, adjust button class if needed
+            const existingBtn = mermaidDiv.parentNode.querySelector('.mermaid-fullscreen-btn');
+            if (existingBtn) {
+                existingBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+            }
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.className = 'mermaid-container';
+        mermaidDiv.parentNode.insertBefore(container, mermaidDiv);
+        container.appendChild(mermaidDiv);
+
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+        fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
+        fullscreenBtn.textContent = "\u26f6";
+        fullscreenBtn.style.opacity = "50%";
+
+        // Calculate dynamic position based on diagram's margin and padding
+        const diagramStyle = window.getComputedStyle(mermaidDiv);
+        const marginTop = parseFloat(diagramStyle.marginTop) || 0;
+        const marginRight = parseFloat(diagramStyle.marginRight) || 0;
+        const paddingTop = parseFloat(diagramStyle.paddingTop) || 0;
+        const paddingRight = parseFloat(diagramStyle.paddingRight) || 0;
+        fullscreenBtn.style.top = `${marginTop + paddingTop + 4}px`;
+        fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
+
+        fullscreenBtn.addEventListener('click', () => {
+            previousScrollOffset = [window.scrollX, window.scrollY];
+            const clone = mermaidDiv.cloneNode(true);
+            modalContent.innerHTML = '';
+            modalContent.appendChild(clone);
+
+            const svg = clone.querySelector('svg');
+            if (svg) {
+                svg.removeAttribute('width');
+                svg.removeAttribute('height');
+                svg.style.width = '100%';
+                svg.style.height = 'auto';
+                svg.style.maxWidth = '100%';
+                svg.style.display = 'block';
+
+                if (false) {
+                    setTimeout(() => {
+                        const g = svg.querySelector('g');
+                        if (g) {
+                            var svgD3 = d3.select(svg);
+                            svgD3.html("<g class='wrapper'>" + svgD3.html() + "</g>");
+                            var inner = svgD3.select("g");
+                            var zoom = d3.zoom().on("zoom", function(event) {
+                                inner.attr("transform", event.transform);
+                            });
+                            svgD3.call(zoom);
+                        }
+                    }, 100);
+                }
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        container.appendChild(fullscreenBtn);
+    });
+};
+
+
+
+const load = async () => {
+    initStyles();
+
+
+    await runMermaid(true);
+
+    const reRunIfThemeChanges = async () => {
+        const newDarkTheme = isDarkTheme();
+        if (newDarkTheme !== darkTheme) {
+            darkTheme = newDarkTheme;
+            console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
+            await mermaid.initialize(
+                {...{"startOnLoad": false, "theme": "base", "themeVariables": {"primaryColor": "#e7f0fa", "primaryTextColor": "#1a1a1a", "primaryBorderColor": "#2980b9", "lineColor": "#2980b9", "secondaryColor": "#e7f0fa", "tertiaryColor": "#f7fbfe", "background": "transparent", "fontFamily": "Helvetica,Arial,sans-serif"}, "class": {"useMaxWidth": false}, "classDiagram": {"useMaxWidth": false}, "flowchart": {"useMaxWidth": false}, "sequence": {"useMaxWidth": false}},
+                ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+                }
+            );
+            await runMermaid(true);
+        }
+    };
+
+    // Update theme classes when theme changes
+    const themeObserver = new MutationObserver(reRunIfThemeChanges);
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+    themeObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+};
+
+
+
+
+
+console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
+mermaid.initialize(
+    {...{"startOnLoad": false, "theme": "base", "themeVariables": {"primaryColor": "#e7f0fa", "primaryTextColor": "#1a1a1a", "primaryBorderColor": "#2980b9", "lineColor": "#2980b9", "secondaryColor": "#e7f0fa", "tertiaryColor": "#f7fbfe", "background": "transparent", "fontFamily": "Helvetica,Arial,sans-serif"}, "class": {"useMaxWidth": false}, "classDiagram": {"useMaxWidth": false}, "flowchart": {"useMaxWidth": false}, "sequence": {"useMaxWidth": false}},
+    ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+    }
+);
+
+window.addEventListener("load", load);
+window.runMermaid = runMermaid;</script>
+    <script type="module" src="../_static/robot-viewer/robot-viewer.js?v=4cd922f8"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'concepts/planning';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <script src="../_static/mermaid-intrinsic-size.js?v=f42d09f7"></script>
+    <script src="../_static/geodex.js?v=d44686ee"></script>
+    <link rel="icon" href="../_static/favicon.svg"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Path Smoothing" href="smoothing.html" />
+    <link rel="prev" title="Discrete Geodesic Interpolation" href="discrete-geodesic-interpolation.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="1.0.0" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/logo-light.svg" class="logo__image only-light" alt=""/>
+    <img src="../_static/logo-dark.svg" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">geodex</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting-started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Core Concepts
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../robots/index.html">
+    Robot Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../ros2/index.html">
+    ROS 2
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/utiasSTARS/geodex" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pygeodex/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting-started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Core Concepts
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../robots/index.html">
+    Robot Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../ros2/index.html">
+    ROS 2
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/utiasSTARS/geodex" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pygeodex/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="riemannian-geometry.html">Riemannian Geometry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Concept Hierarchy and Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="metrics.html">Metrics as Robot Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sampling.html">Sampling on Manifolds</a></li>
+<li class="toctree-l1"><a class="reference internal" href="discrete-geodesic-interpolation.html">Discrete Geodesic Interpolation</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Planning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="smoothing.html">Path Smoothing</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Core Concepts</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Planning</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="planning">
+<h1>Planning<a class="headerlink" href="#planning" title="Link to this heading">#</a></h1>
+<p><a class="reference internal" href="../api/python.html#geodex.plan" title="geodex.plan"><code class="xref py py-func docutils literal notranslate"><span class="pre">geodex.plan()</span></code></a> (<a class="reference internal" href="../api/cpp.html#_CPPv4I00EN6geodex8planning4planE10PlanResultIN9ManifoldT5PointEERK9ManifoldTRKN9ManifoldT5PointERKN9ManifoldT5PointERKNSt8functionIFbRKN9ManifoldT5PointEEEERK12PlanSettingsRK10HeuristicTRKNSt8functionIFNSt10shared_ptrIN4ompl4base15MotionValidatorEEERKN4ompl4base19SpaceInformationPtrEEEE" title="geodex::planning::plan"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">geodex::planning::plan()</span></code></a> in C++) turns a manifold, a validity
+function, a start and a goal into a collision-free path that is short under the manifold’s
+metric. It sets up the planning problem, runs the planner and smooths the result. The same
+function plans on the sphere, on <span class="math notranslate nohighlight">\(\mathrm{SE}(2)\)</span> and in the joint space of an arm. This
+page covers what <code class="docutils literal notranslate"><span class="pre">plan</span></code> does, its settings, and how an admissible heuristic focuses the
+search.</p>
+<section id="a-first-plan">
+<h2>A first plan<a class="headerlink" href="#a-first-plan" title="Link to this heading">#</a></h2>
+<p>The sphere below has two cap-shaped obstacles between the start and the goal. The validity
+function returns <code class="docutils literal notranslate"><span class="pre">True</span></code> outside both caps, and <code class="docutils literal notranslate"><span class="pre">plan</span></code> searches for a path with 2000
+iterations and seed 7.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-0">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">geodex</span>
+
+<span class="n">sphere</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Sphere</span><span class="p">()</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">point</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The point of the unit sphere at a longitude and latitude in degrees."""</span>
+    <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lon</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lon</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lon</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lat</span><span class="p">)])</span>
+
+<span class="c1"># Two caps are obstacles, each a center and an angular radius.</span>
+<span class="n">caps</span> <span class="o">=</span> <span class="p">[(</span><span class="n">point</span><span class="p">(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">18</span><span class="p">)),</span> <span class="p">(</span><span class="n">point</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">36</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">12</span><span class="p">))]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">is_valid</span><span class="p">(</span><span class="n">q</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="n">q</span> <span class="o">@</span> <span class="n">center</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span> <span class="k">for</span> <span class="n">center</span><span class="p">,</span> <span class="n">radius</span> <span class="ow">in</span> <span class="n">caps</span><span class="p">)</span>
+
+<span class="n">start</span><span class="p">,</span> <span class="n">goal</span> <span class="o">=</span> <span class="n">point</span><span class="p">(</span><span class="o">-</span><span class="mi">40</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">point</span><span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">22</span><span class="p">)</span>
+
+<span class="n">settings</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">PlanSettings</span><span class="p">(</span><span class="n">iterations</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">plan</span><span class="p">(</span><span class="n">sphere</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">goal</span><span class="p">,</span> <span class="n">is_valid</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"solved=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">solved</span><span class="si">}</span><span class="s2"> cost=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">cost</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> waypoints=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">path</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/planning.py">examples/concepts/planning.py</a></p>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-1">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;cmath&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;cstdio&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;utility&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;vector&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;geodex/geodex.hpp&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;geodex/planning/plan.hpp&gt;</span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">gp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">geodex</span><span class="o">::</span><span class="nn">planning</span><span class="p">;</span>
+
+<span class="n">geodex</span><span class="o">::</span><span class="n">Sphere</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">sphere</span><span class="p">;</span>
+
+<span class="c1">// The point of the unit sphere at a longitude and latitude in degrees.</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[](</span><span class="kt">double</span><span class="w"> </span><span class="n">lon</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">lat</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">lon</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">M_PI</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">180.0</span><span class="p">;</span>
+<span class="w">  </span><span class="n">lat</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">M_PI</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">180.0</span><span class="p">;</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">cos</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cos</span><span class="p">(</span><span class="n">lon</span><span class="p">),</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cos</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">sin</span><span class="p">(</span><span class="n">lon</span><span class="p">),</span>
+<span class="w">                         </span><span class="n">std</span><span class="o">::</span><span class="n">sin</span><span class="p">(</span><span class="n">lat</span><span class="p">));</span>
+<span class="p">};</span>
+
+<span class="c1">// Two caps are obstacles, each a center and an angular radius.</span>
+<span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">pair</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">caps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">{</span><span class="n">point</span><span class="p">(</span><span class="mi">-4</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">),</span><span class="w"> </span><span class="mf">18.0</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">M_PI</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">180.0</span><span class="p">)},</span><span class="w"> </span><span class="p">{</span><span class="n">point</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span><span class="w"> </span><span class="mi">36</span><span class="p">),</span><span class="w"> </span><span class="mf">12.0</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">M_PI</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">180.0</span><span class="p">)}};</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">is_valid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="n">caps</span><span class="p">](</span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="o">&amp;</span><span class="w"> </span><span class="n">q</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="p">[</span><span class="n">center</span><span class="p">,</span><span class="w"> </span><span class="n">radius</span><span class="p">]</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">caps</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">q</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">center</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cos</span><span class="p">(</span><span class="n">radius</span><span class="p">))</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">start</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">point</span><span class="p">(</span><span class="mi">-40</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">),</span><span class="w"> </span><span class="n">goal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">point</span><span class="p">(</span><span class="mi">40</span><span class="p">,</span><span class="w"> </span><span class="mi">22</span><span class="p">);</span>
+
+<span class="n">gp</span><span class="o">::</span><span class="n">PlanSettings</span><span class="w"> </span><span class="n">settings</span><span class="p">;</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">iterations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2000</span><span class="p">;</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">seed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">7</span><span class="p">;</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gp</span><span class="o">::</span><span class="n">plan</span><span class="p">(</span><span class="n">sphere</span><span class="p">,</span><span class="w"> </span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="n">goal</span><span class="p">,</span><span class="w"> </span><span class="n">is_valid</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">);</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"solved=%d cost=%.4f waypoints=%zu</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">solved</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">cost</span><span class="p">,</span>
+<span class="w">            </span><span class="n">result</span><span class="p">.</span><span class="n">path</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/planning.cpp">examples/concepts/planning.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">solved=True</span> <span class="pre">cost=1.3725</span> <span class="pre">waypoints=77</span></code>.</p>
+<div class="geodex-figure geodex-robot-figure docutils container">
+<div class="geodex-robot-scene" data-scene="../_static/robot-scenes/planning-sphere.json" data-robots="../_static/robots/" data-alt="A path on the unit sphere from a green start to an orange goal that passes between
+two dark blue caps." style="aspect-ratio:16/9;width:100%;margin:0 auto"><img class="geodex-robot-poster" src="../_static/robot-scenes/planning-sphere.jpg" alt="A path on the unit sphere from a green start to an orange goal that passes between
+two dark blue caps." loading="lazy"><div class="geodex-robot-stage"></div><div class="geodex-robot-hint" aria-hidden="true">Drag to orbit</div><div class="geodex-robot-controls" hidden><button type="button" class="geodex-robot-play" aria-label="Play"><svg class="geodex-robot-icon-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg><svg class="geodex-robot-icon-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 2.5h3v11h-3zM9.5 2.5h3v11h-3z"/></svg></button><input type="range" class="geodex-robot-scrub" min="0" max="1000" value="1000" aria-label="Position along the path"></div></div><div class="geodex-caption docutils container">
+<p>The path that <code class="docutils literal notranslate"><span class="pre">plan</span></code> returns passes between the two caps. Drag to orbit, and use the
+controls to pause the ball or move it along the path.</p>
+</div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">result.path</span></code> holds the smoothed path at evenly spaced waypoints. Draw it or hand it to a
+controller as it is. <code class="docutils literal notranslate"><span class="pre">result.raw_path</span></code> holds the planner’s waypoints before smoothing.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-2" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-2">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">raw</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">raw_path</span>    <span class="c1"># planner waypoints, shape (n, 3)</span>
+<span class="n">path</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">path</span>       <span class="c1"># smoothed, checked and evenly spaced waypoints, shape (m, 3)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"raw waypoints=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span><span class="si">}</span><span class="s2"> smoothed=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">smoothed</span><span class="si">}</span><span class="s2"> "</span>
+      <span class="sa">f</span><span class="s2">"solve=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">time_ms</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> ms smooth=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">smooth_ms</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> ms"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/planning.py">examples/concepts/planning.py</a></p>
+</div>
+<input id="sd-tab-item-3" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-3">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">raw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">raw_path</span><span class="p">;</span><span class="w">  </span><span class="c1">// planner waypoints</span>
+<span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">path</span><span class="p">;</span><span class="w">     </span><span class="c1">// smoothed, checked and evenly spaced waypoints</span>
+<span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"raw waypoints=%zu smoothed=%d solve=%.1f ms smooth=%.1f ms</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+<span class="w">            </span><span class="n">raw</span><span class="p">.</span><span class="n">size</span><span class="p">(),</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">smoothed</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">time_ms</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">smooth_ms</span><span class="p">);</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/planning.cpp">examples/concepts/planning.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">raw</span> <span class="pre">waypoints=6</span> <span class="pre">smoothed=True</span></code> and the times of the search and of the smoother.</p>
+</section>
+<section id="what-plan-does">
+<h2>What <code class="docutils literal notranslate"><span class="pre">plan</span></code> does<a class="headerlink" href="#what-plan-does" title="Link to this heading">#</a></h2>
+<pre  class="mermaid">
+        %%{init: {'theme':'base','themeVariables':{'primaryColor':'#e7f0fa','primaryTextColor':'#1a1a1a','primaryBorderColor':'#2980b9','lineColor':'#2980b9','secondaryColor':'#e7f0fa','tertiaryColor':'#f7fbfe','background':'transparent'}}}%%
+flowchart LR
+    A[&quot;manifold&lt;br/&gt;start, goal&quot;] --&gt; B[&quot;state space&lt;br/&gt;and bounds&quot;]
+    B --&gt; C[&quot;validity and&lt;br/&gt;edge checks&quot;]
+    C --&gt; D[&quot;path length&lt;br/&gt;and heuristic&quot;]
+    D --&gt; E[&quot;G-RRT*&quot;]
+    E --&gt; F[&quot;planner's&lt;br/&gt;path&quot;]
+    F --&gt; G[&quot;smoother&quot;]
+    G --&gt; H[&quot;PlanResult&quot;]
+    </pre><p><code class="docutils literal notranslate"><span class="pre">plan</span></code> wraps the manifold in an OMPL state space. Its bounds are the manifold’s sampling
+bounds, grown to hold the start and the goal. The planner takes its samples from the
+manifold’s own sampler and checks every edge (see <a class="reference internal" href="#edges-and-motion-validators">Edges and motion validators</a>). The cost of
+an edge is its length under the metric.</p>
+<p>The planner is <strong>G-RRT*</strong> <a class="footnote-reference brackets" href="#footcite-kyaw2026greedy" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>, an asymptotically optimal,
+bidirectional variant of RRT*. It finds a first path, then keeps sampling to shorten it, and
+uses a heuristic to sample only where a shorter path can pass (see
+<a class="reference internal" href="#heuristics-and-informed-sampling">Heuristics and informed sampling</a>). The search runs for <code class="docutils literal notranslate"><span class="pre">iterations</span></code> iterations when that
+is set, and for <code class="docutils literal notranslate"><span class="pre">time</span></code> seconds otherwise.</p>
+<p>The smoother then shortens the planner’s path, rounds its corners and checks the result
+against the same validity function (see <a class="reference internal" href="smoothing.html"><span class="doc">Path Smoothing</span></a>). <code class="docutils literal notranslate"><span class="pre">path</span></code> holds the smoother’s output
+when it passes the check, and the planner’s path otherwise.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">solved</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when the planner found a path to the goal within its budget.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">path</span></code></p></td>
+<td><p>The returned path as evenly spaced waypoints.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">raw_path</span></code></p></td>
+<td><p>The planner’s waypoints before smoothing.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">smoothed</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when <code class="docutils literal notranslate"><span class="pre">path</span></code> is the smoother’s output.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cost</span></code></p></td>
+<td><p>The length of <code class="docutils literal notranslate"><span class="pre">path</span></code> under the metric.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">time_ms</span></code></p></td>
+<td><p>Time of the search in milliseconds.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">smooth_ms</span></code></p></td>
+<td><p>Time of the smoother in milliseconds.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">first_solution_ms</span></code></p></td>
+<td><p>Time until the search found its first path, and -1 when it found none.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">first_solution_iterations</span></code></p></td>
+<td><p>Iterations until the search found its first path, and 0 when it found none.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">informed_samples</span></code></p></td>
+<td><p>Samples from the informed set, the samples from the greedy set included.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">focused_samples</span></code></p></td>
+<td><p>Samples from the greedy set.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">uniform_samples</span></code></p></td>
+<td><p>Samples from the whole space, taken before the first path or when the informed set is
+empty.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="settings">
+<h2>Settings<a class="headerlink" href="#settings" title="Link to this heading">#</a></h2>
+<p>Every field of <a class="reference internal" href="../api/python.html#geodex.PlanSettings" title="geodex.PlanSettings"><code class="xref py py-class docutils literal notranslate"><span class="pre">geodex.PlanSettings</span></code></a> (<a class="reference internal" href="../api/cpp.html#_CPPv4N6geodex8planning12PlanSettingsE" title="geodex::planning::PlanSettings"><code class="xref cpp cpp-struct docutils literal notranslate"><span class="pre">geodex::planning::PlanSettings</span></code></a>
+in C++) has a default that solves most problems.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-4" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-4">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">settings</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">PlanSettings</span><span class="p">(</span>
+    <span class="n">iterations</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>           <span class="c1"># fixed budget, reproducible with a seed</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>                    <span class="c1"># seeds OMPL and the geodex samplers</span>
+    <span class="n">time</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>                  <span class="c1"># wall-clock budget, used when iterations is 0</span>
+    <span class="n">planner</span><span class="o">=</span><span class="n">geodex</span><span class="o">.</span><span class="n">planners</span><span class="o">.</span><span class="n">GreedyRRTstar</span><span class="p">(</span><span class="nb">range</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">greedy_ratio</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+                                          <span class="n">rewire_factor</span><span class="o">=</span><span class="mf">1.1</span><span class="p">),</span>
+    <span class="n">collision_check_resolution</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>  <span class="c1"># spacing of the validity samples along an edge</span>
+    <span class="n">interp</span><span class="o">=</span><span class="s2">"base_geodesic"</span><span class="p">,</span>    <span class="c1"># the curve of the planner's edges</span>
+    <span class="n">goal_tolerance</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">smooth</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>               <span class="c1"># run the smoother on the planner's path</span>
+    <span class="n">smoothing</span><span class="o">=</span><span class="n">geodex</span><span class="o">.</span><span class="n">PathSmoothingSettings</span><span class="p">(</span><span class="n">output_spacing</span><span class="o">=</span><span class="mf">0.0</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">plan</span><span class="p">(</span><span class="n">sphere</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">goal</span><span class="p">,</span> <span class="n">is_valid</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/planning.py">examples/concepts/planning.py</a></p>
+</div>
+<input id="sd-tab-item-5" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-5">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">gp</span><span class="o">::</span><span class="n">PlanSettings</span><span class="w"> </span><span class="n">settings</span><span class="p">;</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">iterations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2000</span><span class="p">;</span><span class="w">  </span><span class="c1">// fixed budget, reproducible with a seed</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">seed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">7</span><span class="p">;</span><span class="w">           </span><span class="c1">// seeds OMPL and the geodex samplers</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="p">;</span><span class="w">         </span><span class="c1">// wall-clock budget, used when iterations is 0</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">planner</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gp</span><span class="o">::</span><span class="n">planners</span><span class="o">::</span><span class="n">GreedyRRTstar</span><span class="p">{</span>
+<span class="w">    </span><span class="p">.</span><span class="n">range</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">greedy_ratio</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.9</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">rewire_factor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.1</span><span class="p">};</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">collision_check_resolution</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="mf">0.01</span><span class="p">;</span><span class="w">  </span><span class="c1">// spacing of the validity samples along an edge</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">interp</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="n">gp</span><span class="o">::</span><span class="n">InterpolationMode</span><span class="o">::</span><span class="n">BaseGeodesic</span><span class="p">;</span><span class="w">  </span><span class="c1">// the curve of the planner's edges</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">goal_tolerance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">smooth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span><span class="w">  </span><span class="c1">// run the smoother on the planner's path</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">smoothing</span><span class="p">.</span><span class="n">output_spacing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gp</span><span class="o">::</span><span class="n">plan</span><span class="p">(</span><span class="n">sphere</span><span class="p">,</span><span class="w"> </span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="n">goal</span><span class="p">,</span><span class="w"> </span><span class="n">is_valid</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">);</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/planning.cpp">examples/concepts/planning.cpp</a></p>
+</div>
+</div>
+</div>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 17.0%" />
+<col style="width: 58.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">iterations</span></code></p></td>
+<td><p>0</p></td>
+<td><p>Number of planner iterations. A value above 0 replaces the time budget, and a plan
+with a fixed seed then returns the same path on every run.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">time</span></code></p></td>
+<td><p>1.0</p></td>
+<td><p>Planning time in seconds. The planner uses it when <code class="docutils literal notranslate"><span class="pre">iterations</span></code> is 0.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">refine_time</span></code></p></td>
+<td><p>0</p></td>
+<td><p>Time in seconds that the planner keeps improving the path after its first path,
+within <code class="docutils literal notranslate"><span class="pre">time</span></code>. 0 uses the whole time budget. The planner ignores it when
+<code class="docutils literal notranslate"><span class="pre">iterations</span></code> is set.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">seed</span></code></p></td>
+<td><p>0</p></td>
+<td><p>Seed of the plan. A fixed seed above 0 makes the plan reproducible, and 0 takes a new
+seed from the manifold’s sampler. See <a class="reference internal" href="../getting-started/reproducibility.html"><span class="doc">Reproducibility</span></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">planner</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">GreedyRRTstar()</span></code></p></td>
+<td><p>The planner and its parameters (see the table below).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">collision_check_resolution</span></code></p></td>
+<td><p>0</p></td>
+<td><p>Largest distance between two validity checks along an edge, in coordinates. 0 uses
+OMPL’s default for the planner. The smoother then uses
+<code class="docutils literal notranslate"><span class="pre">smoothing.collision_check_resolution</span></code>, or a hundredth of the diagonal of the bounds
+when that is 0 too.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">interp</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;base_geodesic&quot;</span></code></p></td>
+<td><p>The curve that joins two states. <code class="docutils literal notranslate"><span class="pre">&quot;base_geodesic&quot;</span></code> uses the manifold’s
+<code class="docutils literal notranslate"><span class="pre">geodesic</span></code>, and <code class="docutils literal notranslate"><span class="pre">&quot;riemannian_geodesic&quot;</span></code> uses the discrete geodesic of the metric
+(see <a class="reference internal" href="discrete-geodesic-interpolation.html"><span class="doc">Discrete Geodesic Interpolation</span></a>). <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> uses the manifold’s
+<code class="docutils literal notranslate"><span class="pre">geodesic</span></code> when it is a geodesic of the metric or when a motion validator checks the
+edges, and the discrete geodesic otherwise.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">goal_tolerance</span></code></p></td>
+<td><p>0</p></td>
+<td><p>How close to the goal the path must end, as a distance on the manifold. When the start
+is already this close, <code class="docutils literal notranslate"><span class="pre">plan</span></code> checks the edge from the start to the goal and returns
+it.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">limits</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p>Lower and upper limits of the coordinates, such as joint limits. The planner and the
+smoother keep every state inside them. Without them, the plan uses the bounds that the
+manifold declares.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">smooth</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">True</span></code></p></td>
+<td><p>Whether to smooth the planner’s path.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">smoothing</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">PathSmoothingSettings()</span></code></p></td>
+<td><p>Settings of the smoother (see <a class="reference internal" href="smoothing.html"><span class="doc">Path Smoothing</span></a>).</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">geodex.planners.GreedyRRTstar</span></code> takes these parameters.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 12.0%" />
+<col style="width: 58.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">range</span></code></p></td>
+<td><p>0</p></td>
+<td><p>Longest step that the tree grows toward a sample. 0 lets OMPL choose it from the size of
+the bounds.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">greedy_ratio</span></code></p></td>
+<td><p>0.9</p></td>
+<td><p>Probability that a sample comes from the greedy set (see
+<a class="reference internal" href="#heuristics-and-informed-sampling">Heuristics and informed sampling</a>).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">rewire_factor</span></code></p></td>
+<td><p>1.1</p></td>
+<td><p>Scale of the radius in which a new state looks for cheaper connections.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">greedy_cost_for_tree_pruning</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">True</span></code></p></td>
+<td><p>Remove the tree states outside the greedy set when <code class="docutils literal notranslate"><span class="pre">greedy_ratio</span></code> is above 0.
+Otherwise, or with <code class="docutils literal notranslate"><span class="pre">False</span></code>, remove those outside the informed set.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">max_neighbors</span></code></p></td>
+<td><p>0</p></td>
+<td><p>Largest number of neighbors that a new state connects to. 0 does not limit it.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="heuristics-and-informed-sampling">
+<h2>Heuristics and informed sampling<a class="headerlink" href="#heuristics-and-informed-sampling" title="Link to this heading">#</a></h2>
+<p>After the first solution, G-RRT* samples only where a state can still improve the path. A
+state <span class="math notranslate nohighlight">\(x\)</span> can improve a solution of cost <span class="math notranslate nohighlight">\(c\)</span> only if the shortest path through it
+is shorter than <span class="math notranslate nohighlight">\(c\)</span>. A <strong>heuristic</strong> <span class="math notranslate nohighlight">\(h\)</span> estimates the length of that path as
+<span class="math notranslate nohighlight">\(h(x_s, x) + h(x, x_g)\)</span>. The heuristic must be <strong>admissible</strong>. An admissible heuristic
+does not overestimate the true metric distance. The <strong>informed set</strong>
+<span class="math notranslate nohighlight">\(\{x : h(x_s, x) + h(x, x_g) \le c\}\)</span> then contains every state that can improve the
+current solution, and the planner samples it directly <a class="footnote-reference brackets" href="#footcite-gammell2014informed" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>. geodex
+lowers the bound <span class="math notranslate nohighlight">\(c\)</span> to the heuristic length of the current path, the sum of <span class="math notranslate nohighlight">\(h\)</span>
+over its edges, when that is smaller.</p>
+<p>G-RRT* also samples a smaller <strong>greedy set</strong>, the informed set whose bound is the largest
+estimate <span class="math notranslate nohighlight">\(h(x_s, v) + h(v, x_g)\)</span> over the states <span class="math notranslate nohighlight">\(v\)</span> of the current path. This set
+is the smallest informed set that still holds the current path. <code class="docutils literal notranslate"><span class="pre">greedy_ratio</span></code> is the
+probability that a sample comes from the greedy set, 0.9 by default, and the other samples
+come from the informed set.</p>
+<p>For a constant metric <span class="math notranslate nohighlight">\(G\)</span>, the chord length <span class="math notranslate nohighlight">\(\sqrt{\Delta^\top G \Delta}\)</span> is the
+exact distance. For a metric <span class="math notranslate nohighlight">\(M(q)\)</span> that changes over the space, geodex computes a
+constant matrix <span class="math notranslate nohighlight">\(L\)</span> with <span class="math notranslate nohighlight">\(L \preceq M(q)\)</span> everywhere in the bounds (a <strong>Loewner
+lower bound</strong>) <a class="footnote-reference brackets" href="#footcite-kyaw2026loewner" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>. Every path is at least as long under <span class="math notranslate nohighlight">\(M\)</span>
+as under <span class="math notranslate nohighlight">\(L\)</span>. The chord length under <span class="math notranslate nohighlight">\(L\)</span> is then admissible, and the informed set
+is an ellipsoid the planner samples directly.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 34.0%" />
+<col style="width: 66.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Space</p></th>
+<th class="head"><p>Default heuristic</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Built-in robot (<code class="docutils literal notranslate"><span class="pre">geodex.robots</span></code>)</p></td>
+<td><p>The Loewner bound of its mass matrix, computed once and included with the robot.</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(\mathrm{SE}(2)\)</span>, <span class="math notranslate nohighlight">\(\mathrm{SO}(2)\)</span>, the torus, and products of them</p></td>
+<td><p>A Loewner bound computed when <code class="docutils literal notranslate"><span class="pre">plan</span></code> starts, with the periodic coordinates
+wrapped.</p></td>
+</tr>
+<tr class="row-even"><td><p>Any other manifold</p></td>
+<td><p>The Euclidean chord, admissible for identity metrics and metrics with
+<span class="math notranslate nohighlight">\(M(q) \succeq I\)</span>. Pass <code class="docutils literal notranslate"><span class="pre">heuristics.Zero()</span></code> or a lower bound for any other
+metric.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">precompute_matrix_lower_bound</span></code> computes the bound of a custom metric, such as the kinetic
+energy of an arm. Its <code class="docutils literal notranslate"><span class="pre">lambda_min_certificate</span></code> is the smallest eigenvalue of
+<span class="math notranslate nohighlight">\(L^{-1/2} M(q) L^{-1/2}\)</span> it found over the box. <code class="docutils literal notranslate"><span class="pre">converged</span></code> is true when this value is
+at least one within the tolerance, and the bound is then admissible.</p>
+</section>
+<section id="edges-and-motion-validators">
+<h2>Edges and motion validators<a class="headerlink" href="#edges-and-motion-validators" title="Link to this heading">#</a></h2>
+<p>An edge of the planner is valid when every state along it is valid. By default, <code class="docutils literal notranslate"><span class="pre">plan</span></code>
+checks an edge with the validity function at points along its curve, no more than
+<code class="docutils literal notranslate"><span class="pre">collision_check_resolution</span></code> apart. A <strong>motion validator</strong> replaces this check and decides a
+whole edge at once. Pass one as <code class="docutils literal notranslate"><span class="pre">motion_validator=</span></code> in Python, or as the factory argument of
+<code class="docutils literal notranslate"><span class="pre">plan</span></code> in C++, when an edge needs a check beyond the validity of its points.
+<a class="reference internal" href="../api/python.html#geodex.DirectionalMotionValidator" title="geodex.DirectionalMotionValidator"><code class="xref py py-class docutils literal notranslate"><span class="pre">geodex.DirectionalMotionValidator</span></code></a> checks the points of an edge and also rejects the
+edge when it drives backward by more than a budget, a limit that a Riemannian metric cannot
+impose. See <a class="reference internal" href="../tutorials/se2-planning.html"><span class="doc">SE(2) Motion Planning</span></a> for an example with a differential-drive robot.</p>
+<p>The smoother checks its edges with the same validator, and with a directional validator,
+every edge of the returned path stays within the reverse budget.</p>
+<p>The built-in robots take a collision scene in place of a validity function, as in
+<code class="docutils literal notranslate"><span class="pre">geodex.plan(robot,</span> <span class="pre">q0,</span> <span class="pre">q1,</span> <span class="pre">scene)</span></code> (<code class="docutils literal notranslate"><span class="pre">geodex::robots::plan</span></code> in C++). Their motion validator
+is VAMP’s edge check, and the plan uses the robot’s own heuristic. The smoother checks its
+edges at points against the scene, with every obstacle grown by a small margin. See
+<a class="reference internal" href="../robots/index.html#robot-collision-checking"><span class="std std-ref">Collision checking</span></a> for what these checks guarantee along every edge.</p>
+</section>
+<section id="see-also">
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="metrics.html"><span class="doc">Metrics as Robot Models</span></a> for the metrics that define path length.</p></li>
+<li><p><a class="reference internal" href="smoothing.html"><span class="doc">Path Smoothing</span></a> for what happens to the raw path.</p></li>
+<li><p><a class="reference internal" href="../getting-started/reproducibility.html"><span class="doc">Reproducibility</span></a> for seeds and budgets.</p></li>
+<li><p><a class="reference internal" href="../tutorials/minimum-energy-planning.html"><span class="doc">Minimum-Energy Planning on Configuration Manifolds</span></a> and <a class="reference internal" href="../tutorials/se2-planning.html"><span class="doc">SE(2) Motion Planning</span></a> for complete
+planning problems.</p></li>
+</ul>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
+<div class="docutils container" id="id4">
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="footcite-kyaw2026greedy" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Phone Thiha Kyaw, Anh Vu Le, Rajesh Elara Mohan, and Jonathan Kelly. Greedy heuristics for sampling-based motion planning in high-dimensional state spaces. <em>Autonomous Robots</em>, 2026. URL: <a class="reference external" href="https://arxiv.org/abs/2405.03411">https://arxiv.org/abs/2405.03411</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-gammell2014informed" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p>Jonathan D. Gammell, Siddhartha S. Srinivasa, and Timothy D. Barfoot. Informed RRT*: optimal sampling-based path planning focused via direct sampling of an admissible ellipsoidal heuristic. In <em>IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)</em>, 2997–3004. 2014.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-kyaw2026loewner" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">3</a><span class="fn-bracket">]</span></span>
+<p>Phone Thiha Kyaw and Jonathan Kelly. Direct informed sampling on Riemannian manifolds via Loewner order lower bounds. <em>IEEE Robotics and Automation Letters</em>, 2026. URL: <a class="reference external" href="https://arxiv.org/abs/2606.02879">https://arxiv.org/abs/2606.02879</a>.</p>
+</aside>
+</aside>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="discrete-geodesic-interpolation.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Discrete Geodesic Interpolation</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="smoothing.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Path Smoothing</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-first-plan">A first plan</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-plan-does">What <code class="docutils literal notranslate"><span class="pre">plan</span></code> does</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#settings">Settings</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#heuristics-and-informed-sampling">Heuristics and informed sampling</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#edges-and-motion-validators">Edges and motion validators</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#see-also">See also</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Space and Terrestrial Autonomous Robotic Systems (STARS) Lab.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

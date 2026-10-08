@@ -1,0 +1,1256 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Sampling on Manifolds &#8212; geodex</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=28229f57" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme.css?v=26c09b9b" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../_static/documentation_options.js?v=8d563738"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=b8b12719"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>window.MathJax = {"loader": {"paths": {"mathjax-termes": "[mathjax]/fonts/termes"}}, "chtml": {"font": "mathjax-termes"}, "options": {"enableSpeech": false, "enableBraille": false, "enableEnrichment": false, "enableExplorer": false, "menuOptions": {"settings": {"speech": false, "braille": false, "enrich": false}}}}</script>
+    <script defer="defer" src="../_static/mathjax/tex-mml-chtml.js?v=4a2f07e4"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'concepts/sampling';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <script src="../_static/mermaid-intrinsic-size.js?v=f42d09f7"></script>
+    <script src="../_static/geodex.js?v=d44686ee"></script>
+    <link rel="icon" href="../_static/favicon.svg"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Discrete Geodesic Interpolation" href="discrete-geodesic-interpolation.html" />
+    <link rel="prev" title="Metrics as Robot Models" href="metrics.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="1.0.0" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/logo-light.svg" class="logo__image only-light" alt=""/>
+    <img src="../_static/logo-dark.svg" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">geodex</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting-started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Core Concepts
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../robots/index.html">
+    Robot Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../ros2/index.html">
+    ROS 2
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/utiasSTARS/geodex" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pygeodex/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting-started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Core Concepts
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../robots/index.html">
+    Robot Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../ros2/index.html">
+    ROS 2
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/utiasSTARS/geodex" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pygeodex/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="riemannian-geometry.html">Riemannian Geometry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Concept Hierarchy and Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="metrics.html">Metrics as Robot Models</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Sampling on Manifolds</a></li>
+<li class="toctree-l1"><a class="reference internal" href="discrete-geodesic-interpolation.html">Discrete Geodesic Interpolation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="planning.html">Planning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="smoothing.html">Path Smoothing</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Core Concepts</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Sampling on Manifolds</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="sampling-on-manifolds">
+<h1>Sampling on Manifolds<a class="headerlink" href="#sampling-on-manifolds" title="Link to this heading">#</a></h1>
+<p>Planners and many other algorithms take random samples from a space, and their results depend
+on how those samples are spread. <strong>Sampling</strong> on a manifold means picking a point of the
+manifold from a distribution that is uniform with respect to the manifold’s own volume. Naive
+approaches on a curved space cluster points, for example near the poles of a sphere or along
+one axis of a rotation group. This page covers how geodex samples uniform points on a manifold,
+and how to choose the sampler and seed it.</p>
+<section id="from-the-unit-cube-to-the-manifold">
+<h2>From the unit cube to the manifold<a class="headerlink" href="#from-the-unit-cube-to-the-manifold" title="Link to this heading">#</a></h2>
+<p>geodex splits sampling into two stages that meet at the unit cube. A <strong>sampler</strong> fills a
+vector with uniform coordinates in <span class="math notranslate nohighlight">\([0,1)^n\)</span> and does not depend on the manifold. Each
+manifold provides a <strong>measure-preserving map</strong> <code class="docutils literal notranslate"><span class="pre">from_unit_cube</span></code> that maps the cube onto the
+manifold, equal volumes of the cube onto equal volumes of the manifold. A random point
+is a unit-cube vector from the sampler pushed through <code class="docutils literal notranslate"><span class="pre">from_unit_cube</span></code>. The number of cube
+coordinates a manifold uses is <code class="docutils literal notranslate"><span class="pre">unit_cube_dim()</span></code>. Most manifolds use as many coordinates as
+their dimension (two for the 2-sphere, three for <span class="math notranslate nohighlight">\(\mathrm{SO}(3)\)</span> and six for
+<span class="math notranslate nohighlight">\(\mathrm{SE}(3)\)</span>), and an <span class="math notranslate nohighlight">\(n\)</span>-sphere with <span class="math notranslate nohighlight">\(n \ge 3\)</span> uses <span class="math notranslate nohighlight">\(n+1\)</span>.</p>
+<p>Every manifold in geodex holds a sampler of its own, one of the same few kinds, and the map
+changes from one manifold to the next. The table below gives the cube dimension and the map
+of each built-in manifold.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 34.0%" />
+<col style="width: 14.0%" />
+<col style="width: 52.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Manifold</p></th>
+<th class="head"><p>Cube dim</p></th>
+<th class="head"><p>Map onto the manifold</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(\mathbb{R}^n\)</span></p></td>
+<td><p>n</p></td>
+<td><p>affine rescale of each coordinate</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(\mathbb{T}^n\)</span></p></td>
+<td><p>n</p></td>
+<td><p>affine rescale of each angle</p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(\mathrm{SO}(2)\)</span></p></td>
+<td><p>1</p></td>
+<td><p>affine rescale of the angle</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(\mathrm{SE}(2)\)</span></p></td>
+<td><p>3</p></td>
+<td><p>affine on position and heading</p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(\mathbb{S}^2\)</span></p></td>
+<td><p>2</p></td>
+<td><p>cylindrical equal-area</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(\mathbb{S}^n,\ n \ge 3\)</span></p></td>
+<td><p>n+1</p></td>
+<td><p>inverse-CDF normals, then normalize</p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(\mathrm{SO}(3)\)</span></p></td>
+<td><p>3</p></td>
+<td><p>Shoemake uniform quaternion</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(\mathrm{SE}(3)\)</span></p></td>
+<td><p>6</p></td>
+<td><p>affine translation plus Shoemake</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>On <span class="math notranslate nohighlight">\(\mathbb{S}^2\)</span>, the cylindrical equal-area map takes a height coordinate and an
+angle coordinate to a point. Projecting a sphere onto its bounding cylinder preserves area
+(Archimedes’ hat-box theorem) <a class="footnote-reference brackets" href="#footcite-marsaglia1972" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>. In higher dimensions, geodex samples
+<span class="math notranslate nohighlight">\(n+1\)</span> standard normals through the inverse normal CDF and normalizes them. A normalized
+standard Gaussian vector is uniform on <span class="math notranslate nohighlight">\(\mathbb{S}^n\)</span> <a class="footnote-reference brackets" href="#footcite-muller1959" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>. Rotations
+use Shoemake’s construction, which builds a Haar-uniform unit quaternion from three uniform
+coordinates <a class="footnote-reference brackets" href="#footcite-shoemake1992" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>.</p>
+<p>A new C++ manifold implements <code class="docutils literal notranslate"><span class="pre">unit_cube_dim</span></code> and <code class="docutils literal notranslate"><span class="pre">from_unit_cube</span></code> to support sampling.
+In Python, <code class="docutils literal notranslate"><span class="pre">random_point</span></code>, <code class="docutils literal notranslate"><span class="pre">seed</span></code> and the <code class="docutils literal notranslate"><span class="pre">sampler=</span></code> constructor argument control
+sampling.</p>
+<figure class="align-center" id="id13">
+<a class="reference internal image-reference" href="../_images/cube-to-manifold.svg"><img alt="A low-discrepancy point set in the unit square mapped onto even coverage of the 2-sphere." src="../_images/cube-to-manifold.svg" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Even coverage of the unit square becomes even coverage of the sphere. The left panel is a
+scrambled Halton set in <span class="math notranslate nohighlight">\([0,1)^2\)</span>, and <code class="docutils literal notranslate"><span class="pre">from_unit_cube</span></code> maps it onto
+<span class="math notranslate nohighlight">\(\mathbb{S}^2\)</span> through the cylindrical equal-area map.</span><a class="headerlink" href="#id13" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="even-coverage">
+<h2>Even coverage<a class="headerlink" href="#even-coverage" title="Link to this heading">#</a></h2>
+<p>Independent pseudo-random samples are uniform on average, and any finite set of them clumps
+in some places and leaves gaps in others. geodex samples from a <strong>low-discrepancy sequence</strong>,
+the Halton sequence, whose every prefix fills the space evenly. It trades statistical
+independence for coverage. The comparison below shows 100 points of each.</p>
+<figure class="align-center" id="id14">
+<a class="reference internal image-reference" href="../_images/low-discrepancy-comparison.svg"><img alt="100 points in the unit square from pseudo-random, Halton, and scrambled Halton samplers." src="../_images/low-discrepancy-comparison.svg" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">100 points in the unit square. Pseudo-random samples clump and leave gaps, while the Halton and
+scrambled Halton sequences spread evenly.</span><a class="headerlink" href="#id14" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>The <strong>star discrepancy</strong> measures how evenly a point set covers the cube. Take a set
+<span class="math notranslate nohighlight">\(P\)</span> of <span class="math notranslate nohighlight">\(N\)</span> points in <span class="math notranslate nohighlight">\([0,1)^d\)</span>, and any box
+<span class="math notranslate nohighlight">\(B = [0, b_1) \times \cdots \times [0, b_d)\)</span> anchored at the origin. For evenly spread
+points, the fraction of them inside <span class="math notranslate nohighlight">\(B\)</span> tracks the volume of <span class="math notranslate nohighlight">\(B\)</span>. The star
+discrepancy is the largest gap between that fraction and that volume, over every such box,</p>
+<div class="math notranslate nohighlight">
+\[D_N^*(P) \;=\; \sup_{B}\, \left| \frac{\#(P \cap B)}{N} - \operatorname{vol}(B) \right|.\]</div>
+<p>Independent uniform samples reduce this discrepancy at the Monte Carlo rate, and a Halton
+set of the same size does asymptotically better,</p>
+<div class="math notranslate nohighlight">
+\[D_N^*(\text{i.i.d.}) = O\bigl(N^{-1/2}\bigr), \qquad
+D_N^*(\text{Halton}) = O\left( \frac{(\log N)^d}{N} \right).\]</div>
+<p>The second bound replaces <span class="math notranslate nohighlight">\(\sqrt{N}\)</span> by <span class="math notranslate nohighlight">\(N\)</span> in the denominator, at the cost of a
+<span class="math notranslate nohighlight">\((\log N)^d\)</span> factor in the numerator. For moderate dimensions <span class="math notranslate nohighlight">\(d\)</span>, the
+<span class="math notranslate nohighlight">\(1/N\)</span> factor is a large improvement over <span class="math notranslate nohighlight">\(1/\sqrt{N}\)</span>. The <span class="math notranslate nohighlight">\((\log N)^d\)</span>
+factor grows with dimension, and the sample count at which Halton overtakes pseudo-random
+sampling grows with it. Around ten to fourteen dimensions, that sample count exceeds any
+practical one. Sampling-based planners also use quasi-random sequences
+<a class="footnote-reference brackets" href="#footcite-branicky2001" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>. In motion planning, the resolution and optimality guarantees of
+sampling-based planners depend on <strong>dispersion</strong>, the radius of the largest empty ball in the
+space, rather than on discrepancy <a class="footnote-reference brackets" href="#footcite-lavalle2006" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a><a class="footnote-reference brackets" href="#footcite-janson2018" id="id6" role="doc-noteref"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></a>. geodex samples from a
+scrambled Halton sequence by default.</p>
+<!-- Interactive sampling explorer for the "Why even coverage helps" section.
+     Self-contained, with scoped CSS under .gsv-wrap plus one inline script, no external
+     dependencies. Embedded in docs/concepts/sampling.rst via `.. raw:: html`. -->
+<div class="gsv-wrap">
+  <style>
+    .gsv-wrap{
+      --surface:#f4f7fa; --surface-2:#ffffff;
+      --border:#dfe4ea; --border-strong:#c3d3e0; --border-stronger:#9fb3c4;
+      --grid:#e6edf4;
+      --text:#1a1a1a; --text-secondary:#34495e; --text-muted:#6c7a89;
+      --accent:#2980b9; --accent-fill:#5a9bd4; --accent-bg:#e7f0fa; --accent-text:#1f5f8b;
+      --warn:#d9663a; --warn-bg:#fbede6;
+      --font:"Lato",Helvetica,Arial,sans-serif;
+      max-width:640px; margin:1.4em auto; font-family:var(--font); color:var(--text);
+    }
+    .gsv-wrap *{box-sizing:border-box;}
+    .gsv-controls{display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-bottom:1rem;}
+    .gsv-seg{display:inline-flex; border:1px solid var(--border-strong); border-radius:8px; overflow:hidden;}
+    .gsv-seg button{border:none; padding:6px 13px; font-size:13.5px; background:var(--surface-2); color:var(--text-secondary); cursor:pointer; font-family:inherit; margin:0; box-shadow:none; text-transform:none; line-height:1.25; font-weight:400;}
+    .gsv-seg button:focus{outline:none;}
+    .gsv-seg button + button{border-left:1px solid var(--border);}
+    .gsv-seg button.on{background:var(--accent); color:#fff;}
+    .gsv-check{display:inline-flex; align-items:center; gap:7px; font-size:13.5px; color:var(--text-secondary); cursor:pointer;}
+    .gsv-check input{width:15px; height:15px; accent-color:var(--warn); margin:0;}
+    .gsv-svg{width:100%; max-width:360px; display:block; margin:0 auto; touch-action:none; cursor:crosshair;}
+    .gsv-cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(112px,1fr)); gap:11px; margin-top:1rem;}
+    .gsv-card{background:var(--surface); border-radius:8px; padding:.6rem .9rem;}
+    .gsv-card .lbl{font-size:12.5px; color:var(--text-secondary);}
+    .gsv-card .val{font-size:21px; font-weight:500; color:var(--text);}
+    .gsv-card.hi{background:var(--accent-bg);}
+    .gsv-card.hi .lbl{color:var(--accent-text);}
+    .gsv-card.hi .val{color:var(--accent-text);}
+    .gsv-hint{font-size:12.5px; color:var(--text-muted); margin:.75rem 0 0 0; line-height:1.6;}
+  </style>
+
+  <div class="gsv-controls">
+    <div class="gsv-seg" id="gsv-metric">
+      <button data-metric="discrepancy" class="on">Star discrepancy</button>
+      <button data-metric="dispersion">Dispersion</button>
+    </div>
+    <div class="gsv-seg" id="gsv-type">
+      <button data-type="random" class="on">Pseudo-random</button>
+      <button data-type="halton">Halton</button>
+    </div>
+    <div class="gsv-seg" id="gsv-n">
+      <button data-n="32">32</button>
+      <button data-n="64" class="on">64</button>
+      <button data-n="128">128</button>
+    </div>
+    <label class="gsv-check"><input type="checkbox" id="gsv-worst"> Show worst</label>
+  </div>
+
+  <svg class="gsv-svg" id="gsv-svg" viewBox="0 0 356 356" role="img"
+       aria-label="Point set in the unit square with an anchored box or an empty ball">
+    <defs><clipPath id="gsv-clip"><rect x="28" y="28" width="300" height="300"></rect></clipPath></defs>
+    <rect x="28" y="28" width="300" height="300" fill="var(--surface-2)" stroke="var(--border-strong)" stroke-width="1"></rect>
+    <g id="gsv-grid"></g>
+    <g id="gsv-disc-layer">
+      <rect id="gsv-worst-box" x="28" y="28" width="0" height="0" fill="none" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="5 4" style="display:none;"></rect>
+      <rect id="gsv-cur-box" x="28" y="28" width="0" height="0" fill="var(--accent-fill)" fill-opacity="0.12" stroke="var(--accent)" stroke-width="1.5"></rect>
+    </g>
+    <g id="gsv-disp-layer" style="display:none;">
+      <circle id="gsv-worst-ball" cx="0" cy="0" r="0" fill="var(--warn)" fill-opacity="0.08" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="5 4" clip-path="url(#gsv-clip)" style="display:none;"></circle>
+      <circle id="gsv-cur-ball" cx="0" cy="0" r="0" fill="var(--accent-fill)" fill-opacity="0.12" stroke="var(--accent)" stroke-width="1.5" clip-path="url(#gsv-clip)"></circle>
+    </g>
+    <g id="gsv-pts"></g>
+    <circle id="gsv-handle" r="7" fill="var(--surface-2)" stroke="var(--accent)" stroke-width="2" style="cursor:grab;"></circle>
+    <text x="24" y="344" text-anchor="end" style="font-size:11px; fill:var(--text-muted);">0</text>
+    <text x="328" y="344" text-anchor="middle" style="font-size:11px; fill:var(--text-muted);">1</text>
+    <text x="20" y="332" text-anchor="end" style="font-size:11px; fill:var(--text-muted);">0</text>
+    <text x="20" y="32" text-anchor="end" style="font-size:11px; fill:var(--text-muted);">1</text>
+  </svg>
+
+  <div class="gsv-cards" id="gsv-cards-disc">
+    <div class="gsv-card"><div class="lbl">inside / N</div><div class="val" id="gsv-frac">0.000</div></div>
+    <div class="gsv-card"><div class="lbl">box area</div><div class="val" id="gsv-area">0.000</div></div>
+    <div class="gsv-card"><div class="lbl">gap</div><div class="val" id="gsv-gap">0.000</div></div>
+    <div class="gsv-card hi"><div class="lbl">worst gap D*</div><div class="val" id="gsv-star">0.000</div></div>
+  </div>
+  <div class="gsv-cards" id="gsv-cards-disp" style="display:none;">
+    <div class="gsv-card"><div class="lbl">empty radius here</div><div class="val" id="gsv-rad">0.000</div></div>
+    <div class="gsv-card hi"><div class="lbl">dispersion (worst)</div><div class="val" id="gsv-disp">0.000</div></div>
+  </div>
+
+  <p class="gsv-hint" id="gsv-hint"></p>
+</div>
+
+<script>
+(function(){
+  var PAD=28, S=300, VB=356, NS="http://www.w3.org/2000/svg";
+  var $=function(id){return document.getElementById(id);};
+  var svg=$("gsv-svg"), gPts=$("gsv-pts"), gGrid=$("gsv-grid"), handle=$("gsv-handle");
+  var curBox=$("gsv-cur-box"), worstBox=$("gsv-worst-box");
+  var curBall=$("gsv-cur-ball"), worstBall=$("gsv-worst-ball");
+  var discLayer=$("gsv-disc-layer"), dispLayer=$("gsv-disp-layer");
+  var cardsDisc=$("gsv-cards-disc"), cardsDisp=$("gsv-cards-disp"), hint=$("gsv-hint");
+
+  var HINTS={
+    discrepancy:"Drag the box corner. The gap is the fraction of points inside minus the box area, and the star discrepancy is the largest gap over every box anchored at the origin. Switch between the two point sets to compare.",
+    dispersion:"Drag the probe. The circle is the largest empty ball that fits at that spot without covering a point. The dispersion is the widest empty ball anywhere in the square, the biggest gap the sampling leaves."
+  };
+
+  var state={metric:"discrepancy", type:"random", N:64, pts:[],
+             b1:0.6, b2:0.6, qx:0.5, qy:0.5,
+             star:null, disp:null, showWorst:false};
+
+  for(var t=0.25; t<1; t+=0.25){
+    var lx=document.createElementNS(NS,"line");
+    lx.setAttribute("x1",PAD+t*S); lx.setAttribute("y1",PAD); lx.setAttribute("x2",PAD+t*S); lx.setAttribute("y2",PAD+S);
+    lx.setAttribute("stroke","var(--grid)"); gGrid.appendChild(lx);
+    var ly=document.createElementNS(NS,"line");
+    ly.setAttribute("x1",PAD); ly.setAttribute("y1",PAD+t*S); ly.setAttribute("x2",PAD+S); ly.setAttribute("y2",PAD+t*S);
+    ly.setAttribute("stroke","var(--grid)"); gGrid.appendChild(ly);
+  }
+
+  // --- point sets ---
+  function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+  function halton(i,b){var f=1,r=0;while(i>0){f/=b;r+=f*(i%b);i=Math.floor(i/b);}return r;}
+  function makeSet(type,N){
+    var p=[];
+    if(type==="halton"){ for(var i=1;i<=N;i++) p.push([halton(i,2),halton(i,3)]); }
+    else { var rnd=mulberry32(987654); for(var j=0;j<N;j++) p.push([rnd(),rnd()]); }
+    return p;
+  }
+
+  // Anchored star discrepancy: the supremum is attained at boxes whose upper
+  // corner lands on point coordinates, so scan those candidates and take the
+  // largest gap, checking both the closed and open counts.
+  function starDisc(pts){
+    var N=pts.length;
+    var xs=pts.map(function(p){return p[0];}).concat([1]);
+    var ys=pts.map(function(p){return p[1];}).concat([1]);
+    var best=0,bx=1,by=1;
+    for(var i=0;i<xs.length;i++){ for(var j=0;j<ys.length;j++){
+      var a=xs[i],b=ys[j],area=a*b,cC=0,cO=0;
+      for(var k=0;k<pts.length;k++){var px=pts[k][0],py=pts[k][1];
+        if(px<=a&&py<=b)cC++; if(px<a&&py<b)cO++;}
+      var d=Math.max(Math.abs(cC/N-area),Math.abs(cO/N-area));
+      if(d>best){best=d;bx=a;by=b;}
+    }}
+    return {D:best,bx:bx,by:by};
+  }
+
+  function nearest(pts,x,y){
+    var best=Infinity,nx=0,ny=0;
+    for(var k=0;k<pts.length;k++){var dx=pts[k][0]-x,dy=pts[k][1]-y,d=dx*dx+dy*dy;
+      if(d<best){best=d;nx=pts[k][0];ny=pts[k][1];}}
+    return {d:Math.sqrt(best),nx:nx,ny:ny};
+  }
+
+  // Largest empty ball that fits inside the square: at each grid point the ball
+  // grows until it reaches the nearest sample or the nearest wall, and we keep
+  // the widest one. Constraining it to the square keeps the ball in a real gap
+  // rather than hanging off a corner.
+  function dispersion(pts){
+    var G=110,best=0,cx=0,cy=0;
+    for(var i=0;i<=G;i++){ for(var j=0;j<=G;j++){
+      var x=i/G,y=j/G,r=Math.min(nearest(pts,x,y).d,x,1-x,y,1-y);
+      if(r>best){best=r;cx=x;cy=y;}
+    }}
+    return {D:best,cx:cx,cy:cy};
+  }
+
+  function toX(x){return PAD+x*S;}
+  function toY(y){return PAD+(1-y)*S;}
+
+  function drawPoints(){
+    while(gPts.firstChild) gPts.removeChild(gPts.firstChild);
+    var near=state.metric==="dispersion"?nearest(state.pts,state.qx,state.qy):null;
+    state.pts.forEach(function(p){
+      var hi;
+      if(state.metric==="discrepancy") hi=p[0]<state.b1 && p[1]<state.b2;
+      else hi=near && p[0]===near.nx && p[1]===near.ny;
+      var c=document.createElementNS(NS,"circle");
+      c.setAttribute("cx",toX(p[0])); c.setAttribute("cy",toY(p[1])); c.setAttribute("r","3.2");
+      c.setAttribute("fill",hi?"var(--accent)":"var(--surface-2)");
+      c.setAttribute("stroke",hi?"var(--accent)":"var(--border-stronger)"); c.setAttribute("stroke-width","1");
+      gPts.appendChild(c);
+    });
+  }
+
+  function updateDiscrepancy(){
+    var yTop=toY(state.b2);
+    curBox.setAttribute("x",PAD); curBox.setAttribute("y",yTop);
+    curBox.setAttribute("width",state.b1*S); curBox.setAttribute("height",state.b2*S);
+    handle.setAttribute("cx",toX(state.b1)); handle.setAttribute("cy",yTop);
+    var inside=0; state.pts.forEach(function(p){ if(p[0]<state.b1 && p[1]<state.b2) inside++; });
+    var area=state.b1*state.b2, frac=inside/state.N;
+    $("gsv-frac").textContent=frac.toFixed(3);
+    $("gsv-area").textContent=area.toFixed(3);
+    $("gsv-gap").textContent=Math.abs(frac-area).toFixed(3);
+    drawPoints();
+  }
+
+  function updateDispersion(){
+    var pd=nearest(state.pts,state.qx,state.qy).d;
+    var r=Math.min(pd,state.qx,1-state.qx,state.qy,1-state.qy);
+    var cx=toX(state.qx), cy=toY(state.qy);
+    curBall.setAttribute("cx",cx); curBall.setAttribute("cy",cy); curBall.setAttribute("r",r*S);
+    handle.setAttribute("cx",cx); handle.setAttribute("cy",cy);
+    $("gsv-rad").textContent=r.toFixed(3);
+    drawPoints();
+  }
+
+  function update(){ if(state.metric==="discrepancy") updateDiscrepancy(); else updateDispersion(); }
+
+  function rebuild(){
+    state.pts=makeSet(state.type,state.N);
+    state.star=starDisc(state.pts);
+    state.disp=dispersion(state.pts);
+    $("gsv-star").textContent=state.star.D.toFixed(3);
+    $("gsv-disp").textContent=state.disp.D.toFixed(3);
+    worstBox.setAttribute("x",PAD); worstBox.setAttribute("y",toY(state.star.by));
+    worstBox.setAttribute("width",state.star.bx*S); worstBox.setAttribute("height",state.star.by*S);
+    worstBall.setAttribute("cx",toX(state.disp.cx)); worstBall.setAttribute("cy",toY(state.disp.cy));
+    worstBall.setAttribute("r",state.disp.D*S);
+    update();
+  }
+
+  function applyWorstVisibility(){
+    var show=state.showWorst;
+    worstBox.style.display=(show && state.metric==="discrepancy")?"block":"none";
+    worstBall.style.display=(show && state.metric==="dispersion")?"block":"none";
+  }
+
+  function setMetric(m){
+    state.metric=m;
+    discLayer.style.display=m==="discrepancy"?"":"none";
+    dispLayer.style.display=m==="dispersion"?"":"none";
+    cardsDisc.style.display=m==="discrepancy"?"":"none";
+    cardsDisp.style.display=m==="dispersion"?"":"none";
+    hint.textContent=HINTS[m];
+    applyWorstVisibility();
+    update();
+  }
+
+  // pointer -> data coords, clamped
+  function toData(evt){
+    var r=svg.getBoundingClientRect(), sc=VB/r.width;
+    var x=((evt.clientX-r.left)*sc-PAD)/S, y=1-((evt.clientY-r.top)*sc-PAD)/S;
+    return [Math.max(0,Math.min(1,x)), Math.max(0,Math.min(1,y))];
+  }
+  var dragging=false;
+  function place(e){
+    var d=toData(e);
+    if(state.metric==="discrepancy"){ state.b1=Math.max(0.001,d[0]); state.b2=Math.max(0.001,d[1]); }
+    else { state.qx=d[0]; state.qy=d[1]; }
+    update();
+  }
+  svg.addEventListener("pointerdown",function(e){dragging=true;handle.style.cursor="grabbing";place(e);e.preventDefault();});
+  window.addEventListener("pointermove",function(e){if(dragging){place(e);e.preventDefault();}});
+  window.addEventListener("pointerup",function(){dragging=false;handle.style.cursor="grab";});
+
+  function wireSeg(id,attr,cast,apply){
+    $(id).addEventListener("click",function(e){
+      var b=e.target.closest("button"); if(!b)return;
+      [].forEach.call(this.querySelectorAll("button"),function(x){x.classList.remove("on");});
+      b.classList.add("on"); apply(cast(b.getAttribute(attr)));
+    });
+  }
+  wireSeg("gsv-metric","data-metric",String,function(v){setMetric(v);});
+  wireSeg("gsv-type","data-type",String,function(v){state.type=v;rebuild();});
+  wireSeg("gsv-n","data-n",Number,function(v){state.N=v;rebuild();});
+  $("gsv-worst").addEventListener("change",function(e){state.showWorst=e.target.checked;applyWorstVisibility();});
+
+  hint.textContent=HINTS.discrepancy;
+  rebuild();
+})();
+</script>
+</section>
+<section id="the-samplers">
+<h2>The samplers<a class="headerlink" href="#the-samplers" title="Link to this heading">#</a></h2>
+<p>geodex provides three samplers.</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ScrambledHaltonSampler</span></code>, the default, is a randomized Halton sequence in which each
+prime base has an independent random permutation of its digits and a random starting
+index <a class="footnote-reference brackets" href="#footcite-braaten1979" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></a><a class="footnote-reference brackets" href="#footcite-owen2017" id="id8" role="doc-noteref"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></a>. The scramble removes the correlation between
+dimensions that plain Halton develops in higher dimensions, and each seed gives a
+different point set that is itself low-discrepancy.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">HaltonSampler</span></code> is the plain deterministic sequence, each coordinate a van der Corput
+radical inverse in a distinct prime base <a class="footnote-reference brackets" href="#footcite-vandercorput1935" id="id9" role="doc-noteref"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></a><a class="footnote-reference brackets" href="#footcite-halton1960" id="id10" role="doc-noteref"><span class="fn-bracket">[</span>10<span class="fn-bracket">]</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PseudoRandomSampler</span></code> wraps <code class="docutils literal notranslate"><span class="pre">std::mt19937</span></code> and returns independent uniform samples.
+Use it where independence matters more than coverage.</p></li>
+</ol>
+<p>All three satisfy the concept <a class="reference internal" href="../api/cpp.html#_CPPv4I0EN6geodex7SamplerE" title="geodex::Sampler"><code class="xref cpp cpp-concept docutils literal notranslate"><span class="pre">geodex::Sampler</span></code></a>. Its member <code class="docutils literal notranslate"><span class="pre">sample(n,</span> <span class="pre">out)</span></code>
+fills the first <code class="docutils literal notranslate"><span class="pre">n</span></code> entries of a vector with uniform values in <span class="math notranslate nohighlight">\([0,1)\)</span>. A sampler
+that can be reseeded also satisfies <a class="reference internal" href="../api/cpp.html#_CPPv4I0EN6geodex15SeedableSamplerE" title="geodex::SeedableSampler"><code class="xref cpp cpp-concept docutils literal notranslate"><span class="pre">geodex::SeedableSampler</span></code></a>, which adds
+<code class="docutils literal notranslate"><span class="pre">seed(s)</span></code>. See <a class="reference internal" href="architecture.html"><span class="doc">Concept Hierarchy and Architecture</span></a> for how the concepts relate.</p>
+</section>
+<section id="using-a-sampler-on-a-manifold">
+<h2>Using a sampler on a manifold<a class="headerlink" href="#using-a-sampler-on-a-manifold" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">random_point()</span></code> samples one uniform configuration through the manifold’s own map.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-0">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">geodex</span>
+
+<span class="n">sphere</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Sphere</span><span class="p">()</span>
+<span class="n">r3</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Euclidean</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">so3</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SO3</span><span class="p">()</span>
+
+<span class="n">s</span> <span class="o">=</span> <span class="n">sphere</span><span class="o">.</span><span class="n">random_point</span><span class="p">()</span>  <span class="c1"># uniform on the sphere</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">r3</span><span class="o">.</span><span class="n">random_point</span><span class="p">()</span>      <span class="c1"># uniform in the box [-1, 1]^3</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">so3</span><span class="o">.</span><span class="n">random_point</span><span class="p">()</span>     <span class="c1"># Haar-uniform rotation, a unit quaternion</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/sampling.py">examples/concepts/sampling.py</a></p>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-1">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;geodex/geodex.hpp&gt;</span>
+
+<span class="n">geodex</span><span class="o">::</span><span class="n">Sphere</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">sphere</span><span class="p">;</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">Euclidean</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="w"> </span><span class="n">r3</span><span class="p">;</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">SO3</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">so3</span><span class="p">;</span>
+
+<span class="k">auto</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sphere</span><span class="p">.</span><span class="n">random_point</span><span class="p">();</span><span class="w">  </span><span class="c1">// uniform on the sphere</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r3</span><span class="p">.</span><span class="n">random_point</span><span class="p">();</span><span class="w">      </span><span class="c1">// uniform in the box [-1, 1]^3</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">so3</span><span class="p">.</span><span class="n">random_point</span><span class="p">();</span><span class="w">     </span><span class="c1">// Haar-uniform rotation, a unit quaternion</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/sampling.cpp">examples/concepts/sampling.cpp</a></p>
+</div>
+</div>
+</div>
+<p>In C++, the sampler is the last template argument of a manifold, and a manifold with another
+sampler is another type. In Python, the <code class="docutils literal notranslate"><span class="pre">sampler=</span></code> constructor keyword or <code class="docutils literal notranslate"><span class="pre">set_sampler</span></code>
+chooses it.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-2" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-2">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># The sampler is "scrambled" (the default), "halton" or "random".</span>
+<span class="n">r3</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Euclidean</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">sampler</span><span class="o">=</span><span class="s2">"halton"</span><span class="p">)</span>
+<span class="n">r3</span><span class="o">.</span><span class="n">set_sampler</span><span class="p">(</span><span class="s2">"random"</span><span class="p">)</span>                    <span class="c1"># switch at run time</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/sampling.py">examples/concepts/sampling.py</a></p>
+</div>
+<input id="sd-tab-item-3" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-3">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// The sampler is the last policy of a manifold. This type samples plain Halton.</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">Euclidean</span><span class="o">&lt;</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">EuclideanStandardMetric</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">HaltonSampler</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="n">r3</span><span class="p">;</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/sampling.cpp">examples/concepts/sampling.cpp</a></p>
+</div>
+</div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">seed</span></code> on a manifold reseeds the sampler behind its <code class="docutils literal notranslate"><span class="pre">random_point</span></code>, and two manifolds
+seeded with the same value give the same sequence. <code class="docutils literal notranslate"><span class="pre">geodex.seed</span></code> in Python, or
+<code class="docutils literal notranslate"><span class="pre">geodex::set_default_seed</span></code> in C++, reseeds the shared source that default-constructed
+samplers take their seeds from. Every manifold constructed afterwards samples a reproducible
+sequence.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-4" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-4">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Sphere</span><span class="p">()</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Sphere</span><span class="p">()</span>
+<span class="n">a</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">b</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">((</span><span class="n">a</span><span class="o">.</span><span class="n">random_point</span><span class="p">()</span> <span class="o">==</span> <span class="n">b</span><span class="o">.</span><span class="n">random_point</span><span class="p">())</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>  <span class="c1"># True, the same sequence</span>
+
+<span class="n">geodex</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>  <span class="c1"># reseed the source of every default sampler constructed afterwards</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/sampling.py">examples/concepts/sampling.py</a></p>
+</div>
+<input id="sd-tab-item-5" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-5">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">::</span><span class="n">Sphere</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="n">a</span><span class="p">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span>
+<span class="n">b</span><span class="p">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="p">.</span><span class="n">random_point</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">random_point</span><span class="p">())</span>
+<span class="w">          </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">  </span><span class="c1">// 1, the same sequence</span>
+
+<span class="n">geodex</span><span class="o">::</span><span class="n">set_default_seed</span><span class="p">(</span>
+<span class="w">    </span><span class="mi">7</span><span class="p">);</span><span class="w">  </span><span class="c1">// reseed the source of every default sampler constructed afterwards</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/sampling.cpp">examples/concepts/sampling.cpp</a></p>
+</div>
+</div>
+</div>
+<p>The planner samples through copies of the manifold’s sampler, each reseeded to give its own
+sequence, a separate scramble of the Halton sequence under the default sampler. A nonzero
+<code class="docutils literal notranslate"><span class="pre">PlanSettings.seed</span></code> seeds those copies and leaves the manifold’s sampler as it was. An
+unseeded plan takes its seed from the manifold’s sampler and advances it (see
+<a class="reference internal" href="../getting-started/reproducibility.html"><span class="doc">Reproducibility</span></a>). The planner also uses a sampler chosen on a
+manifold, for example <code class="docutils literal notranslate"><span class="pre">sampler=&quot;halton&quot;</span></code>.</p>
+<p>A <strong>product manifold</strong> composes several manifolds into one configuration space, built with
+<code class="docutils literal notranslate"><span class="pre">Product</span></code> in Python or <code class="docutils literal notranslate"><span class="pre">make_product</span></code> in C++. A point of the product is one point of each
+factor stacked together. An <span class="math notranslate nohighlight">\(\mathrm{SE}(2) \times \mathbb{R}^n\)</span> product pairs a base pose
+with a vector of joint angles, and an <span class="math notranslate nohighlight">\(\mathrm{SO}(3) \times \mathbb{R}^3\)</span> product pairs
+an orientation with a position. Each factor keeps its own geometry and its own map from the
+unit cube.</p>
+<p>geodex samples the whole product with one joint sampler over a single unit cube whose
+dimension is the sum of the factors’ <code class="docutils literal notranslate"><span class="pre">unit_cube_dim()</span></code>. A Halton sampler, the default
+included, gives every coordinate of every factor a distinct prime base, and the samples of the
+product form one low-discrepancy sequence. <code class="docutils literal notranslate"><span class="pre">random_point</span></code> on a product works as on any other
+manifold.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-6" name="sd-tab-set-3" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-6">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pm</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Product</span><span class="p">([</span><span class="n">geodex</span><span class="o">.</span><span class="n">SO3</span><span class="p">(),</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Euclidean</span><span class="p">(</span><span class="mi">3</span><span class="p">)])</span>
+<span class="n">pm</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">random_point</span><span class="p">()</span>  <span class="c1"># one joint scrambled Halton sample over both blocks</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/sampling.py">examples/concepts/sampling.py</a></p>
+</div>
+<input id="sd-tab-item-7" name="sd-tab-set-3" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-7">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">auto</span><span class="w"> </span><span class="n">pm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">make_product</span><span class="p">(</span><span class="n">geodex</span><span class="o">::</span><span class="n">SO3</span><span class="o">&lt;&gt;</span><span class="p">{},</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">Euclidean</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="p">{});</span>
+<span class="n">pm</span><span class="p">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="n">pm</span><span class="p">.</span><span class="n">random_point</span><span class="p">();</span><span class="w">  </span><span class="c1">// one joint scrambled Halton sample over both blocks</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/sampling.cpp">examples/concepts/sampling.cpp</a></p>
+</div>
+</div>
+</div>
+</section>
+<section id="using-a-sampler-on-its-own">
+<h2>Using a sampler on its own<a class="headerlink" href="#using-a-sampler-on-its-own" title="Link to this heading">#</a></h2>
+<p>A sampler on its own gives well-spread points in the unit cube.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-8" name="sd-tab-set-4" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-8">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">s</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">ScrambledHaltonSampler</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># a seed makes the sequence reproducible</span>
+<span class="n">u</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>  <span class="c1"># the next point of the sequence in [0, 1)^3</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/sampling.py">examples/concepts/sampling.py</a></p>
+</div>
+<input id="sd-tab-item-9" name="sd-tab-set-4" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-9">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">::</span><span class="n">ScrambledHaltonSampler</span><span class="w"> </span><span class="n">s</span><span class="p">{</span><span class="mi">5</span><span class="p">};</span><span class="w">  </span><span class="c1">// a seed makes the sequence reproducible</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="w"> </span><span class="nf">u</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+<span class="n">s</span><span class="p">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">u</span><span class="p">);</span><span class="w">  </span><span class="c1">// u holds the next point of the sequence in [0, 1)^3</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/sampling.cpp">examples/concepts/sampling.cpp</a></p>
+</div>
+</div>
+</div>
+<p>In C++, <code class="docutils literal notranslate"><span class="pre">sample</span></code> writes into a caller-provided <code class="docutils literal notranslate"><span class="pre">Eigen::Ref</span></code>, one buffer reused across
+samples. In Python, it returns a new array of length <code class="docutils literal notranslate"><span class="pre">n</span></code>. Each call advances the sequence,
+and a loop of calls gives successive low-discrepancy points.</p>
+</section>
+<section id="custom-samplers-and-new-manifolds">
+<h2>Custom samplers and new manifolds<a class="headerlink" href="#custom-samplers-and-new-manifolds" title="Link to this heading">#</a></h2>
+<p>A sampler is a concept, and any type with the right <code class="docutils literal notranslate"><span class="pre">sample</span></code> signature is a sampler. The
+Kronecker sampler below fills coordinate <span class="math notranslate nohighlight">\(i\)</span> of point <span class="math notranslate nohighlight">\(k\)</span> with the fractional
+part of <span class="math notranslate nohighlight">\(k\sqrt{p_i}\)</span> for the <span class="math notranslate nohighlight">\(i\)</span>-th prime <span class="math notranslate nohighlight">\(p_i\)</span>, a low-discrepancy
+sequence of its own, and satisfies <a class="reference internal" href="../api/cpp.html#_CPPv4I0EN6geodex7SamplerE" title="geodex::Sampler"><code class="xref cpp cpp-concept docutils literal notranslate"><span class="pre">geodex::Sampler</span></code></a>. Its
+<code class="docutils literal notranslate"><span class="pre">void</span> <span class="pre">seed(std::uint64_t)</span></code> member makes it a <a class="reference internal" href="../api/cpp.html#_CPPv4I0EN6geodex15SeedableSamplerE" title="geodex::SeedableSampler"><code class="xref cpp cpp-concept docutils literal notranslate"><span class="pre">geodex::SeedableSampler</span></code></a> that
+manifolds can reseed. Any manifold accepts it as its <code class="docutils literal notranslate"><span class="pre">SamplerT</span></code> template argument. Custom
+samplers work in C++ only.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-10" name="sd-tab-set-5" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-10">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">/// Kronecker sequence sampler. Coordinate i of point k is frac(k * sqrt(p_i)) for</span>
+<span class="c1">/// the i-th prime p_i. The sequence is low-discrepancy and does not need tables.</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">KroneckerSampler</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">sample</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Ref</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="o">&gt;</span><span class="w"> </span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">primes</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="mi">11</span><span class="p">,</span><span class="w"> </span><span class="mi">13</span><span class="p">,</span><span class="w"> </span><span class="mi">17</span><span class="p">,</span><span class="w"> </span><span class="mi">19</span><span class="p">,</span><span class="w"> </span><span class="mi">23</span><span class="p">,</span><span class="w"> </span><span class="mi">29</span><span class="p">,</span><span class="w"> </span><span class="mi">31</span><span class="p">,</span><span class="w"> </span><span class="mi">37</span><span class="p">};</span>
+<span class="w">    </span><span class="o">++</span><span class="n">k</span><span class="p">;</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">n</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">sqrt</span><span class="p">(</span><span class="n">primes</span><span class="p">[</span><span class="n">i</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">12</span><span class="p">]);</span>
+<span class="w">      </span><span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">floor</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">seed</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">s</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w">  </span><span class="c1">// makes this a SeedableSampler</span>
+<span class="p">};</span>
+
+<span class="c1">// Any manifold takes it in its sampler slot.</span>
+<span class="k">using</span><span class="w"> </span><span class="n">KroneckerPlane</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="n">geodex</span><span class="o">::</span><span class="n">Euclidean</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">EuclideanStandardMetric</span><span class="o">&lt;</span><span class="mi">2</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">KroneckerSampler</span><span class="o">&gt;</span><span class="p">;</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/sampling.cpp">examples/concepts/sampling.cpp</a></p>
+</div>
+</div>
+</div>
+<p>A new manifold implements <code class="docutils literal notranslate"><span class="pre">unit_cube_dim()</span></code> and the map <code class="docutils literal notranslate"><span class="pre">from_unit_cube(u)</span></code>. The map must
+be measure-preserving for the result to be uniform, and separable where possible, one cube
+coordinate feeding one manifold coordinate, to preserve the low discrepancy of the sequence
+<a class="footnote-reference brackets" href="#footcite-okten2011" id="id11" role="doc-noteref"><span class="fn-bracket">[</span>11<span class="fn-bracket">]</span></a>.</p>
+</section>
+<section id="see-also">
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="architecture.html"><span class="doc">Concept Hierarchy and Architecture</span></a> for the policy-based design that samplers plug into.</p></li>
+<li><p><a class="reference internal" href="../tutorials/geodex-basics.html"><span class="doc">geodex Basics</span></a> for <code class="docutils literal notranslate"><span class="pre">random_point</span></code> on every built-in manifold.</p></li>
+<li><p><a class="reference internal" href="../api/cpp.html"><span class="doc">C++</span></a> for the reference entries of every sampler named here.</p></li>
+</ul>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
+<div class="docutils container" id="id12">
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="footcite-marsaglia1972" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>George Marsaglia. Choosing a point from the surface of a sphere. <em>The Annals of Mathematical Statistics</em>, 43(2):645–646, 1972.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-muller1959" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p>Mervin E. Muller. A note on a method for generating points uniformly on n-dimensional spheres. <em>Communications of the ACM</em>, 2(4):19–20, 1959.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-shoemake1992" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">3</a><span class="fn-bracket">]</span></span>
+<p>Ken Shoemake. Uniform random rotations. In <em>Graphics Gems III</em>, pages 124–132. Elsevier, 1992.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-branicky2001" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">4</a><span class="fn-bracket">]</span></span>
+<p>Michael S. Branicky, Steven M. LaValle, Kari Olson, and Libo Yang. Quasi-randomized path planning. In <em>IEEE International Conference on Robotics and Automation (ICRA)</em>, 1481–1487. 2001.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-lavalle2006" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">5</a><span class="fn-bracket">]</span></span>
+<p>Steven M. LaValle. <em>Planning Algorithms</em>. Cambridge University Press, 2006.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-janson2018" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id6">6</a><span class="fn-bracket">]</span></span>
+<p>Lucas Janson, Brian Ichter, and Marco Pavone. Deterministic sampling-based motion planning: optimality, complexity, and performance. <em>The International Journal of Robotics Research</em>, 37(1):46–61, 2018.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-braaten1979" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id7">7</a><span class="fn-bracket">]</span></span>
+<p>E. Braaten and G. Weller. An improved low-discrepancy sequence for multidimensional quasi-Monte Carlo integration. <em>Journal of Computational Physics</em>, 33(2):249–258, 1979.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-owen2017" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id8">8</a><span class="fn-bracket">]</span></span>
+<p>Art B. Owen. A randomized Halton algorithm in R. <em>arXiv preprint arXiv:1706.02808</em>, 2017.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-vandercorput1935" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id9">9</a><span class="fn-bracket">]</span></span>
+<p>J. G. van der Corput. Verteilungsfunktionen. <em>Proceedings of the Koninklijke Akademie van Wetenschappen te Amsterdam</em>, 38:813–821, 1935.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-halton1960" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id10">10</a><span class="fn-bracket">]</span></span>
+<p>J. H. Halton. On the efficiency of certain quasi-random sequences of points in evaluating multi-dimensional integrals. <em>Numerische Mathematik</em>, 2:84–90, 1960.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-okten2011" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id11">11</a><span class="fn-bracket">]</span></span>
+<p>Giray Ökten and Ahmet Göncü. Generating low-discrepancy sequences from the normal distribution: Box–Muller or inverse transform? <em>Mathematical and Computer Modelling</em>, 53(5–6):1268–1281, 2011.</p>
+</aside>
+</aside>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="metrics.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Metrics as Robot Models</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="discrete-geodesic-interpolation.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Discrete Geodesic Interpolation</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#from-the-unit-cube-to-the-manifold">From the unit cube to the manifold</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#even-coverage">Even coverage</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-samplers">The samplers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-a-sampler-on-a-manifold">Using a sampler on a manifold</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-a-sampler-on-its-own">Using a sampler on its own</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#custom-samplers-and-new-manifolds">Custom samplers and new manifolds</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#see-also">See also</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Space and Terrestrial Autonomous Robotic Systems (STARS) Lab.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

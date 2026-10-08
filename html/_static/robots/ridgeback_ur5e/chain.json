@@ -1,0 +1,360 @@
+{
+ "robot": "ridgeback_ur5e",
+ "label": "Clearpath Ridgeback with a UR5e",
+ "root": "world",
+ "joint_names": [
+  "base_x_joint",
+  "base_y_joint",
+  "base_theta_joint",
+  "arm_0_shoulder_pan_joint",
+  "arm_0_shoulder_lift_joint",
+  "arm_0_elbow_joint",
+  "arm_0_wrist_1_joint",
+  "arm_0_wrist_2_joint",
+  "arm_0_wrist_3_joint"
+ ],
+ "links": [
+  "world",
+  "base_x_link",
+  "base_y_link",
+  "base_link",
+  "arm_0_shoulder_link",
+  "arm_0_upper_arm_link",
+  "arm_0_forearm_link",
+  "arm_0_wrist_1_link",
+  "arm_0_wrist_2_link",
+  "arm_0_wrist_3_link"
+ ],
+ "joints": [
+  {
+   "name": "base_x_joint",
+   "type": "prismatic",
+   "parent": "world",
+   "child": "base_x_link",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "index": 0
+  },
+  {
+   "name": "base_y_joint",
+   "type": "prismatic",
+   "parent": "base_x_link",
+   "child": "base_y_link",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "index": 1
+  },
+  {
+   "name": "base_theta_joint",
+   "type": "revolute",
+   "parent": "base_y_link",
+   "child": "base_link",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.0,
+     0.0259
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 2
+  },
+  {
+   "name": "arm_0_shoulder_pan_joint",
+   "type": "revolute",
+   "parent": "base_link",
+   "child": "arm_0_shoulder_link",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.0,
+     0.4575
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     1.0,
+     0.0
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 3
+  },
+  {
+   "name": "arm_0_shoulder_lift_joint",
+   "type": "revolute",
+   "parent": "arm_0_shoulder_link",
+   "child": "arm_0_upper_arm_link",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "quat": [
+     0.707106781259,
+     0.0,
+     0.0,
+     0.707106781114
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 4
+  },
+  {
+   "name": "arm_0_elbow_joint",
+   "type": "revolute",
+   "parent": "arm_0_upper_arm_link",
+   "child": "arm_0_forearm_link",
+   "origin": {
+    "xyz": [
+     -0.425,
+     0.0,
+     0.0
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 5
+  },
+  {
+   "name": "arm_0_wrist_1_joint",
+   "type": "revolute",
+   "parent": "arm_0_forearm_link",
+   "child": "arm_0_wrist_1_link",
+   "origin": {
+    "xyz": [
+     -0.3922,
+     0.0,
+     0.1333
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 6
+  },
+  {
+   "name": "arm_0_wrist_2_joint",
+   "type": "revolute",
+   "parent": "arm_0_wrist_1_link",
+   "child": "arm_0_wrist_2_link",
+   "origin": {
+    "xyz": [
+     0.0,
+     -0.0997,
+     -0.0
+    ],
+    "quat": [
+     0.707106781259,
+     0.0,
+     0.0,
+     0.707106781114
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 7
+  },
+  {
+   "name": "arm_0_wrist_3_joint",
+   "type": "revolute",
+   "parent": "arm_0_wrist_2_link",
+   "child": "arm_0_wrist_3_link",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.0996,
+     -0.0
+    ],
+    "quat": [
+     -0.707106781259,
+     0.0,
+     0.0,
+     0.707106781114
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 8
+  }
+ ],
+ "ee": {
+  "link": "arm_0_tool0",
+  "parent": "arm_0_wrist_3_link",
+  "xyz": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "quat": [
+   0.0,
+   -0.0,
+   0.0,
+   1.0
+  ]
+ },
+ "meshes": {
+  "full": "ridgeback_ur5e.glb",
+  "ghost": "ridgeback_ur5e_ghost.glb"
+ },
+ "bounds": {
+  "arm_0_forearm_link": [
+   [
+    -0.4311,
+    -0.058,
+    -0.0495
+   ],
+   [
+    0.0584,
+    0.0578,
+    0.0604
+   ]
+  ],
+  "arm_0_shoulder_link": [
+   [
+    -0.0601,
+    -0.0744,
+    -0.0639
+   ],
+   [
+    0.0601,
+    0.0601,
+    0.0715
+   ]
+  ],
+  "arm_0_upper_arm_link": [
+   [
+    -0.4846,
+    -0.0601,
+    0.0602
+   ],
+   [
+    0.0606,
+    0.0601,
+    0.2098
+   ]
+  ],
+  "arm_0_wrist_1_link": [
+   [
+    -0.0393,
+    -0.0536,
+    -0.0736
+   ],
+   [
+    0.0394,
+    0.0563,
+    0.0386
+   ]
+  ],
+  "arm_0_wrist_2_link": [
+   [
+    -0.0393,
+    -0.0567,
+    -0.0461
+   ],
+   [
+    0.0393,
+    0.0531,
+    0.0391
+   ]
+  ],
+  "arm_0_wrist_3_link": [
+   [
+    -0.0376,
+    -0.044,
+    -0.0458
+   ],
+   [
+    0.0375,
+    0.0376,
+    0.0
+   ]
+  ],
+  "base_link": [
+   [
+    -0.4662,
+    -0.3966,
+    -0.0262
+   ],
+   [
+    0.4662,
+    0.3966,
+    0.3941
+   ]
+  ]
+ }
+}

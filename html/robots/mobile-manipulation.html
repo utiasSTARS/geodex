@@ -1,0 +1,1231 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Whole-Body Planning &#8212; geodex</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/robot-viewer/robot-viewer.css?v=77e37a9e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=28229f57" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme.css?v=26c09b9b" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../_static/documentation_options.js?v=8d563738"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/plotly/plotly.min.js"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=b8b12719"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>window.MathJax = {"loader": {"paths": {"mathjax-termes": "[mathjax]/fonts/termes"}}, "chtml": {"font": "mathjax-termes"}, "options": {"enableSpeech": false, "enableBraille": false, "enableEnrichment": false, "enableExplorer": false, "menuOptions": {"settings": {"speech": false, "braille": false, "enrich": false}}}}</script>
+    <script defer="defer" src="../_static/mathjax/tex-mml-chtml.js?v=4a2f07e4"></script>
+    <script type="module" src="../_static/robot-viewer/robot-viewer.js?v=4cd922f8"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'robots/mobile-manipulation';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <script src="../_static/mermaid-intrinsic-size.js?v=f42d09f7"></script>
+    <script src="../_static/geodex.js?v=d44686ee"></script>
+    <link rel="icon" href="../_static/favicon.svg"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Add a Robot" href="add-a-robot.html" />
+    <link rel="prev" title="Navigation" href="navigation.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="1.0.0" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/logo-light.svg" class="logo__image only-light" alt=""/>
+    <img src="../_static/logo-dark.svg" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">geodex</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting-started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../concepts/index.html">
+    Core Concepts
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Robot Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../ros2/index.html">
+    ROS 2
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/utiasSTARS/geodex" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pygeodex/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting-started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../concepts/index.html">
+    Core Concepts
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Robot Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../ros2/index.html">
+    ROS 2
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/utiasSTARS/geodex" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pygeodex/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="manipulation.html">Manipulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="navigation.html">Navigation</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Whole-Body Planning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="add-a-robot.html">Add a Robot</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Robot Guides</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Whole-Body Planning</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="whole-body-planning">
+<h1>Whole-Body Planning<a class="headerlink" href="#whole-body-planning" title="Link to this heading">#</a></h1>
+<p>In this guide, we plan a Hello Robot Stretch 3 from beside a kitchen table to the far side of
+the island, moving its base and its arm in one motion. Then we plan the same task for a
+Stretch 4, whose base can slide sideways. The same steps plan a UR5e on two Clearpath bases.</p>
+<div class="geodex-figure geodex-robot-figure geodex-robot-figure-hero docutils container">
+<div class="geodex-robot-scene geodex-robot-hero" data-scene="../_static/robot-scenes/robots-stretch-3.json" data-robots="../_static/robots/" data-alt="A Stretch 3 driving from the table around the island and reaching over it, with faint
+copies along the path." data-hero="1" style="aspect-ratio:16/9;width:100%;margin:0 auto"><img class="geodex-robot-poster" src="../_static/robot-scenes/robots-stretch-3.jpg" alt="A Stretch 3 driving from the table around the island and reaching over it, with faint
+copies along the path." loading="eager"><div class="geodex-robot-stage"></div><div class="geodex-robot-hint" aria-hidden="true">Drag to orbit</div><div class="geodex-robot-controls" hidden><button type="button" class="geodex-robot-play" aria-label="Play"><svg class="geodex-robot-icon-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg><svg class="geodex-robot-icon-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 2.5h3v11h-3zM9.5 2.5h3v11h-3z"/></svg></button><input type="range" class="geodex-robot-scrub" min="0" max="1000" value="1000" aria-label="Position along the path"></div></div><div class="geodex-caption docutils container">
+<p>The finished plan. The grey curve traces the base on the floor and the blue curve the
+gripper. Drag to orbit, and use the controls to pause the robot or move it along the path.</p>
+</div>
+</div>
+<section id="hello-robot-stretch-3-and-stretch-4">
+<span id="whole-body-stretch"></span><h2>Hello Robot Stretch 3 and Stretch 4<a class="headerlink" href="#hello-robot-stretch-3-and-stretch-4" title="Link to this heading">#</a></h2>
+<p>The full script is <code class="docutils literal notranslate"><span class="pre">examples/robots/mobile_manipulation/stretch.py</span></code>, and the C++ version is
+<code class="docutils literal notranslate"><span class="pre">examples/robots/mobile_manipulation/stretch.cpp</span></code>.</p>
+<section id="load-the-robot-and-the-kitchen">
+<h3>1. Load the robot and the kitchen<a class="headerlink" href="#load-the-robot-and-the-kitchen" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">geodex.robots.Stretch3</span></code> is the robot’s configuration space. A configuration is the base
+pose <span class="math notranslate nohighlight">\((x, y, \theta)\)</span> followed by the lift, the arm extension and the three wrist
+joints. <code class="docutils literal notranslate"><span class="pre">workspace</span></code> is the rectangle the planner samples base positions from. The kitchen
+is a scene file of boxes, <a class="reference download internal" download="" href="../_downloads/02d6c7e54d610adc8907f0a17e7a38b0/kitchen.yaml"><code class="xref download docutils literal notranslate"><span class="pre">kitchen.yaml</span></code></a>, in a <code class="docutils literal notranslate"><span class="pre">scenes</span></code>
+directory next to the script.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-0">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">geodex</span>
+
+<span class="c1"># The kitchen, a scene file in the scenes directory next to this script.</span>
+<span class="n">SCENE</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">"scenes"</span> <span class="o">/</span> <span class="s2">"kitchen.yaml"</span>
+
+<span class="n">scene</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">load_scene</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">SCENE</span><span class="p">))</span>
+<span class="n">workspace</span> <span class="o">=</span> <span class="p">((</span><span class="o">-</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">))</span>
+<span class="n">stretch3</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">robots</span><span class="o">.</span><span class="n">Stretch3</span><span class="p">(</span><span class="n">workspace</span><span class="o">=</span><span class="n">workspace</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">stretch3</span><span class="o">.</span><span class="n">name</span><span class="p">(),</span> <span class="s2">"drive:"</span><span class="p">,</span> <span class="n">stretch3</span><span class="o">.</span><span class="n">drive</span><span class="p">(),</span> <span class="s2">"coordinates:"</span><span class="p">,</span> <span class="n">stretch3</span><span class="o">.</span><span class="n">dim</span><span class="p">())</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/robots/mobile_manipulation/stretch.py">examples/robots/mobile_manipulation/stretch.py</a></p>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-1">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;cmath&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;cstdio&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;filesystem&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;numbers&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;vector&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;geodex/robots/planning.hpp&gt;</span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">gr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">geodex</span><span class="o">::</span><span class="nn">robots</span><span class="p">;</span>
+<span class="k">namespace</span><span class="w"> </span><span class="nn">gv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">geodex</span><span class="o">::</span><span class="nn">integration</span><span class="o">::</span><span class="nn">vamp</span><span class="p">;</span>
+<span class="k">namespace</span><span class="w"> </span><span class="nn">gp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">geodex</span><span class="o">::</span><span class="nn">planning</span><span class="p">;</span>
+
+<span class="c1">// The kitchen, a scene file in the scenes directory next to this program.</span>
+<span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">kScene</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">filesystem</span><span class="o">::</span><span class="n">path</span><span class="p">(</span><span class="n">__FILE__</span><span class="p">).</span><span class="n">parent_path</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s">"scenes"</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s">"kitchen.yaml"</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="n">string</span><span class="p">();</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="o">**</span><span class="w"> </span><span class="n">argv</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">pi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">numbers</span><span class="o">::</span><span class="n">pi</span><span class="p">;</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">scene</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gv</span><span class="o">::</span><span class="n">load_scene</span><span class="p">(</span><span class="n">kScene</span><span class="p">);</span>
+<span class="w">  </span><span class="n">gr</span><span class="o">::</span><span class="n">RobotPlanOptions</span><span class="w"> </span><span class="n">options</span><span class="p">;</span><span class="w">  </span><span class="c1">// each robot takes the base metric of its drive</span>
+<span class="w">  </span><span class="n">options</span><span class="p">.</span><span class="n">base_region</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="p">(</span><span class="mf">-3.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-2.5</span><span class="p">),</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="p">(</span><span class="mf">3.0</span><span class="p">,</span><span class="w"> </span><span class="mf">2.5</span><span class="p">)};</span>
+<span class="w">  </span><span class="k">constexpr</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">R3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gr</span><span class="o">::</span><span class="n">Robot</span><span class="o">::</span><span class="n">Stretch3</span><span class="p">;</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">differential</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gr</span><span class="o">::</span><span class="n">base_drive</span><span class="o">&lt;</span><span class="n">R3</span><span class="o">&gt;</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">gr</span><span class="o">::</span><span class="n">BaseDrive</span><span class="o">::</span><span class="n">Differential</span><span class="p">;</span>
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"%s drive: %s coordinates: %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">gr</span><span class="o">::</span><span class="n">name</span><span class="p">(</span><span class="n">R3</span><span class="p">).</span><span class="n">data</span><span class="p">(),</span>
+<span class="w">              </span><span class="n">differential</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s">"differential_drive"</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s">"holonomic"</span><span class="p">,</span>
+<span class="w">              </span><span class="n">gr</span><span class="o">::</span><span class="n">MassMatrix</span><span class="o">&lt;</span><span class="n">R3</span><span class="o">&gt;::</span><span class="n">Nq</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/robots/mobile_manipulation/stretch.cpp">examples/robots/mobile_manipulation/stretch.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">stretch3</span> <span class="pre">drive:</span> <span class="pre">differential_drive</span> <span class="pre">coordinates:</span> <span class="pre">8</span></code>. The Stretch 3 rolls on two
+wheels and a caster, and its default base metric is the differential-drive one.</p>
+</section>
+<section id="plan-the-motion">
+<h3>2. Plan the motion<a class="headerlink" href="#plan-the-motion" title="Link to this heading">#</a></h3>
+<p>The start has the wrist tucked beside the table, and the goal holds the gripper over the
+island. The Stretch 3’s arm points to the right of its base.
+<code class="docutils literal notranslate"><span class="pre">PlanSettings(iterations=1500,</span> <span class="pre">seed=1,</span> <span class="pre">collision_check_resolution=0.005)</span></code> gives the planner
+1500 iterations and a fixed seed, and checks the path every 5 mm of sphere motion.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-2" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-2">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># (x, y, theta, lift, arm extension, wrist yaw, wrist pitch, wrist roll)</span>
+<span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.8</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>  <span class="c1"># by the table</span>
+<span class="n">goal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.9</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.85</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>  <span class="c1"># over the island</span>
+<span class="n">settings</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">PlanSettings</span><span class="p">(</span><span class="n">iterations</span><span class="o">=</span><span class="mi">1500</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">collision_check_resolution</span><span class="o">=</span><span class="mf">0.005</span><span class="p">)</span>
+
+<span class="n">result3</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">plan</span><span class="p">(</span><span class="n">stretch3</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">goal</span><span class="p">,</span> <span class="n">collision</span><span class="o">=</span><span class="n">scene</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"solved=</span><span class="si">{</span><span class="n">result3</span><span class="o">.</span><span class="n">solved</span><span class="si">}</span><span class="s2"> cost=</span><span class="si">{</span><span class="n">result3</span><span class="o">.</span><span class="n">cost</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> "</span>
+      <span class="sa">f</span><span class="s2">"waypoints=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">result3</span><span class="o">.</span><span class="n">path</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/robots/mobile_manipulation/stretch.py">examples/robots/mobile_manipulation/stretch.py</a></p>
+</div>
+<input id="sd-tab-item-3" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-3">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// (x, y, theta, lift, arm extension, wrist yaw, wrist pitch, wrist roll)</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="w"> </span><span class="n">goal</span><span class="p">(</span><span class="mi">8</span><span class="p">);</span>
+<span class="n">start</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mf">1.8</span><span class="p">,</span><span class="w"> </span><span class="mf">-0.2</span><span class="p">,</span><span class="w"> </span><span class="n">pi</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">3.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-0.5</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span><span class="w">  </span><span class="c1">// by the table</span>
+<span class="n">goal</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.9</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.85</span><span class="p">,</span><span class="w"> </span><span class="mf">0.4</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span><span class="w">       </span><span class="c1">// over the island</span>
+<span class="n">gp</span><span class="o">::</span><span class="n">PlanSettings</span><span class="w"> </span><span class="n">settings</span><span class="p">;</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">iterations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1500</span><span class="p">;</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">seed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">collision_check_resolution</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.005</span><span class="p">;</span>
+
+<span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">result3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gr</span><span class="o">::</span><span class="n">plan</span><span class="o">&lt;</span><span class="n">R3</span><span class="o">&gt;</span><span class="p">(</span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="n">goal</span><span class="p">,</span><span class="w"> </span><span class="n">scene</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">,</span><span class="w"> </span><span class="n">options</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"solved=%d cost=%.3f waypoints=%zu</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">result3</span><span class="p">.</span><span class="n">solved</span><span class="p">,</span><span class="w"> </span><span class="n">result3</span><span class="p">.</span><span class="n">cost</span><span class="p">,</span>
+<span class="w">            </span><span class="n">result3</span><span class="p">.</span><span class="n">path</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/robots/mobile_manipulation/stretch.cpp">examples/robots/mobile_manipulation/stretch.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">solved=True</span> <span class="pre">cost=5.332</span> <span class="pre">waypoints=641</span></code>. The cost is the length of the path under
+the robot’s metric.</p>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-3 sd-row-cols-xs-3 sd-row-cols-sm-3 sd-row-cols-md-3 sd-row-cols-lg-3 sd-g-2 sd-g-xs-2 sd-g-sm-2 sd-g-md-2 sd-g-lg-2 docutils">
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm geodex-stat docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+122 ms</div>
+<p class="sd-card-text">planning time</p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm geodex-stat docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+1.3 ms</div>
+<p class="sd-card-text">first solution</p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm geodex-stat docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+1500</div>
+<p class="sd-card-text">iterations</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p>The times are from a laptop CPU (Intel Core i7-10875H). The planner finds the first path after
+57 iterations. The 1500 iterations take 55 ms, and smoothing takes 67 ms.
+<code class="docutils literal notranslate"><span class="pre">result.first_solution_ms</span></code>, <code class="docutils literal notranslate"><span class="pre">result.time_ms</span></code> and <code class="docutils literal notranslate"><span class="pre">result.smooth_ms</span></code> hold these times.</p>
+</section>
+<section id="measure-how-much-the-base-slides">
+<span id="whole-body-sideways"></span><h3>3. Measure how much the base slides<a class="headerlink" href="#measure-how-much-the-base-slides" title="Link to this heading">#</a></h3>
+<p>Between two waypoints, the base moves along one constant body twist
+<span class="math notranslate nohighlight">\((v_x, v_y, \omega)\)</span>, the SE(2) logarithm of the two base poses. <code class="docutils literal notranslate"><span class="pre">sideways_share</span></code>
+adds up the sideways part <span class="math notranslate nohighlight">\(|v_y|\)</span> of every edge and divides it by the base’s travel.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-4" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-4">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">sideways_share</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Share of the base's travel that is sideways in its own frame.</span>
+
+<span class="sd">    Each edge moves the base along one constant body twist (v_x, v_y, omega). The</span>
+<span class="sd">    twist is the SE(2) logarithm between the edge's waypoints."""</span>
+    <span class="n">se2</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2</span><span class="p">()</span>
+    <span class="n">sideways</span> <span class="o">=</span> <span class="n">travel</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">path</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+        <span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">se2</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">a</span><span class="p">[:</span><span class="mi">3</span><span class="p">],</span> <span class="n">b</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">sideways</span> <span class="o">+=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">vy</span><span class="p">)</span>
+        <span class="n">travel</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">vx</span> <span class="o">*</span> <span class="n">vx</span> <span class="o">+</span> <span class="n">vy</span> <span class="o">*</span> <span class="n">vy</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sideways</span> <span class="o">/</span> <span class="n">travel</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"sideways share=</span><span class="si">{</span><span class="n">sideways_share</span><span class="p">(</span><span class="n">result3</span><span class="o">.</span><span class="n">path</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/robots/mobile_manipulation/stretch.py">examples/robots/mobile_manipulation/stretch.py</a></p>
+</div>
+<input id="sd-tab-item-5" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-5">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">/// Share of the base's travel that is sideways in its own frame. Each edge moves</span>
+<span class="c1">/// the base along one constant body twist (v_x, v_y, omega). The twist is the</span>
+<span class="c1">/// SE(2) logarithm between the edge's waypoints.</span>
+<span class="kt">double</span><span class="w"> </span><span class="nf">sideways_share</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">se2</span><span class="p">;</span>
+<span class="w">  </span><span class="kt">double</span><span class="w"> </span><span class="n">sideways</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="n">travel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">path</span><span class="p">.</span><span class="n">size</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">twist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">se2</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">head</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="p">(),</span><span class="w"> </span><span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">].</span><span class="n">head</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="p">());</span>
+<span class="w">    </span><span class="n">sideways</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">abs</span><span class="p">(</span><span class="n">twist</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+<span class="w">    </span><span class="n">travel</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">sqrt</span><span class="p">(</span><span class="n">twist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">twist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">twist</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">twist</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">sideways</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">travel</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"sideways share=%.3f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">sideways_share</span><span class="p">(</span><span class="n">result3</span><span class="p">.</span><span class="n">path</span><span class="p">));</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/robots/mobile_manipulation/stretch.cpp">examples/robots/mobile_manipulation/stretch.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">sideways</span> <span class="pre">share=0.010</span></code>. Almost none of the Stretch 3’s base travel is sideways.</p>
+</section>
+<section id="try-it-plan-the-stretch-4">
+<h3>4. Try it: plan the Stretch 4<a class="headerlink" href="#try-it-plan-the-stretch-4" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">geodex.robots.Stretch4</span></code> rolls on three omniwheels, and its default base metric is the
+holonomic one. Its arm points forward, and its goal faces the island.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-6" name="sd-tab-set-3" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-6">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">stretch4</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">robots</span><span class="o">.</span><span class="n">Stretch4</span><span class="p">(</span><span class="n">workspace</span><span class="o">=</span><span class="n">workspace</span><span class="p">)</span>
+<span class="c1"># The Stretch 4's arm points forward, and its goal faces the island.</span>
+<span class="n">start4</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.8</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+<span class="n">goal4</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.85</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+
+<span class="n">result4</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">plan</span><span class="p">(</span><span class="n">stretch4</span><span class="p">,</span> <span class="n">start4</span><span class="p">,</span> <span class="n">goal4</span><span class="p">,</span> <span class="n">collision</span><span class="o">=</span><span class="n">scene</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"solved=</span><span class="si">{</span><span class="n">result4</span><span class="o">.</span><span class="n">solved</span><span class="si">}</span><span class="s2"> cost=</span><span class="si">{</span><span class="n">result4</span><span class="o">.</span><span class="n">cost</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> "</span>
+      <span class="sa">f</span><span class="s2">"sideways share=</span><span class="si">{</span><span class="n">sideways_share</span><span class="p">(</span><span class="n">result4</span><span class="o">.</span><span class="n">path</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/robots/mobile_manipulation/stretch.py">examples/robots/mobile_manipulation/stretch.py</a></p>
+</div>
+<input id="sd-tab-item-7" name="sd-tab-set-3" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-7">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// The Stretch 4's arm points forward, and its goal faces the island.</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="w"> </span><span class="nf">start4</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="w"> </span><span class="n">goal4</span><span class="p">(</span><span class="mi">8</span><span class="p">);</span>
+<span class="n">start4</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mf">1.8</span><span class="p">,</span><span class="w"> </span><span class="mf">-0.2</span><span class="p">,</span><span class="w"> </span><span class="n">pi</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">3.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="n">goal4</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.85</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">pi</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mf">0.8</span><span class="p">,</span><span class="w"> </span><span class="mf">0.35</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+
+<span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">result4</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="n">gr</span><span class="o">::</span><span class="n">plan</span><span class="o">&lt;</span><span class="n">gr</span><span class="o">::</span><span class="n">Robot</span><span class="o">::</span><span class="n">Stretch4</span><span class="o">&gt;</span><span class="p">(</span><span class="n">start4</span><span class="p">,</span><span class="w"> </span><span class="n">goal4</span><span class="p">,</span><span class="w"> </span><span class="n">scene</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">,</span><span class="w"> </span><span class="n">options</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"solved=%d cost=%.3f sideways share=%.3f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">result4</span><span class="p">.</span><span class="n">solved</span><span class="p">,</span>
+<span class="w">            </span><span class="n">result4</span><span class="p">.</span><span class="n">cost</span><span class="p">,</span><span class="w"> </span><span class="n">sideways_share</span><span class="p">(</span><span class="n">result4</span><span class="p">.</span><span class="n">path</span><span class="p">));</span>
+
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/robots/mobile_manipulation/stretch.cpp">examples/robots/mobile_manipulation/stretch.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">solved=True</span> <span class="pre">cost=4.580</span> <span class="pre">sideways</span> <span class="pre">share=0.684</span></code>. Two thirds of the Stretch 4’s base
+travel is sideways. The two costs are lengths under two different metrics.</p>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-3 sd-row-cols-xs-3 sd-row-cols-sm-3 sd-row-cols-md-3 sd-row-cols-lg-3 sd-g-2 sd-g-xs-2 sd-g-sm-2 sd-g-md-2 sd-g-lg-2 docutils">
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm geodex-stat docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+80 ms</div>
+<p class="sd-card-text">planning time</p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm geodex-stat docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+2.6 ms</div>
+<p class="sd-card-text">first solution</p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm geodex-stat docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+1500</div>
+<p class="sd-card-text">iterations</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="geodex-figure geodex-robot-figure docutils container">
+<div class="geodex-robot-scene" data-scene="../_static/robot-scenes/robots-stretch-4.json" data-robots="../_static/robots/" data-alt="A Stretch 4 sliding from the table around the island and reaching over it, with faint
+copies along the path." style="aspect-ratio:16/9;width:100%;margin:0 auto"><img class="geodex-robot-poster" src="../_static/robot-scenes/robots-stretch-4.jpg" alt="A Stretch 4 sliding from the table around the island and reaching over it, with faint
+copies along the path." loading="lazy"><div class="geodex-robot-stage"></div><div class="geodex-robot-hint" aria-hidden="true">Drag to orbit</div><div class="geodex-robot-controls" hidden><button type="button" class="geodex-robot-play" aria-label="Play"><svg class="geodex-robot-icon-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg><svg class="geodex-robot-icon-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 2.5h3v11h-3zM9.5 2.5h3v11h-3z"/></svg></button><input type="range" class="geodex-robot-scrub" min="0" max="1000" value="1000" aria-label="Position along the path"></div></div><div class="geodex-caption docutils container">
+<p>The Stretch 4 plan, drawn the same way with the gripper trace in orange.</p>
+</div>
+</div>
+<figure class="align-default" id="id1">
+<a class="reference internal image-reference" href="../_images/bases.svg"><img alt="Top view of the kitchen with the Stretch 3 base path in blue and the Stretch 4 base path in orange, base outlines and headings drawn along each." src="../_images/bases.svg" style="width: 65%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">The two base paths from above, with the base outline and its heading at twelve evenly
+spaced points. The Stretch 3 (blue) drives forward past the island, stops, and backs into
+its goal. The Stretch 4 (orange) slides and turns at the same time.</span><a class="headerlink" href="#id1" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>The base metric weighs the forward, sideways and turning speeds of the base,</p>
+<div class="math notranslate nohighlight">
+\[\|\dot q_{\text{base}}\|^2 = w_x v_x^2 + w_y v_y^2 + w_\theta\, \omega^2 ,\]</div>
+<p>and the <code class="docutils literal notranslate"><span class="pre">base</span></code> argument of a mobile robot picks the weights.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 25.0%" />
+<col style="width: 45.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p><code class="docutils literal notranslate"><span class="pre">base</span></code></p></th>
+<th class="head"><p><span class="math notranslate nohighlight">\((w_x, w_y, w_\theta)\)</span></p></th>
+<th class="head"><p>Use it for</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;holonomic&quot;</span></code></p></td>
+<td><p>(1, 1, 1)</p></td>
+<td><p>omniwheels and mecanum wheels</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;differential_drive&quot;</span></code></p></td>
+<td><p>(1, 100, 1)</p></td>
+<td><p>two driven wheels, skid steer</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>With <span class="math notranslate nohighlight">\(w_y = 100\)</span>, a meter of sliding costs as much as ten meters of driving. For other
+weights, pass <code class="docutils literal notranslate"><span class="pre">base_weights=(wx,</span> <span class="pre">wy,</span> <span class="pre">wtheta)</span></code>.</p>
+<div class="geodex-figure docutils container">
+<div class="geodex-plotly"><noscript><img src="../_static/plots/robots-stretch-sideways.png" alt="Line chart of the sideways component of the base velocity along both paths. The
+Stretch 4 path slides between minus and plus one, the Stretch 3 path stays near zero."></noscript><div style="height:420px; width:100%;">                            <div id="plot-robots-stretch-sideways" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("plot-robots-stretch-sideways")) {                    Plotly.newPlot(                        "plot-robots-stretch-sideways",                        [{"hovertemplate":"%{x:.2f} of the base travel\u003cbr\u003esideways %{y:.2f}\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#2a78d6","width":2.5},"mode":"lines","name":"Stretch 3, differential drive","x":{"dtype":"f8","bdata":"j0MPciooUT9T5RarP7xpP2sUkw41cnU\u002fLLaaR0oGfj\u002f5K1HAL02DP9n81Fw6l4c\u002f7Op+zkThiz8MHt1hohWQPxlfxNqOOpI\u002fqflqZ15flD8fe1qOEoSWP+6hRHitqJg\u002fFwnOUi7Nmj+\u002fzCRUkvGcPxJhUJrcFZ8\u002fDKz6lw2doD\u002feD+VNLK+hP1L4bLdKwaI\u002f+lu2IGbToz99LE3heuWkPyDWI1KI96U\u002fLzogMI8Jpz+\u002fu+pUjxuoPxHG0R2ILak\u002feB6plXo\u002fqj+1U35ualGrP2FEUhRYY6w\u002fHFV0gTJ1rT\u002f\u002frDiL4oauP3LBN3BimK8\u002fmU0FcdtUsD\u002f4GV0Bcd2wP6\u002f7XL7wZbE\u002fybxWzFjusT9JtnfOqXayP29o397t\u002frI\u002fx4XKVy+Hsz8mw2B0bg+0P6G5P4Kpl7Q\u002fUsYrguAftT8y4PG1E6i1P3n4pvVCMLY\u002fv3QlvW24tj++JOxVlEC3P3PfG+S4yLc\u002f1wRYBd1QuD+PV9q389i4PyEi63nYYLk\u002fqMAbWHbouT84f9IC02+6P5p45Lrv9ro\u002fMVpp9sZ9uz+ecqYMYgS8P70vGSrjirw\u002fgZuEcUMRvT\u002fa40pWQpe9P4bTbxy9HL4\u002fbxkFRb6hvj\u002f8lgszUia\u002fPzxqz9B2qr8\u002f\u002fzshvBAXwD\u002f0LHiFpVjAPzTjD8sFmsA\u002fCSd730rbwD81NxZHdRzBP0A3+Qx4XcE\u002fUn57YVSewT+kmTziDd\u002fBP\u002f3LWwSkH8I\u002fu66lJxRgwj+eVmgxXKDCP0MURbSE4MI\u002fFxw5pJ8gwz9jLbxFp2DDPz2FYpaGoMM\u002fatEziTjgwz\u002fFcoeSwR\u002fEPzBrbakkX8Q\u002ft6Af4GCexD95iyzOcd3EP9FzIdpUHMU\u002fH1wgdBdbxT+jC\u002frwzJnFP\u002fSp8Lxr2MU\u002fvHw7GN0Wxj8Q0wSRHFXGP\u002f3flnQvk8Y\u002fF9nLRBfRxj\u002fdxYZy0w7HP0kkJmJiTMc\u002fIcCdeb+Jxz\u002fyQgAL8MbHP8EDyRALBMg\u002fp1MFRhlByD+gxTBVBX7IP5NR\u002fG+\u002fusg\u002fr7LIlkj3yD9Xn8+ZozPJPywZSbzTb8k\u002fDwK0nteryT9s69hkqufJPxS8kMdJI8o\u002fshHbHr1eyj\u002fJIpJ7HJrKP8uEC1J71co\u002fezFFVuMQyz+qXDG3W0zLP2jz+ovkh8s\u002f\u002fRVyMXvDyz9NZFTKff3LP783f1rrNcw\u002fFL5oc2RuzD+k6AEp6qbMP0UMZn5738w\u002fq5F6qhMYzT88GzZLs1DNP7VQFTptic0\u002fracrHlLCzT\u002fwFLf8XfvNP7XwyIWINM4\u002fuziX0Mltzj8VL\u002fLFkaTOP22g5kXb2M4\u002f4LH+4ykNzz\u002f4dfMgeUHPP1tnMrnCdc8\u002ffxCLZgGqzz8PNgh4Nt7PP81d3cAzCdA\u002fgVVa80Mj0D80+mkpNj3QP1SutezwVtA\u002fHT9g6WRw0D+AOXaLjonQPyIYuyy8odA\u002frw\u002fnfum40D9zJrHyt8\u002fQP0WJf3gX5tA\u002fuZcxIgL80D+D8bUihBHRP\u002fvWTyPKJtE\u002fE\u002fsIGek70T8ZbCCd0FDRP2F4bkh1ZdE\u002f\u002fafHttd50T+zl8Zx+Y3RPxwXuRjeodE\u002fuXH63I210T+LBxepCsnRP2JkIXDC29E\u002f4c5OjLbt0T95bdrhev\u002fRP0gu6hgOEdI\u002foh8LqGoi0j80XBuSjzPSPyOLbfN+RNI\u002fFIoF\u002fTZV0j88DYjFv2XSP46QoqIqdtI\u002fRWN8dIOG0j+UkGXTxJbSPyc1wKnjptI\u002f5soQmty20j\u002f+OspGssbSP4pG6jJo1tI\u002fOh79CQDm0j9st0h90\u002fTSPyRCvkHkAtM\u002fpg8pMdoQ0z9haleQtB7TP0m4ICdxLNM\u002fhcuHug460z8nDx+FjkfTP62RdQT3VNM\u002fkJao41Vi0z8ArTMws2\u002fTP3DDvnwQfdM\u002fN3RZRm6K0z+l7\u002fhGz5fTP11pli84pdM\u002fzGU0PKuy0z+hqWawKMDTPxhwqAGwzdM\u002fFwMeeEDb0z\u002ftKme92ejTP5vACkS89dM\u002fFoOxsecB1D\u002fgu1gjGw7UP7bRt+dWGtQ\u002fLNh8\u002fJsm1D\u002f1qOj46jLUPxTHExtDP9Q\u002f4Fx2YKJL1D9CaYVACFjUPzdpQd58ZNQ\u002fRAtw6Ahx1D+9Lff4sX3UP6KpP5B6itQ\u002fUaoNsmCX1D9TNlBCY6TUP6o5xQuDsdQ\u002f4UCmxb++1D9OrAxcFszUP7ZNxJn919Q\u002fzMFa2XLi1D9Oj0iw\u002fOzUP1V4rnqe99Q\u002fZNu1QFkC1T9NuPkGLQ3VP3XPhvwdGNU\u002f6ba9yCwj1T+a4YdcVy7VP8+ALliXOdU\u002f8f7P4+RE1T\u002fiAU3bR1DVP5kDs7PMW9U\u002fJpm+CXdn1T8FJLPZQ3PVP6r95IExf9U\u002fzZgpyhmK1T\u002fdrL\u002f2+ZPVP5J2\u002fp\u002f2ndU\u002fqnziGxKo1T9+MbEKULLVP5IPrpysvNU\u002fC2\u002fnDRjH1T+QAAy\u002fhdHVP8SNjsr129U\u002f5d8U52zm1T9Qwd\u002f47fDVP9dy9al5+9U\u002fFPccIQ8G1j9SA3l2rRDWP2BVfUHeGdY\u002fdzTBT6Ah1j9pKErlaCnWP0mPCLo4MdY\u002fNK0ujhA51j+pQMu170DWPwygOvjTSNY\u002f3njwrsFQ1j89oLzpxljWPwK3TMvsYNY\u002fux1vAjZp1j+9bD57n3HWP7w+UvUletY\u002fuyFGK8yA1j9pwpZBioXWPzg6Y5FWitY\u002f5bJwHjKP1j9Krm+RHZTWPzgTtvsWmdY\u002fLPrkKBme1j8oX1TXHaPWP1rcf8YiqNY\u002fBQHN7iet1j9FkgFLLbLWP0bLY9cyt9Y\u002fnfALGVS61j\u002fODEf9kLvWP22IwOzNvNY\u002fa85Y6Aq+1j+p5PjwR7\u002fWP4QADAOFwNY\u002fs6pfC8LB1j\u002fjbP7p\u002fsLWPxrf5Yk7xNY\u002fjECX6HfF1j8ZFWkKtMbWP1SMgfXvx9Y\u002fYNd6\u002fgvK1j+rzHYACM3WP4So83sD0NY\u002f77hkYf7S1j8ObC+l+NXWPyYB5Uzy2NY\u002fxMjriuvb1j9CDAmp5N7WP0nYMtrd4dY\u002fesOKMtfk1j8cXuOz0OfWP31lDVnK6tY\u002f8ExiqTTv1j8TaEC0D\u002fXWP8HnNwPr+tY\u002ffuFVnsYA1z\u002fEsI2AogbXP3vLqId+DNc\u002fB6jnlFoS1z+U6TKjNhjXP4oUDLMSHtc\u002fRCEgxO4j1z9IFezVyinXP1d6D+imL9c\u002fK7RVg5U31z\u002f0v0unlkHXPxbqFcqXS9c\u002fU8gB65hV1z87FSQJml\u002fXP6pw9iObadc\u002fMULMH5xz1z\u002fpdQFonH3XP5QpWE+bh9c\u002f1D3zkZiR1z9EvvxLlJvXP\u002f1qdqSOpdc\u002f43IZsFax1z+1kaEs7L7XP1LWC8R\u002fzNc\u002fhfMSPxHa1z+fhUN1oOfXP3LSd8Et9dc\u002fldTXEroC2D+yCsI3RhDYP6PEuf7RHdg\u002fzKGCxFwr2D+Z6Us95jjYP6K5V4VuRtg\u002fHBuHcD9V2D+ZsFXjWGXYPz82E+lwddg\u002fM0OtX4eF2D+vZqWhnJXYP\u002faHZXCxpdg\u002fubF0Lsa12D88u3TW2sXYP1YShmTv1dg\u002fZTGG2APm2D+b9ssyGPbYP3rgxnMsBtk\u002fd55H9UcY2T86uyKzaizZPyZMNk2NQNk\u002fOBIIwK9U2T+YxQsH0mjZP2aajB70fNk\u002fjQTHCRaR2T\u002f\u002fdUnbN6XZP2Xu5rpZudk\u002fgpSOzHvN2T+8G3ccnuHZP34056TA9dk\u002fu8XIvy8L2j9Ff+Zv6yHaPwCGu12nONo\u002foQzUjWNP2j9aYKDxH2baP+wDXjbcfNo\u002fwKK\u002fdZeT2j+yh8XhUKraP6YY7SMIwdo\u002fjDIiUb3X2j9bhCiZcO7aP8LVQREiBds\u002fc9\u002feU7Ad2z\u002fJ9Do+GzjbPxKNgwmEUts\u002f\u002fZkzmeps2z\u002f51hm2TofbP1ZbkESwods\u002fkL5Nnw+82z9S7eO1bdbbPynIrXrL8Ns\u002fWMO5FikL3D94B\u002fODhiXcP0F8QsXjP9w\u002fYJqpUHtb3D+L11ojTXjcP5YypMMeldw\u002f4jihLPCx3D8LkiRlwc7cP0YXJW6S69w\u002fF1ti82II3T+35S+XMiXdP2PpiDYBQt0\u002fVO592s5e3T8OEVuVm3vdP9SfknFnmN0\u002fQWBOZ6a23T8qHIpsWNbdP4eaGHkJ9t0\u002fvBHbfLkV3j\u002f8Ua1iaDXePz+Z8xsWVd4\u002fzts0xsJ03j9f6xXgbpTePzDePEEbtN4\u002fw\u002fL2a8jT3j80MrJudvPeP25L5S8lE98\u002f1g+Ud6gz3z9Q5R1JAFXfP8DLdd9Ydt8\u002fRF+wUrKX3z+ev\u002fqTDLnfP\u002f+NgE5n2t8\u002feMeeZsL73z9dI0QDjw7gP160XCI9H+A\u002fJjFwjOsv4D9kvZw5mkDgP2OxACZJUeA\u002fcTzYlFJi4D80PXCGtnPgP\u002fOEBrcaheA\u002fnS\u002fSKH+W4D\u002fljgXh46fgP\u002fFQduFIueA\u002frQaVHq7K4D\u002fTtx2NE9zgPwNYl2t57eA\u002fjx9gHOD+4D8pNmWxRxDhP1teSBGwIeE\u002fyHJblT8z4T+Dl54+9kThP8pohLStVuE\u002f8n6PD2Zo4T\u002fTq+I8H3rhP6G5ptbYi+E\u002ffGbGkpKd4T+4t511TK\u002fhPy7OGYgGweE\u002f3HOfx8DS4T++7gsve+ThPzrPlrs19uE\u002fYSB\u002fGfMH4j8aTdRHsxniP1+e+ZhzK+I\u002faPbyDTQ94j\u002fH\u002fZWp9E7iP1WTW2y1YOI\u002fEPvCTXZy4j\u002fMGPVDN4TiPy+4NW\u002f4leI\u002fPjT1CLqn4j9jcE8ifLniP+TOBLE+y+I\u002fH2gJdPLc4j9zUN1ql+7iP\u002fuGtNQ8AOM\u002f6IMguuIR4z+TO3AKiSPjPzdld4svNeM\u002f5ueOCtZG4z+2oU5wfFjjPzWyiqoiauM\u002fY2utrsh74z\u002fcgH93bo3jP3c6WQQUn+M\u002f4Cr1vIyw4z9jnVab2MHjP+XviCsk0+M\u002fiKroW2\u002fk4z+L4EEduvXjP09sS2sEB+Q\u002fwxzOW04Y5D\u002fjobvVlynkP36eYljgOuQ\u002f\u002frJYiidM5D\u002fVN8x0bV3kP8rb6xqybuQ\u002fZHhH8UmA5D95cYTaNJLkP0ryEiQepOQ\u002fVp1XmAW25D\u002f97\u002f0Z68fkP\u002fff0T3P2eQ\u002f\u002fih997Lr5D\u002fTIautlv3kP6ca2WN6D+U\u002fexMHGl4h5T9RDDXQQTPlPyYFY4YlReU\u002f+v2QPAlX5T\u002fO9r7y7GjlP6Lv7KjQeuU\u002fd+gaX7SM5T9M4UgVmJ7lPyHadst7sOU\u002f9dKkgV\u002fC5T8D0WUXQ9TlP78Ekh8i5uU\u002fpHtYkPX35T9elcAbuwnmPwzVUx9zG+Y\u002fzn+LBhwt5j8GCz4Gtj7mPzgs0adIUOY\u002fJtgig9ph5j8ThHRebHPmP7Jhubf9hOY\u002fApz\u002fe4uW5j8NAPx3EajmPx5Zht2NueY\u002fnkdCmQDL5j8TZvNjLdzmP57Abf0T7eY\u002fpCNvtu795j9LN+ERuw7nP5J8BZ94H+c\u002fnrjj9Csw5z9CqTDE20DnP03r752HUec\u002fbBDuTypi5z8Bm+urwHLnP1sM5tpIg+c\u002fBQV3ycKT5z\u002fUJ33zy6TnP90NXKhhtuc\u002fyoPNoeLH5z93\u002feolStnnPyrxcYmV6uc\u002f3pq2Osr75z+f+7J09QzoPz7yJtMfHug\u002f3uiaMUov6D8YA1KudEDoP3UySOShUeg\u002f5L87JdVi6D8JQdNKDnToP3v90QRKheg\u002fDm6V3oWW6D+g3li4wafoP4QsVKH9uOg\u002fcllGRzrK6D\u002fUZFHVeNvoP8H+3c657Og\u002f5PHS9Pz96D+7m\u002fEiQg\u002fpP7gWrS2JIOk\u002f+h0zCNIx6T++6mTGHEPpPzM5THRpVOk\u002flGa7Lrhl6T9pVkN1CHfpPxZJIlRZiOk\u002feNSmP6qZ6T\u002fXXysr+6rpPznrrxZMvOk\u002f+gOGBZ3N6T9tANAg7t7pP8\u002feg\u002fU\u002f8Ok\u002fjf61AZMB6j+Vcgd05xLqP69Y4Hw9JOo\u002fdN1mFJU16j9YYUwT7kbqP9ANkmtIWOo\u002favxlD6Rp6j\u002fq7\u002fvyAHvqP5gL+w1fjOo\u002fCvuRD3md6j+dd9fvTq7qPy7PrPclv+o\u002fFFldLv7P6j+BvIOd1+DqP\u002fCpf1Cy8eo\u002fswW7Uo4C6z\u002fqxMC+axPrPy95N6JKJOs\u002f3iI+1yo16z929a0oDEbrPxkMXiruVus\u002fDccWXdBn6z+z42+TsnjrP1sAycmUies\u002fAR0iAHea6z+acKNXWavrP6a+vq89vOs\u002fSbQ\u002fbifN6z\u002fNbnIEGN7rP8mvwqwO7+s\u002f4c4U1goA7D8HoPGK2xDsPwP4f4qAIew\u002fx3MNVyoy7D8tzKkG2ULsPzkhM82MU+w\u002fvRCOUkRk7D\u002fiMVAs\u002fXTsP13zbpm2hew\u002fXKyZjnGW7D8E7zWVLqfsP1idNnntt+w\u002flwP5g2TI7D8fIVqrk9jsP0c\u002fOprE6Ow\u002fZkrYfff47D8JCvHlKwntP\u002fufz2phGe0\u002fN5vAm5gp7T\u002fafoLv0TntPwB0TlMNSu0\u002fMRjroUpa7T86cZG1iWrtPzt7DABZeu0\u002f+pQ1criJ7T+jHMyKGZntP3mqDml8qO0\u002frjePKuG37T96DvzbR8ftP34zRAqw1u0\u002fR4zvxxjm7T+ji7qUgfXtP\u002f+KhWHqBO4\u002fHA+nL1MU7j8\u002fkQsavCPuP62KLnclM+4\u002f0eR7v49C7j8Vdvss+1HuP1OXicJnYe4\u002ffR5TitVw7j+oK2aDRIDuP\u002feMIpe0j+4\u002fPcadsCWf7j9A5eTGl67uP2hYA8YKvu4\u002fnJyGLOXM7j8EdhnxJtvuP01uWIpp6e4\u002fch4PCq337j8dur138QXvP\u002fU2TuM2FO8\u002fnwuYYn0i7z\u002fvawv4xDDvP\u002fnlq5cNP+8\u002fkjakPFdN7z+iUi61oVvvPy1Oo5fsae8\u002fFS0qlDd47z8FygqSgobvP\u002fZm64\u002fNlO8\u002f5gPMjRij7z\u002fXoKyLY7HvP8Y9jYmuv+8\u002fttpth\u002fnN7z+nd06FRNzvP5cUL4OP6u8\u002fiLEPgdr47z8="},"y":{"dtype":"f8","bdata":"i0pgpBDbGT8sP1ekENsZPySNUKQQ2xk\u002f+9xFpBDbGT9MVHmkENsZPw\u002fQSaQQ2xk\u002f90vg4iHmGT9q3dTZ0oMcP+PR71lv0yE\u002fN9WVplhhJT\u002fUzh552nEoPxGnuP43Wis\u002f1w3B2El7Lj\u002fe\u002fTmwnfIwP1pekQitGjI\u002fT1AEZbE6Mj+UyhBlsToyP1+l2HcGhDI\u002famNISq4ENT+8ANrsSIs4Px2H6mC3ajs\u002fKlBkaMgPPj\u002fDlaz4I2lAP7YafNWs3EE\u002f9RUDYHG\u002fQj\u002fxI0M5X81CP4c9zusCAEM\u002fpn9NT3CYRD9bdftKT9VGP7v3SgyGxkg\u002fWS+X88xtSj9rQK7TYwVMPwHbhSZCrU0\u002f\u002feW8\u002fq5aTz8ymVpXGl9QPyBTJ\u002fRxgFA\u002flKsVvB28UD88TfpAQ6xRP1HLFNVcmVI\u002fZqSNrHVWUz\u002fpsj6rWfdTP3toEUrCkFQ\u002findMWdQkVT+1B\u002f9No39VP4388BaViVU\u002fyJ1gERiMVT+1wA4GyzpWPxdjVoKQ+Fc\u002f6ty5xAx1WT\u002f5CmQT\u002fa1aPw9Df1H\u002f2Fs\u002frmK8aEP\u002fXD+MxOEgiaVdP2ePxNVPuF0\u002fgxP7pBzdXj+1sg+8wplgP2xjxDWXp2E\u002fD1P5z19+Yj9pDmbDXTZjP0HVQ4cv72M\u002f3436n1ijZD\u002fyW5vJu0hlPwLR13OLoGU\u002fupX1l3MBZj9x4NvNawRnP8tQ0Ej0\u002fGc\u002fNj6J1eS\u002faD8dSFJOnF9pPxtGaT769mk\u002fPwkDeM57aj9bkklGaO1qPz3g6mDGGms\u002foZay2OFAaz8lPg2ANDFsPxG7ZXDeZW0\u002fA72V+Wxgbj93bWR1MSNvP+s+HL8jxW8\u002fIn95RlQrcD9UImvC1W1wP0H3T0zinnA\u002f2a7QfqqscD8Gt1JsWcdwPzsVcUQGWnE\u002fUoBGRCMNcj8cmiLubZxyP3cr1vVjCnM\u002f1koLLJRtcz+WrfqdlrxzP6i6PvRkAXQ\u002fKR\u002fJVDA4dD\u002fZW4C7aFB0P3n8Me0cVXQ\u002fKTvr0LWzdD8EUoOMzYl1P+qPcOioUXY\u002fqcccdMXydj9PlNjvsnl3Pz7gNJVY3nc\u002fuZumGApAeD828\u002fzr5o14P3wpcdpFx3g\u002f12k1oh7deD9mQWlozt14P+isaGjO3Xg\u002f8EhpaM7deD9ig2lozt14Pwq6aGjO3Xg\u002f5QhpaM7deD909SVUo1V\u002fP8RPJ1SjVX8\u002fn\u002fAlVKNVfz99syZUo1V\u002fP65fJlSjVX8\u002foZ0mVKNVfz8txiZUo1V\u002fP48XJlSjVX8\u002f4W4mVKNVfz84yCZUo1V\u002fP8v2JVSjVX8\u002fFcwmVKNVfz9rOthb5iyFPxr111vmLIU\u002fnxPYW+YshT8CwNdb5iyFP4\u002f011vmLIU\u002fg2TYW+YshT8C+Ndb5iyFP7EN2FvmLIU\u002f1SnYW+YshT+yxNdb5iyFP1nr11vmLIU\u002fvCLYW+YshT8dFNhb5iyFP+v\u002fHPAq7Y0\u002flCIc8CrtjT88yxzwKu2NP\u002ftBHPAq7Y0\u002fxQ8d8CrtjT+9HhzwKu2NP7cpHPAq7Y0\u002fiSkd8CrtjT\u002fo2RvwKu2NP6SpHfAq7Y0\u002fgf4b8CrtjT97rhzwKu2NPwYgHPAq7Y0\u002fKs0c8CrtjT+2rRzwKu2NP8PZzHRCg5E\u002flXfMdEKDkT+bJsx0QoORP9euzHRCg5E\u002fHqLMdEKDkT9ooMx0QoORP4KQzHRCg5E\u002f1H\u002fMdEKDkT+y38x0QoORPxNZzHRCg5E\u002fEG3MdEKDkT+clMx0QoORP9WlzHRCg5E\u002f9LrMdEKDkT9Htsx0QoORP4E+zHRCg5E\u002fmtHMdEKDkT9oKxE6JNKTP+EvETok0pM\u002f+DYROiTSkz9XZRE6JNKTP0kTETok0pM\u002fPBMROiTSkz\u002fYPxE6JNKTP2qYETok0pM\u002fc8MQOiTSkz\u002fpOhE6JNKTP+GeEDok0pM\u002fdUcROiTSkz\u002f7fxE6JNKTP\u002fl+ETok0pM\u002fpY8QOiTSkz++sBE6JNKTPxE1ETok0pM\u002fDQ8ROiTSkz+UIhE6JNKTP18vngXJcpI\u002fA7udBclykj93x54FyXKSPxn5nQXJcpI\u002flBSeBclykj+uKZ4FyXKSP\u002f80ngXJcpI\u002f+\u002fydBclykj8krp4FyXKSP9TknQXJcpI\u002ftTSeBclykj\u002f2E54FyXKSP0HnnQXJcpI\u002fSkGeBclykj9AZp4FyXKSP9w8ngXJcpI\u002fxRGeBclykj\u002fgIZ4FyXKSP3z3guZDN50\u002f1G6C5kM3nT8zAYPmQzedP9bnguZDN50\u002fbSKD5kM3nT\u002f9ToLmQzedP0LEguZDN50\u002faSWD5kM3nT8kJIPmQzedP+ytguZDN50\u002flLqC5kM3nT+3AIPmQzedP86iguZDN50\u002fPPCC5kM3nT\u002fe1YLmQzedP6XgguZDN50\u002fKxJQJ\u002fTCnT957lAn9MKdP3lbUCf0wp0\u002fhUNQJ\u002fTCnT\u002fGqlAn9MKdP7TnUCf0wp0\u002fAApQJ\u002fTCnT\u002fikVAn9MKdP7NGUCf0wp0\u002fCpRQJ\u002fTCnT81WVAn9MKdP4q4UCf0wp0\u002f5LxQJ\u002fTCnT\u002fMGVAn9MKdP3Go8P0iNqU\u002f4+Pw\u002fSI2pT+f4\u002fD9IjalP5\u002fs8P0iNqU\u002f+9nw\u002fSI2pT+8x\u002fD9IjalP3vF8P0iNqU\u002f9O3w\u002fSI2pT\u002f51PD9IjalPwbf8P0iNqU\u002f7snw\u002fSI2pT\u002fHrfD9IjalPwEG8f0iNqU\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fAAAAAAAA+H8AAAAAAAD4fwAAAAAAAPh\u002fKZlQZh9pnT+8E1FmH2mdP83TUGYfaZ0\u002fJKlQZh9pnT9zxFBmH2mdP827UGYfaZ0\u002f8nFQZh9pnT+37FBmH2mdPzEAUWYfaZ0\u002fbJJQZh9pnT9RzVBmH2mdP0avUGYfaZ0\u002fzD\u002f7IRbvnj+YLPshFu+ePwgo+yEW754\u002fIEf7IRbvnj8OZvshFu+eP0nG+iEW754\u002fOGb7IRbvnj+eH\u002fshFu+eP8AP+yEW754\u002fsUH7IRbvnj\u002fHe\u002fshFu+eP6cf+yEW754\u002f\u002fus+YqbYlj\u002fPCz9iptiWP\u002fefPmKm2JY\u002fssU+YqbYlj+zBj9iptiWP2skP2Km2JY\u002f+KY+YqbYlj\u002ftrj5iptiWP2EtP2Km2JY\u002fcJ0+YqbYlj\u002fxDz9iptiWPxnTPmKm2JY\u002fkCesEKtwlj\u002fo86sQq3CWP8MlrBCrcJY\u002fIhOsEKtwlj96EKwQq3CWP08VrBCrcJY\u002f8zasEKtwlj+T\u002fqsQq3CWP7sNrBCrcJY\u002fQjGsEKtwlj+uCawQq3CWP2kTrBCrcJY\u002fc48GPJ5gkD9oQwY8nmCQP9toBjyeYJA\u002fbzAGPJ5gkD+HigY8nmCQP6eEBjyeYJA\u002fmnUGPJ5gkD8wLwY8nmCQP9NeBjyeYJA\u002fRWkGPJ5gkD+IbAY8nmCQP8RTBjyeYJA\u002fkNo3q2mpkz9zqjeraamTP52oN6tpqZM\u002fpuI3q2mpkz+NkjeraamTP3jcN6tpqZM\u002fZKg3q2mpkz+d2TeraamTP5uYN6tpqZM\u002fpMA3q2mpkz+yvzeraamTPy\u002fGN6tpqZM\u002fCjFaJaW4jj8g+lklpbiOP5ItWiWluI4\u002fcRdaJaW4jj8SKVolpbiOP\u002ffmWSWluI4\u002fHWNaJaW4jj8B0lklpbiOP71JWiWluI4\u002f2V9aJaW4jj8lvVklpbiOP7BWWiWluI4\u002frmrLhEFtkT\u002fqcMuEQW2RPzCMy4RBbZE\u002fEmPLhEFtkT+3g8uEQW2RP2Fmy4RBbZE\u002fEnXLhEFtkT+OcMuEQW2RPz6Oy4RBbZE\u002f9ETLhEFtkT\u002fOlMuEQW2RP9uHy4RBbZE\u002f1snCBftWiz9cEcIF+1aLP7d5wgX7Vos\u002fBMbCBftWiz+G08EF+1aLP8K7wgX7Vos\u002fdqrCBftWiz8hJsIF+1aLP47owgX7Vos\u002fMzTCBftWiz\u002fZTMIF+1aLP5ynwgX7Vos\u002fAuq1aKvqjj\u002faTLZoq+qOP7ZttWir6o4\u002fH7O1aKvqjj+OBLZoq+qOP0gvtmir6o4\u002ffPi1aKvqjj9m5rVoq+qOP81Ltmir6o4\u002fNpu1aKvqjj9jsbVoq+qOP18ztmir6o4\u002f95QL+tDEiD8dZwv60MSIP+giDPrQxIg\u002f+r4K+tDEiD8zMQv60MSIP3FDC\u002frQxIg\u002fFsoL+tDEiD\u002f3egr60MSIPwF6CvrQxIg\u002fKd4L+tDEiD+GGQ360MSIP5IrCvrQxIg\u002fTp\u002fkzWK+iD85duPNYr6IP8pY4s1ivog\u002fY3rkzWK+iD+MiOXNYr6IPxY\u002f4s1ivog\u002f0F\u002fizWK+iD9V\u002f+XNYr6IP1FP5M1ivog\u002f6SzgzWK+iD\u002frUOPNYr6IP9Eb581ivog\u002fQ4qKWGEEgz\u002fva4tYYQSDP5lCi1hhBIM\u002fPmCLWGEEgz8FI4tYYQSDP61si1hhBIM\u002f3teLWGEEgz9VXopYYQSDPzbEi1hhBIM\u002fHMSLWGEEgz9J8IpYYQSDP8JuilhhBIM\u002fewFKU0ERez8BnEhTQRF7Pzr4SVNBEXs\u002fBmZIU0ERez+aJ0pTQRF7P7onSVNBEXs\u002fS25JU0ERez\u002fBD0hTQRF7P4CJSlNBEXs\u002fvIBIU0ERez\u002fBGklTQRF7P746SVNBEXs\u002fM2a7+A\u002fccD8df7r4D9xwP3avuvgP3HA\u002fWF67+A\u002fccD8wB7v4D9xwP\u002fWuuvgP3HA\u002fCeG7+A\u002fccD+IB7v4D9xwP04Fu\u002fgP3HA\u002f7bK6+A\u002fccD+6wrr4D9xwPzVtu\u002fgP3HA\u002fy1W6+A\u002fccD9Nj7v4D9xwP+p4uvgP3HA\u002fCUq7+A\u002fccD\u002f2xLr4D9xwP3Uyu\u002fgP3HA\u002fHrC6+A\u002fccD9P9cLdNOBwP9IEDM9yTHE\u002fk1\u002fQCPHAcT9eDOJEB\u002fpxP8CAPG2FAnI\u002f4yMKZLfUcT8sofUkTYZxP8T\u002f8v86eHE\u002fnT\u002fy\u002fzp4cT\u002fT\u002f\u002fL\u002fOnhxP7xE8v86eHE\u002fTdry\u002fzp4cT8v\u002f\u002fH\u002fOnhxPzCH8\u002f86eHE\u002fAgDy\u002fzp4cT9s7XBzrfRwP7s0cXOt9HA\u002fuDNwc630cD+eYHJzrfRwP6AfcHOt9HA\u002fpHVyc630cD9tKXFzrfRwP+brb3Ot9HA\u002fOYByc630cD+iTHBzrfRwP7uScXOt9HA\u002fVbBwc630cD+bCtlKZhZkP+1Q20pmFmQ\u002fyO3WSmYWZD\u002fGy9lKZhZkP8OU2UpmFmQ\u002fqAfaSmYWZD9u0tlKZhZkPw9u2UpmFmQ\u002fluraSmYWZD\u002fcUaeofSBkP6kRTTBYzGQ\u002fmw2bCqRtZT+gwQcVk61lPy\u002fno3XtrWU\u002fZNuhde2tZT9bcqJ17a1lPzuXTlNesWU\u002flzUz4G\u002fRZT+wahDfsf5lP6gnueQCHmY\u002fVfAskc0sZj82PWfFUTBmPzHKLE4PKWY\u002fFCMxRToTZj+zP0vzwvNlP5WKzFi3v2U\u002fdCeEtJJ+ZT8tUOmgklJlP8dBEBDZTWU\u002fFVURENlNZT9YHhQQ2U1lP\u002f+ZEhDZTWU\u002fOxkRENlNZT\u002fpZhMQ2U1lP1JWExDZTWU\u002fc5wRENlNZT\u002fNHxEQ2U1lPzuIExDZTWU\u002f7f0SENlNZT9nnRQQ2U1lP9m8DxDZTWU\u002fhcsSENlNZT+SZBIQ2U1lP8iKEhDZTWU\u002fW\u002fGDrEyRdD\u002fyc4KsTJF0P7EUg6xMkXQ\u002fxnKDrEyRdD9NSYKsTJF0Px1NhKxMkXQ\u002fkkCCrEyRdD862YOsTJF0P3bWgqxMkXQ\u002fvp+CrEyRdD8E1IOsTJF0P5IogqxMkXQ\u002ft8WDrEyRdD\u002fzeoOsTJF0P7x4gqxMkXQ\u002fp5KDrEyRdD+H9YKsTJF0P89vgqxMkXQ\u002fbkKErEyRdD\u002fuQoOsTJF0P8K\u002fgqxMkXQ\u002fNYSDrEyRdD8QuKDwGuaAPx5WoPAa5oA\u002f74yg8BrmgD+kWqDwGuaAP30boPAa5oA\u002ff7ug8BrmgD\u002f7JaDwGuaAP9vnoPAa5oA\u002f2Pif8BrmgD\u002fu66DwGuaAPwo8oPAa5oA\u002fkB6qAIMjgj\u002fzKqoAgyOCPwAXqgCDI4I\u002f0kuqAIMjgj8I86kAgyOCP9n8qQCDI4I\u002fBxaqAIMjgj\u002f686kAgyOCP1tZqgCDI4I\u002fjyKqAIMjgj9vKKoAgyOCP+Oer8ophHs\u002fE0ivyimEez9bL7DKKYR7P5qar8ophHs\u002ftOuvyimEez+Qf6\u002fKKYR7Px7pr8ophHs\u002ftVevyimEez\u002fr8a\u002fKKYR7P\u002fLSr8ophHs\u002fpSuvyimEez+V6a\u002fKKYR7P0Nor8ophHs\u002fIuuvyimEez+466\u002fKKYR7Py8Zr8ophHs\u002frRqwyimEez\u002fPlK\u002fKKYR7P2L9r8ophHs\u002fvw2vyimEez9aD7DKKYR7P5uJr8ophHs\u002fOb5D\u002fncDgT8q9kP+dwOBP6CQQ\u002f53A4E\u002fT8tD\u002fncDgT9u\u002fEP+dwOBPy2bQ\u002f53A4E\u002fhNtD\u002fncDgT+mxUP+dwOBP0b\u002fQ\u002f53A4E\u002fC5VD\u002fncDgT9utkP+dwOBP9XpQ\u002f53A4E\u002fa8lD\u002fncDgT8r00P+dwOBP7e+Q\u002f53A4E\u002fm8BD\u002fncDgT9FwkP+dwOBPzXyQ\u002f53A4E\u002fRqND\u002fncDgT+WFET+dwOBP16nQ\u002f53A4E\u002fb9xD\u002fncDgT8="},"type":"scatter"},{"hovertemplate":"%{x:.2f} of the base travel\u003cbr\u003esideways %{y:.2f}\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#eb6834","width":2.5},"mode":"lines","name":"Stretch 4, holonomic","x":{"dtype":"f8","bdata":"SZWWyUEmYT8G4GGuYrl5P6ObT2mpb4U\u002fl9Jwp4X\u002fjT8lgLETQ0STPzooXnEThZc\u002frhG7mDzCmz8SKK0u6\u002fufPz42OJPtGaI\u002fPZyqrK81pD8O4OwfO1GmP8YupsiabKg\u002fHo00g4iHqj++RURSOqGsP9pOJElMua4\u002f8RFlDftnsD9USAhRpnKxP8OSA+2ffLI\u002fxa1mRfuFsz+41oUcDI+0P9dgA1oQmLU\u002fI7\u002fwM9agtj+q+4YtEqm3P6Z+FYutsLg\u002fFHGOkLW3uT9+VJSKOr66P\u002fkvyiRCxLs\u002fd3QpDcvJvD8GvVYSys69PzuCJYE6074\u002f\u002fxVYZzfXvz9nTfaqgG3AP8sBM09j78A\u002fL7Zv80VxwT\u002fzBIaFCfPBP6cqaiROdMI\u002fk8qzl9n0wj8d8dXVunTDP+GrkaQ89MM\u002fNoFsHqVzxD+yLsFt+\u002fLEP38meZ1FcsU\u002fU67nH4jxxT92180xx3DGPx\u002fuLCr478Y\u002fBmjTas5uxz+LphB9DO3HPzw3I2e0asg\u002fJSq+097nyD89JIgu1WTJP1gZndTJ4ck\u002fcQ6yer5eyj+MA8cgs9vKP6b428anWMs\u002f\u002fmc2EpzVyz8fLQrwZFLMPzu7ZU6yzsw\u002f4vr+VmpKzT\u002f0hL6rk8XNP27+MhFbQM4\u002fuQr0uQG7zj+PPx5BmjXPP9mHf0QqsM8\u002f812yEFsV0D8MR1ASoVLQPxj\u002fgQ\u002fnj9A\u002f05XO7vvM0D\u002fShp5AngnRP\u002fy2ss29RdE\u002fbxszrmyB0T+rLapf6bzRP9Ao9CFj+NE\u002fWdDcHNoz0j93sukETm\u002fSP6HxcyXAqtI\u002frFOdwh7m0j9AeNIcRyHTPxCox9krXNM\u002fomx2oNSW0z89JC7uRdHTPwCz\u002fdJ8C9Q\u002fz49UGHlF1D9YgkUsUn\u002fUP3L1JOsaudQ\u002fw+5bAcby1D9srYhoRSzVP6N1ZUeYZdU\u002fpfCec8Ke1T+F\u002flj9x9fVP03za6WrENY\u002f2mgGmW5J1j8D7NyQEILWP5n9PSmQutY\u002f76Wax+vy1j\u002fA9ZvKIyvXP85RGqA+Y9c\u002fDjAlSEub1z8PgsM7VdPXPxqMgB1YC9g\u002fxLOX2EtD2D\u002f\u002fQaa+L3vYP7pD07YEs9g\u002fMERbNsrq2D9BXjhbhSLZPx4JSlczWtk\u002fVLOjWLuR2T8BKo33DsnZPzD5XnsyANo\u002fZj8fsi432j9mZVT6A27aP9i+VQGvpNo\u002f0L+BXDTb2j9psaUplhHbPywHHDzTR9s\u002fjDRylul92z+hEgMG5bPbPxREi+jY6ds\u002fPMdskMwf3D+QoQNluFXcP25u3syJi9w\u002fH6MS1TTB3D8yRV0zu\u002fbcP\u002f9OELogLN0\u002fJfLCaGZh3T+RVeFWi5bdP8gj3cqNy90\u002fKhzN12sA3j8TlOvSLTXeP4+ZmYXgad4\u002fFjpYloKe3j8Ta6APD9PeP+JmCbiGB98\u002fhVnfROs73z\u002fO5p4oPnDfP3kMFCiApN8\u002f1948Q7HY3z9zyHRhaAbgP39uSLxuIOA\u002fqpIWQWs64D8BoueGXlTgP9UkgIRLbuA\u002faWmM1jWI4D9LEErXFaLgP1x5kYPcu+A\u002fcnMBAIbV4D8HB5ecFe\u002fgP3IJSsmMCOE\u002fKoo\u002fruoh4T+bXYoaLjvhP9JleOtfVOE\u002fMzY9549t4T+AzTH2xIbhP6I6BZ\u002f\u002fn+E\u002faUrjKzu54T\u002fXr\u002fH4ZdLhP9zR341y6+E\u002fjCYslGIE4j8c16lDOR3iPwEdcwb3NeI\u002fZcrodZpO4j9l6lF5JGfiP3gvApygf+I\u002fUZbIfhqY4j8r\u002fY5hlLDiPwZkVUQOyeI\u002f4MobJ4jh4j+5MeIJAvriPz0Ih5ZoEuM\u002feWAPDIUq4z\u002fCaG8qO0LjPyOFc0WcWeM\u002fGpHclstw4z\u002fSptL+4ofjP26PVnTonuM\u002fAqW9huW14z95zEDp4czjP4RhZ4bk4+M\u002fRaQUdfX64z9HJqnYHRLkP7znrcRbKeQ\u002f7uwOAaNA5D\u002fYXqL281fkP7Dd33NOb+Q\u002fk9i3l6qG5D9KlHzPB57kP6t+OD9steQ\u002fnTA\u002fTN3M5D9qycWyWuTkP9Wz42Hk++Q\u002fhzHPYnsT5T8rLsBRHCvlP57oCfvDQuU\u002fMDxbfXNa5T\u002f4WKPpKnLlP2oI1yXqieU\u002fSyzmG7Kh5T9heM8kgbnlP7XsMXdT0eU\u002fA5wt1yrp5T9ZjaWrCgHmP2+sq4HzGOY\u002fHMsF8+Qw5j8a65ys3kjmP2NIPuHiYOY\u002fI+\u002feGPN45j+FlMTqDpHmPxKGNZ82qeY\u002f3IjdwmvB5j9K\u002fkVZsNnmPwn0qbEA8uY\u002f61uppVQK5z+YeVqnqCLnP0eXC6n8Ouc\u002f6mQQKVFT5z+hW3\u002fSqWvnP5k+iD8LhOc\u002ftDOM8Hac5z\u002fuL9aY7LTnP5k27aNszec\u002fOggXsfjl5z8fPKoqkv7nP\u002f2sayg1F+g\u002f9gfNgtov6D+f2TjOf0joP\u002ffG0JElYeg\u002fM7\u002fQAcx56D++fb69cpLoP9CJfbYZq+g\u002fHDUZ\u002fsnD6D+CBiwokdzoP72vxcBx9eg\u002fhOpzi14O6T\u002fobGMrUifpP10g7ZxlQOk\u002f4BjgKa5Z6T+FzyWRLXPpP3GiQHvojOk\u002fMDuAk+Wm6T9xnLjxCsHpP2TpwOw\u002f2+k\u002f8n6jf7j16T8yEUCXrxDqP4SnvA8rLOo\u002fn+wAIetH6j\u002fIBgGor2PqP0AkH2J0f+o\u002ft4Mnszqb6j8ampLNBLfqPxNOa3rU0uo\u002fy+zRvKfu6j9rt4xXewrrP74q\u002fnVMJus\u002fMelIfxdC6z8Ap6DZ213rPzXcMgeaees\u002f5l02K1WV6z\u002f\u002foTXwFbHrP113aKLizOs\u002fbOxForvo6z+s2it4oATsPzGkJfGRIOw\u002f1e738pE87D+TiDmToFjsPyZJYBe\u002fdOw\u002fV8oKEfWQ7D\u002fPE5Y8Rq3sP9HLW1ezyew\u002fmpVHLjXm7D9A8BonrQLtP5oB2hcCH+0\u002fLmxhCjI77T+QsG5vQFftP5tgrxYuc+0\u002fyW\u002f9DPiO7T\u002fXIU2ZnartPx72lEktxu0\u002fFoALgrjh7T\u002f+OynDQ\u002f3tP4oKi8\u002fQGO4\u002fJpWYd2Q07j9Og8RhAlDuPzpmHvWqa+4\u002f\u002fSpmeF2H7j\u002fAxeokGaPuP0CsbM\u002fdvu4\u002fEMQxy6va7j+HwXbRg\u002fbuP0BN1ppmEu8\u002f4KZf5VMu7z+uXjGER0rvP\u002ftv1H88Zu8\u002fnVvcfzGC7z9DR+R\u002fJp7vP+Yy7H8buu8\u002fiR70fxDW7z8vCvx\u002fBfLvPw=="},"y":{"dtype":"f8","bdata":"fSXe49Rw2D\u002fcJd7j1HDYP0npBM73d9g\u002fw8iQa7n62D\u002fWu680o6jZPwdQfzOAQ9o\u002frZO2Efrv2j+Z1EmvenzbP\u002fDS+RESp9s\u002f8z28tF6N3D\u002frQyVvun3dPwFP+ZfoeN4\u002fj33dozQn3z8dnggJpxngPwJLEYa\u002fk+A\u002fLDYQoJv+4D8m3bhHPnLhPzpRsqdX7+E\u002fkEsu6LxP4j8W1y0PqlniPx\u002fHW\u002f1qX+I\u002fN5\u002fLpM2Y4j8ksvUBcOviP6Rrp4N+PeM\u002f801gzE+E4z\u002fqz2GF1MbjP+xm5QPKCOQ\u002fZ0zMEdFN5D8odmKBQZ3kP30m3+5B6eQ\u002fxDXGm4Qc5T\u002fbyV1HmCHlPx\u002fKXUeYIeU\u002fB8pdR5gh5T9OnX+zo0LlP5KzMju2qOU\u002fEjWt1V0I5j8UZVmyEGDmP9wngld4nOY\u002f6NKqZl0Q5z8ITIoiNnjnP28KrgCb1uc\u002fmpTcVTg46D8WBsPgyKLoP5KKGV476ug\u002fsTi+pbBD6T8MixWbdJrpP86KOlkN8uk\u002fdseiASYt6j9FZpuXIC\u002fqP4Bmm5cgL+o\u002fVGablyAv6j+kZpuXIC\u002fqP0Zmm5cgL+o\u002fLiXtc4Mv6j\u002f5o5ihyF3qP4neFAlztOo\u002f9k92hiv\u002f6j+IYFC27k\u002frP89ITR1Whes\u002f6qXh5j7X6z\u002fLiwtuhCHsP315Tb2MYew\u002fE\u002fIAa2+j7D9LyJ2ecuzsP7BVF8vZGu0\u002fkU6lY7JC7T9LiFiagnTtP\u002fsNNipUpO0\u002f+tkyVzvH7T81rgPIx8jtP+ac\u002fGjz2O0\u002fZmq4mbAK7j\u002foh\u002fEwOTfuP0i+BqtsYu4\u002fTKXDJlCB7j98NP2Cu6zuP\u002fqLhsQY0+4\u002fr8HpeFvz7j+gpxN9fhLvP8DznLHoM+8\u002fFq5GHghR7z8bNdbUb1jvPx+85zQZYu8\u002fG8BNr1137z+hMy9g4Y3vP9ZQo++foe8\u002fTcZduB2y7z+FYXjcCcDvP1cDu08vzO8\u002fevoz8CnX7z946NBhVeHvP7zogsC56u8\u002fHj4zmeny7z8aZYayAPnvP+IDEMos\u002fO8\u002fk06S6av87z\u002fv8wyJz\u002fzvP1DuAy2M\u002fu8\u002f9tklg83\u002f7z8QkgzS8v\u002fvPxC2V0Ud\u002f+8\u002fEc\u002ftgBv97z\u002fGzf6vOfzvP+3jm5RR+u8\u002fk26nEYbz7z\u002ft4PzaqervP6OfB7IA4O8\u002fIvpf0VbV7z\u002fwrN5MBsPvP7mYVM8NsO8\u002fAS4iHNOb7z9YcF3wqoXvP9RzWGr+ae8\u002fxMThBChK7z\u002fahpZ88jzvP9j4nPHGPO8\u002fJlYwfZU87z97Ibu5dTHvP2yYiVEVFe8\u002fcMiJsQD17j\u002fUOoMnR9fuP2HKhzsPuu4\u002fntLESuaa7j\u002f7IDXMnXjuP9SYdKgkUu4\u002fUrCqki8n7j\u002fwps4MxQ\u002fuP7GzHHNK+O0\u002fUmwRVEPK7T8DjNoZQ5ntP+iPf3+Vae0\u002frfltDQw87T\u002fm9IPytQ\u002ftP9iV5Q7T4uw\u002fENIugkez7D+mzkwr4X7sPyCGerkrROw\u002f1hwv+AMF7D8vu96rE8zrP6WZH7PGsOs\u002frimXPASt6z+UU16+Un\u002frP3sCtibJMes\u002fnxayozfr6j9UVpiClqfqPyCe2t+HYuo\u002fy8jAQVIT6j+MrLh+Wb\u002fpPx0OBcYziuk\u002fBpcLA6I26T\u002fKV9jHwufoP7viEfwRj+g\u002fr33eyLlT6D8Bzeo3aP\u002fnPxr1Lw4Yoec\u002fy62NRUZP5z9W5qCiw\u002f3mP+Np8kj4p+Y\u002fIodLHCFF5j+eVZsy5O3lP9\u002foK6S63OU\u002fDOkrpLrc5T\u002fr6CukutzlP9foK6S63OU\u002fh+grpLrc5T\u002fl6CukutzlP1fFaSOFh+U\u002fpBs9nb+A5D8lqKv3cH3jPwe2k+GUjOI\u002ftA8H2fak4T917aKKcUrgP5ktIAEe7N0\u002f7nXZdzOL2z9fTHJlVyHZP6cAwP0Mi9Y\u002fjxM+9P240z9bwWUhvc7QP0P7UzFAD88\u002f8t4h579Zzj\u002fCQYk0BXnLPzQXXmjv5so\u002fYhdeaO\u002fmyj\u002fN\u002f5yxhK\u002fKP4BJ5DOicck\u002fK3sOPCUkyD\u002fKlPnsW\u002fbGP\u002f3Zx3AUrsU\u002fsx6\u002f7rFNxD+Mfmo6S5vDP0AEGnEDV8I\u002fNhKqaqf4wD8DWPFKyIS\u002fP535fKMi\u002f7w\u002fiOS1JsAnuj\u002faQ2stTLy4P6xC7SFy2Lc\u002fraUrLuDCsz8v62riy3avP6sbArELD6c\u002fqUpdyARhoD+5TppV2IySP5Q3xQqLcxg\u002fA+CoFQyDkL\u002fy0SsOy5ufv6Oe+jbWlae\u002fHMSFglsYsL\u002fWgerMH620v9m9+HiSl7a\u002fgTumVhCftr9\u002fO6ZWEJ+2v9o\u002fplYQn7a\u002fsvi0mKQbt7+k7MmKka26v6BeNUb7O7+\u002forKqt6S8wb9xt1RgkJLDv2WAAAoYlcW\u002fITPCBUS9x7+IDtuKKu\u002fJv4rC97ZiTcu\u002f3HRtpF5wzb+88c9131zPv94FNfOuwdC\u002fwCLaHVBO0b\u002f84ZagaU\u002fRvwsQmkvxVdG\u002fnGpHp4BO0r95Gy\u002fjZ7DTv6RhnN9cxtS\u002fo1krL+3T1L+8r6TMimLVv1c2M+rWf9e\u002fIigAP26F2b\u002fvvwq951Pbv3B0Zs7aQd2\u002fZyfYh20Z37+IlePVkmzfv\u002finkBm2AuC\u002f0xbx15Wr4b+EtcPW\u002fETjv0fVaScVieS\u002faf1ZbAue5L89\u002fllsC57kvzHlWTCJyOS\u002f2eMJAmhr5b8B9W2YeQTmv8bv5uC\u002fj+a\u002feYr4Fc2f5r8CEbN\u002fY6Hmv4dl7\u002fFh2+a\u002frBL7JuA2579fya3U4Ybnv0R4C67y3+e\u002fss26o3cX6L+6ao4z4Wbov316MjiYu+i\u002frImiCaID6b9YrmuLvUfpv8A3BlOQj+m\u002fwSEOjdnd6b\u002fySwMroBzqv90MDd4zTOq\u002fA\u002fXqJZON6r+i9JzbrcXqv4+C4CW\u002fBOu\u002f\u002ftDmbI4r67+iz6j8Ml7rv22oEOI0nOu\u002fc+GuGrXS6791NJ+V3wPsv6jKipbrNey\u002fuSeekeht7L9mFb0cHaDsv2CM7ZPMrOy\u002fb4ztk8ys7L9gGC4p+qzsv741LrJqtuy\u002fEPASR0jQ7L9G3vhEhOzsvz0csPhEB+2\u002fAz2kS6ge7b\u002fe4sBTmDTtv1kjpANfSu2\u002fAVn1XhRh7b\u002fs39IgWHntv0o3U89Fku2\u002fl7\u002f00T6o7b+SdC5PJq7tv89u4\u002fg5ru2\u002fim7j+Dmu7b+abuP4Oa7tv3Fu4\u002fg5ru2\u002fpW7j+Dmu7b9ybuP4Oa7tvw=="},"type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05}}},"font":{"family":"Lato, Helvetica, Arial, sans-serif","size":15,"color":"#0b0b0b"},"margin":{"l":80,"r":20,"t":50,"b":60},"xaxis":{"title":{"text":"fraction of the base's travel"},"showgrid":true,"gridcolor":"#e6e5e1","zeroline":false,"linecolor":"#52514e","ticks":"outside","tickcolor":"#52514e","range":[0,1]},"yaxis":{"title":{"text":"sideways component of the base velocity"},"showgrid":true,"gridcolor":"#e6e5e1","zeroline":true,"linecolor":"#52514e","ticks":"outside","tickcolor":"#52514e","range":[-1.05,1.05],"zerolinecolor":"#c9c8c3"},"hoverlabel":{"font":{"family":"Lato, sans-serif","size":14}},"legend":{"orientation":"h","x":0.5,"xanchor":"center","y":1.1},"paper_bgcolor":"#ffffff","plot_bgcolor":"#ffffff","height":420,"autosize":true},                        {"displaylogo": false, "responsive": true, "modeBarButtonsToRemove": ["select2d", "lasso2d", "autoScale2d"]}                    )                };            </script>        </div>
+</div><div class="geodex-caption docutils container">
+<p>The sideways component of the base’s velocity, <span class="math notranslate nohighlight">\(v_y / \sqrt{v_x^2 + v_y^2}\)</span>, along
+the two paths. The curves break where the base turns almost in place.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="clearpath-husky-and-ridgeback-with-a-ur5e">
+<span id="whole-body-clearpath"></span><h2>Clearpath Husky and Ridgeback with a UR5e<a class="headerlink" href="#clearpath-husky-and-ridgeback-with-a-ur5e" title="Link to this heading">#</a></h2>
+<p>Here, we plan one workcell task for a UR5e on a Clearpath Husky A200 and on a Clearpath
+Ridgeback. Each robot starts beside the shelf with its arm folded and ends at the low table with
+the tool flange above it, pointing down.</p>
+<figure class="align-default" id="id2">
+<a class="reference internal image-reference" href="../_images/bases1.svg"><img alt="Top view of the workcell with the Husky base path in blue and the Ridgeback base path in orange, chassis outlines and headings drawn along each." src="../_images/bases1.svg" style="width: 65%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">The two base paths from above, with the chassis outline and its heading at ten evenly
+spaced points. The Husky (blue) backs out of the shelf bay, stops, and drives forward to
+the table. The Ridgeback (orange) slides out of the bay diagonally and turns on the way.</span><a class="headerlink" href="#id2" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>The full script is <code class="docutils literal notranslate"><span class="pre">examples/robots/mobile_manipulation/clearpath.py</span></code>, and the C++ version is
+<code class="docutils literal notranslate"><span class="pre">examples/robots/mobile_manipulation/clearpath.cpp</span></code>.</p>
+<section id="load-the-workcell-and-the-husky">
+<h3>1. Load the workcell and the Husky<a class="headerlink" href="#load-the-workcell-and-the-husky" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">geodex.robots.HuskyUR5e</span></code> is the robot’s configuration space, the base pose
+<span class="math notranslate nohighlight">\((x, y, \theta)\)</span> followed by the six UR5e joints. The workcell is a scene file of boxes
+and cylinders, <a class="reference download internal" download="" href="../_downloads/5f666794e1ebb9436ac4efe89e7ad27f/workcell.yaml"><code class="xref download docutils literal notranslate"><span class="pre">workcell.yaml</span></code></a>, in a <code class="docutils literal notranslate"><span class="pre">scenes</span></code>
+directory next to the script.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-8" name="sd-tab-set-4" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-8">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">geodex</span>
+
+<span class="c1"># The workcell, a scene file in the scenes directory next to this script.</span>
+<span class="n">SCENE</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">"scenes"</span> <span class="o">/</span> <span class="s2">"workcell.yaml"</span>
+
+<span class="n">scene</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">load_scene</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">SCENE</span><span class="p">))</span>
+<span class="n">workspace</span> <span class="o">=</span> <span class="p">((</span><span class="o">-</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">2.5</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">))</span>
+<span class="n">husky</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">robots</span><span class="o">.</span><span class="n">HuskyUR5e</span><span class="p">(</span><span class="n">workspace</span><span class="o">=</span><span class="n">workspace</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">husky</span><span class="o">.</span><span class="n">name</span><span class="p">(),</span> <span class="s2">"drive:"</span><span class="p">,</span> <span class="n">husky</span><span class="o">.</span><span class="n">drive</span><span class="p">(),</span> <span class="s2">"coordinates:"</span><span class="p">,</span> <span class="n">husky</span><span class="o">.</span><span class="n">dim</span><span class="p">())</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/robots/mobile_manipulation/clearpath.py">examples/robots/mobile_manipulation/clearpath.py</a></p>
+</div>
+<input id="sd-tab-item-9" name="sd-tab-set-4" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-9">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;cmath&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;cstdio&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;filesystem&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;numbers&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;utility&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;vector&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;geodex/robots/planning.hpp&gt;</span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">gr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">geodex</span><span class="o">::</span><span class="nn">robots</span><span class="p">;</span>
+<span class="k">namespace</span><span class="w"> </span><span class="nn">gv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">geodex</span><span class="o">::</span><span class="nn">integration</span><span class="o">::</span><span class="nn">vamp</span><span class="p">;</span>
+<span class="k">namespace</span><span class="w"> </span><span class="nn">gp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">geodex</span><span class="o">::</span><span class="nn">planning</span><span class="p">;</span>
+
+<span class="c1">// The workcell, a scene file in the scenes directory next to this program.</span>
+<span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">kScene</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">filesystem</span><span class="o">::</span><span class="n">path</span><span class="p">(</span><span class="n">__FILE__</span><span class="p">).</span><span class="n">parent_path</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s">"scenes"</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s">"workcell.yaml"</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="n">string</span><span class="p">();</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="o">**</span><span class="w"> </span><span class="n">argv</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">pi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">numbers</span><span class="o">::</span><span class="n">pi</span><span class="p">;</span>
+<span class="w">  </span><span class="k">constexpr</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">Husky</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gr</span><span class="o">::</span><span class="n">Robot</span><span class="o">::</span><span class="n">HuskyUr5e</span><span class="p">;</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">scene</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gv</span><span class="o">::</span><span class="n">load_scene</span><span class="p">(</span><span class="n">kScene</span><span class="p">);</span>
+<span class="w">  </span><span class="n">gr</span><span class="o">::</span><span class="n">RobotPlanOptions</span><span class="w"> </span><span class="n">options</span><span class="p">;</span><span class="w">  </span><span class="c1">// each robot takes the base metric of its drive</span>
+<span class="w">  </span><span class="n">options</span><span class="p">.</span><span class="n">base_region</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="p">(</span><span class="mf">-3.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-2.5</span><span class="p">),</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="p">(</span><span class="mf">3.0</span><span class="p">,</span><span class="w"> </span><span class="mf">2.5</span><span class="p">)};</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">differential</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gr</span><span class="o">::</span><span class="n">base_drive</span><span class="o">&lt;</span><span class="n">Husky</span><span class="o">&gt;</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">gr</span><span class="o">::</span><span class="n">BaseDrive</span><span class="o">::</span><span class="n">Differential</span><span class="p">;</span>
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"%s drive: %s coordinates: %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">gr</span><span class="o">::</span><span class="n">name</span><span class="p">(</span><span class="n">Husky</span><span class="p">).</span><span class="n">data</span><span class="p">(),</span>
+<span class="w">              </span><span class="n">differential</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s">"differential_drive"</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s">"holonomic"</span><span class="p">,</span>
+<span class="w">              </span><span class="n">gr</span><span class="o">::</span><span class="n">MassMatrix</span><span class="o">&lt;</span><span class="n">Husky</span><span class="o">&gt;::</span><span class="n">Nq</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/robots/mobile_manipulation/clearpath.cpp">examples/robots/mobile_manipulation/clearpath.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">husky_ur5e</span> <span class="pre">drive:</span> <span class="pre">differential_drive</span> <span class="pre">coordinates:</span> <span class="pre">9</span></code>. The Husky is a skid-steer
+base, and its default base metric is the differential-drive one.</p>
+</section>
+<section id="plan-the-husky">
+<h3>2. Plan the Husky<a class="headerlink" href="#plan-the-husky" title="Link to this heading">#</a></h3>
+<p>The plan uses the settings of the Stretch 3 with 1000 iterations.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-10" name="sd-tab-set-5" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-10">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># (x, y, theta, shoulder pan, shoulder lift, elbow, wrist 1, wrist 2, wrist 3)</span>
+<span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">1.8</span><span class="p">,</span> <span class="mf">1.3</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.3</span><span class="p">,</span> <span class="mf">2.3</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.57</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.57</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+<span class="n">goal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.6</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.4</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+<span class="n">settings</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">PlanSettings</span><span class="p">(</span><span class="n">iterations</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">collision_check_resolution</span><span class="o">=</span><span class="mf">0.005</span><span class="p">)</span>
+
+<span class="n">husky_result</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">plan</span><span class="p">(</span><span class="n">husky</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">goal</span><span class="p">,</span> <span class="n">collision</span><span class="o">=</span><span class="n">scene</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"solved=</span><span class="si">{</span><span class="n">husky_result</span><span class="o">.</span><span class="n">solved</span><span class="si">}</span><span class="s2"> cost=</span><span class="si">{</span><span class="n">husky_result</span><span class="o">.</span><span class="n">cost</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/robots/mobile_manipulation/clearpath.py">examples/robots/mobile_manipulation/clearpath.py</a></p>
+</div>
+<input id="sd-tab-item-11" name="sd-tab-set-5" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-11">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// (x, y, theta, shoulder pan, shoulder lift, elbow, wrist 1, wrist 2, wrist 3)</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="mi">9</span><span class="p">),</span><span class="w"> </span><span class="n">goal</span><span class="p">(</span><span class="mi">9</span><span class="p">);</span>
+<span class="n">start</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mf">-1.8</span><span class="p">,</span><span class="w"> </span><span class="mf">1.3</span><span class="p">,</span><span class="w"> </span><span class="n">pi</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-2.3</span><span class="p">,</span><span class="w"> </span><span class="mf">2.3</span><span class="p">,</span><span class="w"> </span><span class="mf">-1.57</span><span class="p">,</span><span class="w"> </span><span class="mf">-1.57</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="n">goal</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mf">1.6</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-0.6</span><span class="p">,</span><span class="w"> </span><span class="mf">0.4</span><span class="p">,</span><span class="w"> </span><span class="mf">-1.4</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">pi</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="n">gp</span><span class="o">::</span><span class="n">PlanSettings</span><span class="w"> </span><span class="n">settings</span><span class="p">;</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">iterations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1000</span><span class="p">;</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">seed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">collision_check_resolution</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.005</span><span class="p">;</span>
+
+<span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">husky_result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gr</span><span class="o">::</span><span class="n">plan</span><span class="o">&lt;</span><span class="n">Husky</span><span class="o">&gt;</span><span class="p">(</span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="n">goal</span><span class="p">,</span><span class="w"> </span><span class="n">scene</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">,</span><span class="w"> </span><span class="n">options</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"solved=%d cost=%.3f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">husky_result</span><span class="p">.</span><span class="n">solved</span><span class="p">,</span><span class="w"> </span><span class="n">husky_result</span><span class="p">.</span><span class="n">cost</span><span class="p">);</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/robots/mobile_manipulation/clearpath.cpp">examples/robots/mobile_manipulation/clearpath.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">solved=True</span> <span class="pre">cost=6.877</span></code>.</p>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-3 sd-row-cols-xs-3 sd-row-cols-sm-3 sd-row-cols-md-3 sd-row-cols-lg-3 sd-g-2 sd-g-xs-2 sd-g-sm-2 sd-g-md-2 sd-g-lg-2 docutils">
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm geodex-stat docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+234 ms</div>
+<p class="sd-card-text">planning time</p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm geodex-stat docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+0.7 ms</div>
+<p class="sd-card-text">first solution</p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm geodex-stat docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+1000</div>
+<p class="sd-card-text">iterations</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p>The planner finds the first path after 8 iterations. The 1000 iterations take 117 ms, and
+smoothing takes 117 ms.</p>
+<div class="geodex-figure geodex-robot-figure docutils container">
+<div class="geodex-robot-scene" data-scene="../_static/robot-scenes/robots-husky-ur5e.json" data-robots="../_static/robots/" data-alt="A Husky with a UR5e driving from a shelf past a pillar to a table and reaching over it,
+with faint copies along the path." style="aspect-ratio:16/9;width:100%;margin:0 auto"><img class="geodex-robot-poster" src="../_static/robot-scenes/robots-husky-ur5e.jpg" alt="A Husky with a UR5e driving from a shelf past a pillar to a table and reaching over it,
+with faint copies along the path." loading="lazy"><div class="geodex-robot-stage"></div><div class="geodex-robot-hint" aria-hidden="true">Drag to orbit</div><div class="geodex-robot-controls" hidden><button type="button" class="geodex-robot-play" aria-label="Play"><svg class="geodex-robot-icon-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg><svg class="geodex-robot-icon-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 2.5h3v11h-3zM9.5 2.5h3v11h-3z"/></svg></button><input type="range" class="geodex-robot-scrub" min="0" max="1000" value="1000" aria-label="Position along the path"></div></div><div class="geodex-caption docutils container">
+<p>The Husky plan. The grey curve traces the base and the blue curve the tool flange.</p>
+</div>
+</div>
+</section>
+<section id="measure-how-much-the-husky-slides">
+<h3>3. Measure how much the Husky slides<a class="headerlink" href="#measure-how-much-the-husky-slides" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">sideways_share</span></code> measures the Husky’s base as in <a class="reference internal" href="#whole-body-sideways"><span class="std std-ref">step 3</span></a> of the
+Stretch 3.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-12" name="sd-tab-set-6" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-12">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">sideways_share</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Share of the base's travel that is sideways in its own frame.</span>
+
+<span class="sd">    Each edge moves the base along one constant body twist (v_x, v_y, omega). The</span>
+<span class="sd">    twist is the SE(2) logarithm between the edge's waypoints."""</span>
+    <span class="n">se2</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2</span><span class="p">()</span>
+    <span class="n">sideways</span> <span class="o">=</span> <span class="n">travel</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">path</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+        <span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">se2</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">a</span><span class="p">[:</span><span class="mi">3</span><span class="p">],</span> <span class="n">b</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">sideways</span> <span class="o">+=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">vy</span><span class="p">)</span>
+        <span class="n">travel</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">vx</span> <span class="o">*</span> <span class="n">vx</span> <span class="o">+</span> <span class="n">vy</span> <span class="o">*</span> <span class="n">vy</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sideways</span> <span class="o">/</span> <span class="n">travel</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"sideways share=</span><span class="si">{</span><span class="n">sideways_share</span><span class="p">(</span><span class="n">husky_result</span><span class="o">.</span><span class="n">path</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/robots/mobile_manipulation/clearpath.py">examples/robots/mobile_manipulation/clearpath.py</a></p>
+</div>
+<input id="sd-tab-item-13" name="sd-tab-set-6" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-13">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">/// Share of the base's travel that is sideways in its own frame. Each edge moves</span>
+<span class="c1">/// the base along one constant body twist (v_x, v_y, omega). The twist is the</span>
+<span class="c1">/// SE(2) logarithm between the edge's waypoints.</span>
+<span class="kt">double</span><span class="w"> </span><span class="nf">sideways_share</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">se2</span><span class="p">;</span>
+<span class="w">  </span><span class="kt">double</span><span class="w"> </span><span class="n">sideways</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="n">travel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">path</span><span class="p">.</span><span class="n">size</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">twist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">se2</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">head</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="p">(),</span><span class="w"> </span><span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">].</span><span class="n">head</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="p">());</span>
+<span class="w">    </span><span class="n">sideways</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">abs</span><span class="p">(</span><span class="n">twist</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+<span class="w">    </span><span class="n">travel</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">sqrt</span><span class="p">(</span><span class="n">twist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">twist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">twist</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">twist</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">sideways</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">travel</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"sideways share=%.3f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">sideways_share</span><span class="p">(</span><span class="n">husky_result</span><span class="p">.</span><span class="n">path</span><span class="p">));</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/robots/mobile_manipulation/clearpath.cpp">examples/robots/mobile_manipulation/clearpath.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">sideways</span> <span class="pre">share=0.013</span></code>.</p>
+</section>
+<section id="try-it-plan-the-ridgeback">
+<h3>4. Try it: plan the Ridgeback<a class="headerlink" href="#try-it-plan-the-ridgeback" title="Link to this heading">#</a></h3>
+<p>The Ridgeback rolls on mecanum wheels, and its default base metric is the holonomic one. The
+start, the goal and the settings stay the same.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-14" name="sd-tab-set-7" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-14">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ridgeback</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">robots</span><span class="o">.</span><span class="n">RidgebackUR5e</span><span class="p">(</span><span class="n">workspace</span><span class="o">=</span><span class="n">workspace</span><span class="p">)</span>
+<span class="n">ridgeback_result</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">plan</span><span class="p">(</span><span class="n">ridgeback</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">goal</span><span class="p">,</span> <span class="n">collision</span><span class="o">=</span><span class="n">scene</span><span class="p">,</span>
+                               <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"solved=</span><span class="si">{</span><span class="n">ridgeback_result</span><span class="o">.</span><span class="n">solved</span><span class="si">}</span><span class="s2"> cost=</span><span class="si">{</span><span class="n">ridgeback_result</span><span class="o">.</span><span class="n">cost</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> "</span>
+      <span class="sa">f</span><span class="s2">"sideways share=</span><span class="si">{</span><span class="n">sideways_share</span><span class="p">(</span><span class="n">ridgeback_result</span><span class="o">.</span><span class="n">path</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/robots/mobile_manipulation/clearpath.py">examples/robots/mobile_manipulation/clearpath.py</a></p>
+</div>
+<input id="sd-tab-item-15" name="sd-tab-set-7" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-15">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">ridgeback_result</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="n">gr</span><span class="o">::</span><span class="n">plan</span><span class="o">&lt;</span><span class="n">gr</span><span class="o">::</span><span class="n">Robot</span><span class="o">::</span><span class="n">RidgebackUr5e</span><span class="o">&gt;</span><span class="p">(</span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="n">goal</span><span class="p">,</span><span class="w"> </span><span class="n">scene</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">,</span><span class="w"> </span><span class="n">options</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"solved=%d cost=%.3f sideways share=%.3f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">ridgeback_result</span><span class="p">.</span><span class="n">solved</span><span class="p">,</span>
+<span class="w">            </span><span class="n">ridgeback_result</span><span class="p">.</span><span class="n">cost</span><span class="p">,</span><span class="w"> </span><span class="n">sideways_share</span><span class="p">(</span><span class="n">ridgeback_result</span><span class="p">.</span><span class="n">path</span><span class="p">));</span>
+
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/robots/mobile_manipulation/clearpath.cpp">examples/robots/mobile_manipulation/clearpath.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">solved=True</span> <span class="pre">cost=4.688</span> <span class="pre">sideways</span> <span class="pre">share=0.785</span></code>. More than three quarters of the
+Ridgeback’s base travel is sideways.</p>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-3 sd-row-cols-xs-3 sd-row-cols-sm-3 sd-row-cols-md-3 sd-row-cols-lg-3 sd-g-2 sd-g-xs-2 sd-g-sm-2 sd-g-md-2 sd-g-lg-2 docutils">
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm geodex-stat docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+129 ms</div>
+<p class="sd-card-text">planning time</p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm geodex-stat docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+3.3 ms</div>
+<p class="sd-card-text">first solution</p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm geodex-stat docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+1000</div>
+<p class="sd-card-text">iterations</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="geodex-figure geodex-robot-figure docutils container">
+<div class="geodex-robot-scene" data-scene="../_static/robot-scenes/robots-ridgeback-ur5e.json" data-robots="../_static/robots/" data-alt="A Ridgeback with a UR5e sliding from a shelf around a pillar to a table and reaching
+over it, with faint copies along the path." style="aspect-ratio:16/9;width:100%;margin:0 auto"><img class="geodex-robot-poster" src="../_static/robot-scenes/robots-ridgeback-ur5e.jpg" alt="A Ridgeback with a UR5e sliding from a shelf around a pillar to a table and reaching
+over it, with faint copies along the path." loading="lazy"><div class="geodex-robot-stage"></div><div class="geodex-robot-hint" aria-hidden="true">Drag to orbit</div><div class="geodex-robot-controls" hidden><button type="button" class="geodex-robot-play" aria-label="Play"><svg class="geodex-robot-icon-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg><svg class="geodex-robot-icon-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 2.5h3v11h-3zM9.5 2.5h3v11h-3z"/></svg></button><input type="range" class="geodex-robot-scrub" min="0" max="1000" value="1000" aria-label="Position along the path"></div></div><div class="geodex-caption docutils container">
+<p>The Ridgeback plan, drawn the same way with the flange trace in orange.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="where-to-go-next">
+<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../concepts/metrics.html"><span class="doc">Metrics as Robot Models</span></a> covers the left-invariant metric of the base and the
+kinetic-energy metric of the arm.</p></li>
+<li><p><a class="reference internal" href="../api/index.html"><span class="doc">API Reference</span></a> covers <code class="docutils literal notranslate"><span class="pre">make_product</span></code> and <code class="docutils literal notranslate"><span class="pre">heuristics::product_lower_bound</span></code>, which build
+a whole-body space and its heuristic for any base and arm.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">metric=&quot;euclidean&quot;</span></code> measures the arm by its joint angles instead of its kinetic energy, as
+in <a class="reference internal" href="manipulation.html"><span class="doc">Manipulation</span></a>.</p></li>
+<li><p><a class="reference internal" href="add-a-robot.html"><span class="doc">Add a Robot</span></a> generates the collision model, mass matrix and bound for another mobile
+manipulator.</p></li>
+<li><p><a class="reference internal" href="index.html#robot-collision-checking"><span class="std std-ref">Collision checking</span></a> covers how geodex checks a robot against the scene.</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="navigation.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Navigation</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="add-a-robot.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Add a Robot</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hello-robot-stretch-3-and-stretch-4">Hello Robot Stretch 3 and Stretch 4</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#load-the-robot-and-the-kitchen">1. Load the robot and the kitchen</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#plan-the-motion">2. Plan the motion</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#measure-how-much-the-base-slides">3. Measure how much the base slides</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#try-it-plan-the-stretch-4">4. Try it: plan the Stretch 4</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#clearpath-husky-and-ridgeback-with-a-ur5e">Clearpath Husky and Ridgeback with a UR5e</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#load-the-workcell-and-the-husky">1. Load the workcell and the Husky</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#plan-the-husky">2. Plan the Husky</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#measure-how-much-the-husky-slides">3. Measure how much the Husky slides</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#try-it-plan-the-ridgeback">4. Try it: plan the Ridgeback</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#where-to-go-next">Where to go next</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Space and Terrestrial Autonomous Robotic Systems (STARS) Lab.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

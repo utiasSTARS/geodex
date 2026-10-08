@@ -1,0 +1,853 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Reproducibility &#8212; geodex</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=28229f57" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme.css?v=26c09b9b" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../_static/documentation_options.js?v=8d563738"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/plotly/plotly.min.js"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=b8b12719"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'getting-started/reproducibility';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <script src="../_static/mermaid-intrinsic-size.js?v=f42d09f7"></script>
+    <script src="../_static/geodex.js?v=d44686ee"></script>
+    <link rel="icon" href="../_static/favicon.svg"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Building from Source" href="building-from-source.html" />
+    <link rel="prev" title="Quickstart" href="quickstart.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="1.0.0" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/logo-light.svg" class="logo__image only-light" alt=""/>
+    <img src="../_static/logo-dark.svg" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">geodex</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../concepts/index.html">
+    Core Concepts
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../robots/index.html">
+    Robot Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../ros2/index.html">
+    ROS 2
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/utiasSTARS/geodex" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pygeodex/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../concepts/index.html">
+    Core Concepts
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../robots/index.html">
+    Robot Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../ros2/index.html">
+    ROS 2
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/utiasSTARS/geodex" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pygeodex/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Reproducibility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="building-from-source.html">Building from Source</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Getting Started</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Reproducibility</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="reproducibility">
+<h1>Reproducibility<a class="headerlink" href="#reproducibility" title="Link to this heading">#</a></h1>
+<p>On this page, we plan one motion several times and see which settings give the same
+path on every run. We use the first plan of <a class="reference internal" href="installation.html"><span class="doc">Installation</span></a>, a differential-drive robot
+driving around a disc.</p>
+<div class="geodex-figure docutils container">
+<div class="geodex-plotly"><noscript><img src="../_static/plots/reproducibility-budgets.png" alt="Path costs for ten seeds, ten runs each, under an iteration budget and a time budget."></noscript><div style="height:440px; width:100%;">                            <div id="plot-reproducibility-budgets" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("plot-reproducibility-budgets")) {                    Plotly.newPlot(                        "plot-reproducibility-budgets",                        [{"customdata":{"dtype":"f8","bdata":"AAAAAAAA8D+unSgJiRQTQAAAAAAAACRAAAAAAAAAAEAwZktWRfgSQAAAAAAAACRAAAAAAAAACECzX3e68+QSQAAAAAAAACRAAAAAAAAAEECFJR5QNiUTQAAAAAAAACRAAAAAAAAAFEArMc9KWoETQAAAAAAAACRAAAAAAAAAGEDWjuIcdWQTQAAAAAAAACRAAAAAAAAAHEA26iEa3RETQAAAAAAAACRAAAAAAAAAIEB7avXVVRETQAAAAAAAACRAAAAAAAAAIkC8PQgB+eISQAAAAAAAACRAAAAAAAAAJEA6IXTQJSwTQAAAAAAAACRA","shape":"10, 3"},"hovertemplate":"budget 2000 iterations\u003cbr\u003eseed %{customdata[0]:.0f}\u003cbr\u003ecost %{customdata[1]:.4f}\u003cbr\u003e%{customdata[2]:.0f} of 10 runs\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#2a78d6","line":{"color":"#ffffff","width":1},"size":10},"mode":"markers","name":"budget 2000 iterations","x":{"dtype":"f8","bdata":"AAAAAAAA8D8AAAAAAAAAQAAAAAAAAAhAAAAAAAAAEEAAAAAAAAAUQAAAAAAAABhAAAAAAAAAHEAAAAAAAAAgQAAAAAAAACJAAAAAAAAAJEA="},"y":{"dtype":"f8","bdata":"rp0oCYkUE0AwZktWRfgSQLNfd7rz5BJAhSUeUDYlE0ArMc9KWoETQNaO4hx1ZBNANuohGt0RE0B7avXVVRETQLw9CAH54hJAOiF00CUsE0A="},"type":"scatter"},{"customdata":{"dtype":"f8","bdata":"AAAAAAAA8D9os+pztSUTQAAAAAAAACRAAAAAAAAAAEByp3Sw\u002fg8UQAAAAAAAACRAAAAAAAAACEBN9PkoIw4UQAAAAAAAACJAAAAAAAAACECML9rjheQSQAAAAAAAAPA\u002fAAAAAAAAEEAgtYmT+z0TQAAAAAAAACRAAAAAAAAAFEB6\u002fUl87iQUQAAAAAAAACRAAAAAAAAAGECyu0BJgcUTQAAAAAAAACBAAAAAAAAAGEAhOgSOBAoUQAAAAAAAAPA\u002fAAAAAAAAGECOy7ipgcYWQAAAAAAAAPA\u002fAAAAAAAAHED9Fp0stf4SQAAAAAAAACRAAAAAAAAAIEAcYVERpwMTQAAAAAAAACRAAAAAAAAAIkAOoN\u002f3b+4TQAAAAAAAACRAAAAAAAAAJEBxqrUwC80WQAAAAAAAACRA","shape":"13, 3"},"hovertemplate":"budget 0.02 s\u003cbr\u003eseed %{customdata[0]:.0f}\u003cbr\u003ecost %{customdata[1]:.4f}\u003cbr\u003e%{customdata[2]:.0f} of 10 runs\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"rgba(0,0,0,0)","line":{"color":"#eb6834","width":2.5},"size":15},"mode":"markers","name":"budget 0.02 s","x":{"dtype":"f8","bdata":"AAAAAAAA8D8AAAAAAAAAQAAAAAAAAAhAAAAAAAAACEAAAAAAAAAQQAAAAAAAABRAAAAAAAAAGEAAAAAAAAAYQAAAAAAAABhAAAAAAAAAHEAAAAAAAAAgQAAAAAAAACJAAAAAAAAAJEA="},"y":{"dtype":"f8","bdata":"aLPqc7UlE0Byp3Sw\u002fg8UQE30+SgjDhRAjC\u002fa44XkEkAgtYmT+z0TQHr9SXzuJBRAsrtASYHFE0AhOgSOBAoUQI7LuKmBxhZA\u002fRadLLX+EkAcYVERpwMTQA6g3\u002fdv7hNAcaq1MAvNFkA="},"type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05}}},"font":{"family":"Lato, Helvetica, Arial, sans-serif","size":15,"color":"#0b0b0b"},"margin":{"l":70,"r":30,"t":40,"b":60},"xaxis":{"title":{"text":"seed (ten runs each)"},"tickvals":[1,2,3,4,5,6,7,8,9,10],"gridcolor":"#e6e5e1","linecolor":"#52514e","ticks":"outside"},"yaxis":{"title":{"text":"metric length of the path"},"gridcolor":"#e6e5e1","linecolor":"#52514e","ticks":"outside"},"hoverlabel":{"font":{"family":"Lato, sans-serif","size":14}},"legend":{"orientation":"h","x":0.5,"xanchor":"center","y":1.08},"paper_bgcolor":"#ffffff","plot_bgcolor":"#ffffff","hovermode":"closest","height":440,"autosize":true},                        {"displaylogo": false, "responsive": true, "modeBarButtonsToRemove": ["select2d", "lasso2d", "autoScale2d"]}                    )                };            </script>        </div>
+</div><div class="geodex-caption docutils container">
+<p>Ten runs for each of ten seeds, one point per distinct cost of a seed. Under a budget of
+2000 iterations, the ten runs of a seed return one cost (filled blue dots). Under a budget of
+0.02 s, the runs complete different numbers of iterations, and a seed can return more than
+one cost (open orange circles). A run that finds no path within the budget has no point.
+Hover a point for its cost and its number of runs.</p>
+</div>
+</div>
+<p>The full script is <code class="docutils literal notranslate"><span class="pre">examples/getting_started/reproducibility.py</span></code>, and the C++ version is
+<code class="docutils literal notranslate"><span class="pre">examples/getting_started/reproducibility.cpp</span></code>.</p>
+<section id="plan-twice-with-one-seed">
+<h2>1. Plan twice with one seed<a class="headerlink" href="#plan-twice-with-one-seed" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="../api/python.html#geodex.PlanSettings" title="geodex.PlanSettings"><code class="xref py py-class docutils literal notranslate"><span class="pre">geodex.PlanSettings</span></code></a> has a <code class="docutils literal notranslate"><span class="pre">seed</span></code> and an <code class="docutils literal notranslate"><span class="pre">iterations</span></code> budget. The seed
+seeds OMPL’s random number generator and the planner’s samplers, and the budget stops the
+planner after a fixed number of iterations.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-0">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">geodex</span>
+
+<span class="c1"># The plan of the installation page, a differential-drive robot around a disc.</span>
+<span class="n">space</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2</span><span class="p">(</span><span class="n">wx</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">wy</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span> <span class="n">wtheta</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                   <span class="n">x_lo</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">x_hi</span><span class="o">=</span><span class="mf">4.0</span><span class="p">,</span> <span class="n">y_lo</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">y_hi</span><span class="o">=</span><span class="mf">4.0</span><span class="p">)</span>
+<span class="n">start</span><span class="p">,</span> <span class="n">goal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">3.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">is_valid</span><span class="p">(</span><span class="n">q</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.8</span>
+
+<span class="n">settings</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">PlanSettings</span><span class="p">(</span><span class="n">iterations</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">plan</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">goal</span><span class="p">,</span> <span class="n">is_valid</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">plan</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">goal</span><span class="p">,</span> <span class="n">is_valid</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"same path:"</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">path</span><span class="p">),</span> <span class="s2">"same cost:"</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">cost</span> <span class="o">==</span> <span class="n">b</span><span class="o">.</span><span class="n">cost</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/getting_started/reproducibility.py">examples/getting_started/reproducibility.py</a></p>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-1">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;geodex/geodex.hpp&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;geodex/planning/plan.hpp&gt;</span>
+
+<span class="kt">bool</span><span class="w"> </span><span class="nf">is_valid</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="o">&amp;</span><span class="w"> </span><span class="n">q</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">hypot</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">2.0</span><span class="p">,</span><span class="w"> </span><span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">2.0</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">0.8</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// The plan of the installation page, a differential-drive robot around a disc.</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">SE2</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">space</span><span class="p">{</span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftInvariantMetric</span><span class="p">{</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">100.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">},</span>
+<span class="w">                    </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftExponentialMap</span><span class="p">{},</span>
+<span class="w">                    </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">M_PI</span><span class="p">),</span>
+<span class="w">                    </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="p">(</span><span class="mf">4.0</span><span class="p">,</span><span class="w"> </span><span class="mf">4.0</span><span class="p">,</span><span class="w"> </span><span class="n">M_PI</span><span class="p">)};</span>
+<span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mf">2.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">),</span><span class="w"> </span><span class="n">goal</span><span class="p">(</span><span class="mf">3.5</span><span class="p">,</span><span class="w"> </span><span class="mf">2.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">);</span>
+
+<span class="n">gp</span><span class="o">::</span><span class="n">PlanSettings</span><span class="w"> </span><span class="n">settings</span><span class="p">;</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">iterations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2000</span><span class="p">;</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">seed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gp</span><span class="o">::</span><span class="n">plan</span><span class="p">(</span><span class="n">space</span><span class="p">,</span><span class="w"> </span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="n">goal</span><span class="p">,</span><span class="w"> </span><span class="n">is_valid</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">);</span>
+<span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gp</span><span class="o">::</span><span class="n">plan</span><span class="p">(</span><span class="n">space</span><span class="p">,</span><span class="w"> </span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="n">goal</span><span class="p">,</span><span class="w"> </span><span class="n">is_valid</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"same path: %d same cost: %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">path</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">path</span><span class="p">,</span>
+<span class="w">            </span><span class="n">a</span><span class="p">.</span><span class="n">cost</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">cost</span><span class="p">);</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/getting_started/reproducibility.cpp">examples/getting_started/reproducibility.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">same</span> <span class="pre">path:</span> <span class="pre">True</span> <span class="pre">same</span> <span class="pre">cost:</span> <span class="pre">True</span></code>. The two paths are equal bit for bit.</p>
+</section>
+<section id="change-the-seed">
+<h2>2. Change the seed<a class="headerlink" href="#change-the-seed" title="Link to this heading">#</a></h2>
+<p>Another seed gives other samples and returns another path. To measure a planner, loop over
+seeds and report the distribution.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-2" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-2">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">seed</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">plan</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">goal</span><span class="p">,</span> <span class="n">is_valid</span><span class="p">,</span>
+                         <span class="n">settings</span><span class="o">=</span><span class="n">geodex</span><span class="o">.</span><span class="n">PlanSettings</span><span class="p">(</span><span class="n">iterations</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"seed </span><span class="si">{</span><span class="n">seed</span><span class="si">}</span><span class="s2">: cost </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">cost</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/getting_started/reproducibility.py">examples/getting_started/reproducibility.py</a></p>
+</div>
+<input id="sd-tab-item-3" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-3">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">seed</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">})</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">gp</span><span class="o">::</span><span class="n">PlanSettings</span><span class="w"> </span><span class="n">settings</span><span class="p">;</span>
+<span class="w">  </span><span class="n">settings</span><span class="p">.</span><span class="n">iterations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2000</span><span class="p">;</span>
+<span class="w">  </span><span class="n">settings</span><span class="p">.</span><span class="n">seed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">seed</span><span class="p">;</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gp</span><span class="o">::</span><span class="n">plan</span><span class="p">(</span><span class="n">space</span><span class="p">,</span><span class="w"> </span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="n">goal</span><span class="p">,</span><span class="w"> </span><span class="n">is_valid</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">);</span>
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"seed %llu: cost %.4f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="kt">long</span><span class="o">&gt;</span><span class="p">(</span><span class="n">seed</span><span class="p">),</span>
+<span class="w">              </span><span class="n">result</span><span class="p">.</span><span class="n">cost</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/getting_started/reproducibility.cpp">examples/getting_started/reproducibility.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>seed 1: cost 4.7701
+seed 2: cost 4.7425
+seed 3: cost 4.7236
+</pre></div>
+</div>
+</section>
+<section id="plan-with-a-time-budget">
+<h2>3. Plan with a time budget<a class="headerlink" href="#plan-with-a-time-budget" title="Link to this heading">#</a></h2>
+<p>With <code class="docutils literal notranslate"><span class="pre">iterations</span></code> at 0, the default, the planner stops after <code class="docutils literal notranslate"><span class="pre">time</span></code> seconds. The number
+of iterations it completes depends on the machine and on whatever else runs on it. Two runs
+return different paths when the planner improves its path between the iteration counts of the
+two runs. Use a time budget on a robot that must answer in time, and an iteration budget for
+tests, figures and comparisons.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-4" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-4">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># With iterations=0 (the default) the planner stops after `time` seconds.</span>
+<span class="n">timed</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">plan</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">goal</span><span class="p">,</span> <span class="n">is_valid</span><span class="p">,</span>
+                    <span class="n">settings</span><span class="o">=</span><span class="n">geodex</span><span class="o">.</span><span class="n">PlanSettings</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"time budget: cost </span><span class="si">{</span><span class="n">timed</span><span class="o">.</span><span class="n">cost</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/getting_started/reproducibility.py">examples/getting_started/reproducibility.py</a></p>
+</div>
+<input id="sd-tab-item-5" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-5">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// With iterations = 0 (the default) the planner stops after `time` seconds.</span>
+<span class="n">gp</span><span class="o">::</span><span class="n">PlanSettings</span><span class="w"> </span><span class="n">settings</span><span class="p">;</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.2</span><span class="p">;</span>
+<span class="n">settings</span><span class="p">.</span><span class="n">seed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">timed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gp</span><span class="o">::</span><span class="n">plan</span><span class="p">(</span><span class="n">space</span><span class="p">,</span><span class="w"> </span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="n">goal</span><span class="p">,</span><span class="w"> </span><span class="n">is_valid</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"time budget: cost %.4f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">timed</span><span class="p">.</span><span class="n">cost</span><span class="p">);</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/getting_started/reproducibility.cpp">examples/getting_started/reproducibility.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">time</span> <span class="pre">budget:</span> <span class="pre">cost</span> <span class="pre">4.7411</span></code> on one run, and another run can print another cost.</p>
+</section>
+<section id="seed-the-samplers-outside-the-planner">
+<h2>4. Seed the samplers outside the planner<a class="headerlink" href="#seed-the-samplers-outside-the-planner" title="Link to this heading">#</a></h2>
+<p>A manifold takes its <code class="docutils literal notranslate"><span class="pre">random_point</span></code> samples from a low-discrepancy sampler (see
+<a class="reference internal" href="../concepts/sampling.html"><span class="doc">Sampling on Manifolds</span></a>). A sampler constructed without a seed takes one from a shared
+source, which <code class="docutils literal notranslate"><span class="pre">geodex.seed</span></code> (<code class="docutils literal notranslate"><span class="pre">geodex::set_default_seed</span></code> in C++) reseeds. Every manifold
+constructed afterwards samples a reproducible sequence, and manifolds that already exist keep
+theirs. <code class="docutils literal notranslate"><span class="pre">seed</span></code> on a manifold reseeds its own sampler. In Python, a space built on a
+manifold, such as a <code class="docutils literal notranslate"><span class="pre">ConfigurationSpace</span></code>, shares the manifold’s sampler.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-6" name="sd-tab-set-3" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-6">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>                <span class="c1"># reseed the source of default samplers</span>
+<span class="n">sphere</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Sphere</span><span class="p">()</span>      <span class="c1"># constructed afterwards, it samples from seed 7</span>
+<span class="n">first</span> <span class="o">=</span> <span class="n">sphere</span><span class="o">.</span><span class="n">random_point</span><span class="p">()</span>
+
+<span class="n">sphere</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>                <span class="c1"># reseed this manifold's own sampler</span>
+<span class="n">again</span> <span class="o">=</span> <span class="n">sphere</span><span class="o">.</span><span class="n">random_point</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"first sample:"</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="s2">"after sphere.seed(7):"</span><span class="p">,</span> <span class="n">again</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/getting_started/reproducibility.py">examples/getting_started/reproducibility.py</a></p>
+</div>
+<input id="sd-tab-item-7" name="sd-tab-set-3" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-7">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">::</span><span class="n">set_default_seed</span><span class="p">(</span><span class="mi">7</span><span class="p">);</span><span class="w">  </span><span class="c1">// reseed the source of default samplers</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">Sphere</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">sphere</span><span class="p">;</span><span class="w">      </span><span class="c1">// constructed afterwards, it samples from seed 7</span>
+<span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">first</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sphere</span><span class="p">.</span><span class="n">random_point</span><span class="p">();</span>
+
+<span class="n">sphere</span><span class="p">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">7</span><span class="p">);</span><span class="w">  </span><span class="c1">// reseed this manifold's own sampler</span>
+<span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">again</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sphere</span><span class="p">.</span><span class="n">random_point</span><span class="p">();</span>
+<span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"first sample: %.6f %.6f %.6f after sphere.seed(7): %.6f %.6f %.6f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+<span class="w">            </span><span class="n">first</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="n">first</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="n">first</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="w"> </span><span class="n">again</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="n">again</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="n">again</span><span class="p">[</span><span class="mi">2</span><span class="p">]);</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/getting_started/reproducibility.cpp">examples/getting_started/reproducibility.cpp</a></p>
+</div>
+</div>
+</div>
+</section>
+<section id="try-it-plan-without-a-seed">
+<h2>5. Try it: plan without a seed<a class="headerlink" href="#try-it-plan-without-a-seed" title="Link to this heading">#</a></h2>
+<p>A <code class="docutils literal notranslate"><span class="pre">seed</span></code> of 0, the default, takes the plan’s seed from the next sample of the manifold’s own
+sampler. Two unseeded plans on one space differ, and <code class="docutils literal notranslate"><span class="pre">space.seed(3)</span></code> resets the sampler and
+repeats the sequence.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-8" name="sd-tab-set-4" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-8">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">unseeded</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">PlanSettings</span><span class="p">(</span><span class="n">iterations</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>  <span class="c1"># seed 0, the default</span>
+<span class="n">space</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">first</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">plan</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">goal</span><span class="p">,</span> <span class="n">is_valid</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">unseeded</span><span class="p">)</span>
+<span class="n">second</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">plan</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">goal</span><span class="p">,</span> <span class="n">is_valid</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">unseeded</span><span class="p">)</span>
+<span class="n">space</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">again</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">plan</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">goal</span><span class="p">,</span> <span class="n">is_valid</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">unseeded</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"costs </span><span class="si">{</span><span class="n">first</span><span class="o">.</span><span class="n">cost</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">second</span><span class="o">.</span><span class="n">cost</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, "</span>
+      <span class="sa">f</span><span class="s2">"after space.seed(3) </span><span class="si">{</span><span class="n">again</span><span class="o">.</span><span class="n">cost</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/getting_started/reproducibility.py">examples/getting_started/reproducibility.py</a></p>
+</div>
+<input id="sd-tab-item-9" name="sd-tab-set-4" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-9">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">gp</span><span class="o">::</span><span class="n">PlanSettings</span><span class="w"> </span><span class="n">unseeded</span><span class="p">;</span><span class="w">  </span><span class="c1">// seed 0, the default</span>
+<span class="n">unseeded</span><span class="p">.</span><span class="n">iterations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2000</span><span class="p">;</span>
+<span class="n">space</span><span class="p">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+<span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">first_plan</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gp</span><span class="o">::</span><span class="n">plan</span><span class="p">(</span><span class="n">space</span><span class="p">,</span><span class="w"> </span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="n">goal</span><span class="p">,</span><span class="w"> </span><span class="n">is_valid</span><span class="p">,</span><span class="w"> </span><span class="n">unseeded</span><span class="p">);</span>
+<span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">second_plan</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gp</span><span class="o">::</span><span class="n">plan</span><span class="p">(</span><span class="n">space</span><span class="p">,</span><span class="w"> </span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="n">goal</span><span class="p">,</span><span class="w"> </span><span class="n">is_valid</span><span class="p">,</span><span class="w"> </span><span class="n">unseeded</span><span class="p">);</span>
+<span class="n">space</span><span class="p">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+<span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">again_plan</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gp</span><span class="o">::</span><span class="n">plan</span><span class="p">(</span><span class="n">space</span><span class="p">,</span><span class="w"> </span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="n">goal</span><span class="p">,</span><span class="w"> </span><span class="n">is_valid</span><span class="p">,</span><span class="w"> </span><span class="n">unseeded</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"costs %.4f and %.4f, after space.seed(3) %.4f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">first_plan</span><span class="p">.</span><span class="n">cost</span><span class="p">,</span>
+<span class="w">            </span><span class="n">second_plan</span><span class="p">.</span><span class="n">cost</span><span class="p">,</span><span class="w"> </span><span class="n">again_plan</span><span class="p">.</span><span class="n">cost</span><span class="p">);</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/getting_started/reproducibility.cpp">examples/getting_started/reproducibility.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">costs</span> <span class="pre">4.7880</span> <span class="pre">and</span> <span class="pre">4.8309,</span> <span class="pre">after</span> <span class="pre">space.seed(3)</span> <span class="pre">4.7880</span></code>. Give each thread that
+plans without a seed its own copy of the space.</p>
+</section>
+<section id="exact-versions">
+<h2>Exact versions<a class="headerlink" href="#exact-versions" title="Link to this heading">#</a></h2>
+<p>The same seed gives the same path only with the same code. geodex builds every dependency from
+one exact release or commit.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 28.0%" />
+<col style="width: 72.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Input</p></th>
+<th class="head"><p>Version</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Python package</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pygeodex==1.0.0</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Conda and PyPI packages of the workspace</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">pixi.lock</span></code>, installed with <code class="docutils literal notranslate"><span class="pre">pixi</span> <span class="pre">install</span> <span class="pre">--locked</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>OMPL fork with G-RRT*</p></td>
+<td><p>one commit of <code class="docutils literal notranslate"><span class="pre">utiasSTARS/ompl</span></code>, set in <code class="docutils literal notranslate"><span class="pre">third_party/dependencies.cmake</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>VAMP and its header dependencies</p></td>
+<td><p>commit <code class="docutils literal notranslate"><span class="pre">e3902f1</span></code> of <code class="docutils literal notranslate"><span class="pre">KavrakiLab/vamp</span></code>, with nigh, pdqsort and SIMDxorshift at the
+commits VAMP uses</p></td>
+</tr>
+<tr class="row-even"><td><p>Eigen</p></td>
+<td><p>5.0.0, installed with the geodex headers</p></td>
+</tr>
+<tr class="row-odd"><td><p>C++ projects</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">GIT_TAG</span> <span class="pre">v1.0.0</span></code> for FetchContent, <code class="docutils literal notranslate"><span class="pre">find_package(geodex</span> <span class="pre">1.0</span> <span class="pre">CONFIG</span> <span class="pre">REQUIRED)</span></code>,
+which accepts any 1.x release</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="across-machines">
+<h2>Across machines<a class="headerlink" href="#across-machines" title="Link to this heading">#</a></h2>
+<p>A path is the same bit for bit on one build and one kind of CPU. A different compiler or CPU
+can return a different path for the same seed. To compare machines, compare costs and success
+rates over many seeds, and report timings as distributions over seeds and repeated runs, with
+the machine and its load.</p>
+</section>
+<section id="where-to-go-next">
+<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../concepts/planning.html"><span class="doc">Planning</span></a> covers every field of <code class="docutils literal notranslate"><span class="pre">PlanSettings</span></code>.</p></li>
+<li><p><a class="reference internal" href="../concepts/sampling.html"><span class="doc">Sampling on Manifolds</span></a> covers the samplers and their seeds.</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="quickstart.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Quickstart</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="building-from-source.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Building from Source</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plan-twice-with-one-seed">1. Plan twice with one seed</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#change-the-seed">2. Change the seed</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plan-with-a-time-budget">3. Plan with a time budget</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#seed-the-samplers-outside-the-planner">4. Seed the samplers outside the planner</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#try-it-plan-without-a-seed">5. Try it: plan without a seed</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exact-versions">Exact versions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#across-machines">Across machines</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#where-to-go-next">Where to go next</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Space and Terrestrial Autonomous Robotic Systems (STARS) Lab.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

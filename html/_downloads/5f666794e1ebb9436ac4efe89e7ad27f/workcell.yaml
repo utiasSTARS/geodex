@@ -1,0 +1,39 @@
+# A workcell for the Clearpath UR5e examples, written for geodex. Box dimensions are full
+# extents in meters, and the floor is at z = 0.
+world:
+  collision_objects:
+    - id: wall
+      primitive_poses:
+        - position: [0.0, 3.05, 1.25]
+          orientation: [0.0, 0.0, 0.0, 1.0]
+      primitives:
+        - type: box
+          dimensions: [8.0, 0.1, 2.5]
+    - id: shelf
+      primitive_poses:
+        - position: [-1.8, 2.6, 0.75]
+          orientation: [0.0, 0.0, 0.0, 1.0]
+      primitives:
+        - type: box
+          dimensions: [1.8, 0.7, 1.5]
+    - id: table
+      primitive_poses:
+        - position: [2.6, 0.0, 0.3]
+          orientation: [0.0, 0.0, 0.0, 1.0]
+      primitives:
+        - type: box
+          dimensions: [0.8, 1.4, 0.6]
+    - id: pillar
+      primitive_poses:
+        - position: [0.4, 1.0, 1.0]
+          orientation: [0.0, 0.0, 0.0, 1.0]
+      primitives:
+        - type: box
+          dimensions: [0.3, 0.3, 2.0]
+    - id: bin
+      primitive_poses:
+        - position: [0.0, -1.8, 0.3]
+          orientation: [0.0, 0.0, 0.0, 1.0]
+      primitives:
+        - type: box
+          dimensions: [0.6, 0.6, 0.6]

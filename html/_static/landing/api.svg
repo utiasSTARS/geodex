@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200">
+  <rect x="30" y="30" width="340" height="62" rx="8" fill="#e7f0fa" stroke="#2980b9" stroke-width="1.5"/>
+  <rect x="30" y="108" width="340" height="62" rx="8" fill="#f7fbfe" stroke="#2980b9" stroke-width="1.5"/>
+  <g font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="14" fill="#1a1a1a">
+    <text x="46" y="56" fill="#52514e">C++</text>
+    <text x="46" y="78">geodex::planning::plan(space, a, b)</text>
+    <text x="46" y="134" fill="#52514e">Python</text>
+    <text x="46" y="156">geodex.plan(space, a, b)</text>
+  </g>
+</svg>

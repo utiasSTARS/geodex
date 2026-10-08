@@ -1,0 +1,222 @@
+/* geodex docs on pydata-sphinx-theme, pinned to light mode.
+
+   Body text is set in Lato, the same files the figure scripts use for their labels, so
+   figures and prose match. Colors follow the geodex blue of the diagrams. */
+
+@font-face { font-family: "Lato"; font-style: normal; font-weight: 400; font-display: swap;
+             src: url("fonts/Lato-Regular.ttf") format("truetype"); }
+@font-face { font-family: "Lato"; font-style: italic; font-weight: 400; font-display: swap;
+             src: url("fonts/Lato-Italic.ttf") format("truetype"); }
+@font-face { font-family: "Lato"; font-style: normal; font-weight: 700; font-display: swap;
+             src: url("fonts/Lato-Bold.ttf") format("truetype"); }
+@font-face { font-family: "Lato"; font-style: italic; font-weight: 700; font-display: swap;
+             src: url("fonts/Lato-BoldItalic.ttf") format("truetype"); }
+
+/* Colors, the navbar, the article sheet and the landing page are in theme.css. */
+html[data-theme="light"] {
+    --pst-font-family-base: "Lato", Helvetica, Arial, sans-serif;
+    --pst-font-family-heading: "Lato", Helvetica, Arial, sans-serif;
+    --pst-color-target: #fff6d6;
+    --pst-font-size-base: 1rem;
+}
+
+/* A wider article column for side-by-side tabs, 3D views and long C++ signatures. Between
+   the two sidebars the column is at least about 760 px wide on a 1280 px screen, which
+   fits the 84 columns docs snippets wrap at and a 7.6 in figure at its natural size. */
+.bd-page-width { max-width: 96rem; }
+.bd-main .bd-content .bd-article-container { max-width: 62em; }
+html { --pst-sidebar-secondary: 13rem; }
+@media (min-width: 960px) {
+    .bd-sidebar-primary { width: min(25%, 15rem); }
+}
+
+/* Sphinx graphviz SVGs scale to the content column instead of rendering at their
+   intrinsic pt size. The Sphinx graphviz extension wraps each diagram in
+   <div class="graphviz"><object>...svg...</object></div>. */
+.graphviz {
+    text-align: center;
+    margin: 1em 0;
+}
+.graphviz object,
+.graphviz svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Mermaid: conf.py sets `useMaxWidth: false` so every diagram renders at its
+   intrinsic viewBox width (1 viewBox unit = 1 CSS pixel) and per-character
+   pixel size is identical across diagrams. This block just centers them and
+   strips the default <pre> code-block frame, plus caps absurdly wide diagrams
+   so they don't break out of the content column. */
+pre.mermaid {
+    text-align: center;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 1em 0 !important;
+}
+pre.mermaid > svg,
+.mermaid > svg {
+    max-width: 100% !important;
+    height: auto !important;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Tables: wrap long cell text instead of scrolling. A fixed layout makes the
+   :widths: of a list-table pin the column proportions, and long words may break so
+   prose cells wrap cleanly. */
+.bd-content table.docutils {
+    width: 100%;
+    table-layout: fixed;
+}
+.bd-content table.docutils td,
+.bd-content table.docutils th {
+    white-space: normal !important;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    vertical-align: top;
+}
+.bd-content .pst-scrollable-table-container {
+    overflow: visible;
+}
+
+/* -------------------------------------------------------------------------
+   Code pairs: the Python and C++ tabs of one snippet.
+   ------------------------------------------------------------------------- */
+
+.geodex-code-pair .sd-tab-set {
+    margin: 0.6em 0 1.2em 0;
+}
+.geodex-code-pair .sd-tab-content {
+    padding-top: 0.25em;
+}
+/* 84 columns fit the 710 px code block of a 1280 px window. */
+.geodex-code-pair div.highlight pre {
+    font-size: 0.84em;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+}
+
+/* -------------------------------------------------------------------------
+   Figures: recorded 3D scenes, plotly figures and their captions.
+   ------------------------------------------------------------------------- */
+
+.geodex-figure {
+    margin: 1.4em auto 1.6em auto;
+    width: 100%;
+}
+.geodex-caption {
+    color: #52514e;
+    font-size: 0.93em;
+    text-align: center;
+    margin: 0.5em 6% 0 6%;
+}
+.geodex-caption p {
+    margin: 0;
+}
+
+/* Looping animations (video-figure) sit in a figure like an image. */
+video.geodex-video {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+}
+
+.geodex-scene {
+    position: relative;
+    width: 100%;
+    border: 1px solid #dfe4ea;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #ffffff;
+}
+.geodex-scene img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.geodex-scene iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+}
+.geodex-scene-open {
+    position: absolute;
+    left: 50%;
+    bottom: 1.2em;
+    transform: translateX(-50%);
+    display: none;
+    align-items: center;
+    gap: 0.55em;
+    padding: 0.55em 1.1em;
+    border: 1px solid #2980b9;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.94);
+    color: #1c5cab;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.10);
+}
+.geodex-js .geodex-scene-open {
+    display: inline-flex;
+}
+.geodex-scene-open:hover {
+    background: #2980b9;
+    color: #ffffff;
+}
+.geodex-scene-icon {
+    font-size: 0.8em;
+}
+
+.geodex-plotly {
+    width: 100%;
+}
+.geodex-plotly img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* The link under each code-pair tab to the whole example file. */
+.geodex-code-pair p.geodex-example-link {
+    margin: -0.6rem 0 0.4rem 0;
+    font-size: 0.85rem;
+    color: var(--pst-color-text-muted);
+}
+
+/* -------------------------------------------------------------------------
+   Stat tiles: one number of a result with its label, as cards of a grid.
+   ------------------------------------------------------------------------- */
+.bd-content table.geodex-param-table {
+    font-size: 0.92em;
+}
+.bd-content table.geodex-param-table td:first-child code,
+.bd-content table.geodex-param-table td:first-child code .pre {
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+}
+.bd-content .geodex-stat {
+    text-align: center;
+    box-shadow: none;
+}
+.bd-content .geodex-stat .sd-card-body {
+    padding: 0.7rem 0.5rem;
+}
+.bd-content .geodex-stat .sd-card-title {
+    font-size: 1.7rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 0.1rem;
+    color: var(--pst-color-primary);
+}
+.bd-content .geodex-stat .sd-card-text {
+    margin: 0;
+    color: var(--pst-color-text-muted);
+}

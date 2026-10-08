@@ -1,0 +1,803 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Installation &#8212; geodex</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=28229f57" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme.css?v=26c09b9b" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../_static/documentation_options.js?v=8d563738"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/plotly/plotly.min.js"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=b8b12719"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>window.MathJax = {"loader": {"paths": {"mathjax-termes": "[mathjax]/fonts/termes"}}, "chtml": {"font": "mathjax-termes"}, "options": {"enableSpeech": false, "enableBraille": false, "enableEnrichment": false, "enableExplorer": false, "menuOptions": {"settings": {"speech": false, "braille": false, "enrich": false}}}}</script>
+    <script defer="defer" src="../_static/mathjax/tex-mml-chtml.js?v=4a2f07e4"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'getting-started/installation';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <script src="../_static/mermaid-intrinsic-size.js?v=f42d09f7"></script>
+    <script src="../_static/geodex.js?v=d44686ee"></script>
+    <link rel="icon" href="../_static/favicon.svg"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Quickstart" href="quickstart.html" />
+    <link rel="prev" title="Getting Started" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="1.0.0" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/logo-light.svg" class="logo__image only-light" alt=""/>
+    <img src="../_static/logo-dark.svg" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">geodex</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../concepts/index.html">
+    Core Concepts
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../robots/index.html">
+    Robot Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../ros2/index.html">
+    ROS 2
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/utiasSTARS/geodex" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pygeodex/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../concepts/index.html">
+    Core Concepts
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../robots/index.html">
+    Robot Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../ros2/index.html">
+    ROS 2
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/utiasSTARS/geodex" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pygeodex/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reproducibility.html">Reproducibility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="building-from-source.html">Building from Source</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Getting Started</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Installation</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h1>
+<p>On this page, we install geodex, check the install, and plan a first motion. geodex installs as a
+Python wheel, as a CMake package for C++ projects, or as a pixi workspace that builds geodex for
+Python and C++ from a clone of the repository. All three install geodex 1.0.0.</p>
+<section id="install-the-python-wheel">
+<span id="install-pip"></span><h2>1. Install the Python wheel<a class="headerlink" href="#install-the-python-wheel" title="Link to this heading">#</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="nv">pygeodex</span><span class="o">==</span><span class="m">1</span>.0.0
+</pre></div>
+</div>
+<p>The package is named <code class="docutils literal notranslate"><span class="pre">pygeodex</span></code> and imports as <code class="docutils literal notranslate"><span class="pre">geodex</span></code>. It needs Python 3.12 or newer. Every
+wheel includes the geometry core (manifolds, metrics, sampling, distances, interpolation and the
+smoother). On Linux and macOS, it also includes planning, collision checking and the built-in
+robots.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 14.0%" />
+<col style="width: 56.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Platform</p></th>
+<th class="head"><p>Planning</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Linux x86-64</p></td>
+<td><p>yes</p></td>
+<td><p>Needs glibc 2.28 or newer, as in Ubuntu 20.04 and later. Collision checking of the
+built-in robots needs a CPU with AVX2 and FMA. Planning with a Python validity function
+works on any CPU.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Linux aarch64</p></td>
+<td><p>yes</p></td>
+<td><p>Needs glibc 2.28 or newer, as in Ubuntu 20.04 and later.</p></td>
+</tr>
+<tr class="row-even"><td><p>Linux with musl (Alpine), x86-64 and aarch64</p></td>
+<td><p>no</p></td>
+<td><p>Includes the geometry core.</p></td>
+</tr>
+<tr class="row-odd"><td><p>macOS arm64</p></td>
+<td><p>yes</p></td>
+<td><p>Needs macOS 11 or newer.</p></td>
+</tr>
+<tr class="row-even"><td><p>macOS x86-64</p></td>
+<td><p>yes</p></td>
+<td><p>Needs macOS 11 or newer. Collision checking of the built-in robots needs a CPU with AVX2
+and FMA. Planning with a Python validity function works on any CPU.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Windows x86-64</p></td>
+<td><p>no</p></td>
+<td><p>Includes the geometry core.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>On other platforms, <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--no-binary</span> <span class="pre">pygeodex</span> <span class="pre">pygeodex==1.0.0</span></code> builds the package
+from source. The build needs a C++20 compiler, CMake 3.20 or newer, git and network access.</p>
+</section>
+<section id="check-the-install">
+<h2>2. Check the install<a class="headerlink" href="#check-the-install" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">geodex</span></code> prints the version and the components of the install.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>geodex
+</pre></div>
+</div>
+<p>On Linux and macOS it prints</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>geodex 1.0.0
+planning: yes
+built-in robots: yes
+collision checking: yes
+</pre></div>
+</div>
+<p>A <code class="docutils literal notranslate"><span class="pre">no</span></code> marks a component that the platform does not have (see the table above).</p>
+</section>
+<section id="plan-a-first-motion">
+<h2>3. Plan a first motion<a class="headerlink" href="#plan-a-first-motion" title="Link to this heading">#</a></h2>
+<p>We plan a path for a differential-drive robot around a disc in a 4 m by 4 m room. Planning needs
+the Linux or macOS wheel. The robot’s poses <span class="math notranslate nohighlight">\((x, y, \theta)\)</span> form the manifold
+<span class="math notranslate nohighlight">\(\mathrm{SE}(2)\)</span>. The C++ version builds against the CMake package of step 4.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-0">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">geodex</span>
+
+<span class="c1"># The space holds poses (x, y, heading) in a 4 m x 4 m room. The weight 100 on the</span>
+<span class="c1"># squared sideways speed makes a meter of sliding as long as ten meters of driving</span>
+<span class="c1"># forward.</span>
+<span class="n">space</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2</span><span class="p">(</span><span class="n">wx</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">wy</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span> <span class="n">wtheta</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                   <span class="n">x_lo</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">x_hi</span><span class="o">=</span><span class="mf">4.0</span><span class="p">,</span> <span class="n">y_lo</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">y_hi</span><span class="o">=</span><span class="mf">4.0</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">is_valid</span><span class="p">(</span><span class="n">q</span><span class="p">):</span>  <span class="c1"># outside a disc of radius 0.8 m in the middle of the room</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.8</span>
+
+<span class="n">start</span><span class="p">,</span> <span class="n">goal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">3.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">plan</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">goal</span><span class="p">,</span> <span class="n">is_valid</span><span class="p">,</span>
+                     <span class="n">settings</span><span class="o">=</span><span class="n">geodex</span><span class="o">.</span><span class="n">PlanSettings</span><span class="p">(</span><span class="n">iterations</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">solved</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">cost</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">path</span><span class="p">))</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/getting_started/first_plan.py">examples/getting_started/first_plan.py</a></p>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-1">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;cmath&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;cstdio&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;geodex/geodex.hpp&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;geodex/planning/plan.hpp&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="o">**</span><span class="w"> </span><span class="n">argv</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// The space holds poses (x, y, heading) in a 4 m x 4 m room. The weight 100 on</span>
+<span class="w">  </span><span class="c1">// the squared sideways speed makes a meter of sliding as long as ten meters of</span>
+<span class="w">  </span><span class="c1">// driving forward.</span>
+<span class="w">  </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">space</span><span class="p">{</span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftInvariantMetric</span><span class="p">{</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">100.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">},</span>
+<span class="w">                      </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftExponentialMap</span><span class="p">{},</span>
+<span class="w">                      </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">M_PI</span><span class="p">),</span>
+<span class="w">                      </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="p">(</span><span class="mf">4.0</span><span class="p">,</span><span class="w"> </span><span class="mf">4.0</span><span class="p">,</span><span class="w"> </span><span class="n">M_PI</span><span class="p">)};</span>
+
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">is_valid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[](</span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="o">&amp;</span><span class="w"> </span><span class="n">q</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">  </span><span class="c1">// outside a disc of radius 0.8 m</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">hypot</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">2.0</span><span class="p">,</span><span class="w"> </span><span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">2.0</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">0.8</span><span class="p">;</span>
+<span class="w">  </span><span class="p">};</span>
+
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">start</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mf">2.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">),</span><span class="w"> </span><span class="n">goal</span><span class="p">(</span><span class="mf">3.5</span><span class="p">,</span><span class="w"> </span><span class="mf">2.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">);</span>
+<span class="w">  </span><span class="n">geodex</span><span class="o">::</span><span class="n">planning</span><span class="o">::</span><span class="n">PlanSettings</span><span class="w"> </span><span class="n">settings</span><span class="p">;</span>
+<span class="w">  </span><span class="n">settings</span><span class="p">.</span><span class="n">iterations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2000</span><span class="p">;</span>
+<span class="w">  </span><span class="n">settings</span><span class="p">.</span><span class="n">seed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">planning</span><span class="o">::</span><span class="n">plan</span><span class="p">(</span><span class="n">space</span><span class="p">,</span><span class="w"> </span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="n">goal</span><span class="p">,</span><span class="w"> </span><span class="n">is_valid</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">);</span>
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"%d %.3f %zu</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">solved</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">cost</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">path</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/getting_started/first_plan.cpp">examples/getting_started/first_plan.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">True</span> <span class="pre">4.77</span> <span class="pre">765</span></code>. The planner found a path of cost 4.770 with 765 waypoints.</p>
+<div class="geodex-figure docutils container">
+<div class="geodex-plotly"><noscript><img src="../_static/plots/installation-first-plan.png" alt="A square room with a gray disc in the middle and a blue path that goes around the
+disc from the start on the left to the goal on the right."></noscript><div style="height:460px; width:100%;">                            <div id="plot-installation-first-plan" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("plot-installation-first-plan")) {                    Plotly.newPlot(                        "plot-installation-first-plan",                        [{"customdata":{"dtype":"f8","bdata":"AAAAAAAAAADy7aTajJfWP\u002fLtpNqMl+Y\u002fdLL7o6nx8D\u002fy7aTajJf2P20pThFwPfw\u002fdLL7o6nxAEAzUFA\u002fm8QDQPLtpNqMlwZAr4v5dX5qCUBtKU4RcD0MQCvHoqxhEA9AB5IfhEXxEEA0rNu0wVgSQAredCtovhNA\u002fiiuOaEhFUBZzEO8Y4MWQGx5E+Yb5RdAgSbjD9RGGUCU07I5jKgaQKqAgmNEChxAvi1SjfxrHUDS2iG3tM0eQKKVXoG1FyBA3+4291zIIEDw3gpHdXghQFVZgJLvJyJASGeC3ufWIkDGlnnCQ4UjQChmVrHuMiRA9SCOYArgJEBTNzhREI0lQLJN4kEWOiZADmSMMhznJkBsejYjIpQnQMqQ4BMoQShAKKeKBC7uKECFvTT1M5spQB56HRcuSCpABL9tVmrzKkCdk5RhA5wrQPMSfsKBQSxAXYX7jzrlLEB+t\u002fc364gtQKPp89+bLC5Axhvwh0zQLkDpTewv\u002fXMvQAZA9OvWCzBAF1nyP69dMEAocvCTh68wQGWxOkZcATFAEc42fNFSMUCUuO\u002fRk6MxQK8w8R+48zFAQH\u002f11zFDMkD+L9bx7ZEyQBBxoXcT4DJANDeHAyguM0BY\u002fWyPPHwzQHzDUhtRyjNAoIk4p2UYNEDDTx4zemY0QOcVBL+OtDRAC9zpSqMCNUAvos\u002fWt1A1QDL4zB1AnjVAEhGYBpLpNUCOtMrtoTI2QMl+dM0+eTZAiZKTknS\u002fNkBIprJXqgU3QAe60RzgSzdAyM3w4RWSN0CG4Q+nS9g3QEf1LmyBHjhABglOMbdkOEDFHG327Ko4QGHkp3oA8ThAjtkTJzU2OUAzdFiAZXo5QF\u002faFUqdvTlALUcy39H\u002fOUAjB2ja7EA6QL5WkUKPgTpAKQxfNy\u002fCOkCWwSwszwI7QAF3+iBvQztAbSzIFQ+EO0Da4ZUKr8Q7QEaXY\u002f9OBTxAskwx9O5FPEAeAv\u002fojoY8QJerGIzixTxAUd78p3MBPUCWPKZO1zg9QKAKNuVRbj1AqivkOsujPUC2TJKQRNk9QL9tQOa9Dj5AyY7uOzdEPkDTr5yRsHk+QN3QSucprz5A6PH4PKPkPkDyEqeSHBo\u002fQJSeRZReTz9AfXSjTjuDP0ACeWbvhrU\u002fQGPcMjJS5j9AaKSaS7YKQEBDh6LeniFAQFHHf1h7OEBAXgdd0ldPQEBsRzpMNGZAQHqHF8YQfUBAh8f0P+2TQECVB9K5yapAQKNHrzOmwUBAsYeMrYLYQEDmI6KWWe9AQEUMKbzgBEFAdQBs\u002f\u002fgXQUBbd0AEqChBQPQTQ6ugOEFAjbBFUplIQUAmTUj5kVhBQL7pSqCKaEFAWIZNR4N4QUDxIlDue4hBQIq\u002fUpV0mEFAI1xVPG2oQUC8+FfjZbhBQJSejsc4yEFAhqExaDzXQUDAA6WTY+VBQPq3PRC\u002f8kFA3usg1yb\u002fQUB0yIEt5wpCQB60A0yfFkJAyJ+FalciQkByiweJDy5CQBx3iafHOUJAxmILxn9FQkBwTo3kN1FCQBo6DwPwXEJAwyWRIahoQkCBuj\u002f0QnRCQOw6BgGKfkJAf6mxHzuHQkCMVuArUo5CQPBVkysXlEJAzqXhDcaZQkCs9S\u002fwdJ9CQItFftIjpUJAaZXMtNKqQkBH5RqXgbBCQCY1aXkwtkJABIW3W9+7QkDh1AU+jsFCQBdK6XINx0JADAmDyd7LQkBzbDrdEtBCQIvUx+W300JAkobKirnWQkBLcHZRFNlCQAlwsKQa20JAKXzF0x3dQkBKiNoCId9CQGqU7zEk4UJAi6AEYSfjQkCrrBmQKuVCQMu4Lr8t50JA7MRD7jDpQkD0gxXKEOtCQOh1KUQX7EJAlG0ZGjDsQkDo9pUwbOtCQLM3pVWp6UJA4G4CcVPnQkDNvxwX+ORCQLkQN72c4kJApWFRY0HgQkCSsmsJ5t1CQH8Dhq+K20JAbFSgVS\u002fZQkBXpbr709ZCQMOwmJZl1EJAt+IhR2rRQkAankyLwc1CQH8DHpV6yUJAolFFbpbEQkDBa+2ABr9CQEhGIpnquEJAWDB+K7uyQkBnGtq9i6xCQHYENlBcpkJAhu6R4iygQkCV2O10\u002fZlCQKXCSQfOk0JAtKylmZ6NQkDDlgEsb4dCQCiFaGvlgEJAIDM1pzR5QkAgFo2FdHBCQI4cXSKXZkJALEJW68FbQkDIKCodzVBCQGQP\u002fk7YRUJA\u002f\u002fXRgOM6QkCb3KWy7i9CQDjDeeT5JEJA06lNFgUaQkBukCFIEA9CQAp39XkbBEJA\u002fJsZoBj5QUAXN32Qbu1BQG+S6Pvt4EFA4SI5+a7TQUCodtnyncVBQI1A6CTBtkFAvAwChbqnQUDs2Bvls5hBQB2lNUWtiUFATnFPpaZ6QUB+PWkFoGtBQK8Jg2WZXEFA3tWcxZJNQUAOorYljD5BQADI3HJeL0FALwFQJH0fQUABvsV55w5BQD4vLJ6y\u002fUBAR5BXgcvrQEAVG86SOtlAQAKesHCHxkBA7yCTTtSzQEDbo3UsIaFAQMkmWApujkBAtqk66Lp7QECiLB3GB2lAQI6v\u002f6NUVkBAfDLigaFDQECAFug5zjBAQEnAlY5AHUBAsS2buesIQEBwXEoXwOc\u002fQGkx3jwCvD9AvxLYlUSPP0BSOQRtfGI\u002fQOVfMES0NT9AfIZcG+wIP0ARrYjyI9w+QKTTtMlbrz5AGPs6d5OCPkDr6wN2rVU+QPwrDyVeKD5A6xEOXZz6PUD\u002fTPH4b8w9QBkm0tjcnT1AMj3tZe9uPUAbKMU8nD89QPbQYZTUDz1APEqxo6DfPEAA09+\u002fNa88QHFIYsHHfjxA4L3kwllOPEBOM2fE6x08QL2o6cV97TtALB5sxw+9O0Cbk+7IoYw7QL6f8podXDtAJoZfCKMpO0CNTEhrvfQ6QLVmfQ5+vTpA1lNYYUWEOkBhEA7f20o6QO3Mw1xyETpAeol52gjYOUAJRi9Yn545QJQC5dU1ZTlAIb+aU8wrOUCue1DRYvI4QDs4Bk\u002f5uDhAyPS7zI9\u002fOEBSsXFKJkY4QOFtJ8i8DDhAbirdRVPTN0D75pLD6Zk3QIWjSEGAYDdAE2D+vhYnN0CfHLQ8re02QC\u002fZabpDtDZAuZUfONp6NkBGUtW1cEE2QNMOizMHCDZA5UM9iZrONUCT21\u002f08JQ1QI5VZ3fDWjVAvRuWbgwgNUD8DJ993OQ0QG\u002flsHxDqTRAlQu1KTFtNEDm0k2rpzA0QKb\u002fntKY8zNAaBQCDBu2M0CiqjptgHgzQNdAc87lOjNADterL0v9MkBGbeSQsL8yQLDKEuoTgjJA4CF+alREMkBmjIxvWgYyQCzu5locyDFA\u002fk9hCKuJMUB\u002fiDvFB0sxQBOCrhsqDDFAJH2jWBfNMECUcmZ\u002fwo0wQEcMP\u002fk9TjBAZAMgXK4OMEAI9QF+PZ4vQEjjw0MeHy9Ah9GFCf+fLkDHv0fP3yAuQASuCZXAoS1AQ5zLWqEiLUCCio0ggqMsQCEJd9phJCxAaeJvps6iK0AhrCIm9yArQNl11aUfnypAkT+IJUgdKkBICTulcJspQADT7SSZGSlAuZygpMGXKEBwZlMk6hUoQCgwBqQSlCdA4Pm4IzsSJ0CZw2ujY5AmQFCNHiOMDiZAB1fRorSMJUCIqpQ8RAklQN8v795ygiRAVg7WtTn6I0DB7LyMAHIjQC3Lo2PH6SJAjamKOo5hIkD5h3ERVdkhQGRmWOgbUSFA20Q\u002fv+LIIEA7IyaWqUAgQE0DGtrgcB9AJcDnh25gHkB1uf8hAFAdQKPwNWkOQBxACfkaDt0wG0B136X4WyIaQE7VvSecFBlAWmUT4ikHGEAk2G2zt\u002fkWQO1KyIRF7BVAt70iVtPeFECBMH0nYdETQEqj1\u002fjuwxJAFBYyyny2EUDeiIybCqkQQFH3zdkwNw9A5dyCfEwcDUBNwjcfaAELQOGn7MGD5ghAn42hZJ\u002fLBkAyc1YHu7AEQJtYC6rWlQJALz7ATPJ6AECHR+reG8D8P6sSVCRTivg\u002fu1Sq\u002f89U9D+11w5\u002fhiDwP9n0LL792+c\u002fGtlRWQn23j\u002fhKpC7nHfMP5iVF9zlvKO\u002flEvVdokk078\u002fMSvRkeXhv5ZkXyS1Neq\u002fbaSfsUtB8b+kahZ1Bmb1v50J0SfviPm\u002fYtGK09Wp\u002fb8hzfUnUuQAwK9Jik4L8wLAe71cqYoBBcCFQKgBCBAHwDzD81mFHgnARkY\u002fsgItC8D9yIoKgDsNwAZM1mL9SQ\u002fAc+eQXT2sEMDPqLYJfLMRwFNq3LW6uhLArysCYvnBE8Az7ScOOMkUwKSuTbp20BXA\u002f29zZrXXFsCEMZkS9N4XwODyvr4y5hjAZLTkanHtGcDUdQoXsPQawBOuajHa+xvASrJpjCQAHcAu\u002fmwqnf4dwKLCKijg9x7AftsRnn3rH8DkVWx4eWwgwFBWHj1v4iDAx1bQAWVYIcArV4LGWs4hwKJXNItQRCLABVjmT0a6IsBzWJgUPDAjwOpYStkxpiPATVn8nSccJMDDWa5iHZIkwDFaYCcTCCXAlVoS7Ah+JcAMW8Sw\u002fvMlwG9bdnX0aSbA5VsoOurfJsBTXNr+31UnwMFcjMPVyyfALV0+iMtBKMCSXfBMwbcowAheohG3LSnAP7hsRKmjKcClLVHmaxkqwDshqrPgjirAhCBc8QYEK8DiEtCS2HgrwNTLYR5m7SvAPio\u002fCbFhLMATNV8JuNUswPB0+Gd3SS3A6YjBOd28LcC2EJDl8i8uwFSGP5XOoi7A7qGIlZ8VL8CSvdGVcIgvwCPZGpZB+y\u002fAY\u002foxSwk3MMAriFbLcXAwwPwVe0vaqTDAyaOfy0LjMMCSMcRLqxwxwGS\u002f6MsTVjHALE0NTHyPMcD92jHM5MgxwMpoVkxNAjLAl\u002fZ6zLU7MsBkhJ9MHnUywDYSxMyGrjLA\u002fp\u002foTO\u002fnMsDLLQ3NVyEzwJi7MU3AWjPAVuPREgWUM8C5cLehqMwzwAHqfgyWBDTAygbfU9U7NMASvbD3eXI0wD3Fy\u002fNmqDTA0eZ\u002fgpbdNMDgOsAcVRI1wBwaKf0NRzXAVPmR3cZ7NcDIMSWVf7A1wG354Gko5TXAAtwbzJ4ZNsDNC5bNwk02wPxutWyggTbAM\u002f20wju1NsAppydimOg2wA8RBY+4GzfAQr\u002fI0ZhON8AJkYy\u002fN4E3wCUzjMGTszfAjCnYvqjlN8C8PVlscBc4wM++RTH2SDjAJJ+d\u002fGZ6OMAxqDiT1qs4wDyx0ylG3TjATLpuwLUOOcBUwwlXJUA5wGTMpO2UcTnAa9U\u002fhASjOcB43toadNQ5wIfndbHjBTrAj\u002fAQSFM3OsCe+avewmg6wKYCR3UymjrAswviC6LLOsDCFH2iEf06wModGDmBLjvA2iazz\u002fBfO8DmL05mYJE7wDOgHcjMwjvAzRlQZ\u002fDzO8AtuwXgiyQ8wK85WwagVDzAvNF4NkGEPMDCH13pYrM8wMsXiTH34TzAfyhKMxgQPcAMJ0H6Iz49wJ0lOMEvbD3AJyQviDuaPcC0IiZPR8g9wEIhHRZT9j3Azx8U3V4kPsBgHgukalI+wOgcAmt2gD7A6Z\u002fZnsytPsB4B73hLtg+wCfj03O\u002f\u002fz7Aqu3LJEEkP8ANLLoL20c\u002fwHRqqPJ0az\u002fA2aiW2Q6PP8A854TAqLI\u002fwKUlc6dC1j\u002fABmRhjtz5P8A30ac6uw5AwGrwHi6IIEDAU6hsvlEyQMARtr7P+UNAwHDPa2hvVUDAh\u002fgSQLxmQMDwPNZI4HdAwDsl5u\u002fWiEDAuPVHQp6ZQMBbJVnZTapAwH5Co4f8ukDAo1\u002ftNavLQMDHfDfkWdxAwOyZgZII7UDAErfLQLf9QMA11BXvZQ5BwP5d38MTH0HAovIHunMvQcAc26PbDj9BwDII4in2TUHAWr5IgitcQcCXDxIzj2lBwPhRZ1x4dkHArMWdr1yDQcBeOdQCQZBBwBGtClYlnUHAxSBBqQmqQcB5lHf87bZBwC0Irk\u002fSw0HAAOsOCrPQQcAEpRgyT91BwAYIayZ86UHA0r68NUb1QcBeukj5rABCwCYPUgG6C0LAPxNSqVcWQsDeMN1giSBCwMMuidOEKkLAFBoB9X00QsBlBXkWdz5CwLfw8DdwSELAB9xoWWlSQsBZx+B6YlxCwKqyWJxbZkLAnxUNUFFwQsDXtCsptnlCwBq8\u002fwz1gULAgxQkci2JQsA1NCRxS49CwGhdGyp\u002flELAb5Iz55uZQsB3x0ukuJ5CwH\u002f8Y2HVo0LAhjF8HvKoQsCOZpTbDq5CwJabrJgrs0LAntDEVUi4QsDFj9duWb1CwHYcvTcCwkLAVGFmnwrGQsAr1CgZmMlCwMwvUJGfzELAv0FQ6yPPQsBkMxjyENFCwCZfZg2e0kLAF1ruKybUQsAJVXZKrtVCwPlP\u002fmg210LA60qGh77YQsDcRQ6mRtpCwM5AlsTO20LAlMrHBVLdQsBOFpGfYd5CwEh\u002fsNCo3kLAo4XV9kXeQsCpn+rIMd1CwOZOmwda20LAS0+qj+3YQsAMVN8XcdZCwM5YFKD000LAjl1JKHjRQsBPYn6w+85CwBBnszh\u002fzELA0WvowALKQsCScB1JhsdCwFN1UtEJxULAtvAXjGfCQsAUQTKBEr5CwCMuhrSzt0LAHoFJsS2vQsCQovNdr6VCwK8F3dYunELA0GjGT66SQsDvy6\u002fILYlCwA0vmUGtf0LAL5KCuix2QsBN9WszrGxCwG5YVawrY0LAjLs+JatZQsCuVH9qFVBCwAfpB4K3RULAwxQQl2o6QsBINxzcPy5CwLrGedkdIULA2RthE1ATQsD4VF+fegVCwBWOXSul90HAM8dbt8\u002fpQcBQAFpD+ttBwG85WM8kzkHAjXJWW0\u002fAQcCqq1TnebJBwMfkUnOkpEHA5h1R\u002f86WQcAEEeTgFohBwIdWkIXbdkHA0e3kYf5iQcDTmywC9E1BwC9PdNrnOEHAiwK8stsjQcDntQOLzw5BwENpS2PD+UDAnxyTO7fkQMD8z9oTq89AwFiDIuyeukDAtDZqxJKlQMDo8d7IfpBAwKItLoe5ekDAH8kJae1jQMDFoADIP0xAwIy\u002ffjSjM0DANczLBEEaQMBARPwPyQBAwJh4WTaizj\u002fArmi6TLKbP8DFWBtjwmg\u002fwNtIfHnSNT\u002fA8Tjdj+ICP8AJKT6m8s8+wB8Zn7wCnT7ANgkA0xJqPsB\u002fO2RynjU+wKGQ7V0P\u002fD3AupnEp169PcDOy0PTtXw9wOP9wv4MPD3A9y9CKmT7PMAMYsFVu7o8wB+UQIESejzAM8a\u002frGk5PMBH+D7YwPg7wFEqvgMYuDvAb1w9L293O8B5jrxaxjY7wN\u002fbRgyb9TrASqhA9rSxOsBSIujnUWs6wNZjaTJ8IjrAqnnEPEnZOcCWjx9HFpA5wHalelHjRjnAS7vVW7D9OMA30TBmfbQ4wAvni3BKazjA7PzmehciOMDMEkKF5Ng3wKwonY+xjzfAo6r\u002fEnRGN8CCABVnL\u002fs2wBJlLsu\u002frDbA9txke4lbNsCk2L4mtwk2wFHUGNLktzXAANByfRJmNcCuy8woQBQ1wFzHJtRtwjTACsOAf5twNMC4vtoqyR40wGa6NNb2zDPAE7aOgSR7M8DCsegsUikzwEg3AYq31jLAQVdtPweCMsBJcSMscSsywAgmZm8V1DHAUAAwTLh8McCX2vkoWyUxwN+0wwX+zTDAJo+N4qB2MMBuaVe\u002fQx8wwGqHQjjNjy\u002fA+TvW8RLhLsCI8GmrWDIuwBWl\u002fWSegy3Axku3Ls\u002fULMBw8a\u002f8FSMswCkmoud9bivAUa9erCG5KsB5OBtxxQMqwKHB1zVpTinArEqU+gyZKMDw01C\u002fsOMnwBhdDYRULifAQObJSPh4JsBob4YNnMMlwHP4QtI\u002fDiXAuIH\u002fluNYJMAI00UVb6MjwGkkIurJ7SLAlBhSbyA4IsCOe1GPn4IhwNTQMXFQzSDAEo5qQgMYIMDXlkYnbMUewIwRuMnRWh3AQIwpbDfwG8AtB5sOnYUawKiBDLECGxnAXPx9U2iwF8AQd+\u002f1zUUWwB9WHKo32xTA1lXPxW5xE8Dnv73ufgkSwOgHp5X7oxDALjN18bWBDsCHLvasvLsLwOApd2jD9QjAOSX4I8ovBsCSIHnf0GkDwOsb+prXowDAhy72rLy7+784Jfgjyi\u002f2v+sb+prXo\u002fC\u002fOCX4I8ov5r88Jfgjyi\u002fWvwAAAAAAAAAA"},"hovertemplate":"x %{x:.2f} m\u003cbr\u003ey %{y:.2f} m\u003cbr\u003eheading %{customdata:.0f} deg\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#2a78d6","width":3},"mode":"lines","name":"path","x":{"dtype":"f8","bdata":"AAAAAAAA4D94+81XPQXgP3zmNKx5CuA\u002fE4ku8LQP4D\u002f2ULcW7xTgP\u002fBxzhIoGuA\u002fMwZ2118f4D+uLrNXliTgP1UzjobLKeA\u002fYqMSV\u002f8u4D+TdU+8MTTgP1UoV6liOeA\u002fhF2OOw0\u002f4D+7zbtZZkbgPwvxyqZLT+A\u002fdwYzHOJZ4D8PWZ4yYGXgPy5i1I7hcOA\u002fv9Yo81984D\u002fVyDpE24fgP9CdsGZTk+A\u002ffU84P8ie4D8zrYeyOargP+vC7r2oteA\u002f19zX40\u002fB4D8aaYBsk83gP9olsk962uA\u002ffESCF+Dn4D8u4MOD2PXgP\u002fi8kwxvBOE\u002fG46BjH8T4T9cQLbInSLhP2o0bbW2MeE\u002ftQw7MMpA4T+O1cAW2E\u002fhP4JTrEbgXuE\u002fmlG4neJt4T9776z53nzhP11J2hnfi+E\u002fqMGWhzic4T93mmpcba7hPytIdQOPwuE\u002fYub0pLDX4T++DrjpzezhP42kBRTiAeI\u002fDL3a+OwW4j+OWEdt7iviPxi6bkbmQOI\u002f2L6HWdRV4j91Nd17uGriP4Vil4uWf+I\u002fNQlNvdKU4j+fwOs5wqriP07CiEBIweI\u002fTvER82rY4j8NyImLNfDiP+hyPGR+COM\u002fjlxCRMog4z8qNh2gCTnjP+BJxUo8UeM\u002f7XNKF2Jp4z8adtTYeoHjPwlLo2KGmeM\u002fSXkPiISx4z9KZoocdcnjPzppLyrO4eM\u002f+TIKY9774z+JkoXnhBfkP+UyYlC+NOQ\u002f6yF9aClS5D\u002fFr0JXhG\u002fkP\u002fp8nvDOjOQ\u002f2rCUCAmq5D+FO0JzMsfkP9oX3QRL5OQ\u002fL420kVIB5T\u002f0cDHuSB7lP44bOiNDO+U\u002fYL6zkrNY5T8s92ZRrHblP0D8eV4hleU\u002f+tS1thO05T8m+CWoitPlP51dX2ou8+U\u002fjjSrzMAS5j9ZpdhgQDLmPzRD1f6sUeY\u002f0sCmfgZx5j81I2u4TJDmP3D0WIR\u002fr+Y\u002fRHa\u002fup7O5j+g1AY0qu3mP6CkWOo9Dec\u002fguFow2Yu5z8WqizfH1HnP1HKfot3dOc\u002fOSPKJ7yX5z95koYk7brnP63jDGMK3uc\u002f4RTHxBMB6D8ucTArCSToP1er1XfqRug\u002fUvhUjLdp6D+uKV5KcIzoP9M1Neonr+g\u002fPoEoi0XS6D9sq82D0\u002fXoP+s1PFjHGek\u002fSSXfuyo+6T8GZqIG22LpPwDQyhN\u002fh+k\u002f6j4m2w+s6T+em2tFjdDpP7UjXjv39Ok\u002fUXjNpU0Z6j\u002fqrJVtkD3qPwBWn3u\u002fYeo\u002f2JffuNqF6j\u002fi0HgB5anqPy6elT+Fzuo\u002fsTxdTDH06j9UO\u002fGFwBrrP7TZG7qCQes\u002fCSiKlzVo6z84\u002fzQS2Y7rP1IAGh5ttes\u002fYZg7r\u002fHb6z8TBKG5ZgLsP31TVjHMKOw\u002fy21sCiJP7D\u002f\u002fFPk4aHXsP07idwesm+w\u002fwhc7oyfC7D+UTrGn3OjsP6wWlsrCD+0\u002fABlOq+I27T9CiJpcJF7tP2K\u002flzpche0\u002fBNf3C4is7T9CtSzKp9PtP3xFqm67+u0\u002fdXnm8sIh7j9rSllQvkjuPzO6fICtb+4\u002fRtTMfJCW7j9UdDbPbb3uP637yRWH5O4\u002fbanNG+EL7z+C31xhcTPvP+3bbQMmW+8\u002f4vwlC9eC7z83BwXtgarvP6hXe6cm0u8\u002fBYn5OMX57z8JOvjPrhDwP+SXaO13JPA\u002foogG9D048D\u002fx1QrjAEzwP9MakabDX\u002fA\u002fhB65lI1z8D\u002f6nUJAXYfwP6Ce8Zkxm\u002fA\u002fvWECGguv8D8Mm3ho6cLwP7AKl3DJ1vA\u002f+4Dbd6jq8D\u002fS\u002fhBkhv7wPztrHjVjEvE\u002fua7q6j4m8T8ds1yFGTrxP6VjWwTzTfE\u002fAq3NZ8th8T+eK1U9o3XxP9yBGMJ8ifE\u002fTBFqEVed8T9iu3HmMLHxP6TtYaQIxfE\u002f9Y\u002fmEt\u002fY8T\u002fQcm6xtuzxP6nxypuPAPI\u002f+qjZ0WkU8j\u002f6MnhTRSjyP6QnhCAiPPI\u002fuBzbOABQ8j+0pVqc32PyP7poCxLAd\u002fI\u002f6DKp+Z+L8j+aeDJxfp\u002fyP0PsskZbs\u002fI\u002f0DSAADbH8j9EhWuhDdvyPxGi+Pbi7vI\u002f+G4O0boC8z\u002fE9JD\u002flRbzP8c+k4F0KvM\u002fpTAoVlY+8z9fhmJ8O1LzP1XUVPMjZvM\u002fW4cRug968z+95KrP\u002fo3zP\u002f\u002fkAlLqofM\u002fEoLtQsG18z\u002f9Ihxwg8nzPwoF+Bot3fM\u002f\u002f+ziYsDw8z\u002f2ho6sVQT0P1jNWKrwF\u002fQ\u002f86VjWZEr9D9rIdC2Nz\u002f0P617vr\u002fjUvQ\u002fXRxOcZVm9D8yl53ITHr0P3asysIJjvQ\u002fJ\u002fmGuMqh9D8JnEFSfbX0P0NkkdEayfQ\u002fecJYIaXc9D\u002fcnl87GPD0P3k0jLRzA\u002fU\u002fwGYpDNAW9T+WIAPFMyr1P+zZw9mePfU\u002fcAQURRFR9T8DDZoBi2T1PzZd+gkMePU\u002fvlzXWJSL9T\u002fwctHoI5\u002f1P2VTe1S0svU\u002fe9QtBi7G9T94mATIj9n1PwVeLFnc7PU\u002fMBX6GQ8A9j\u002f7SP2TKBP2PxPvl6FDJvY\u002fw3PiK2c59j9ERbUqk0z2P5Q35ZXHX\u002fY\u002f6IdDZQRz9j8v4J2QSYb2P4havg+XmfY\u002fzYRr2uys9j+0iRLiQ8D2PzX95Zl50\u002fY\u002ffSynjonm9j\u002fK7Cnjdfn2P0xtvI41DPc\u002feXOEztwe9z8HbpTdizH3PwuuJRhERPc\u002fULTIcgVX9z+Pbgjiz2n3P28+alqjfPc\u002fI8lDy3+P9z\u002fx01l\u002fYaL3P9D\u002fSfY+tfc\u002fqeP14xbI9z\u002f\u002f5g0c6tr3PzdN2fW47fc\u002fG4\u002fm6YQA+D+E3b5STBP4P1yULgkNJvg\u002fFRp09Mc4+D+unPs8hEv4PxczaO5IXvg\u002fMpiEaBZx+D\u002fsw+Gd7IP4PzBxCoHLlvg\u002fiSeDBLOp+D\u002fCRMoao7z4P6sdGTCYz\u002fg\u002frbSIi0Pi+D8Pr59ujPT4PywjraNuBvk\u002fBIymwfYX+T\u002fiUxQBfin5PywWCCcOO\u002fk\u002fXGbfIadM+T\u002fW+e7fSF75P6y5gk\u002fzb\u002fk\u002fWdTdXqaB+T+dzzr8YZP5P02ayxUmpfk\u002fNp65mfK2+T8G0iV2x8j5Pz\u002fLKJmk2vk\u002fLdDS8Ins+T\u002ft6Strd\u002f75P3f2M\u002fZsEPo\u002frLrif2oi+j939Cf2bzT6P+xs60Z9Rvo\u002feQoNYJJY+j8O42Qvr2r6P2ROw6LTfPo\u002fBvHHAf+O+j\u002fmzStKJaH6P9oLln43s\u002fo\u002f83my7zPF+j8A9S6zHdf6P7aIMdL36Po\u002fZKOiUr76+j+HTMM6cQz7P1Fn\u002f9IMHvs\u002f5Ez3yZUv+z9NhIjqHkH7P88NT9WuUvs\u002fK3f9dUVk+z8tjD644nX7P9GNzwuGh\u002fs\u002fcyWwhCeZ+z9WYMRWwar7PztyDP1QvPs\u002f1W7JXtrN+z8\u002fqjmkXd\u002f7P9gXiIrY8Ps\u002fkN+gMkwC\u002fD8E6ZcqtRP8P2y80eQXJfw\u002f24MThX02\u002fD9IfjDF6Ef8Pz\u002fiuI9ZWfw\u002fthQ2z89q\u002fD94wypuS3z8P5f\u002fElfMjfw\u002f51dkdFKf\u002fD+A842w3bD8Pw8DINJtwvw\u002f\u002f0iqcq3T\u002fD9vf3+Q6OT8P\u002famNnko9vw\u002fuUSqFm0H\u002fT8i065Sthj9P1jeEhcEKv0\u002fuCCfTVY7\u002fT9jnxbgrEz9P8PGNrgHXv0\u002fI4e3v2Zv\u002fT9McUvgyYD9PyTTnwMxkv0\u002fV9RcE5yj\u002fT8rKBRB0rT9PzRkq8qPxf0\u002fhGB\u002fThvW\u002fT\u002fhOGEyqub9P6Sf6l489\u002f0\u002fJqOwvNEH\u002fj\u002fbzkM0ahj+P25MMK4FKf4\u002f5gT+EqQ5\u002fj\u002fWwTBLRUr+P39OSD\u002fpWv4\u002fFJnA149r\u002fj+uOJRMOXz+P92xzA7vjP4\u002f90AZTLad\u002fj9Om+6Rja7+P215UgR2v\u002f4\u002fXAkVimbQ\u002fj+F6J0OWeH+P4qBuXhN8v4\u002fuGr4sEMD\u002fz+Tu+ifOxT\u002fP0EtFi41Jf8\u002f9ToKRDA2\u002fz9bQkzKLEf\u002fPwykYakqWP8\u002fAuTNySlp\u002fz8NyhIUKnr\u002fP0qCsHAri\u002f8\u002fob0lyC2c\u002fz9I0u8CMa3\u002fPzbcigk1vv8\u002fqt1xxDnP\u002fz+w3x4cP+D\u002fP6ESC\u002flE8f8\u002f8\u002fr+TSYBAEDUHrhQrQkAQGjgnMQ4EgBAjssrS8kaAEDbLgCKXiMAQDlpxeL3KwBAH9FvE5U0AEB8Aj\u002fxNT0AQKq4mGzaRQBATtMqkYJOAEAeKoKCLlcAQJr+j3HeXwBATE0XvpJoAEBXFg6KS3EAQNVL\u002fAwHegBAHeXyGsOCAEB3XCukfosAQPuswpM5lABAEDg03vOcAED2OPx3raUAQAzUl1VmrgBA6SWFax63AECdUkOu1b8AQNeUUhKMyABADE00jEHRAECsEGsQ9tkAQEK5epOp4gBAnXPoCVzrAED7zjpoDfQAQCDM+aK9\u002fABAiOyurmwFAUB4QeV\u002fGg4BQF97gMrHFgFAYkJWGI4fAUAApFbShigBQE4mFaGqMQFA22qOQPs6AUDROxu1ekQBQGPPIW8ETgFAomYcoYxXAUCMPvFAE2EBQEc+iESYagFAyQHLoRt0AUCT5KROnX0BQFkMA0EdhwFAq3PUbpuQAUCu9AnOF5oBQLNTllSSowFA6Ulu+AqtAUAEkIivgbYBQNHo3W\u002f2vwFA6StpL2nJAUBBUCfk2dIBQMp2F4RI3AFAEPU6BbXlAUDKX5VdH+8BQHOVLIOH+AFAztQDou0BAkDpQHxIVAsCQEX29DK9FAJAe0T+XigeAkCA6jEZlicCQOnB510FMQJA2oJhC3Y6AkCbrbwo6EMCQNYiveBbTQJA1a7FLdJWAkCG4cN4SmACQCTAkXLDaQJASBRTYDpzAkBg1PicrnwCQK9CBR8ghgJA2V793I6PAkBV72jN+pgCQP+K0uZjogJAi6LHH8qrAkAIithuLbUCQFeCmMqNvgJAocKdKevHAkDKgYGCRdECQOP\u002f38uc2gJAlI9Y\u002fPDjAkCKn40KQu0CQNzDJO2P9gJAbL\u002fGmtr\u002fAkBNjR8KIgkDQB9q3jFmEgNA15rK26obA0BjmV9C\u002fSQDQMRIwkVfLgNAFkg2r883A0AYJdw2TEEDQCXhBWrXSgNAMinzfHFUA0BZopTiEl4DQJVvF16xZwNAusriXExxA0BBN03a43oDQMYmDiR5hANA97HbHQ+OA0DADMNmqJcDQMoiH+lDoQNAm7tiPOGqA0BPkRsFgLQDQBmKvgQgvgNAQIHpc8HHA0DTLBBgZNEDQBmBBtoI2wNAba86Ja\u002fkA0BbO1uvV+4DQKx\u002fHIUB+ANAhToaIKkBBEC2MojxTAsEQHE3WtrsFARA\u002fgJm04geBEDiPYTVICgEQDmEkNm0MQRA\u002fWpp2EQ7BEBbhfDK0EQEQAJqCqpYTgRAZLiebtxXBEAJHpgRXGEEQM1b5IvXagRAK0t01k50BEB24zvqwX0EQB0\u002fMsAwhwRA6aBRUZuQBEA0eZeWAZoEQLrhf8ljowRAavO6U8esBED18fUOMbYEQBL27MagvwRABmC+zxTJBECNjjT+jdIEQO2ZBjcN3ARAJ6u9d5DlBED16vToEO8EQGGZ5vyM+ARAuINyrQQCBUDYTHv0dwsFQB9x5svmFAVAX0qcLVEeBUDME4gTtycFQObtl3cYMQVAv1K154E6BUBbMUMGGUQFQM+tXPbXTQVALryMtr5XBUBSgCz7rWEFQKMXQm+ZawVABRD5DoF1BUDbcX7WZH8FQIrBAMJEiQVA5ACwzSCTBUCxsL31+JwFQBnSXDbNpgVAm7K8z52wBUCrhdIZbboFQJcETmE8xAVA0Nq04ArOBUBUIzKV2NcFQEzGoNGl4QVA+rVotnLrBUCEY1yEPfUFQH8\u002fJIwE\u002fwVAuotkuccIBkAjz80IhxIGQFXgEXdCHAZAr+bjAPolBkB1W\u002fiirS8GQGuImG1dOQZABo\u002fvOBBDBkARqPsu0EwGQKRX8EibVgZAOIGg1XBgBkCBch+eUmoGQL58quw5dAZAs5oHYx5+BkDZyL+o\u002f4cGQL3S0rvdkQZAtylBmribBkBM5QtCkKUGQJrDNLFkrwZANd53Gza5BkBY68ZBCMMGQKVMooHdzAZAWglLFrXWBkBF0Q3ujuAGQN3AHnpq6gZAzqsnu0j0BkDbeZluKf4GQMSq5QoKCAdA\u002f+smKegRB0BXZfSswxsHQCBBHJWcJQdAlvps4HIvB0AJXrWNRjkHQPaIxJsXQwdAHKJmNOZMB0D2WcEOuVYHQBADd2qWYAdAs67e2ntqB0AE7tYFaXQHQHrKi5xbfgdA+JKlck2IB0DTp6\u002fmPZIHQOUBWfgsnAdARqVQpxqmB0BioUXzBrAHQPAQ59vxuQdA+xnkYNvDB0AtPbO4w80HQO21iY6s1wdAhatRspbhB0AyYHdwgesHQPXWqtFs9QdAXfL\u002fqlj\u002fB0CPBakGRQkIQJgeYHUxEwhAiKkCfh0dCECVHpQaCScIQC07DUv0MAhADr1mD986CEBBYplnyUQIQCnpnVOzTghAHMkB3pxYCEAC4qXghmIIQOl1h7RxbAhACjRP6lx2CEDYK\u002f04SIAIQAn5wDYzighAqEUj5B2UCECQqAoiCZ4IQJJv9Q71pwhAeHnQquGxCEC8o4j1zrsIQITKCu+8xQhAqMhDl6vPCECudyDumtkIQMmvjfOK4whA19SZ+3rtCECDp1SFYvcIQJHvAQ88AQlALACltAELCUBdAaVYvhQJQCoXKG19HglApyPgDD8oCUBrYLo2AzIJQIO\u002fo+nJOwlAkeuIJJNFCUD2R1bmXk8JQN7w9y0tWQlAcbtZ+v1iCUDgnDJP0GwJQFnanpibdglAbb7hT12ACUBvOFeWFYoJQF0UxwrCkwlABvY31GadCUCmraKdDqcJQGBQK+i5sAlAzKuQsWi6CUDavJD3GsQJQFew6LfQzQlAc+NU8InXCUBF5JCeRuEJQFpyV8AG6wlANH9iU8r0CUCx3bSLfv4JQHPuFA\u002f8BwpALErhxTURCkCCcSOyUBoKQNtCbzxwIwpAtk4HmJQsCkBlT\u002fy\u002fvTUKQC1oXK\u002frPgpA9SczYR5ICkDwi4nQVVEKQEwCZviRWgpA4mzM09JjCkBUXjdrF20KQG8xZ8BKdgpAW+242GB\u002fCkDMawv8XIgKQE5WhLA7kQpA9d4JwAGaCkDlKX6ZyaIKQLjjHJCWqwpAxWbxnGi0CkAuCAO5P70KQGEdVd0bxgpAnAHnAv3OCkB7G7Qi49cKQH\u002fiszXO4ApAnuTZNL7pCkA40WcwkfIKQCANEVzu+gpAPfzZAMICC0DaoroKXwoLQDuhk0oBEgtA9R2stqgZC0AZqURFVSELQKBIl+wGKQtA34TXor0wC0ACdTJeeTgLQIvLzhQ6QAtA3+LMvP9HC0DeyUZMyk8LQNcJ8syIVwtAuxSpZu1eC0BHIXXY+GULQI6bo3akbAtAHAiE+URzC0CCap3+6XkLQBlpF3uTgAtAC2ASZEGHC0ANc6eu840LQDif6E+qlAtAz8zgPGWbC0Au4ZNqJKILQLPQ\u002fs3nqAtAEsINga2vC0AMuDb3FrYLQEbVMHbeuwtA0o\u002f0\u002fQDBC0B10rno\u002fsULQD5DoigAywtA7Pp4swTQC0A2WwJ\u002fDNULQK8j\u002fIAX2gtAq4YdryXfC0A+Phf\u002fNuQLQD+hk2ZL6QtAXbg222LuC0A\u002fU55SffMLQHA9ZzRh+AtA8tFPvKD8C0Cx7bv6KwAMQGPsMkZkAwxAGbN29J0GDEDr8uii2QkMQAFXBUoXDQxAKvVC4lYQDEBrXxRkmBMMQIS158fbFgxAkbYmBiEaDECq0jYXaB0MQJM8efOwIAxAnXZlhvYjDEAW2MYWaiYMQGs55ayhJwxA5adoAksoDEBRDb4M9SgMQLp9O8qfKQxAbUw1OUsqDEAjEP5X9yoMQDen5iSkKwxA3Ds+nlEsDEBcSFLC\u002fywMQFabbo+uLQxABFzdA14uDEDYtM8k7S4MQMrIVr8XLwxAYv4JpuUuDEDbRlCBTy4MQJi0CZp2LQxAKcsSyZssDEBHoEElwSsMQMqAubDmKgxALEOdbQwqDEAvQg9eMikMQIlXMYRYKAxAjNYk4n4nDEDQhgp6pSYMQGlN9DPKJQxAwkkq8ZkkDEDs5q+S2iIMQNoLj3uUIAxAyVMB8OEdDEDmJyycKRsMQOtIwmFxGAxAexJKR7kVDECZk0lTARMMQPt+RoxJEAxAZxvG+JENDEARNE2f2goMQPEIYIYjCAxAJj+CtGwFDEBU0TYwtgIMQAAAAAAAAAxA"},"y":{"dtype":"f8","bdata":"AAAAAAAAAEBq1pcVKAAAQPHL4jtSAABAigZ4cn4AAED4iem4rAAAQOY4xA7dAABA\u002fdWPcw8BAEAVBc\u002fmQwEAQGtM\u002f2d6AQBA5BWZ9rIBAEBhsA+S7QEAQBtR0TkqAgBA0iKs2WsCAEC6D8tFugIAQFSn1ZIVAwBA\u002f01\u002fjn8DAEBUQD\u002fT8wMAQE12R7FsBABAPA40\u002f+kEAEDcjNq7awUAQO3nBebxBQBAFol2fHwGAEDfUOJ9CwcAQFRDF\u002fKeBwBAe8eEyzgIAEAybtyR3AgAQEXtwdeKCQBAwAAprEIKAEAJ0oYIBQsAQG5jFKXSCwBAGLEFfaoMAEBoIw67iA0AQM3hBK1sDgBAPz\u002fiUFYPAEDzkpGkRRAAQBk98aU6EQBAtavSUjUSAECfX\u002fqoNRMAQBbcBk08FABA8ItdCGAVAEBfxdtPqhYAQMdYRzgdGABAhaDWdKkZAEAMdI6MPRsAQA+09izZHABAL3PHUnweAEA8a6n6JiAAQAgENiHZIQBAVlr3wpIjAEDtRmjcUyUAQLF\u002fvLUcJwBAU+NPuPQoAEBpTQ9l4ioAQF\u002f+3t\u002fjLABA3S5v2\u002fkuAEDQVntsJTEAQJnANadjMwBAFWipU6s1AED3LghF+zcAQJvIBndTOgBA\u002fZRK5bM8AEDWqGmLHD8AQMfV6mSNQQBArrJFbQZEAEANpOKfh0YAQMIkV1wdSQBAIc\u002frBetLAEC9U0Or7U4AQGwIpU8lUgBAcW+M42xVAECODCB4vVgAQMSmZQgXXABA3odVj3lfAED\u002fg9oH5WIAQEcB0mxZZgBAhP8LudZpAED\u002fH0vnXG0AQK6YB0fucABAPmBvcZd0AEAanX1xWngAQLfvjf41fABALNt1NyqAAEAjkSPnN4QAQJYAAXFViABA+44sCHyMAEC4WsKDq5AAQOhBb97jlABAZdnUEiWZAECZc4kbb50AQGAnGPPBoQBA\u002fdYAlB2mAEAWN7j4gaoAQGfmlDYGrwBAY8o4FtKzAEBdO1au5LgAQFkPVeoZvgBAk67fc1fDAEBgsbg1ncgAQNRlSCvrzQBAFfXvT0HTAEBfZwmfn9gAQA+o5xMG3gBAuYnWqXTjAEA9yhpc6+gAQKj81u9s7gBAE6VQJQj0AEDl4PssvvkAQFWJQzGN\u002fwBAdDcSLHYFAUBMKGPncwsBQMjV3el5EQFA6U\u002fDOYcXAUBh9jjTmx0BQN2EX7K3IwFAehVT09opAUBDIysyBTABQK6M+so2NgFAGJbPmW88AUBkffQesEIBQLHZcV8VSQFAkmnW8rJPAUBTZN9XgFYBQGDtJ4BeXQFAZWZJDkJkAUDyrR8AK2sBQMT1hFMZcgFAbsNRBg15AUAI8VwWBoABQNate4EEhwFA+H6BRQiOAUAWQEBgEZUBQJ3c7OAhnAFAv8Q2gkKjAUB60GHccqoBQBJqTgixsQFAEPTgf\u002f24AUB5ycZKVMABQDpIwWOvxwFAiabjfg7PAUBbGPKacdYBQCUmsLbY3QFAC63g0EPlAUAX30XosuwBQHBDofsl9AFAjLazCZ37AUCnX2FwGQMCQC3SW4+oCgJAks1yY0oSAkD4wDGg+xkCQM6Jbo+3IQJA6lYU9nUpAkBbLoJUNjECQD\u002f4aar4OAJA3Ih997xAAkC2oG47g0gCQH3s7nVLUAJAHgWwphVYAkDEb2PN4V8CQInelLOwZwJAbuhO\u002fINvAkAY5u+wWncCQM9tBws0fwJAbPbDgw+HAkAs14lj7I4CQJ6nLhLKlgJAXaBJc6ieAkA5bwyHh6YCQJwibU1nrgJAAMhhxke2AkAPbODxKL4CQIka388KxgJAR95TYO3NAkCsvvft0NUCQHFtJ2q23QJApGKYwJzlAkAP3t6rgu0CQFMDirdm9QJA8O14u0j9AkDxPQfgKQUDQNr6mzMKDQNACX8ptukUA0BJJqJnyBwDQM9N+EemJANAOlQeV4MsA0CSmQaVXzQDQCjNLK46PANAVp5DRRJEA0AJacIP5UsDQK9\u002fr6WyUwNAMeEJV3pbA0D2E7j5OmMDQJunyev0agNADLRDDaxyA0DkwSwKYXoDQE3YKOITggNAARjclMSJA0BZu+ohc5EDQEsW+YgfmQNAcparycmgA0APw6bjcagDQBDtoFMWsANAItoKpbK3A0BitaOcRb8DQP8TShrNxgNAUxt8wkjOA0Bznj2Ov9UDQMOPy5oy3QNADQAP56HkA0CVjPFxDewDQDlfXTp18wNAny49P9n6A0BePnx\u002fOQIEQCBfBvqVCQRAbhHJIe4QBEADFpumOxgEQI1edat7HwRAYM8vQa4mBEC7f21m0S0EQCx9HmLkNARAQdp25+87BECqEQlY9kIEQCFi5rH3SQRAwnAh8\u002fNQBECVSc4Z61cEQAxgAiTdXgRAlY\u002fUD8plBEAWHF3bsWwEQOz3NFWScwRAUZNjLWN6BEArjSWCI4EEQAPhAt7ThwRAt2roNXKOBEC+eOVU\u002fpQEQK3VFrmBmwRADuKX3\u002f6hBEDC16TFdagEQJGafGjmrgRAX7lgxVC1BEBMb5XZtLsEQOWkYaISwgRATPEOHWrIBEDN\u002fGYquc4EQM6snzT11ARAbMq5cRzbBEAkYIseL+EEQKhWWgYq5wRA5X85KRPtBEBxucSP9PIEQHklUqfO+ARA05pObKH+BEB8aSvbbAQFQMRcXvAwCgVA981Ipu0PBUCcw1R6oRUFQNui+YBIGwVALqTQHOIgBUCiOuGPbiYFQL9F1urtKwVAn7K1t2AxBUBTGp03xjYFQJWvG3QdPAVAoUKiu2ZBBUDJvJ37pEYFQLEtZiHbSwVAnT+5VglRBUAWbeOXL1YFQGXfNuFNWwVANnELL2RgBUAzsb59cmUFQHDl5ex3agVAJ9b9DmFvBUDn4GJeJ3QFQItuV2XJeAVAgqrd+Ul9BUDJ649Sv4EFQENt2OArhgVAJgZGoI+KBUCsZXCM6o4FQIQX+KA8kwVAL4iG2YWXBUBjCc4xxpsFQFbWiaX9nwVADhh+MCykBUCb6XfOUagFQFNcTXturAVA\u002fnvdMoKwBUD6UhDxjLQFQFzu1rGOuAVA\u002fWErcYe8BUCJzBArd8AFQH1bk9tdxAVAIk\u002fIfjvIBUB3\u002fs0QEMwFQBzby43bzwVApAgDyp3TBUCWnnDhU9cFQOqChDL62gVAB61NTZDeBUBztiDpFuIFQE31CryO5QVA7GR2zPboBUAIx2IYT+wFQDD3MriW7wVAGOm\u002fys7yBUC8vA3V+\u002fUFQI\u002f7MHAf+QVAA6aImDn8BUDFqH5KSv8FQN9to2hRAgZAxpmOS00FBkAHOJO8PAgGQNEKYDQfCwZAh4ylg\u002fUNBkBPYPiyvxAGQMv910l9EwZAfx5ThS4WBkDGIFuu0hgGQIbBqbNqGwZAdWFRfvgdBkC93BihfCAGQEx+5xj3IgZA5Xaw4mclBkDi4HL7zicGQOPDOWAsKgZAdBgcDoAsBkCgyzwCyi4GQNTI2zUKMQZAQ2wBRjczBkDWiB6MWTUGQLwqyg1yNwZAJINTyIA5BkDzUBa5hTsGQCnket2APQZANyH2MnI\u002fBkA9hAm3WUEGQEYkQ2c3QwZAZLY9QQtFBkDKkKBC1UYGQMetH2mVSAZAxK57sktKBkAfgQBF7ksGQMvYY5VxTQZAkbi+7OFOBkD2io9tSFAGQBCv2xWlUQZA5m224\u002fdSBkAn\u002fUDVQFQGQNKBquh\u002fVQZAwBIwHLVWBkAquxxu4FcGQAp9ydwBWQZAd1OdZhlaBkDN\u002fAwMJ1sGQGL2LQgrXAZAgL6TeCVdBkAjLFFQFl4GQKy06pL9XgZA60DlBdtfBkCaXySDrmAGQPnleAl4YQZAxkbMlzdiBkAzvBUt7WIGQEtJWsiYYwZAVLusaDpkBkAUqy0N0mQGQAV+C7VfZQZAdmeCX+NlBkCfadwLXWYGQJVWcbnMZgZAONGmZzJnBkAHTvAVjmcGQOETz8PfZwZAtTzScCdoBkAetpYcZWgGQOxBx8aYaAZArx0oU8JoBkDJHhpf4WgGQGHj2bL1aAZAUAXrL\u002f9oBkCKiSDh\u002fWgGQAPn7dzxaAZAxQzhKttoBkA4vN7OuWgGQD3jaciNaAZAZDWKEldoBkAM902kFWgGQGY6g3LJZwZA6sb+aXJnBkBvFRGCEGcGQHjmGAakZgZAsUpOUy1mBkDa+MyWrGUGQO5+2dIhZQZAw\u002fAqCI1kBkCQnIU37mMGQOIJu2FFYwZAkPiph5JiBkCSXz6q1WEGQMdrccoOYQZAsH5J6T1gBkAULdoHY18GQJU9RCd+XgZAMae1SI9dBkC4j2ltllwGQClKqJaTWwZAAFXHxYZaBkB1WCn8b1kGQF9V9CNPWAZAAvvwICFXBkDMN\u002fzb4lUGQFBWmECVVAZAOYaDKDhTBkCapihvy1EGQDPAqX1TUAZA1yhzu9FOBkDLpR0qRk0GQDlhTMuwSwZAgeisoBFKBkBlKveraEgGQD517e61RgZAIXVca\u002flEBkDtMRsjM0MGQGQNCxhjQQZAI8EXTIk\u002fBkCeXDfBpT0GQA1Danm4OwZARym7dsE5BkCgEz+7wDcGQK1TFUm2NQZAC4ZnIqIzBkAOkGlJhDEGQG+dWcBcLwZASnlEgSstBkCD9dgp8CoGQPO2uHmqKAZA5ccqdVomBkCRYOMUACQGQPgxpYObIQZAKhQ3yiwfBkB0em\u002frsxwGQL+hK+UwGgZAx5T4l6MXBkA6O4geDBUGQM8n06xqEgZAk\u002fEdqL8PBkD3URIpCw0GQDOAZzJNCgZAoTTexoUHBkD8pUDptAQGQJGGYpzaAQZAbAEh4\u002fb+BUB0t2LACfwFQIO8FzcT+QVAc5Q5ShP2BUAiMMv8CfMFQGvq2FH37wVAGYV4TNvsBUDIJcnvtekFQMtS8z6H5gVA++8oPU\u002fjBUCDO6XtDeAFQKLKrFPD3AVARLduHW7ZBUAmu\u002fG2CdYFQGAegIuV0gVAeOpbGxLPBUDIDw1EgMsFQJZyiDzfxwVA2eK6DS\u002fEBUAC1JFbcsAFQBtNSZ+svAVA+lqwCt64BUBxrr+eBrUFQOLpqYElsQVAHdCM1jitBUByDcXxPqkFQBpATo44pQVAmuLc9iWhBUAmc3VtB50FQDv8XCHdmAVAU6e\u002f9aaUBUBKfgvqZJAFQMRME\u002fwWjAVAGatHCr2HBUA2QnbZVoMFQBb5qA3lfgVA1s8e5Wl6BUBgtp9a5nUFQC30h4BacQVAAvk5WsZsBUAJYh7rKWgFQED3ozaFYwVA86g\u002fQNheBUAkjWwLI1oFQPPcq5tlVQVACPKE9J9QBUDqQ4UZ0ksFQGFlQA78RgVAygFQ1h1CBUBm2lN1Nz0FQK7D8e5IOAVAk6LVRlIzBUDLabGAUy4FQAjLU3tMKQVABxMHIjokBUDrC8nCGR8FQJXzsJTrGQVAYiaxobAUBUDFx3aKaA8FQM5C+eoSCgVAFlqQ+7AEBUC6mjGPRv8EQMidu4HU+QRAEsCy1lr0BECRSaCR2e4EQB5rErZQ6QRAITycR8DjBEBGuNVJKN4EQC69W8CI2ARAgCCwR9rSBEDBho4XB80EQGjo1mQTxwRAjHqXEgDBBECwfQuJ37oEQKkmZ9S4tARA+m0K94uuBEDorFfzWKgEQIics8sfogRA2VSFguCbBEDTSzYam5UEQHtUMpVPjwRANUFYof2IBEAUgRhaooIEQHJI3Tg8fARAijkkS8x1BEBWz8erUm8EQBk4ag3PaARATQRkY0FiBED+Qwzjq1sEQPsPVZsQVQRAj\u002fkpo29OBEBQcsr8yEcEQPXYd6ocQQRAkHh1rmo6BEDMhwgLszMEQDWMs7T1LARA6NsC7C0mBEAnefzvVB8EQKIA1KNsGARA7H2V+3URBEAKWppTcAoEQLqsfYFgAwRAJsqeA0z8A0CPH9QSM\u002fUDQCugjbAV7gNAiCU83vPmA0BIb1Gdzd8DQMwiQO+i2ANAayA4nnPRA0BlaIndO8oDQPxu63z5wgNA\u002fPBkjK27A0BP4+5hWLQDQD9+Tc\u002f6rANAudHmHpSlA0D890TgJJ4DQFeR1L+vlgNAWEuZFTePA0Cdn2f8uocDQFbGJ3U7gANAH2LCgLh4A0DefyAgMnEDQK+WK1SoaQNA7Oeh+xpiA0AvyELmhFoDQAL4vtbhUgNAYPUThzRLA0DCSEohfkMDQM\u002fYqyHBOwNATGV68QE0A0D3kRn7QCwDQNmUyD5+JANAarLGvLkcA0CaPVN18xQDQMaXrWgrDQNAvjAVl2EFA0B5cGqwlf0CQICTVF\u002fF9QJAaKd2w+\u002ftAkBZAh1JFuYCQCS9ETo53gJA+S6ILlnWAkB\u002f+UVvds4CQFFeQxeSxgJAIZxQK62+AkBz6pG3x7YCQKEQDbzhrgJAbdbHOPumAkD5A8gtFJ8CQM1hE5sslwJASimBe0SPAkDwOPCOW4cCQGhrT1lyfwJASZKNr4l3AkCg7Xdpom8CQL2Q\u002f5e9ZwJA4pONcdtfAkC+Rith+lcCQDa1Li0aUAJAsg6n1TpIAkAAgaNaXEACQDE4M7x+OAJAvl5l+qEwAkBqHUkVxigCQFib7QzrIAJA14onFBEZAkD5ZbnzOxECQI3OLdlwCQJAKSib6LUBAkADJL6nBfoBQM7rwrRY8gFAEhDI\u002fa7qAUAFYqWDCOMBQLFXMkdl2wFA2AtGScXTAUDcPbeKKMwBQKxRXAyPxAFAo08Lz\u002fi8AUCpLJOpZrUBQIt7YiPgrQFAuw8FA2imAUDzLrbG\u002fp4BQKKMRxunlwFAaZgF212QAUCEtdy3GYkBQHPjJj\u002fagQFAgsyUcp96AUAOBNZTaXMBQCcGmeQ3bAFAKTeLJgtlAUBS41gb410BQGk+rcS\u002fVgFAVGMyJKFPAUC3air2kUgBQMTNFVCqQQFAU\u002fRqu\u002fQ6AUBRiMDkWzQBQCdpguPJLQFAs\u002fDylz4nAUBJaJoFuiABQCl4\u002fS88GgFAniWdGsUTAUAS0fbIVA0BQDI0hD7rBgFAC2C7fogAAUBfP+sxLfoAQEORRr7n8wBAMsZhvMDtAECytu5YtucAQO3gc1jL4QBAPbbBuPzbAEBauyY5ONYAQG7tNIp70ABAhBV1sMbKAEDUy2mwGcUAQDN0j450vwBAiTpcT9e5AEBHD0D3QbQAQOmjpIq0rgBAdWftDS+pAEBfRj2Jw6MAQOOLlv6hngBA4lG5YdaZAECW1sQHNJUAQITsSUiakABAvoEkKQmMAEDjhyWwgIcAQL7sEuMAgwBA4ZKnx4l+AEBiSpNjG3oAQJjJery1dQBA8KX311hxAEDCTJi7BG0AQEwkk6XBaABAp6Vge7VkAEDHjGHp32AAQE+QGxZEXQBAvmjkZLhZAEDZzfYtNVYAQO9qDne6UgBArwvZRUhPAEDmkvaf3ksAQETx+Ip9SABAVRxkDCVFAEB2Ba4p1UEAQO2QPuiNPgBAOscrFFA7AEClHJUtQzgAQDUfi\u002f2DNQBAtjkzFhMzAEAbV5IbujAAQHLeQ0RoLgBA6NoClR0sAEB8v3sS2ikAQHddTMGdJwBABdsDpmglAEDjqSLFOiMAQDV+GiMUIQBAd0VOxPQeAECGHRKt3BwAQInCc37fGgBAa2vfDCIZAED5\u002f6ifqBcAQNHp9SBRFgBAc0WUw\u002f4UAEBWpbZSsRMAQKBGZNFoEgBAwOyYQiURAECF2kSp5g8AQEjLTAitDgBALuyJYngNAECN1cm6SAwAQGaEzhMeCwBAC8hvtfkJAEDsz0QpDwkAQGcP1zB3CABAb+eTagQIAECA5t+wkgcAQGXp1wQiBwBAaymWZ7IGAECiOTLaQwYAQB8EwV3WBQBASMdU82kFAEAhE\u002f2b\u002fgQAQKvGxliUBABAOw28KisEAEDImda4yQMAQA1mIkR9AwBAH+ElW0MDAEAuc0+UHAMAQN3cEKsBAwBAYSYNz+UCAECtZ\u002fmYyAIAQOe\u002fHgmqAgBAwq\u002fJH4oCAEC\u002fGErdaAIAQGE880FGAgBAZbsbTiICAEDflB0C\u002fQEAQNtPeIzWAQBAkunqzbUBAEDUp0+3ngEAQOb8ZnKPAQBAungc5IQBAEDrwS+WdgEAQCxAxxFkAQBAdWAPV00BAEDFqj5mMgEAQKDBlT8TAQBAdGFf4+8AAEDmX\u002fBRyAAAQAWrp4ucAABAaUjukGwAAEA0VDdiOAAAQAAAAAAAAABA"},"type":"scatter"},{"hoverinfo":"skip","marker":{"angle":{"dtype":"f8","bdata":"\u002fIhFLVc\u002fUUCoebK4fIdLQGCuupFpO0pAdIJiRLa+TUC4INcpukxSQCiupvYJYVZAHDE4p5s3WkB0BtQZ\u002fHxdQAiNgPo+ml9AYAqISzWdX0A8v7nehYhcQA=="},"color":"#52514e","size":15,"symbol":"arrow"},"mode":"markers","name":"heading","x":{"dtype":"f8","bdata":"SXkPiISx4z9hmDuv8dvrP9A0gAA2x\u002fI\u002fI8lDy3+P9z+Q36AyTAL8P47LK0vJGgBA1a7FLdJWAkBq87pTx6wEQP\u002frJinoEQdAbb7hT12ACUDPzOA8ZZsLQA=="},"y":{"dtype":"f8","bdata":"rrJFbQZEAEBuw1EGDXkBQDHhCVd6WwNA981Ipu0PBUB\u002fHlOFLhYGQFAF6y\u002f\u002faAZAx5T4l6MXBkAHEwciOiQFQFhLmRU3jwNAuw8FA2imAUBVHGQMJUUAQA=="},"type":"scatter"},{"hoverinfo":"text","hovertext":["start","goal"],"marker":{"color":["#1baf7a","#eb6834"],"line":{"color":"#ffffff","width":2},"size":13},"mode":"markers","showlegend":false,"x":{"dtype":"f8","bdata":"AAAAAAAA4D8AAAAAAAAMQA=="},"y":{"dtype":"f8","bdata":"AAAAAAAAAEAAAAAAAAAAQA=="},"type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05}}},"font":{"family":"Lato, Helvetica, Arial, sans-serif","size":15,"color":"#0b0b0b"},"margin":{"l":40,"r":20,"t":50,"b":50},"xaxis":{"title":{"text":"x (m)"},"range":[-0.2,4.2],"gridcolor":"#e6e5e1","linecolor":"#52514e","ticks":"outside","constrain":"domain"},"yaxis":{"title":{"text":"y (m)"},"range":[-0.2,4.2],"gridcolor":"#e6e5e1","linecolor":"#52514e","ticks":"outside","scaleanchor":"x","constrain":"domain"},"hoverlabel":{"font":{"family":"Lato, sans-serif","size":14}},"legend":{"orientation":"h","x":0.5,"xanchor":"center","y":1.08},"paper_bgcolor":"#ffffff","plot_bgcolor":"#ffffff","shapes":[{"line":{"color":"#52514e","width":2},"type":"rect","x0":0.0,"x1":4.0,"y0":0.0,"y1":4.0},{"fillcolor":"#9aa0a6","line":{"color":"#6b7178"},"opacity":0.55,"type":"circle","x0":1.2,"x1":2.8,"y0":1.2,"y1":2.8}],"hovermode":"closest","height":460,"autosize":true},                        {"displaylogo": false, "responsive": true, "modeBarButtonsToRemove": ["select2d", "lasso2d", "autoScale2d"]}                    )                };            </script>        </div>
+</div><div class="geodex-caption docutils container">
+<p>The planned path around the disc. The arrows show the robot’s heading. Hover over the path
+to read the pose.</p>
+</div>
+</div>
+</section>
+<section id="use-geodex-from-c">
+<span id="install-cmake"></span><h2>4. Use geodex from C++<a class="headerlink" href="#use-geodex-from-c" title="Link to this heading">#</a></h2>
+<p>To plan from C++, build and install geodex with CMake. Install Ninja, yaml-cpp and Boost 1.68 or
+newer with its serialization and program_options libraries first, for example with your system’s
+package manager. The build also compiles the OMPL fork that holds the G-RRT* planner and installs
+it next to geodex.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>--branch<span class="w"> </span>v1.0.0<span class="w"> </span>https://github.com/utiasSTARS/geodex.git
+cmake<span class="w"> </span>-S<span class="w"> </span>geodex<span class="w"> </span>-B<span class="w"> </span>build<span class="w"> </span>-G<span class="w"> </span>Ninja<span class="w"> </span>-DCMAKE_BUILD_TYPE<span class="o">=</span>Release<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-DCMAKE_INSTALL_PREFIX<span class="o">=</span><span class="nv">$HOME</span>/geodex-1.0.0<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-DGEODEX_OMPL<span class="o">=</span>ON<span class="w"> </span>-DGEODEX_BUILD_OMPL<span class="o">=</span>ON<span class="w"> </span>-DGEODEX_VAMP<span class="o">=</span>ON
+cmake<span class="w"> </span>--build<span class="w"> </span>build
+cmake<span class="w"> </span>--install<span class="w"> </span>build
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">scripts/install_geodex.sh</span> <span class="pre">&lt;prefix&gt;</span></code> runs the same build and install steps. A C++ project then
+adds the prefix to <code class="docutils literal notranslate"><span class="pre">CMAKE_PREFIX_PATH</span></code> and requests the components it uses, as in
+<code class="docutils literal notranslate"><span class="pre">examples/cmake_project</span></code>.</p>
+<div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><span class="nb">cmake_minimum_required</span><span class="p">(</span><span class="s">VERSION</span><span class="w"> </span><span class="s">3.22</span><span class="p">)</span>
+<span class="nb">project</span><span class="p">(</span><span class="s">my_planner</span><span class="w"> </span><span class="s">LANGUAGES</span><span class="w"> </span><span class="s">CXX</span><span class="p">)</span>
+
+<span class="nb">find_package</span><span class="p">(</span><span class="s">geodex</span><span class="w"> </span><span class="s">1.0</span><span class="w"> </span><span class="s">CONFIG</span><span class="w"> </span><span class="s">REQUIRED</span><span class="w"> </span><span class="s">COMPONENTS</span><span class="w"> </span><span class="s">ompl</span><span class="p">)</span>
+
+<span class="nb">add_executable</span><span class="p">(</span><span class="s">my_planner</span><span class="w"> </span><span class="s">main.cpp</span><span class="p">)</span>
+<span class="nb">target_compile_features</span><span class="p">(</span><span class="s">my_planner</span><span class="w"> </span><span class="s">PRIVATE</span><span class="w"> </span><span class="s">cxx_std_20</span><span class="p">)</span>
+<span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">my_planner</span><span class="w"> </span><span class="s">PRIVATE</span><span class="w"> </span><span class="s">geodex::geodex</span><span class="w"> </span><span class="s">ompl::ompl</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">geodex::geodex</span></code> includes every component of the table below except <code class="docutils literal notranslate"><span class="pre">ompl</span></code>, and a project
+that plans also links <code class="docutils literal notranslate"><span class="pre">ompl::ompl</span></code>.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 80.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Component</p></th>
+<th class="head"><p>Provides</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>(always)</p></td>
+<td><p>The header-only core and the Eigen headers it uses.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ompl</span></code></p></td>
+<td><p>Planning with <code class="docutils literal notranslate"><span class="pre">geodex::planning::plan</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">robots</span></code></p></td>
+<td><p>Mass matrices of the built-in robots and their lower bounds.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">vamp</span></code></p></td>
+<td><p>Collision checking of the built-in robots and scene files.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">pinocchio</span></code></p></td>
+<td><p>Mass matrices from a URDF through Pinocchio, when geodex was built with
+<code class="docutils literal notranslate"><span class="pre">-DGEODEX_PINOCCHIO=ON</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>A project that only uses the geometry core can add geodex with FetchContent instead of
+installing it.</p>
+<div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><span class="nb">include</span><span class="p">(</span><span class="s">FetchContent</span><span class="p">)</span>
+<span class="nb">FetchContent_Declare</span><span class="p">(</span><span class="s">geodex</span>
+<span class="w">  </span><span class="s">GIT_REPOSITORY</span><span class="w"> </span><span class="s">https://github.com/utiasSTARS/geodex.git</span>
+<span class="w">  </span><span class="s">GIT_TAG</span><span class="w"> </span><span class="s">v1.0.0</span>
+<span class="w">  </span><span class="s">GIT_SHALLOW</span><span class="w"> </span><span class="s">TRUE</span><span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span><span class="s">GEODEX_ROBOTS</span><span class="w"> </span><span class="s">OFF</span><span class="p">)</span><span class="w">  </span><span class="c"># leave out the built-in robots</span>
+<span class="nb">FetchContent_MakeAvailable</span><span class="p">(</span><span class="s">geodex</span><span class="p">)</span>
+<span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">my_app</span><span class="w"> </span><span class="s">PRIVATE</span><span class="w"> </span><span class="s">geodex::geodex</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="build-from-the-pixi-workspace">
+<span id="install-pixi"></span><h2>5. Build from the pixi workspace<a class="headerlink" href="#build-from-the-pixi-workspace" title="Link to this heading">#</a></h2>
+<p><a class="reference external" href="https://pixi.sh">pixi</a> installs the compilers, CMake, Eigen, Boost, Python and the docs tools
+at the exact versions of <code class="docutils literal notranslate"><span class="pre">pixi.lock</span></code>, and its tasks build geodex for Python and C++.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>--branch<span class="w"> </span>v1.0.0<span class="w"> </span>https://github.com/utiasSTARS/geodex.git
+<span class="nb">cd</span><span class="w"> </span>geodex
+pixi<span class="w"> </span>install<span class="w"> </span>--locked<span class="w">     </span><span class="c1"># install the locked environment</span>
+pixi<span class="w"> </span>run<span class="w"> </span><span class="nb">test</span><span class="w">             </span><span class="c1"># build everything and run the tests</span>
+pixi<span class="w"> </span>run<span class="w"> </span>quickstart<span class="w">       </span><span class="c1"># run the example of the Quickstart page</span>
+</pre></div>
+</div>
+<p>The workspace supports Linux x86-64, macOS arm64 and macOS x86-64. See
+<a class="reference internal" href="building-from-source.html"><span class="doc">Building from Source</span></a> for the other tasks of the workspace.</p>
+</section>
+<section id="where-to-go-next">
+<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="quickstart.html"><span class="doc">Quickstart</span></a> plans a first motion for a robot arm.</p></li>
+<li><p><a class="reference internal" href="reproducibility.html"><span class="doc">Reproducibility</span></a> covers seeds and budgets.</p></li>
+<li><p><a class="reference internal" href="../concepts/index.html"><span class="doc">Core Concepts</span></a> covers what the planner does with the metric.</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Getting Started</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="quickstart.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Quickstart</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install-the-python-wheel">1. Install the Python wheel</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#check-the-install">2. Check the install</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plan-a-first-motion">3. Plan a first motion</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#use-geodex-from-c">4. Use geodex from C++</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-from-the-pixi-workspace">5. Build from the pixi workspace</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#where-to-go-next">Where to go next</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Space and Terrestrial Autonomous Robotic Systems (STARS) Lab.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

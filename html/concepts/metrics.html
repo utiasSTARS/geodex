@@ -1,0 +1,1169 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Metrics as Robot Models &#8212; geodex</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=28229f57" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme.css?v=26c09b9b" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../_static/documentation_options.js?v=8d563738"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=b8b12719"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>window.MathJax = {"loader": {"paths": {"mathjax-termes": "[mathjax]/fonts/termes"}}, "chtml": {"font": "mathjax-termes"}, "options": {"enableSpeech": false, "enableBraille": false, "enableEnrichment": false, "enableExplorer": false, "menuOptions": {"settings": {"speech": false, "braille": false, "enrich": false}}}}</script>
+    <script defer="defer" src="../_static/mathjax/tex-mml-chtml.js?v=4a2f07e4"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'concepts/metrics';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <script src="../_static/mermaid-intrinsic-size.js?v=f42d09f7"></script>
+    <script src="../_static/geodex.js?v=d44686ee"></script>
+    <link rel="icon" href="../_static/favicon.svg"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Sampling on Manifolds" href="sampling.html" />
+    <link rel="prev" title="Concept Hierarchy and Architecture" href="architecture.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="1.0.0" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/logo-light.svg" class="logo__image only-light" alt=""/>
+    <img src="../_static/logo-dark.svg" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">geodex</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting-started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Core Concepts
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../robots/index.html">
+    Robot Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../ros2/index.html">
+    ROS 2
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/utiasSTARS/geodex" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pygeodex/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting-started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Core Concepts
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../robots/index.html">
+    Robot Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../ros2/index.html">
+    ROS 2
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/utiasSTARS/geodex" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pygeodex/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="riemannian-geometry.html">Riemannian Geometry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Concept Hierarchy and Architecture</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Metrics as Robot Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sampling.html">Sampling on Manifolds</a></li>
+<li class="toctree-l1"><a class="reference internal" href="discrete-geodesic-interpolation.html">Discrete Geodesic Interpolation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="planning.html">Planning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="smoothing.html">Path Smoothing</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Core Concepts</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Metrics as Robot Models</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="metrics-as-robot-models">
+<h1>Metrics as Robot Models<a class="headerlink" href="#metrics-as-robot-models" title="Link to this heading">#</a></h1>
+<p>A planner in geodex looks for the shortest path, and the <strong>Riemannian metric</strong> defines its
+length. At each configuration <span class="math notranslate nohighlight">\(q\)</span>, the metric assigns a velocity <span class="math notranslate nohighlight">\(\dot q\)</span> the cost
+<span class="math notranslate nohighlight">\(\|\dot q\|_q = \sqrt{\dot q^\top G(q)\, \dot q}\)</span>, and the length of a path is the
+integral of that cost along it. The metric encodes which motions are expensive for the robot,
+such as moving sideways, swinging a heavy link or passing close to a wall. A new metric models a
+new robot, while the planner, the collision checks and the smoother stay the same. This page
+covers the metrics geodex provides and the robots they model.</p>
+<p>In C++, a metric is a policy of the manifold type. In Python, a metric is an object that
+<code class="docutils literal notranslate"><span class="pre">ConfigurationSpace</span></code> combines with a base manifold. Both evaluate <code class="docutils literal notranslate"><span class="pre">inner(q,</span> <span class="pre">u,</span> <span class="pre">v)</span></code> and
+<code class="docutils literal notranslate"><span class="pre">norm(q,</span> <span class="pre">v)</span></code>, and every algorithm in geodex measures lengths through them.</p>
+<section id="mobile-bases-on-se-2">
+<h2>Mobile bases on SE(2)<a class="headerlink" href="#mobile-bases-on-se-2" title="Link to this heading">#</a></h2>
+<p>A planar robot’s pose is <span class="math notranslate nohighlight">\((x, y, \theta)\)</span>, a point of <span class="math notranslate nohighlight">\(\mathrm{SE}(2)\)</span>, and its
+velocity in the robot’s own frame is <span class="math notranslate nohighlight">\((v_x, v_y, \omega)\)</span>, the forward, sideways and
+turning rates. A <strong>left-invariant metric</strong> weighs these three body-frame rates,</p>
+<div class="math notranslate nohighlight">
+\[\|\dot q\|^2 = w_x v_x^2 + w_y v_y^2 + w_\theta\, \omega^2,\]</div>
+<p>and gives the same cost to the same maneuver wherever and in whichever direction the robot
+starts. Each weight multiplies a squared rate, and a unit of motion at a weight <span class="math notranslate nohighlight">\(w\)</span> costs
+<span class="math notranslate nohighlight">\(\sqrt{w}\)</span>.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 10.0%" />
+<col style="width: 10.0%" />
+<col style="width: 10.0%" />
+<col style="width: 30.0%" />
+<col style="width: 40.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p><span class="math notranslate nohighlight">\(w_x\)</span></p></th>
+<th class="head"><p><span class="math notranslate nohighlight">\(w_y\)</span></p></th>
+<th class="head"><p><span class="math notranslate nohighlight">\(w_\theta\)</span></p></th>
+<th class="head"><p>Drive</p></th>
+<th class="head"><p>Reading</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>0.5</p></td>
+<td><p>Holonomic (mecanum, omni wheels)</p></td>
+<td><p>Sideways motion costs as much as forward motion.</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>100</p></td>
+<td><p>1</p></td>
+<td><p>Differential drive, skid steer</p></td>
+<td><p>A meter of sliding costs as much as ten meters of driving forward.</p></td>
+</tr>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>20</p></td>
+<td><p><span class="math notranslate nohighlight">\(r^2\)</span></p></td>
+<td><p>Car-like, turning radius <span class="math notranslate nohighlight">\(r\)</span></p></td>
+<td><p>A turn on the spot through an angle <span class="math notranslate nohighlight">\(\varphi\)</span> costs <span class="math notranslate nohighlight">\(r \varphi\)</span>, as much
+as driving <span class="math notranslate nohighlight">\(r \varphi\)</span> straight ahead.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-0">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">geodex</span>
+
+<span class="n">pose</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>        <span class="c1"># at the origin, heading along +x</span>
+<span class="n">forward</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>     <span class="c1"># body-frame velocity (vx, vy, omega)</span>
+<span class="n">sideways</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+<span class="n">turn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+
+<span class="n">bases</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"holonomic"</span><span class="p">:</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2</span><span class="p">(</span><span class="n">wx</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">wy</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">wtheta</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+    <span class="s2">"differential drive"</span><span class="p">:</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2</span><span class="p">(</span><span class="n">wx</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">wy</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span> <span class="n">wtheta</span><span class="o">=</span><span class="mf">1.0</span><span class="p">),</span>
+    <span class="s2">"car-like"</span><span class="p">:</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2</span><span class="o">.</span><span class="n">car_like</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">),</span>  <span class="c1"># turning radius 1.5 m</span>
+<span class="p">}</span>
+<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">se2</span> <span class="ow">in</span> <span class="n">bases</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">costs</span> <span class="o">=</span> <span class="p">[</span><span class="n">se2</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">pose</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">(</span><span class="n">forward</span><span class="p">,</span> <span class="n">sideways</span><span class="p">,</span> <span class="n">turn</span><span class="p">)]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s2">"forward </span><span class="si">{:.3f}</span><span class="s2">  sideways </span><span class="si">{:.3f}</span><span class="s2">  turn </span><span class="si">{:.3f}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">costs</span><span class="p">))</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/metrics.py">examples/concepts/metrics.py</a></p>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-1">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;geodex/collision/collision.hpp&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;geodex/geodex.hpp&gt;</span>
+
+<span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="nf">pose</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">);</span><span class="w">  </span><span class="c1">// at the origin, heading along +x</span>
+<span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span>
+<span class="w">                              </span><span class="mf">0.0</span><span class="p">);</span><span class="w">  </span><span class="c1">// body-frame velocity (vx, vy, omega)</span>
+<span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="nf">sideways</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">);</span>
+<span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="nf">turn</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">);</span>
+
+<span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">pair</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">,</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2</span><span class="o">&lt;&gt;&gt;&gt;</span><span class="w"> </span><span class="n">bases</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">{</span><span class="s">"holonomic"</span><span class="p">,</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2</span><span class="o">&lt;&gt;</span><span class="p">{</span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftInvariantMetric</span><span class="p">{</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">}}},</span>
+<span class="w">    </span><span class="p">{</span><span class="s">"differential drive"</span><span class="p">,</span>
+<span class="w">     </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2</span><span class="o">&lt;&gt;</span><span class="p">{</span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftInvariantMetric</span><span class="p">{</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">100.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">}}},</span>
+<span class="w">    </span><span class="p">{</span><span class="s">"car-like"</span><span class="p">,</span>
+<span class="w">     </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2</span><span class="o">&lt;&gt;</span><span class="p">{</span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftInvariantMetric</span><span class="o">::</span><span class="n">car_like</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span><span class="w"> </span><span class="mf">20.0</span><span class="p">)}},</span>
+<span class="p">};</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="p">[</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">se2</span><span class="p">]</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">bases</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"%s forward %.3f  sideways %.3f  turn %.3f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span>
+<span class="w">              </span><span class="n">se2</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">pose</span><span class="p">,</span><span class="w"> </span><span class="n">forward</span><span class="p">),</span><span class="w"> </span><span class="n">se2</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">pose</span><span class="p">,</span><span class="w"> </span><span class="n">sideways</span><span class="p">),</span>
+<span class="w">              </span><span class="n">se2</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">pose</span><span class="p">,</span><span class="w"> </span><span class="n">turn</span><span class="p">));</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/metrics.cpp">examples/concepts/metrics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints the cost of a unit forward, sideways and turning speed under each metric, for
+example <code class="docutils literal notranslate"><span class="pre">differential</span> <span class="pre">drive</span> <span class="pre">forward</span> <span class="pre">1.000</span>&#160; <span class="pre">sideways</span> <span class="pre">10.000</span>&#160; <span class="pre">turn</span> <span class="pre">1.000</span></code>.</p>
+<p>The explorer below colors every position of a 6 m square by the metric length of the
+constant-twist motion from the robot to that position. This length is the norm of the
+<span class="math notranslate nohighlight">\(\mathrm{SE}(2)\)</span> logarithm, the cost that <code class="docutils literal notranslate"><span class="pre">plan</span></code> gives an edge between the two poses.
+Each position takes its cheapest heading on arrival. Under the holonomic weights, the cheap
+region is round. A larger <span class="math notranslate nohighlight">\(w_y\)</span> stretches it along the robot’s heading and pinches it
+sideways, where a turn, a drive and a turn back become cheaper than sliding.</p>
+<!-- Interactive explorer of left-invariant SE(2) metrics for docs/concepts/metrics.rst.
+     Self-contained, with scoped CSS under .gmx-wrap and one inline script and no external
+     dependencies. The cost of reaching a pose is the metric norm of the SE(2) logarithm,
+     the length of the constant-twist motion to it and the cost plan() gives such an edge.
+     The functions between the se2-math markers are checked against geodex by
+     docs/tests/test_widgets.py. -->
+<div class="gmx-wrap">
+  <style>
+    .gmx-wrap{
+      --surface:#f4f7fa; --surface-2:#ffffff; --border:#dfe4ea; --border-strong:#c3d3e0;
+      --text:#1a1a1a; --text-secondary:#52514e; --text-muted:#6c7a89;
+      --accent:#2980b9; --accent-bg:#e7f0fa; --accent-text:#1c5cab; --path:#eb6834;
+      --font:"Lato",Helvetica,Arial,sans-serif;
+      max-width:760px; margin:1.4em auto; font-family:var(--font); color:var(--text);
+    }
+    .gmx-wrap *{box-sizing:border-box;}
+    .gmx-row{display:flex; flex-wrap:wrap; gap:18px; align-items:flex-start;}
+    .gmx-plot{flex:1 1 360px; min-width:280px; position:relative;}
+    .gmx-plot canvas{width:100%; aspect-ratio:1/1; display:block; border:1px solid var(--border-strong); border-radius:6px; cursor:crosshair; touch-action:none;}
+    .gmx-side{flex:1 1 250px; min-width:230px;}
+    .gmx-seg{display:inline-flex; flex-wrap:wrap; border:1px solid var(--border-strong); border-radius:8px; overflow:hidden; margin-bottom:12px;}
+    .gmx-seg button{border:none; padding:6px 11px; font-size:13.5px; background:var(--surface-2); color:var(--text-secondary); cursor:pointer; font-family:inherit; margin:0; box-shadow:none; text-transform:none; line-height:1.25; font-weight:400;}
+    .gmx-seg button + button{border-left:1px solid var(--border);}
+    .gmx-seg button.on{background:var(--accent); color:#fff;}
+    .gmx-slider{margin:8px 0 12px 0;}
+    .gmx-slider label{display:flex; justify-content:space-between; font-size:13.5px; color:var(--text-secondary);}
+    .gmx-slider label sub{font-size:0.75em;}
+    .gmx-slider label b{color:var(--text); font-weight:700; font-variant-numeric:tabular-nums;}
+    .gmx-slider input{width:100%; accent-color:var(--accent); margin:4px 0 0 0;}
+    .gmx-cards{display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:6px;}
+    .gmx-card{background:var(--surface); border-radius:8px; padding:.5rem .75rem;}
+    .gmx-card .lbl{font-size:12.5px; color:var(--text-secondary);}
+    .gmx-card .val{font-size:19px; font-weight:700; color:var(--text); font-variant-numeric:tabular-nums;}
+    .gmx-card.hi{background:var(--accent-bg);}
+    .gmx-card.hi .val, .gmx-card.hi .lbl{color:var(--accent-text);}
+    .gmx-legend{display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--text-secondary); margin-top:8px;}
+    .gmx-legend .bar{flex:1; height:10px; border-radius:3px; border:1px solid var(--border);}
+    .gmx-hint{font-size:12.5px; color:var(--text-muted); margin:.7rem 0 0 0; line-height:1.55;}
+  </style>
+
+  <div class="gmx-row">
+    <div class="gmx-plot">
+      <canvas id="gmx-canvas" width="640" height="640" role="img"
+              aria-label="Cost of reaching each position from a robot at the center under an SE(2) metric"></canvas>
+      <div class="gmx-legend"><span>cheap</span><span class="bar" id="gmx-bar"></span><span>expensive</span></div>
+    </div>
+    <div class="gmx-side">
+      <div class="gmx-seg" id="gmx-presets">
+        <button data-w="1,1,0.5" class="on">Holonomic</button>
+        <button data-w="1,100,1">Differential drive</button>
+        <button data-w="1,20,2.25">Car-like</button>
+      </div>
+      <div class="gmx-slider">
+        <label><span>lateral weight w<sub>y</sub></span> <b id="gmx-wy-val">1.0</b></label>
+        <input type="range" id="gmx-wy" min="0" max="2" step="0.01" value="0">
+      </div>
+      <div class="gmx-slider">
+        <label><span>turning weight w<sub>&theta;</sub></span> <b id="gmx-wt-val">0.50</b></label>
+        <input type="range" id="gmx-wt" min="-1" max="1" step="0.01" value="-0.301">
+      </div>
+      <div class="gmx-cards">
+        <div class="gmx-card hi"><div class="lbl">edge cost</div><div class="val" id="gmx-cost">&ndash;</div></div>
+        <div class="gmx-card"><div class="lbl">arrival heading</div><div class="val" id="gmx-head">&ndash;</div></div>
+        <div class="gmx-card"><div class="lbl">sliding share of cost&sup2;</div><div class="val" id="gmx-lat">&ndash;</div></div>
+        <div class="gmx-card"><div class="lbl">turning share of cost&sup2;</div><div class="val" id="gmx-turn">&ndash;</div></div>
+      </div>
+      <p class="gmx-hint">The robot sits at the center facing right, in a 6 m by 6 m square.
+        Color is the metric length of the constant-twist motion to each position, with the
+        cheapest arrival heading. Each weight multiplies a squared rate, so the shares split
+        the squared cost. Move the pointer over the square to draw the motion and the robot
+        along it.</p>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    // [se2-math-start]
+    // SE(2) logarithm at the identity, body frame: returns [vx, vy, omega] for the pose
+    // (x, y, theta), matching geodex's SE2 log with theta in [-pi, pi).
+    function se2Log(x, y, theta) {
+      var t = Math.atan2(Math.sin(theta), Math.cos(theta));
+      if (Math.abs(t) < 1e-9) return [x, y, t];
+      var a = 0.5 * t * Math.sin(t) / (1 - Math.cos(t));
+      var b = 0.5 * t;
+      return [a * x + b * y, -b * x + a * y, t];
+    }
+    // SE(2) exponential at the identity of the body velocity (vx, vy, omega) times s.
+    function se2Exp(v, s) {
+      var w = v[2] * s, vx = v[0] * s, vy = v[1] * s;
+      if (Math.abs(w) < 1e-9) return [vx, vy, w];
+      var sw = Math.sin(w), cw = Math.cos(w);
+      return [(sw * vx - (1 - cw) * vy) / w, ((1 - cw) * vx + sw * vy) / w, w];
+    }
+    function metricNorm(v, w) {
+      return Math.sqrt(w[0] * v[0] * v[0] + w[1] * v[1] * v[1] + w[2] * v[2] * v[2]);
+    }
+    // [se2-math-end]
+
+    var root = document.currentScript.parentElement;
+    var canvas = root.querySelector("#gmx-canvas"), ctx = canvas.getContext("2d");
+    var wySlider = root.querySelector("#gmx-wy"), wtSlider = root.querySelector("#gmx-wt");
+    var R = 3.0, N = 128, HEADINGS = 96;
+    var ramp = ["#cde2fb", "#b7d3f6", "#9ec5f4", "#86b6ef", "#6da7ec", "#5598e7",
+                "#3987e5", "#2a78d6", "#256abf", "#1c5cab", "#184f95", "#104281"];
+    root.querySelector("#gmx-bar").style.background =
+      "linear-gradient(90deg," + ramp.join(",") + ")";
+    var w = [1, 1, 0.5], field = null, fieldMax = 1, target = [2.0, 1.5];
+
+    function best(x, y) {
+      var bestCost = Infinity, bestV = null;
+      for (var k = 0; k < HEADINGS; k++) {
+        var th = -Math.PI + 2 * Math.PI * k / HEADINGS;
+        var v = se2Log(x, y, th), c = metricNorm(v, w);
+        if (c < bestCost) { bestCost = c; bestV = v; }
+      }
+      return [bestCost, bestV];
+    }
+    function compute() {
+      field = new Float64Array(N * N); fieldMax = 0;
+      for (var j = 0; j < N; j++) for (var i = 0; i < N; i++) {
+        var x = -R + 2 * R * (i + 0.5) / N, y = R - 2 * R * (j + 0.5) / N;
+        var c = best(x, y)[0]; field[j * N + i] = c; if (c > fieldMax) fieldMax = c;
+      }
+    }
+    function toPx(x, y) { return [(x + R) / (2 * R) * canvas.width, (R - y) / (2 * R) * canvas.height]; }
+    function robot(p, color, alpha) {
+      var s = canvas.width / (2 * R), c = toPx(p[0], p[1]);
+      ctx.save(); ctx.translate(c[0], c[1]); ctx.rotate(-p[2]); ctx.globalAlpha = alpha;
+      ctx.fillStyle = "#ffffff"; ctx.strokeStyle = color; ctx.lineWidth = 2.5;
+      ctx.fillRect(-0.3 * s, -0.2 * s, 0.6 * s, 0.4 * s); ctx.strokeRect(-0.3 * s, -0.2 * s, 0.6 * s, 0.4 * s);
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0.28 * s, 0); ctx.stroke();
+      ctx.restore();
+    }
+    function draw() {
+      var cell = canvas.width / N, bands = ramp.length;
+      for (var j = 0; j < N; j++) for (var i = 0; i < N; i++) {
+        var b = Math.min(bands - 1, Math.floor(field[j * N + i] / fieldMax * bands));
+        ctx.fillStyle = ramp[b]; ctx.fillRect(i * cell, j * cell, cell + 1, cell + 1);
+      }
+      var r = best(target[0], target[1]), v = r[1];
+      ctx.lineWidth = 4; ctx.strokeStyle = "#eb6834"; ctx.beginPath();
+      for (var k = 0; k <= 60; k++) {
+        var p = se2Exp(v, k / 60), q = toPx(p[0], p[1]);
+        if (k === 0) ctx.moveTo(q[0], q[1]); else ctx.lineTo(q[0], q[1]);
+      }
+      ctx.stroke();
+      for (var m = 1; m <= 4; m++) robot(se2Exp(v, m / 4), "#eb6834", 0.9);
+      robot([0, 0, 0], "#0b0b0b", 1);
+      var total = w[0] * v[0] * v[0] + w[1] * v[1] * v[1] + w[2] * v[2] * v[2];
+      root.querySelector("#gmx-cost").textContent = r[0].toFixed(2);
+      root.querySelector("#gmx-head").textContent = (v[2] * 180 / Math.PI).toFixed(0) + "°";
+      root.querySelector("#gmx-lat").textContent = (100 * w[1] * v[1] * v[1] / total).toFixed(0) + "%";
+      root.querySelector("#gmx-turn").textContent = (100 * w[2] * v[2] * v[2] / total).toFixed(0) + "%";
+    }
+    function fromSliders() {
+      w = [1, Math.pow(10, +wySlider.value), Math.pow(10, +wtSlider.value)];
+      root.querySelector("#gmx-wy-val").textContent = w[1] < 10 ? w[1].toFixed(1) : w[1].toFixed(0);
+      root.querySelector("#gmx-wt-val").textContent = w[2].toFixed(2);
+      compute(); draw();
+    }
+    function setWeights(ws) {
+      wySlider.value = Math.log10(ws[1]); wtSlider.value = Math.log10(ws[2]); fromSliders();
+    }
+    root.querySelectorAll("#gmx-presets button").forEach(function (b) {
+      b.addEventListener("click", function () {
+        root.querySelectorAll("#gmx-presets button").forEach(function (o) { o.classList.remove("on"); });
+        b.classList.add("on"); setWeights(b.dataset.w.split(",").map(Number));
+      });
+    });
+    [wySlider, wtSlider].forEach(function (s) {
+      s.addEventListener("input", function () {
+        root.querySelectorAll("#gmx-presets button").forEach(function (o) { o.classList.remove("on"); });
+        fromSliders();
+      });
+    });
+    function pick(ev) {
+      var box = canvas.getBoundingClientRect();
+      var x = -R + 2 * R * (ev.clientX - box.left) / box.width;
+      var y = R - 2 * R * (ev.clientY - box.top) / box.height;
+      if (Math.hypot(x, y) < 0.05) return;
+      target = [x, y]; draw();
+    }
+    canvas.addEventListener("pointermove", pick);
+    canvas.addEventListener("pointerdown", pick);
+    setWeights([1, 1, 0.5]);
+  })();
+  </script>
+</div>
+<p>A large lateral weight approximates a nonholonomic constraint without imposing it. Shortest
+paths avoid sideways motion but may still slide a little where sliding is cheaper than a
+detour. A robot that must never drive backward adds that constraint as a hard edge check with
+<code class="docutils literal notranslate"><span class="pre">DirectionalMotionValidator</span></code> (see <a class="reference internal" href="planning.html"><span class="doc">Planning</span></a>).</p>
+</section>
+<section id="arms-and-the-kinetic-energy-metric">
+<h2>Arms and the kinetic-energy metric<a class="headerlink" href="#arms-and-the-kinetic-energy-metric" title="Link to this heading">#</a></h2>
+<p>For an articulated robot with the joint-space <strong>mass matrix</strong> <span class="math notranslate nohighlight">\(M(q)\)</span>, the
+kinetic-energy metric gives a joint velocity the cost</p>
+<div class="math notranslate nohighlight">
+\[\|\dot q\|_q^2 = \dot q^\top M(q)\, \dot q,\]</div>
+<p>twice the kinetic energy of the motion. A shortest path under this metric, traversed at
+constant speed, has the smallest integral of kinetic energy among motions of the same
+duration. The same joint speed costs more with the arm stretched out, where the shoulder swings
+every link at full radius.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-2" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-2">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">arm_mass_matrix</span><span class="p">(</span><span class="n">q</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Mass matrix of a two-link planar arm with unit links and masses."""</span>
+    <span class="n">c2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">m00</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">12</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">12</span> <span class="o">+</span> <span class="mf">0.25</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="mf">0.25</span> <span class="o">+</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">c2</span><span class="p">)</span>
+    <span class="n">m01</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">12</span> <span class="o">+</span> <span class="p">(</span><span class="mf">0.25</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">c2</span><span class="p">)</span>
+    <span class="n">m11</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">12</span> <span class="o">+</span> <span class="mf">0.25</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">m00</span><span class="p">,</span> <span class="n">m01</span><span class="p">],</span> <span class="p">[</span><span class="n">m01</span><span class="p">,</span> <span class="n">m11</span><span class="p">]])</span>
+
+<span class="n">arm</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">ConfigurationSpace</span><span class="p">(</span><span class="n">geodex</span><span class="o">.</span><span class="n">Euclidean</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+                                <span class="n">geodex</span><span class="o">.</span><span class="n">KineticEnergyMetric</span><span class="p">(</span><span class="n">arm_mass_matrix</span><span class="p">))</span>
+<span class="n">shoulder</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>  <span class="c1"># turn the shoulder at 1 rad/s</span>
+<span class="n">poses</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"stretched"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span> <span class="s2">"folded"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.8</span><span class="p">])}</span>
+<span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">poses</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">: shoulder speed costs </span><span class="si">{</span><span class="n">arm</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">q</span><span class="p">,</span><span class="w"> </span><span class="n">shoulder</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/metrics.py">examples/concepts/metrics.py</a></p>
+</div>
+<input id="sd-tab-item-3" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-3">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">::</span><span class="n">ConfigurationSpace</span><span class="w"> </span><span class="n">arm</span><span class="p">{</span><span class="n">geodex</span><span class="o">::</span><span class="n">Euclidean</span><span class="o">&lt;</span><span class="mi">2</span><span class="o">&gt;</span><span class="p">{},</span>
+<span class="w">                               </span><span class="n">geodex</span><span class="o">::</span><span class="n">KineticEnergyMetric</span><span class="p">{</span><span class="n">arm_mass_matrix</span><span class="p">}};</span>
+<span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="w"> </span><span class="nf">shoulder</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">);</span><span class="w">  </span><span class="c1">// turn the shoulder at 1 rad/s</span>
+<span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="w"> </span><span class="nf">stretched</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">),</span><span class="w"> </span><span class="n">folded</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">2.8</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"stretched: shoulder speed costs %.3f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+<span class="w">            </span><span class="n">arm</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">stretched</span><span class="p">,</span><span class="w"> </span><span class="n">shoulder</span><span class="p">));</span>
+<span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"folded: shoulder speed costs %.3f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">arm</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">folded</span><span class="p">,</span><span class="w"> </span><span class="n">shoulder</span><span class="p">));</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/metrics.cpp">examples/concepts/metrics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">stretched:</span> <span class="pre">shoulder</span> <span class="pre">speed</span> <span class="pre">costs</span> <span class="pre">1.633</span></code> and <code class="docutils literal notranslate"><span class="pre">folded:</span> <span class="pre">shoulder</span> <span class="pre">speed</span> <span class="pre">costs</span> <span class="pre">0.851</span></code>.</p>
+<figure class="align-center" id="id3">
+<video class="geodex-video" style="width:90%" poster="../_static/videos/metrics-arm-shoulder.png" aria-label="Two planar two-link arms turn their shoulders back and forth at the same rate. The
+stretched arm on the left sweeps its second link through a wide arc, and the folded
+arm on the right keeps its second link close to the shoulder." autoplay loop muted playsinline disablepictureinpicture><source src="../_static/videos/metrics-arm-shoulder.webm" type="video/webm"><source src="../_static/videos/metrics-arm-shoulder.mp4" type="video/mp4"><img src="../_static/videos/metrics-arm-shoulder.png" alt="Two planar two-link arms turn their shoulders back and forth at the same rate. The
+stretched arm on the left sweeps its second link through a wide arc, and the folded
+arm on the right keeps its second link close to the shoulder."></video><figcaption>
+<p><span class="caption-text">The shoulder turns at 1 rad/s in both poses, and the arrows are the velocities of the two
+link centers. Stretched, the center of the second link moves at 1.5 m/s and the motion
+costs 1.633. Folded, it moves at 0.55 m/s and the same shoulder speed costs 0.851.</span><a class="headerlink" href="#id3" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>The built-in robots of <code class="docutils literal notranslate"><span class="pre">geodex.robots</span></code> evaluate their mass matrix with C++ code of the
+composite rigid body algorithm (CRBA) that Pinocchio generated ahead of time from the robot
+description. Each robot also ships a precomputed constant lower bound of the mass matrix, and
+the planner uses this bound in its heuristic.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-4" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-4">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">panda</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">robots</span><span class="o">.</span><span class="n">Panda</span><span class="p">()</span>
+<span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.785</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.356</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.571</span><span class="p">,</span> <span class="mf">0.785</span><span class="p">])</span>
+<span class="n">M</span> <span class="o">=</span> <span class="n">panda</span><span class="o">.</span><span class="n">mass_matrix</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>  <span class="c1"># 7 x 7, from the robot's precompiled CRBA</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Panda mass matrix diagonal:"</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">M</span><span class="p">),</span> <span class="mi">4</span><span class="p">))</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/metrics.py">examples/concepts/metrics.py</a></p>
+</div>
+<input id="sd-tab-item-5" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-5">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">::</span><span class="n">robots</span><span class="o">::</span><span class="n">MassMatrix</span><span class="o">&lt;</span><span class="n">geodex</span><span class="o">::</span><span class="n">robots</span><span class="o">::</span><span class="n">Robot</span><span class="o">::</span><span class="n">Panda</span><span class="o">&gt;</span><span class="w"> </span><span class="n">panda</span><span class="p">;</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="o">&gt;</span><span class="w"> </span><span class="n">q</span><span class="p">;</span>
+<span class="n">q</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-0.785</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-2.356</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.571</span><span class="p">,</span><span class="w"> </span><span class="mf">0.785</span><span class="p">;</span>
+<span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">M</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">panda</span><span class="p">(</span><span class="n">q</span><span class="p">);</span><span class="w">  </span><span class="c1">// 7 x 7, from the robot's precompiled CRBA</span>
+<span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"Panda mass matrix diagonal: %.4f %.4f %.4f %.4f %.4f %.4f %.4f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+<span class="w">            </span><span class="n">M</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">),</span><span class="w"> </span><span class="n">M</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="n">M</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="n">M</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="n">M</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">),</span><span class="w"> </span><span class="n">M</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">),</span><span class="w"> </span><span class="n">M</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">));</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/metrics.cpp">examples/concepts/metrics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>The <strong>Jacobi metric</strong> <span class="math notranslate nohighlight">\(2(H - P(q))\, M(q)\)</span> adds gravity. For a total energy <span class="math notranslate nohighlight">\(H\)</span>
+above the potential <span class="math notranslate nohighlight">\(P(q)\)</span> everywhere, its geodesics are the free motions of the arm at
+that energy <a class="footnote-reference brackets" href="#footcite-arnold1989" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>. The factor <span class="math notranslate nohighlight">\(2(H - P)\)</span> is twice the kinetic energy
+the arm has left at <span class="math notranslate nohighlight">\(q\)</span>. It is small where the potential is high and the arm moves
+slowly. Geodesics bend toward high potential, the way the path of a thrown ball arcs upward.
+See <a class="reference internal" href="../tutorials/minimum-energy-planning.html"><span class="doc">Minimum-Energy Planning on Configuration Manifolds</span></a> for plans under both metrics.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-6" name="sd-tab-set-3" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-6">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">potential</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">g</span><span class="o">=</span><span class="mf">9.81</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Height of the two link centers times their weight."""</span>
+    <span class="k">return</span> <span class="n">g</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span>
+
+<span class="n">H</span> <span class="o">=</span> <span class="mf">1.2</span> <span class="o">*</span> <span class="mf">9.81</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">+</span> <span class="mf">1.5</span><span class="p">)</span>  <span class="c1"># 20 percent above the largest potential</span>
+<span class="n">metric</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">JacobiMetric</span><span class="p">(</span><span class="n">arm_mass_matrix</span><span class="p">,</span> <span class="n">potential</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span>
+<span class="n">jacobi</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">ConfigurationSpace</span><span class="p">(</span><span class="n">geodex</span><span class="o">.</span><span class="n">Euclidean</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">metric</span><span class="p">)</span>
+<span class="n">poses</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"hanging"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span> <span class="s2">"raised"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])}</span>
+<span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">poses</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">: shoulder speed costs </span><span class="si">{</span><span class="n">jacobi</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">q</span><span class="p">,</span><span class="w"> </span><span class="n">shoulder</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/metrics.py">examples/concepts/metrics.py</a></p>
+</div>
+<input id="sd-tab-item-7" name="sd-tab-set-3" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-7">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">auto</span><span class="w"> </span><span class="n">potential</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[](</span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="o">&amp;</span><span class="w"> </span><span class="n">q</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">9.81</span><span class="p">;</span><span class="w">  </span><span class="c1">// height of the two link centers times their weight</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">g</span><span class="w"> </span><span class="o">*</span>
+<span class="w">         </span><span class="p">(</span><span class="mf">0.5</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">sin</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">sin</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">0.5</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">sin</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">])));</span>
+<span class="p">};</span>
+
+<span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">H</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="mf">1.2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">9.81</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="mf">0.5</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">1.5</span><span class="p">);</span><span class="w">  </span><span class="c1">// 20 percent above the largest potential</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">ConfigurationSpace</span><span class="w"> </span><span class="n">jacobi</span><span class="p">{</span>
+<span class="w">    </span><span class="n">geodex</span><span class="o">::</span><span class="n">Euclidean</span><span class="o">&lt;</span><span class="mi">2</span><span class="o">&gt;</span><span class="p">{},</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">JacobiMetric</span><span class="p">{</span><span class="n">arm_mass_matrix</span><span class="p">,</span><span class="w"> </span><span class="n">potential</span><span class="p">,</span><span class="w"> </span><span class="n">H</span><span class="p">}};</span>
+<span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="w"> </span><span class="nf">hanging</span><span class="p">(</span><span class="mf">-1.5</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">),</span><span class="w"> </span><span class="n">raised</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"hanging: shoulder speed costs %.3f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+<span class="w">            </span><span class="n">jacobi</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">hanging</span><span class="p">,</span><span class="w"> </span><span class="n">shoulder</span><span class="p">));</span>
+<span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"raised: shoulder speed costs %.3f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">jacobi</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">raised</span><span class="p">,</span><span class="w"> </span><span class="n">shoulder</span><span class="p">));</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/metrics.cpp">examples/concepts/metrics.cpp</a></p>
+</div>
+</div>
+</div>
+</section>
+<section id="clearance">
+<h2>Clearance<a class="headerlink" href="#clearance" title="Link to this heading">#</a></h2>
+<p>A <strong>conformal metric</strong> scales a base metric by a factor that depends on the configuration.
+The clearance metric uses the signed distance <span class="math notranslate nohighlight">\(\mathrm{sdf}(q)\)</span> to the nearest obstacle,</p>
+<div class="math notranslate nohighlight">
+\[c(q) = 1 + \kappa\, e^{-\beta\, \mathrm{sdf}(q)}, \qquad
+\langle u, v \rangle_q = c(q)\, \langle u, v \rangle^{\text{base}}_q .\]</div>
+<p>A motion at <span class="math notranslate nohighlight">\(q\)</span> is <span class="math notranslate nohighlight">\(\sqrt{c(q)}\)</span> times as long as under the base metric. On the
+surface of an obstacle, where <span class="math notranslate nohighlight">\(\mathrm{sdf}(q) = 0\)</span>, it is <span class="math notranslate nohighlight">\(\sqrt{1 + \kappa}\)</span>
+times as long (1.58 for <span class="math notranslate nohighlight">\(\kappa = 1.5\)</span>). The factor grows further inside an obstacle,
+where the signed distance is negative, and fades to 1 in open space. Shortest paths keep away
+from obstacles where a detour is cheap. <span class="math notranslate nohighlight">\(\kappa\)</span> sets the strength, and <span class="math notranslate nohighlight">\(\beta\)</span>
+sets how fast the factor fades. The metric is <code class="docutils literal notranslate"><span class="pre">geodex.ClearanceMetric</span></code> in Python and
+<code class="docutils literal notranslate"><span class="pre">geodex::SDFConformalMetric</span></code> in C++, and it accepts any signed distance function, including
+the footprint checker of <a class="reference internal" href="../tutorials/se2-planning.html"><span class="doc">SE(2) Motion Planning</span></a>.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-8" name="sd-tab-set-4" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-8">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">geodex</span><span class="w"> </span><span class="kn">import</span> <span class="n">collision</span>
+
+<span class="n">obstacle</span> <span class="o">=</span> <span class="n">collision</span><span class="o">.</span><span class="n">CircleSDF</span><span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>  <span class="c1"># a disc of radius 0.5 at (2, 0)</span>
+<span class="n">base_metric</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2LeftInvariantMetric</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+<span class="n">clearance</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">ClearanceMetric</span><span class="p">(</span><span class="n">base_metric</span><span class="p">,</span> <span class="n">obstacle</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">)</span>  <span class="c1"># kappa, beta</span>
+<span class="n">se2</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2</span><span class="p">(</span><span class="n">x_lo</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">x_hi</span><span class="o">=</span><span class="mf">4.0</span><span class="p">,</span> <span class="n">y_lo</span><span class="o">=-</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">y_hi</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+<span class="n">room</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">ConfigurationSpace</span><span class="p">(</span><span class="n">se2</span><span class="p">,</span> <span class="n">clearance</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">"next to the disc"</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.3</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])),</span>
+                 <span class="p">(</span><span class="s2">"far from it"</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">1.8</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]))]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">: forward speed costs </span><span class="si">{</span><span class="n">room</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">forward</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/metrics.py">examples/concepts/metrics.py</a></p>
+</div>
+<input id="sd-tab-item-9" name="sd-tab-set-4" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-9">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">::</span><span class="n">collision</span><span class="o">::</span><span class="n">CircleSDF</span><span class="w"> </span><span class="n">obstacle</span><span class="p">{</span><span class="mf">2.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span>
+<span class="w">                                      </span><span class="mf">0.5</span><span class="p">};</span><span class="w">  </span><span class="c1">// a disc of radius 0.5 at (2, 0)</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftInvariantMetric</span><span class="w"> </span><span class="n">base_metric</span><span class="p">{</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">10.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">};</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">SDFConformalMetric</span><span class="w"> </span><span class="n">clearance</span><span class="p">{</span><span class="n">base_metric</span><span class="p">,</span><span class="w"> </span><span class="n">obstacle</span><span class="p">,</span><span class="w"> </span><span class="mf">1.5</span><span class="p">,</span>
+<span class="w">                                     </span><span class="mf">3.0</span><span class="p">};</span><span class="w">  </span><span class="c1">// kappa, beta</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">ConfigurationSpace</span><span class="w"> </span><span class="n">room</span><span class="p">{</span>
+<span class="w">    </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2</span><span class="o">&lt;&gt;</span><span class="p">{</span><span class="n">base_metric</span><span class="p">,</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftExponentialMap</span><span class="p">{},</span>
+<span class="w">                  </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-2.0</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">M_PI</span><span class="p">),</span>
+<span class="w">                  </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="p">(</span><span class="mf">4.0</span><span class="p">,</span><span class="w"> </span><span class="mf">2.0</span><span class="p">,</span><span class="w"> </span><span class="n">M_PI</span><span class="p">)},</span>
+<span class="w">    </span><span class="n">clearance</span><span class="p">};</span>
+<span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="nf">near</span><span class="p">(</span><span class="mf">1.3</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">),</span><span class="w"> </span><span class="n">far</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span><span class="w"> </span><span class="mf">1.8</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"next to the disc: forward speed costs %.3f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+<span class="w">            </span><span class="n">room</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">near</span><span class="p">,</span><span class="w"> </span><span class="n">forward</span><span class="p">));</span>
+<span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"far from it: forward speed costs %.3f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">room</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">far</span><span class="p">,</span><span class="w"> </span><span class="n">forward</span><span class="p">));</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/metrics.cpp">examples/concepts/metrics.cpp</a></p>
+</div>
+</div>
+</div>
+</section>
+<section id="task-space-metrics">
+<h2>Task-space metrics<a class="headerlink" href="#task-space-metrics" title="Link to this heading">#</a></h2>
+<p>A <strong>pullback metric</strong> measures joint motion by the motion it causes in task space. With the
+Jacobian <span class="math notranslate nohighlight">\(J(q)\)</span> of a task map, such as the end-effector position, and a task-space
+metric <span class="math notranslate nohighlight">\(G_X\)</span>,</p>
+<div class="math notranslate nohighlight">
+\[\langle u, v \rangle_q = u^\top J(q)^\top G_X\, J(q)\, v + \lambda\, u^\top v .\]</div>
+<p>The small <span class="math notranslate nohighlight">\(\lambda\)</span> keeps the metric positive definite at singularities, where some
+joint motion does not move the task point. With <span class="math notranslate nohighlight">\(G_X = I\)</span>, the cost of a joint velocity
+is the speed of the end effector.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-10" name="sd-tab-set-5" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-10">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">jacobian</span><span class="p">(</span><span class="n">q</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""End-effector velocity of the planar arm per joint velocity."""</span>
+    <span class="n">s1</span><span class="p">,</span> <span class="n">c1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">s12</span><span class="p">,</span> <span class="n">c12</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="o">-</span><span class="n">s1</span> <span class="o">-</span> <span class="n">s12</span><span class="p">,</span> <span class="o">-</span><span class="n">s12</span><span class="p">],</span> <span class="p">[</span><span class="n">c1</span> <span class="o">+</span> <span class="n">c12</span><span class="p">,</span> <span class="n">c12</span><span class="p">]])</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">task_metric</span><span class="p">(</span><span class="n">q</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># plain Euclidean speed of the end effector</span>
+
+<span class="n">hand</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">ConfigurationSpace</span><span class="p">(</span><span class="n">geodex</span><span class="o">.</span><span class="n">Euclidean</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+                                 <span class="n">geodex</span><span class="o">.</span><span class="n">PullbackMetric</span><span class="p">(</span><span class="n">jacobian</span><span class="p">,</span> <span class="n">task_metric</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">))</span>
+<span class="n">poses</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"stretched"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span> <span class="s2">"folded"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.8</span><span class="p">])}</span>
+<span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">poses</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">: shoulder speed moves the hand at </span><span class="si">{</span><span class="n">hand</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">q</span><span class="p">,</span><span class="w"> </span><span class="n">shoulder</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/metrics.py">examples/concepts/metrics.py</a></p>
+</div>
+<input id="sd-tab-item-11" name="sd-tab-set-5" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-11">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">auto</span><span class="w"> </span><span class="n">jacobian</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[](</span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="o">&amp;</span><span class="w"> </span><span class="n">q</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// End-effector velocity of the planar arm per joint velocity.</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">s1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">sin</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="w"> </span><span class="n">c1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cos</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">s12</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">sin</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span><span class="w"> </span><span class="n">c12</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cos</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+<span class="w">  </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Matrix2d</span><span class="w"> </span><span class="n">J</span><span class="p">;</span>
+<span class="w">  </span><span class="n">J</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="o">-</span><span class="n">s1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">s12</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">s12</span><span class="p">,</span><span class="w"> </span><span class="n">c1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">c12</span><span class="p">,</span><span class="w"> </span><span class="n">c12</span><span class="p">;</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">J</span><span class="p">;</span>
+<span class="p">};</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">task_metric</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[](</span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="o">&amp;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Matrix2d</span><span class="o">::</span><span class="n">Identity</span><span class="p">()</span>
+<span class="w">      </span><span class="p">.</span><span class="n">eval</span><span class="p">();</span><span class="w">  </span><span class="c1">// plain Euclidean speed of the end effector</span>
+<span class="p">};</span>
+
+<span class="n">geodex</span><span class="o">::</span><span class="n">ConfigurationSpace</span><span class="w"> </span><span class="n">hand</span><span class="p">{</span>
+<span class="w">    </span><span class="n">geodex</span><span class="o">::</span><span class="n">Euclidean</span><span class="o">&lt;</span><span class="mi">2</span><span class="o">&gt;</span><span class="p">{},</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">PullbackMetric</span><span class="p">{</span><span class="n">jacobian</span><span class="p">,</span><span class="w"> </span><span class="n">task_metric</span><span class="p">,</span><span class="w"> </span><span class="mf">1e-3</span><span class="p">}};</span>
+<span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"stretched: shoulder speed moves the hand at %.3f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+<span class="w">            </span><span class="n">hand</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">stretched</span><span class="p">,</span><span class="w"> </span><span class="n">shoulder</span><span class="p">));</span>
+<span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"folded: shoulder speed moves the hand at %.3f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+<span class="w">            </span><span class="n">hand</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">folded</span><span class="p">,</span><span class="w"> </span><span class="n">shoulder</span><span class="p">));</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/concepts/metrics.cpp">examples/concepts/metrics.cpp</a></p>
+</div>
+</div>
+</div>
+</section>
+<section id="composing-metrics">
+<h2>Composing metrics<a class="headerlink" href="#composing-metrics" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ConstantSPDMetric</span></code> weights coordinates by a fixed matrix, <code class="docutils literal notranslate"><span class="pre">WeightedMetric</span></code> scales a
+metric by a function of the configuration, and <code class="docutils literal notranslate"><span class="pre">AffineCombinedMetric</span></code> adds metrics with
+fixed coefficients, for example a kinetic-energy term and a clearance term. The configuration
+space of a mobile manipulator is the product <span class="math notranslate nohighlight">\(\mathrm{SE}(2) \times \mathbb{R}^n\)</span> of its
+base and its arm, and its metric is a block metric with a left-invariant block for the base and
+a kinetic-energy block for the arm. A holonomic and a differential-drive base differ in the base
+block alone (see <a class="reference internal" href="../robots/mobile-manipulation.html"><span class="doc">Whole-Body Planning</span></a>).</p>
+</section>
+<section id="see-also">
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="riemannian-geometry.html"><span class="doc">Riemannian Geometry</span></a> for the definitions behind inner products and geodesics.</p></li>
+<li><p><a class="reference internal" href="planning.html"><span class="doc">Planning</span></a> for how the planner uses the metric, including admissible heuristics.</p></li>
+<li><p><a class="reference internal" href="../tutorials/geodex-basics.html"><span class="doc">geodex Basics</span></a> for swapping metrics on the built-in manifolds.</p></li>
+</ul>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
+<div class="docutils container" id="id2">
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="footcite-arnold1989" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Vladimir I. Arnold. <em>Mathematical Methods of Classical Mechanics</em>. Springer, 2nd edition, 1989.</p>
+</aside>
+</aside>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="architecture.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Concept Hierarchy and Architecture</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="sampling.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Sampling on Manifolds</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mobile-bases-on-se-2">Mobile bases on SE(2)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#arms-and-the-kinetic-energy-metric">Arms and the kinetic-energy metric</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#clearance">Clearance</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#task-space-metrics">Task-space metrics</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#composing-metrics">Composing metrics</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#see-also">See also</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Space and Terrestrial Autonomous Robotic Systems (STARS) Lab.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

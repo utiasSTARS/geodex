@@ -1,0 +1,469 @@
+{
+ "robot": "stretch3",
+ "label": "Hello Robot Stretch 3",
+ "root": "world",
+ "joint_names": [
+  "base_x_joint",
+  "base_y_joint",
+  "base_theta_joint",
+  "joint_lift",
+  "joint_arm",
+  "joint_wrist_yaw",
+  "joint_wrist_pitch",
+  "joint_wrist_roll"
+ ],
+ "links": [
+  "world",
+  "base_x_link",
+  "base_y_link",
+  "base_link",
+  "link_lift",
+  "link_arm_l3",
+  "joint_arm_driver_link",
+  "link_arm_l2",
+  "link_arm_l1",
+  "link_arm_l0",
+  "link_wrist_yaw",
+  "link_wrist_pitch",
+  "link_wrist_roll"
+ ],
+ "joints": [
+  {
+   "name": "base_x_joint",
+   "type": "prismatic",
+   "parent": "world",
+   "child": "base_x_link",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "index": 0
+  },
+  {
+   "name": "base_y_joint",
+   "type": "prismatic",
+   "parent": "base_x_link",
+   "child": "base_y_link",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "index": 1
+  },
+  {
+   "name": "base_theta_joint",
+   "type": "revolute",
+   "parent": "base_y_link",
+   "child": "base_link",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 2
+  },
+  {
+   "name": "joint_lift",
+   "type": "prismatic",
+   "parent": "base_link",
+   "child": "link_lift",
+   "origin": {
+    "xyz": [
+     -0.104385,
+     0.134999388,
+     0.195
+    ],
+    "quat": [
+     0.0,
+     -2.597353e-06,
+     0.707108079855,
+     0.707105482511
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 3
+  },
+  {
+   "name": "joint_arm_l3",
+   "type": "prismatic",
+   "parent": "link_lift",
+   "child": "link_arm_l3",
+   "origin": {
+    "xyz": [
+     -0.2677,
+     4.8e-08,
+     -4.8e-08
+    ],
+    "quat": [
+     0.499999999997,
+     -0.500001836603,
+     -0.499999999997,
+     0.499998163397
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 4,
+   "multiplier": 0.25,
+   "offset": 0.0
+  },
+  {
+   "name": "joint_arm",
+   "type": "prismatic",
+   "parent": "link_lift",
+   "child": "joint_arm_driver_link",
+   "origin": {
+    "xyz": [
+     -0.2547,
+     0.0,
+     0.0
+    ],
+    "quat": [
+     0.499999999997,
+     -0.500001836603,
+     -0.499999999997,
+     0.499998163397
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 4
+  },
+  {
+   "name": "joint_arm_l2",
+   "type": "prismatic",
+   "parent": "link_arm_l3",
+   "child": "link_arm_l2",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.0,
+     0.013
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     -0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 4,
+   "multiplier": 0.25,
+   "offset": 0.0
+  },
+  {
+   "name": "joint_arm_l1",
+   "type": "prismatic",
+   "parent": "link_arm_l2",
+   "child": "link_arm_l1",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.0,
+     0.013
+    ],
+    "quat": [
+     -0.0,
+     -0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 4,
+   "multiplier": 0.25,
+   "offset": 0.0
+  },
+  {
+   "name": "joint_arm_l0",
+   "type": "prismatic",
+   "parent": "link_arm_l1",
+   "child": "link_arm_l0",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.0,
+     -0.01375
+    ],
+    "quat": [
+     0.0,
+     -0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 4,
+   "multiplier": 0.25,
+   "offset": 0.0
+  },
+  {
+   "name": "joint_wrist_yaw",
+   "type": "revolute",
+   "parent": "link_arm_l0",
+   "child": "link_wrist_yaw",
+   "origin": {
+    "xyz": [
+     0.083,
+     -0.03075,
+     0.0
+    ],
+    "quat": [
+     -0.0,
+     -0.707106781187,
+     0.707106781187,
+     0.0
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "index": 5
+  },
+  {
+   "name": "joint_wrist_pitch",
+   "type": "revolute",
+   "parent": "link_wrist_yaw",
+   "child": "link_wrist_pitch",
+   "origin": {
+    "xyz": [
+     0.019455,
+     -0.0,
+     0.0305
+    ],
+    "quat": [
+     -0.500000918294,
+     -0.499997245095,
+     0.499999081691,
+     0.500002754903
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "index": 6
+  },
+  {
+   "name": "joint_wrist_roll",
+   "type": "revolute",
+   "parent": "link_wrist_pitch",
+   "child": "link_wrist_roll",
+   "origin": {
+    "xyz": [
+     -0.018859,
+     -0.024,
+     0.01955
+    ],
+    "quat": [
+     -0.707105482506,
+     2.597353e-06,
+     0.707108079855,
+     2.597343e-06
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 7
+  }
+ ],
+ "ee": {
+  "link": "link_grasp_center",
+  "parent": "link_wrist_roll",
+  "xyz": [
+   0.0,
+   0.0,
+   0.251
+  ],
+  "quat": [
+   0.5,
+   -0.5,
+   0.5,
+   0.5
+  ]
+ },
+ "meshes": {
+  "full": "stretch3.glb",
+  "ghost": "stretch3_ghost.glb"
+ },
+ "bounds": {
+  "base_link": [
+   [
+    -0.2765,
+    -0.1705,
+    0.0
+   ],
+   [
+    0.0508,
+    0.1715,
+    1.4099
+   ]
+  ],
+  "link_arm_l0": [
+   [
+    -0.0186,
+    -0.03,
+    -0.1998
+   ],
+   [
+    0.105,
+    0.0293,
+    0.0253
+   ]
+  ],
+  "link_arm_l1": [
+   [
+    -0.0237,
+    -0.0237,
+    -0.2265
+   ],
+   [
+    0.0237,
+    0.0237,
+    -0.0
+   ]
+  ],
+  "link_arm_l2": [
+   [
+    -0.0257,
+    -0.0257,
+    -0.2265
+   ],
+   [
+    0.0257,
+    0.0257,
+    0.0
+   ]
+  ],
+  "link_arm_l3": [
+   [
+    -0.0276,
+    -0.0276,
+    -0.2265
+   ],
+   [
+    0.0276,
+    0.0276,
+    -0.0
+   ]
+  ],
+  "link_lift": [
+   [
+    -0.2547,
+    -0.0757,
+    -0.034
+   ],
+   [
+    0.0359,
+    0.1539,
+    0.0866
+   ]
+  ],
+  "link_wrist_pitch": [
+   [
+    -0.0329,
+    -0.0557,
+    -0.0032
+   ],
+   [
+    0.0227,
+    0.023,
+    0.0423
+   ]
+  ],
+  "link_wrist_roll": [
+   [
+    -0.0334,
+    -0.09,
+    0.016
+   ],
+   [
+    0.0336,
+    0.0456,
+    0.2589
+   ]
+  ],
+  "link_wrist_yaw": [
+   [
+    -0.015,
+    -0.019,
+    -0.038
+   ],
+   [
+    0.074,
+    0.0535,
+    0.0498
+   ]
+  ]
+ }
+}

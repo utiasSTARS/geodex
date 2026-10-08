@@ -1,0 +1,1856 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>geodex Basics &#8212; geodex</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=28229f57" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme.css?v=26c09b9b" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../_static/documentation_options.js?v=8d563738"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=b8b12719"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>window.MathJax = {"loader": {"paths": {"mathjax-termes": "[mathjax]/fonts/termes"}}, "chtml": {"font": "mathjax-termes"}, "options": {"enableSpeech": false, "enableBraille": false, "enableEnrichment": false, "enableExplorer": false, "menuOptions": {"settings": {"speech": false, "braille": false, "enrich": false}}}}</script>
+    <script defer="defer" src="../_static/mathjax/tex-mml-chtml.js?v=4a2f07e4"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'tutorials/geodex-basics';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <script src="../_static/mermaid-intrinsic-size.js?v=f42d09f7"></script>
+    <script src="../_static/geodex.js?v=d44686ee"></script>
+    <link rel="icon" href="../_static/favicon.svg"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Minimum-Energy Planning on Configuration Manifolds" href="minimum-energy-planning.html" />
+    <link rel="prev" title="Tutorials" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="1.0.0" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/logo-light.svg" class="logo__image only-light" alt=""/>
+    <img src="../_static/logo-dark.svg" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">geodex</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting-started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../concepts/index.html">
+    Core Concepts
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../robots/index.html">
+    Robot Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../ros2/index.html">
+    ROS 2
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/utiasSTARS/geodex" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pygeodex/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting-started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../concepts/index.html">
+    Core Concepts
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../robots/index.html">
+    Robot Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../ros2/index.html">
+    ROS 2
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/utiasSTARS/geodex" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pygeodex/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">geodex Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minimum-energy-planning.html">Minimum-Energy Planning on Configuration Manifolds</a></li>
+<li class="toctree-l1"><a class="reference internal" href="se2-planning.html">SE(2) Motion Planning</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Tutorials</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">geodex Basics</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="geodex-basics">
+<h1>geodex Basics<a class="headerlink" href="#geodex-basics" title="Link to this heading">#</a></h1>
+<p>In this tutorial, we create manifolds, measure tangent vectors, move along the manifold with
+the exponential and logarithmic maps, measure distances, interpolate along geodesics, sample
+random points, and then change the metric and the retraction of a manifold. Every step prints
+a value you can check by hand.</p>
+<p>The full script is <code class="docutils literal notranslate"><span class="pre">examples/tutorials/geodex_basics.py</span></code>, and the C++ version is
+<code class="docutils literal notranslate"><span class="pre">examples/tutorials/geodex_basics.cpp</span></code>. The Python snippets import NumPy next to geodex,
+and the C++ snippets include the umbrella header.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-0">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">geodex</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-1">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;geodex/geodex.hpp&gt;</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>See <a class="reference internal" href="../concepts/riemannian-geometry.html"><span class="doc">Riemannian Geometry</span></a> for the terms this tutorial uses (manifold, tangent
+space, metric, exponential map, geodesic).</p>
+<section id="create-a-manifold">
+<h2>1. Create a manifold<a class="headerlink" href="#create-a-manifold" title="Link to this heading">#</a></h2>
+<p>The 2-sphere <span class="math notranslate nohighlight">\(\mathbb{S}^2\)</span> is the set of unit vectors in <span class="math notranslate nohighlight">\(\mathbb{R}^3\)</span>. In
+Python, <code class="docutils literal notranslate"><span class="pre">geodex.Sphere()</span></code> is the 2-sphere and <code class="docutils literal notranslate"><span class="pre">geodex.SphereN(n)</span></code> the
+<span class="math notranslate nohighlight">\(n\)</span>-sphere. In C++, the class template <code class="docutils literal notranslate"><span class="pre">Sphere&lt;Dim&gt;</span></code> models <span class="math notranslate nohighlight">\(\mathbb{S}^n\)</span>,
+and <code class="docutils literal notranslate"><span class="pre">Sphere&lt;&gt;</span></code> is <code class="docutils literal notranslate"><span class="pre">Sphere&lt;2&gt;</span></code>.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-2" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-2">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sphere</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Sphere</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"dim ="</span><span class="p">,</span> <span class="n">sphere</span><span class="o">.</span><span class="n">dim</span><span class="p">())</span>  <span class="c1"># 2</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-3" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-3">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">::</span><span class="n">Sphere</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">sphere</span><span class="p">;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"dim = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">sphere</span><span class="p">.</span><span class="n">dim</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">  </span><span class="c1">// 2</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">dim</span> <span class="pre">=</span> <span class="pre">2</span></code>. Other manifolds follow the same pattern.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-4" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-4">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">euclidean</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Euclidean</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>  <span class="c1"># R^3 with the standard metric</span>
+<span class="n">torus</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Torus</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>          <span class="c1"># 2-torus with the flat metric</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-5" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-5">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">::</span><span class="n">Euclidean</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="w"> </span><span class="n">euclidean</span><span class="p">;</span><span class="w">  </span><span class="c1">// R^3 with the standard metric</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">Torus</span><span class="o">&lt;</span><span class="mi">2</span><span class="o">&gt;</span><span class="w"> </span><span class="n">torus</span><span class="p">;</span><span class="w">          </span><span class="c1">// 2-torus with the flat metric</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>Every manifold is built from <strong>policies</strong>, a metric (what “length” means), a retraction (how
+to move along the manifold) and a sampler (how to sample points). The defaults are the round
+metric, the exponential map and a scrambled Halton sampler. In C++, they are template
+parameters, and <code class="docutils literal notranslate"><span class="pre">Sphere&lt;&gt;</span></code> is the same type as the fully qualified one below.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-6" name="sd-tab-set-3" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-6">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">::</span><span class="n">Sphere</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">SphereRoundMetric</span><span class="p">,</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">SphereExponentialMap</span><span class="p">,</span>
+<span class="w">               </span><span class="n">geodex</span><span class="o">::</span><span class="n">ScrambledHaltonSampler</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="n">sphere</span><span class="p">;</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>geodex provides these manifolds, each with its canonical metric by default (the round metric on
+spheres, the flat metric on tori, the bi-invariant metric on the rotation groups and a
+left-invariant metric on the rigid-body groups).</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 14.0%" />
+<col style="width: 25.0%" />
+<col style="width: 22.0%" />
+<col style="width: 29.0%" />
+<col style="width: 10.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Manifold</p></th>
+<th class="head"><p>Python</p></th>
+<th class="head"><p>C++</p></th>
+<th class="head"><p>Point</p></th>
+<th class="head"><p>dim</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(\mathbb{S}^N\)</span></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Sphere()</span></code>, <code class="docutils literal notranslate"><span class="pre">SphereN(n)</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Sphere&lt;N&gt;</span></code></p></td>
+<td><p>unit vector of <span class="math notranslate nohighlight">\(\mathbb{R}^{N+1}\)</span></p></td>
+<td><p>N</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(\mathbb{R}^N\)</span></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Euclidean(n)</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Euclidean&lt;N&gt;</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(N\)</span> coordinates</p></td>
+<td><p>N</p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(\mathbb{T}^N\)</span></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Torus(n)</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Torus&lt;N&gt;</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(N\)</span> angles</p></td>
+<td><p>N</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(\mathrm{SO}(2)\)</span></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SO2()</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SO2&lt;&gt;</span></code></p></td>
+<td><p>one angle</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(\mathrm{SO}(3)\)</span></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SO3()</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SO3&lt;&gt;</span></code></p></td>
+<td><p>unit quaternion <span class="math notranslate nohighlight">\([x, y, z, w]\)</span></p></td>
+<td><p>3</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(\mathrm{SE}(2)\)</span></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SE2()</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SE2&lt;&gt;</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\((x, y, \theta)\)</span></p></td>
+<td><p>3</p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(\mathrm{SE}(3)\)</span></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SE3()</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SE3&lt;&gt;</span></code></p></td>
+<td><p>translation and quaternion, 7 numbers</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(\prod_i \mathcal{M}_i\)</span></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Product([...])</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">make_product(...)</span></code></p></td>
+<td><p>the blocks stacked</p></td>
+<td><p>sum</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="measure-tangent-vectors">
+<h2>2. Measure tangent vectors<a class="headerlink" href="#measure-tangent-vectors" title="Link to this heading">#</a></h2>
+<p>A tangent vector at a point <span class="math notranslate nohighlight">\(p\)</span> is a velocity through <span class="math notranslate nohighlight">\(p\)</span>. The metric gives two
+tangent vectors an inner product <span class="math notranslate nohighlight">\(\langle u, v \rangle_p\)</span> and a tangent vector a norm
+<span class="math notranslate nohighlight">\(\|v\|_p\)</span>. Both functions take the base point first. On the sphere with the round
+metric, the inner product is the dot product of the ambient vectors.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-7" name="sd-tab-set-4" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-7">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sphere</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Sphere</span><span class="p">()</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>  <span class="c1"># north pole</span>
+<span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>  <span class="c1"># tangent vector pointing east</span>
+<span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>  <span class="c1"># tangent vector pointing south</span>
+
+<span class="n">ip</span> <span class="o">=</span> <span class="n">sphere</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"ip ="</span><span class="p">,</span> <span class="n">ip</span><span class="p">)</span>  <span class="c1"># 0.0 (orthogonal)</span>
+<span class="n">n</span> <span class="o">=</span> <span class="n">sphere</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"n ="</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>  <span class="c1"># 1.0</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-8" name="sd-tab-set-4" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-8">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">::</span><span class="n">Sphere</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">sphere</span><span class="p">;</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">p</span><span class="p">{</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">};</span><span class="w">  </span><span class="c1">// north pole</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">u</span><span class="p">{</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">};</span><span class="w">  </span><span class="c1">// tangent vector pointing east</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">v</span><span class="p">{</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">};</span><span class="w">  </span><span class="c1">// tangent vector pointing south</span>
+
+<span class="kt">double</span><span class="w"> </span><span class="n">ip</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sphere</span><span class="p">.</span><span class="n">inner</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">u</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"ip = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">ip</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">  </span><span class="c1">// 0.0 (orthogonal)</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sphere</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">u</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"n = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">  </span><span class="c1">// 1.0</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">ip</span> <span class="pre">=</span> <span class="pre">0.0</span></code> and <code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">=</span> <span class="pre">1.0</span></code>. At the north pole, the two vectors are orthogonal and
+of unit length. Euclidean space gives the same numbers for the same vectors.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-9" name="sd-tab-set-5" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-9">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">euclidean</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Euclidean</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+<span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+<span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+
+<span class="n">ip</span> <span class="o">=</span> <span class="n">euclidean</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"ip ="</span><span class="p">,</span> <span class="n">ip</span><span class="p">)</span>  <span class="c1"># 0.0</span>
+<span class="n">n</span> <span class="o">=</span> <span class="n">euclidean</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"n ="</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>  <span class="c1"># 1.0</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-10" name="sd-tab-set-5" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-10">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">::</span><span class="n">Euclidean</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="w"> </span><span class="n">euclidean</span><span class="p">;</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">p</span><span class="p">{</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">};</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">u</span><span class="p">{</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">};</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">v</span><span class="p">{</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">};</span>
+
+<span class="kt">double</span><span class="w"> </span><span class="n">ip</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">euclidean</span><span class="p">.</span><span class="n">inner</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">u</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"ip = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">ip</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">  </span><span class="c1">// 0.0</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">euclidean</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">u</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"n = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">  </span><span class="c1">// 1.0</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>On a manifold with a position-dependent metric, such as the kinetic-energy metric of a robot
+arm, the same two vectors give a different inner product at every point.</p>
+</section>
+<section id="move-with-exp-and-log">
+<h2>3. Move with exp and log<a class="headerlink" href="#move-with-exp-and-log" title="Link to this heading">#</a></h2>
+<p>The exponential map <span class="math notranslate nohighlight">\(\exp_p(v)\)</span> starts at <span class="math notranslate nohighlight">\(p\)</span> and follows the geodesic in the
+direction of <span class="math notranslate nohighlight">\(v\)</span> for a length <span class="math notranslate nohighlight">\(\|v\|_p\)</span>. The logarithmic map <span class="math notranslate nohighlight">\(\log_p(q)\)</span>
+is its inverse, the tangent vector at <span class="math notranslate nohighlight">\(p\)</span> that reaches <span class="math notranslate nohighlight">\(q\)</span>.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-11" name="sd-tab-set-6" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-11">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sphere</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Sphere</span><span class="p">()</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>  <span class="c1"># north pole</span>
+<span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>  <span class="c1"># point on the equator</span>
+
+<span class="c1"># log gives the tangent vector at p that points toward q.</span>
+<span class="n">v</span> <span class="o">=</span> <span class="n">sphere</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"v ="</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>  <span class="c1"># about [pi/2, 0, 0], along the great circle to the equator</span>
+
+<span class="c1"># exp follows that tangent vector and recovers q.</span>
+<span class="n">q_recovered</span> <span class="o">=</span> <span class="n">sphere</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"q_recovered ="</span><span class="p">,</span> <span class="n">q_recovered</span><span class="p">)</span>  <span class="c1"># about [1, 0, 0]</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-12" name="sd-tab-set-6" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-12">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">::</span><span class="n">Sphere</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">sphere</span><span class="p">;</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">p</span><span class="p">{</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">};</span><span class="w">  </span><span class="c1">// north pole</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">q</span><span class="p">{</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">};</span><span class="w">  </span><span class="c1">// point on the equator</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">IOFormat</span><span class="w"> </span><span class="n">fmt</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">DontAlignCols</span><span class="p">,</span><span class="w"> </span><span class="s">", "</span><span class="p">,</span><span class="w"> </span><span class="s">", "</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="p">,</span><span class="w"> </span><span class="s">"["</span><span class="p">,</span><span class="w"> </span><span class="s">"]"</span><span class="p">);</span>
+
+<span class="c1">// log gives the tangent vector at p that points toward q.</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sphere</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">q</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"v = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">v</span><span class="p">.</span><span class="n">transpose</span><span class="p">().</span><span class="n">format</span><span class="p">(</span><span class="n">fmt</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">  </span><span class="c1">// about [pi/2, 0, 0]</span>
+
+<span class="c1">// exp follows that tangent vector and recovers q.</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">q_recovered</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sphere</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"q_recovered = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">q_recovered</span><span class="p">.</span><span class="n">transpose</span><span class="p">().</span><span class="n">format</span><span class="p">(</span><span class="n">fmt</span><span class="p">)</span>
+<span class="w">          </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">  </span><span class="c1">// about [1, 0, 0]</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">v</span> <span class="pre">=</span> <span class="pre">[1.5708</span> <span class="pre">0</span> <span class="pre">0]</span></code> and <code class="docutils literal notranslate"><span class="pre">q_recovered</span> <span class="pre">=</span> <span class="pre">[1</span> <span class="pre">0</span> <span class="pre">0]</span></code> up to rounding. The direction
+of <span class="math notranslate nohighlight">\(v\)</span> is the initial heading of the great circle from the pole to the equator, and its
+norm, <span class="math notranslate nohighlight">\(\pi/2\)</span>, is the distance between them. On Euclidean space, the two maps are
+addition and subtraction.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-13" name="sd-tab-set-7" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-13">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">euclidean</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Euclidean</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+<span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+
+<span class="n">v</span> <span class="o">=</span> <span class="n">euclidean</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"v ="</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>  <span class="c1"># [-1, 1, 0]</span>
+<span class="n">q2</span> <span class="o">=</span> <span class="n">euclidean</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"q2 ="</span><span class="p">,</span> <span class="n">q2</span><span class="p">)</span>  <span class="c1"># [0, 1, 0], which is q</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-14" name="sd-tab-set-7" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-14">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">::</span><span class="n">Euclidean</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="w"> </span><span class="n">euclidean</span><span class="p">;</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">p</span><span class="p">{</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">};</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">q</span><span class="p">{</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">};</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">IOFormat</span><span class="w"> </span><span class="n">fmt</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">DontAlignCols</span><span class="p">,</span><span class="w"> </span><span class="s">", "</span><span class="p">,</span><span class="w"> </span><span class="s">", "</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="p">,</span><span class="w"> </span><span class="s">"["</span><span class="p">,</span><span class="w"> </span><span class="s">"]"</span><span class="p">);</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">euclidean</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">q</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"v = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">v</span><span class="p">.</span><span class="n">transpose</span><span class="p">().</span><span class="n">format</span><span class="p">(</span><span class="n">fmt</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">  </span><span class="c1">// [-1, 1, 0]</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">q2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">euclidean</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"q2 = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">q2</span><span class="p">.</span><span class="n">transpose</span><span class="p">().</span><span class="n">format</span><span class="p">(</span><span class="n">fmt</span><span class="p">)</span>
+<span class="w">          </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">  </span><span class="c1">// [0, 1, 0], which is q</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">v</span> <span class="pre">=</span> <span class="pre">[-1</span> <span class="pre">1</span> <span class="pre">0]</span></code> and <code class="docutils literal notranslate"><span class="pre">q2</span> <span class="pre">=</span> <span class="pre">[0</span> <span class="pre">1</span> <span class="pre">0]</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">exp(p,</span> <span class="pre">log(p,</span> <span class="pre">q))</span></code> recovers <span class="math notranslate nohighlight">\(q\)</span> within the injectivity radius of <span class="math notranslate nohighlight">\(p\)</span>,
+<span class="math notranslate nohighlight">\(\pi\)</span> on the sphere. Antipodal points lie at distance <span class="math notranslate nohighlight">\(\pi\)</span>, where the
+geodesic is not unique, and <code class="docutils literal notranslate"><span class="pre">log</span></code> returns a zero vector with a warning.</p>
+</div>
+</section>
+<section id="measure-distances">
+<h2>4. Measure distances<a class="headerlink" href="#measure-distances" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">distance(p,</span> <span class="pre">q)</span></code> is the length of the shortest path, the norm of <span class="math notranslate nohighlight">\(\log_p(q)\)</span>. The
+north pole and a point on the equator are a quarter of a great circle apart.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-15" name="sd-tab-set-8" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-15">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sphere</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Sphere</span><span class="p">()</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>  <span class="c1"># north pole</span>
+<span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>  <span class="c1"># equator</span>
+
+<span class="n">d</span> <span class="o">=</span> <span class="n">sphere</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"d ="</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>  <span class="c1"># 1.5708, about pi/2</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-16" name="sd-tab-set-8" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-16">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">::</span><span class="n">Sphere</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">sphere</span><span class="p">;</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">p</span><span class="p">{</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">};</span><span class="w">  </span><span class="c1">// north pole</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">q</span><span class="p">{</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">};</span><span class="w">  </span><span class="c1">// equator</span>
+
+<span class="kt">double</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sphere</span><span class="p">.</span><span class="n">distance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">q</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"d = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">  </span><span class="c1">// 1.5708, about pi/2</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">d</span> <span class="pre">=</span> <span class="pre">1.5707963267948966</span></code>, <span class="math notranslate nohighlight">\(\pi/2\)</span>. On Euclidean space, the distance is the
+norm of the difference.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-17" name="sd-tab-set-9" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-17">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">euclidean</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Euclidean</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+<span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+
+<span class="n">d</span> <span class="o">=</span> <span class="n">euclidean</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"d ="</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>  <span class="c1"># 1.41421, about sqrt(2)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-18" name="sd-tab-set-9" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-18">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">::</span><span class="n">Euclidean</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="w"> </span><span class="n">euclidean</span><span class="p">;</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">p</span><span class="p">{</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">};</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">q</span><span class="p">{</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">};</span>
+
+<span class="kt">double</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">euclidean</span><span class="p">.</span><span class="n">distance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">q</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"d = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">  </span><span class="c1">// 1.41421, about sqrt(2)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">d</span> <span class="pre">=</span> <span class="pre">1.4142135623730951</span></code>, <span class="math notranslate nohighlight">\(\sqrt{2}\)</span>. On a circle, the torus
+<span class="math notranslate nohighlight">\(\mathbb{T}^1\)</span>, the angles 0.1 and 6.0 are 5.9 apart in coordinates, and the shortest
+path wraps through <span class="math notranslate nohighlight">\(2\pi\)</span>.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-19" name="sd-tab-set-10" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-19">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">circle</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Torus</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.1</span><span class="p">])</span>
+<span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">6.0</span><span class="p">])</span>
+
+<span class="n">d</span> <span class="o">=</span> <span class="n">circle</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"d ="</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>  <span class="c1"># 0.383, about 2 pi - 5.9</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-20" name="sd-tab-set-10" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-20">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">::</span><span class="n">Torus</span><span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;</span><span class="w"> </span><span class="n">circle</span><span class="p">;</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="o">&gt;</span><span class="w"> </span><span class="n">p</span><span class="p">{</span><span class="mf">0.1</span><span class="p">};</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="o">&gt;</span><span class="w"> </span><span class="n">q</span><span class="p">{</span><span class="mf">6.0</span><span class="p">};</span>
+
+<span class="kt">double</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">circle</span><span class="p">.</span><span class="n">distance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">q</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"d = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">  </span><span class="c1">// 0.383, about 2 pi - 5.9</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">d</span> <span class="pre">=</span> <span class="pre">0.3831853071795859</span></code>, <span class="math notranslate nohighlight">\(2\pi - 5.9\)</span>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">distance()</span></code> uses the midpoint method, which evaluates the logarithm at the geodesic
+midpoint <a class="footnote-reference brackets" href="#footcite-kyaw2026geometry" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>. With the exact exponential and logarithmic maps, as
+on the round sphere, it gives the exact geodesic distance.</p>
+</div>
+</section>
+<section id="interpolate-along-geodesics">
+<h2>5. Interpolate along geodesics<a class="headerlink" href="#interpolate-along-geodesics" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">geodesic(p,</span> <span class="pre">q,</span> <span class="pre">t)</span></code> is the point a fraction <span class="math notranslate nohighlight">\(t\)</span> of the way along the geodesic from
+<span class="math notranslate nohighlight">\(p\)</span> to <span class="math notranslate nohighlight">\(q\)</span>, <span class="math notranslate nohighlight">\(\exp_p(t \log_p(q))\)</span>. On the sphere, it traces an arc of a
+great circle.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-21" name="sd-tab-set-11" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-21">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sphere</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Sphere</span><span class="p">()</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>  <span class="c1"># north pole</span>
+<span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>  <span class="c1"># equator</span>
+
+<span class="n">mid</span> <span class="o">=</span> <span class="n">sphere</span><span class="o">.</span><span class="n">geodesic</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"mid ="</span><span class="p">,</span> <span class="n">mid</span><span class="p">)</span>  <span class="c1"># about [0.707, 0, 0.707]</span>
+
+<span class="c1"># Trace the whole geodesic</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">11</span><span class="p">):</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">i</span> <span class="o">/</span> <span class="mf">10.0</span>
+    <span class="n">pt</span> <span class="o">=</span> <span class="n">sphere</span><span class="o">.</span><span class="n">geodesic</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"t=</span><span class="si">{</span><span class="n">t</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">pt</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-22" name="sd-tab-set-11" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-22">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">::</span><span class="n">Sphere</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">sphere</span><span class="p">;</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">p</span><span class="p">{</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">};</span><span class="w">  </span><span class="c1">// north pole</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">q</span><span class="p">{</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">};</span><span class="w">  </span><span class="c1">// equator</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">IOFormat</span><span class="w"> </span><span class="n">fmt</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">DontAlignCols</span><span class="p">,</span><span class="w"> </span><span class="s">", "</span><span class="p">,</span><span class="w"> </span><span class="s">", "</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="p">,</span><span class="w"> </span><span class="s">"["</span><span class="p">,</span><span class="w"> </span><span class="s">"]"</span><span class="p">);</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">mid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sphere</span><span class="p">.</span><span class="n">geodesic</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">q</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"mid = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">mid</span><span class="p">.</span><span class="n">transpose</span><span class="p">().</span><span class="n">format</span><span class="p">(</span><span class="n">fmt</span><span class="p">)</span>
+<span class="w">          </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">  </span><span class="c1">// about [0.707, 0, 0.707]</span>
+
+<span class="c1">// Trace the whole geodesic</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">pt</span><span class="p">;</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kt">double</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">10.0</span><span class="p">;</span>
+<span class="w">  </span><span class="n">pt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sphere</span><span class="p">.</span><span class="n">geodesic</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">q</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">);</span>
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"t="</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">": "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">pt</span><span class="p">.</span><span class="n">transpose</span><span class="p">().</span><span class="n">format</span><span class="p">(</span><span class="n">fmt</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">mid</span> <span class="pre">=</span> <span class="pre">[0.7071</span> <span class="pre">0</span> <span class="pre">0.7071]</span></code>, the unit vector at 45 degrees between the pole and
+the equator, then eleven points along the arc. The same call works on every manifold, and on
+Euclidean space it is linear interpolation.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-23" name="sd-tab-set-12" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-23">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">euclidean</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Euclidean</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+<span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">])</span>
+
+<span class="n">mid</span> <span class="o">=</span> <span class="n">euclidean</span><span class="o">.</span><span class="n">geodesic</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"mid ="</span><span class="p">,</span> <span class="n">mid</span><span class="p">)</span>  <span class="c1"># [1, 2, 3]</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-24" name="sd-tab-set-12" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-24">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">::</span><span class="n">Euclidean</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="w"> </span><span class="n">euclidean</span><span class="p">;</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">p</span><span class="p">{</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">};</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">q</span><span class="p">{</span><span class="mf">2.0</span><span class="p">,</span><span class="w"> </span><span class="mf">4.0</span><span class="p">,</span><span class="w"> </span><span class="mf">6.0</span><span class="p">};</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">IOFormat</span><span class="w"> </span><span class="n">fmt</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">DontAlignCols</span><span class="p">,</span><span class="w"> </span><span class="s">", "</span><span class="p">,</span><span class="w"> </span><span class="s">", "</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="p">,</span><span class="w"> </span><span class="s">"["</span><span class="p">,</span><span class="w"> </span><span class="s">"]"</span><span class="p">);</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">mid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">euclidean</span><span class="p">.</span><span class="n">geodesic</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">q</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"mid = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">mid</span><span class="p">.</span><span class="n">transpose</span><span class="p">().</span><span class="n">format</span><span class="p">(</span><span class="n">fmt</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">  </span><span class="c1">// [1, 2, 3]</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">mid</span> <span class="pre">=</span> <span class="pre">[1</span> <span class="pre">2</span> <span class="pre">3]</span></code>.</p>
+</section>
+<section id="sample-random-points">
+<h2>6. Sample random points<a class="headerlink" href="#sample-random-points" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">random_point()</span></code> samples a point uniformly over the manifold. The samples come from a
+low-discrepancy sequence (scrambled Halton), which covers the space evenly with few samples.
+The 2-sphere maps the unit square onto the sphere with the cylindrical equal-area map, the torus
+maps each coordinate onto <span class="math notranslate nohighlight">\([0, 2\pi)\)</span>, and Euclidean space fills a box,
+<span class="math notranslate nohighlight">\([-1, 1]\)</span> per coordinate by default. <code class="docutils literal notranslate"><span class="pre">set_sampling_bounds(lo,</span> <span class="pre">hi)</span></code> resizes that box.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-25" name="sd-tab-set-13" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-25">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sphere</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Sphere</span><span class="p">()</span>
+<span class="n">euclidean</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Euclidean</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">torus</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Torus</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">p1</span> <span class="o">=</span> <span class="n">sphere</span><span class="o">.</span><span class="n">random_point</span><span class="p">()</span>     <span class="c1"># uniform on the sphere</span>
+<span class="n">p2</span> <span class="o">=</span> <span class="n">euclidean</span><span class="o">.</span><span class="n">random_point</span><span class="p">()</span>  <span class="c1"># uniform in [-1, 1]^3</span>
+<span class="n">p3</span> <span class="o">=</span> <span class="n">torus</span><span class="o">.</span><span class="n">random_point</span><span class="p">()</span>      <span class="c1"># uniform in [0, 2 pi)^2</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-26" name="sd-tab-set-13" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-26">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">::</span><span class="n">Sphere</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">sphere</span><span class="p">;</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">Euclidean</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="w"> </span><span class="n">euclidean</span><span class="p">;</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">Torus</span><span class="o">&lt;</span><span class="mi">2</span><span class="o">&gt;</span><span class="w"> </span><span class="n">torus</span><span class="p">;</span>
+
+<span class="k">auto</span><span class="w"> </span><span class="n">p1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sphere</span><span class="p">.</span><span class="n">random_point</span><span class="p">();</span><span class="w">     </span><span class="c1">// uniform on the sphere</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">p2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">euclidean</span><span class="p">.</span><span class="n">random_point</span><span class="p">();</span><span class="w">  </span><span class="c1">// uniform in [-1, 1]^3</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">p3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">torus</span><span class="p">.</span><span class="n">random_point</span><span class="p">();</span><span class="w">      </span><span class="c1">// uniform in [0, 2 pi)^2</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>geodex provides three samplers, <code class="docutils literal notranslate"><span class="pre">ScrambledHaltonSampler</span></code> (the default), <code class="docutils literal notranslate"><span class="pre">HaltonSampler</span></code> (a
+fixed deterministic sequence) and <code class="docutils literal notranslate"><span class="pre">PseudoRandomSampler</span></code> (independent <code class="docutils literal notranslate"><span class="pre">mt19937</span></code> samples).
+In C++, the sampler is a template parameter, and in Python a constructor keyword together
+with <code class="docutils literal notranslate"><span class="pre">set_sampler</span></code>.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-27" name="sd-tab-set-14" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-27">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># sampler is "scrambled" (the default), "halton" or "random".</span>
+<span class="n">r3</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Euclidean</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">sampler</span><span class="o">=</span><span class="s2">"random"</span><span class="p">)</span>
+<span class="n">r3</span><span class="o">.</span><span class="n">set_sampler</span><span class="p">(</span><span class="s2">"halton"</span><span class="p">)</span>                    <span class="c1"># or switch after construction</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-28" name="sd-tab-set-14" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-28">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// Euclidean space with the pseudo-random sampler instead of the default</span>
+<span class="c1">// scrambled Halton sequence.</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">Euclidean</span><span class="o">&lt;</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">EuclideanStandardMetric</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="w">                  </span><span class="n">geodex</span><span class="o">::</span><span class="n">PseudoRandomSampler</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="n">r3</span><span class="p">;</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">seed</span></code> on a manifold reseeds its sampler, and <code class="docutils literal notranslate"><span class="pre">geodex.seed</span></code> (<code class="docutils literal notranslate"><span class="pre">geodex::set_default_seed</span></code>
+in C++) reseeds the source of the samplers constructed afterwards.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-29" name="sd-tab-set-15" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-29">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>   <span class="c1"># the shared source of default samplers</span>
+<span class="n">sphere</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>   <span class="c1"># or one manifold's own sampler</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-30" name="sd-tab-set-15" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-30">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">::</span><span class="n">set_default_seed</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span><span class="w">  </span><span class="c1">// the shared source of default samplers</span>
+<span class="n">sphere</span><span class="p">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span><span class="w">               </span><span class="c1">// or one manifold's own sampler</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>See <a class="reference internal" href="../concepts/sampling.html"><span class="doc">Sampling on Manifolds</span></a> for the samplers and the maps in detail.</p>
+</section>
+<section id="wrap-angles-on-the-torus">
+<h2>7. Wrap angles on the torus<a class="headerlink" href="#wrap-angles-on-the-torus" title="Link to this heading">#</a></h2>
+<p>The <span class="math notranslate nohighlight">\(n\)</span>-torus <span class="math notranslate nohighlight">\(\mathbb{T}^n\)</span> is the product of <span class="math notranslate nohighlight">\(n\)</span> circles, with points
+stored as angles in <span class="math notranslate nohighlight">\([0, 2\pi)^n\)</span>. The logarithm takes the shortest signed difference
+of each angle, wrapped into <span class="math notranslate nohighlight">\([-\pi, \pi)\)</span>, and the exponential adds the tangent and
+wraps the result back into <span class="math notranslate nohighlight">\([0, 2\pi)\)</span>.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-31" name="sd-tab-set-16" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-31">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">torus</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Torus</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">])</span>
+<span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">6.1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">])</span>
+
+<span class="c1"># log wraps to the shortest path</span>
+<span class="n">v</span> <span class="o">=</span> <span class="n">torus</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"v ="</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>  <span class="c1"># about [-0.283, 0.3], the difference 6.0 wrapped by 2 pi</span>
+
+<span class="c1"># exp follows the tangent vector and wraps back to [0, 2 pi)</span>
+<span class="n">q_recovered</span> <span class="o">=</span> <span class="n">torus</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"q_recovered ="</span><span class="p">,</span> <span class="n">q_recovered</span><span class="p">)</span>  <span class="c1"># about [6.1, 0.5]</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-32" name="sd-tab-set-16" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-32">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">::</span><span class="n">Torus</span><span class="o">&lt;</span><span class="mi">2</span><span class="o">&gt;</span><span class="w"> </span><span class="n">torus</span><span class="p">;</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="w"> </span><span class="n">p</span><span class="p">{</span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2</span><span class="p">};</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="w"> </span><span class="n">q</span><span class="p">{</span><span class="mf">6.1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">};</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">IOFormat</span><span class="w"> </span><span class="n">fmt</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">DontAlignCols</span><span class="p">,</span><span class="w"> </span><span class="s">", "</span><span class="p">,</span><span class="w"> </span><span class="s">", "</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="p">,</span><span class="w"> </span><span class="s">"["</span><span class="p">,</span><span class="w"> </span><span class="s">"]"</span><span class="p">);</span>
+
+<span class="c1">// log wraps to the shortest path</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">torus</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">q</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"v = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">v</span><span class="p">.</span><span class="n">transpose</span><span class="p">().</span><span class="n">format</span><span class="p">(</span><span class="n">fmt</span><span class="p">)</span>
+<span class="w">          </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">  </span><span class="c1">// about [-0.283, 0.3]</span>
+
+<span class="c1">// exp follows the tangent vector and wraps back to [0, 2 pi)</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="w"> </span><span class="n">q_recovered</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">torus</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"q_recovered = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">q_recovered</span><span class="p">.</span><span class="n">transpose</span><span class="p">().</span><span class="n">format</span><span class="p">(</span><span class="n">fmt</span><span class="p">)</span>
+<span class="w">          </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">  </span><span class="c1">// about [6.1, 0.5]</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">v</span> <span class="pre">=</span> <span class="pre">[-0.2832</span> <span class="pre">0.3]</span></code> and <code class="docutils literal notranslate"><span class="pre">q_recovered</span> <span class="pre">=</span> <span class="pre">[6.1</span> <span class="pre">0.5]</span></code>. The first angle moves back
+across zero instead of forward by 6.0.</p>
+</section>
+<section id="rotate-and-move-rigid-bodies">
+<span id="rotations-rigid-bodies-products"></span><h2>8. Rotate and move rigid bodies<a class="headerlink" href="#rotate-and-move-rigid-bodies" title="Link to this heading">#</a></h2>
+<p>geodex provides four Lie groups. The rotation groups <span class="math notranslate nohighlight">\(\mathrm{SO}(2)\)</span> and
+<span class="math notranslate nohighlight">\(\mathrm{SO}(3)\)</span> rotate without translating, and the special Euclidean groups
+<span class="math notranslate nohighlight">\(\mathrm{SE}(2)\)</span> and <span class="math notranslate nohighlight">\(\mathrm{SE}(3)\)</span> add a translation to describe rigid-body
+poses. Their <code class="docutils literal notranslate"><span class="pre">exp</span></code> is the group exponential, and the group composition couples the
+coordinates.</p>
+<p><span class="math notranslate nohighlight">\(\mathrm{SO}(2)\)</span> is the circle group, one angle in <span class="math notranslate nohighlight">\([-\pi, \pi)\)</span>, with a
+bi-invariant canonical metric. <span class="math notranslate nohighlight">\(\mathrm{SO}(3)\)</span> is the group of spatial rotations. A
+point is a unit quaternion <span class="math notranslate nohighlight">\([x, y, z, w]\)</span>, a tangent vector is a body angular velocity,
+and geodesics are quaternion SLERP.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-33" name="sd-tab-set-17" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-33">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">so3</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SO3</span><span class="p">()</span>
+
+<span class="n">q0</span> <span class="o">=</span> <span class="n">so3</span><span class="o">.</span><span class="n">random_point</span><span class="p">()</span>  <span class="c1"># unit quaternion [x, y, z, w]</span>
+<span class="n">q1</span> <span class="o">=</span> <span class="n">so3</span><span class="o">.</span><span class="n">random_point</span><span class="p">()</span>
+
+<span class="n">w</span> <span class="o">=</span> <span class="n">so3</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">q0</span><span class="p">,</span> <span class="n">q1</span><span class="p">)</span>              <span class="c1"># body angular velocity, shape (3,)</span>
+<span class="n">mid</span> <span class="o">=</span> <span class="n">so3</span><span class="o">.</span><span class="n">geodesic</span><span class="p">(</span><span class="n">q0</span><span class="p">,</span> <span class="n">q1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>  <span class="c1"># SLERP midpoint</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-34" name="sd-tab-set-17" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-34">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">::</span><span class="n">SO3</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">so3</span><span class="p">;</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector4d</span><span class="w"> </span><span class="n">q0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">so3</span><span class="p">.</span><span class="n">random_point</span><span class="p">();</span><span class="w">  </span><span class="c1">// unit quaternion [x, y, z, w]</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector4d</span><span class="w"> </span><span class="n">q1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">so3</span><span class="p">.</span><span class="n">random_point</span><span class="p">();</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">so3</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">q0</span><span class="p">,</span><span class="w"> </span><span class="n">q1</span><span class="p">);</span><span class="w">              </span><span class="c1">// body angular velocity</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector4d</span><span class="w"> </span><span class="n">mid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">so3</span><span class="p">.</span><span class="n">geodesic</span><span class="p">(</span><span class="n">q0</span><span class="p">,</span><span class="w"> </span><span class="n">q1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">);</span><span class="w">  </span><span class="c1">// SLERP midpoint</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>An <span class="math notranslate nohighlight">\(\mathrm{SE}(2)\)</span> pose is <span class="math notranslate nohighlight">\((x, y, \theta)\)</span>, and a tangent vector is a
+body-frame velocity <span class="math notranslate nohighlight">\((v_x, v_y, \omega)\)</span>. The default metric is the left-invariant
+metric with weights <span class="math notranslate nohighlight">\((w_x, w_y, w_\theta)\)</span>,</p>
+<div class="math notranslate nohighlight">
+\[\langle u, v \rangle = w_x u_x v_x + w_y u_y v_y + w_\theta u_\theta v_\theta ,\]</div>
+<p>with unit weights by default.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-35" name="sd-tab-set-18" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-35">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">se2</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2</span><span class="p">()</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>   <span class="c1"># pose at (1, 2), heading east</span>
+<span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">1.57</span><span class="p">])</span>  <span class="c1"># pose at (3, 4), heading north</span>
+
+<span class="n">v</span> <span class="o">=</span> <span class="n">se2</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"log:"</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+<span class="n">q_recovered</span> <span class="o">=</span> <span class="n">se2</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"recovered:"</span><span class="p">,</span> <span class="n">q_recovered</span><span class="p">)</span>
+
+<span class="n">d</span> <span class="o">=</span> <span class="n">se2</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"distance:"</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-36" name="sd-tab-set-18" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-36">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">se2</span><span class="p">;</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">p</span><span class="p">{</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">2.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">};</span><span class="w">   </span><span class="c1">// pose at (1, 2), heading east</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">q</span><span class="p">{</span><span class="mf">3.0</span><span class="p">,</span><span class="w"> </span><span class="mf">4.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.57</span><span class="p">};</span><span class="w">  </span><span class="c1">// pose at (3, 4), heading north</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">IOFormat</span><span class="w"> </span><span class="n">fmt</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">DontAlignCols</span><span class="p">,</span><span class="w"> </span><span class="s">", "</span><span class="p">,</span><span class="w"> </span><span class="s">", "</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="p">,</span><span class="w"> </span><span class="s">"["</span><span class="p">,</span><span class="w"> </span><span class="s">"]"</span><span class="p">);</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">se2</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">q</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"log: "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">v</span><span class="p">.</span><span class="n">transpose</span><span class="p">().</span><span class="n">format</span><span class="p">(</span><span class="n">fmt</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">q_recovered</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">se2</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"recovered: "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">q_recovered</span><span class="p">.</span><span class="n">transpose</span><span class="p">().</span><span class="n">format</span><span class="p">(</span><span class="n">fmt</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+
+<span class="kt">double</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">se2</span><span class="p">.</span><span class="n">distance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">q</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"distance: "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints the logarithm, the pose it recovers, <code class="docutils literal notranslate"><span class="pre">[3</span> <span class="pre">4</span> <span class="pre">1.57]</span></code>, and <code class="docutils literal notranslate"><span class="pre">distance:</span>
+<span class="pre">3.5117456798791093</span></code>. A large sideways weight <span class="math notranslate nohighlight">\(w_y\)</span> makes sideways motion expensive, as
+for a wheeled base that drives only forward and backward.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-37" name="sd-tab-set-19" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-37">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># A large w_y makes sideways motion expensive, as for a wheeled base.</span>
+<span class="n">se2_car</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2</span><span class="p">(</span><span class="n">wx</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">wy</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span> <span class="n">wtheta</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>  <span class="c1"># facing east</span>
+<span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>  <span class="c1"># same heading, offset diagonally</span>
+
+<span class="n">d</span> <span class="o">=</span> <span class="n">se2_car</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"distance:"</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-38" name="sd-tab-set-19" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-38">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// A large w_y makes sideways motion expensive, as for a wheeled base.</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftInvariantMetric</span><span class="w"> </span><span class="n">car_metric</span><span class="p">{</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">100.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">};</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">SE2</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">se2_car</span><span class="p">{</span><span class="n">car_metric</span><span class="p">};</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">p</span><span class="p">{</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">};</span><span class="w">  </span><span class="c1">// facing east</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">q</span><span class="p">{</span><span class="mf">2.0</span><span class="p">,</span><span class="w"> </span><span class="mf">2.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">};</span><span class="w">  </span><span class="c1">// same heading, offset diagonally</span>
+
+<span class="kt">double</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">se2_car</span><span class="p">.</span><span class="n">distance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">q</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"distance: "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">distance:</span> <span class="pre">20.09975124224178</span></code>. The weight multiplies the squared sideways speed,
+and with <span class="math notranslate nohighlight">\(w_y = 100\)</span>, a sideways displacement is ten times as long as the same
+displacement forward. A shortest path between two poses turns and drives instead of sliding,
+and it may reverse, as the Reeds-Shepp paths of a car do
+<a class="footnote-reference brackets" href="#footcite-kyaw2026geometry" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a><a class="footnote-reference brackets" href="#footcite-belta2002euclidean" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">random_point()</span></code> on <span class="math notranslate nohighlight">\(\mathrm{SE}(2)\)</span> samples the position uniformly within the sampling
+bounds (default <span class="math notranslate nohighlight">\([0, 10]^2\)</span>) and the heading uniformly from <span class="math notranslate nohighlight">\([-\pi, \pi)\)</span>.</p>
+<p>An <span class="math notranslate nohighlight">\(\mathrm{SE}(3)\)</span> pose is a translation followed by a scalar-last unit quaternion,
+<span class="math notranslate nohighlight">\([t_x, t_y, t_z, q_x, q_y, q_z, q_w]\)</span>, and a tangent vector is a body twist
+<span class="math notranslate nohighlight">\([v;\, \omega]\)</span>. <code class="docutils literal notranslate"><span class="pre">geodesic</span></code> follows the screw motion of the constant twist between
+two poses.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-39" name="sd-tab-set-20" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-39">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">se3</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE3</span><span class="p">()</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">se3</span><span class="o">.</span><span class="n">random_point</span><span class="p">()</span>  <span class="c1"># pose [tx, ty, tz, qx, qy, qz, qw], shape (7,)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">se3</span><span class="o">.</span><span class="n">random_point</span><span class="p">()</span>
+
+<span class="n">xi</span> <span class="o">=</span> <span class="n">se3</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>             <span class="c1"># twist [v; w], shape (6,)</span>
+<span class="n">mid</span> <span class="o">=</span> <span class="n">se3</span><span class="o">.</span><span class="n">geodesic</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>  <span class="c1"># screw-motion midpoint</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-40" name="sd-tab-set-20" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-40">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">geodex</span><span class="o">::</span><span class="n">SE3</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">se3</span><span class="p">;</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="o">&gt;</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">se3</span><span class="p">.</span><span class="n">random_point</span><span class="p">();</span><span class="w">  </span><span class="c1">// pose [t; q]</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="o">&gt;</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">se3</span><span class="p">.</span><span class="n">random_point</span><span class="p">();</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="o">&gt;</span><span class="w"> </span><span class="n">xi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">se3</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">);</span><span class="w">  </span><span class="c1">// twist [v; w]</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="o">&gt;</span><span class="w"> </span><span class="n">mid</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="n">se3</span><span class="p">.</span><span class="n">geodesic</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">);</span><span class="w">  </span><span class="c1">// screw-motion midpoint</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<section id="body-and-world-frames">
+<span id="id4"></span><h3>Body and world frames<a class="headerlink" href="#body-and-world-frames" title="Link to this heading">#</a></h3>
+<p>A rigid-body velocity can be written in two frames. For a trajectory <span class="math notranslate nohighlight">\(X(t)\)</span> on a Lie
+group, the body velocity is <span class="math notranslate nohighlight">\(X^{-1}\dot X\)</span> and the spatial velocity is
+<span class="math notranslate nohighlight">\(\dot X X^{-1}\)</span>. Inner products of body velocities give a <strong>left-invariant</strong> metric,
+unchanged by a change of the world frame, and inner products of spatial velocities give a
+<strong>right-invariant</strong> metric, unchanged by a change of the body frame
+<a class="footnote-reference brackets" href="#footcite-park1995distance" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">frame</span></code> argument of <span class="math notranslate nohighlight">\(\mathrm{SO}(3)\)</span>, <span class="math notranslate nohighlight">\(\mathrm{SE}(2)\)</span> and
+<span class="math notranslate nohighlight">\(\mathrm{SE}(3)\)</span> picks one. <code class="docutils literal notranslate"><span class="pre">frame=&quot;body&quot;</span></code>, the default, steps with
+<span class="math notranslate nohighlight">\(\exp_p(\xi) = p \cdot \mathrm{Exp}(\xi)\)</span>, and <code class="docutils literal notranslate"><span class="pre">frame=&quot;world&quot;</span></code> with
+<span class="math notranslate nohighlight">\(\exp_p(\xi) = \mathrm{Exp}(\xi) \cdot p\)</span>. In C++, the choice is a retraction policy,
+<code class="docutils literal notranslate"><span class="pre">SO3LeftExponentialMap</span></code> or <code class="docutils literal notranslate"><span class="pre">SO3RightExponentialMap</span></code>, and the same pairs for
+<span class="math notranslate nohighlight">\(\mathrm{SE}(2)\)</span> and <span class="math notranslate nohighlight">\(\mathrm{SE}(3)\)</span>.</p>
+<p>The canonical metric of <span class="math notranslate nohighlight">\(\mathrm{SO}(3)\)</span> is bi-invariant <a class="footnote-reference brackets" href="#footcite-park1995distance" id="id6" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>,
+and both frames report the same distance between two rotations.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-41" name="sd-tab-set-21" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-41">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">q0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.8660</span><span class="p">])</span>     <span class="c1"># 60 degrees about x</span>
+<span class="n">q1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.7071</span><span class="p">,</span> <span class="mf">0.7071</span><span class="p">])</span>  <span class="c1"># 90 degrees about z</span>
+
+<span class="c1"># The metric is bi-invariant, and both frames report the same distance.</span>
+<span class="n">db</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SO3</span><span class="p">(</span><span class="n">frame</span><span class="o">=</span><span class="s2">"body"</span><span class="p">)</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">q0</span><span class="p">,</span> <span class="n">q1</span><span class="p">)</span>   <span class="c1"># 1.8235</span>
+<span class="n">dw</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SO3</span><span class="p">(</span><span class="n">frame</span><span class="o">=</span><span class="s2">"world"</span><span class="p">)</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">q0</span><span class="p">,</span> <span class="n">q1</span><span class="p">)</span>  <span class="c1"># 1.8235</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-42" name="sd-tab-set-21" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-42">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">using</span><span class="w"> </span><span class="n">BodySO3</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="n">geodex</span><span class="o">::</span><span class="n">SO3</span><span class="o">&lt;</span><span class="n">geodex</span><span class="o">::</span><span class="n">SO3CanonicalMetric</span><span class="p">,</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">SO3LeftExponentialMap</span><span class="o">&gt;</span><span class="p">;</span>
+<span class="k">using</span><span class="w"> </span><span class="n">WorldSO3</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="n">geodex</span><span class="o">::</span><span class="n">SO3</span><span class="o">&lt;</span><span class="n">geodex</span><span class="o">::</span><span class="n">SO3CanonicalMetric</span><span class="p">,</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">SO3RightExponentialMap</span><span class="o">&gt;</span><span class="p">;</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector4d</span><span class="w"> </span><span class="n">q0</span><span class="p">{</span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.8660</span><span class="p">};</span><span class="w">     </span><span class="c1">// 60 degrees about x</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector4d</span><span class="w"> </span><span class="n">q1</span><span class="p">{</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.7071</span><span class="p">,</span><span class="w"> </span><span class="mf">0.7071</span><span class="p">};</span><span class="w">  </span><span class="c1">// 90 degrees about z</span>
+
+<span class="c1">// The metric is bi-invariant, and both frames report the same distance.</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">db</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BodySO3</span><span class="p">{}.</span><span class="n">distance</span><span class="p">(</span><span class="n">q0</span><span class="p">,</span><span class="w"> </span><span class="n">q1</span><span class="p">);</span><span class="w">   </span><span class="c1">// 1.8235</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">dw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">WorldSO3</span><span class="p">{}.</span><span class="n">distance</span><span class="p">(</span><span class="n">q0</span><span class="p">,</span><span class="w"> </span><span class="n">q1</span><span class="p">);</span><span class="w">  </span><span class="c1">// 1.8235</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p><span class="math notranslate nohighlight">\(\mathrm{SE}(3)\)</span> does not have a bi-invariant metric <a class="footnote-reference brackets" href="#footcite-park1995distance" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>, and
+the two frames report different distances between the same poses. <span class="math notranslate nohighlight">\(\mathrm{SE}(2)\)</span>
+does not have one either.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-43" name="sd-tab-set-22" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-43">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.8660</span><span class="p">])</span>  <span class="c1"># pose [t; q]</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.7071</span><span class="p">,</span> <span class="mf">0.7071</span><span class="p">])</span>
+
+<span class="c1"># SE(3) does not have a bi-invariant metric, and the frames report different</span>
+<span class="c1"># distances.</span>
+<span class="n">db</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE3</span><span class="p">(</span><span class="n">frame</span><span class="o">=</span><span class="s2">"body"</span><span class="p">)</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>   <span class="c1"># 3.2424</span>
+<span class="n">dw</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE3</span><span class="p">(</span><span class="n">frame</span><span class="o">=</span><span class="s2">"world"</span><span class="p">)</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>  <span class="c1"># 2.8023</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-44" name="sd-tab-set-22" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-44">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">using</span><span class="w"> </span><span class="n">BodySE3</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE3</span><span class="o">&lt;</span><span class="n">geodex</span><span class="o">::</span><span class="n">SE3InvariantMetric</span><span class="p">,</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE3LeftExponentialMap</span><span class="o">&gt;</span><span class="p">;</span>
+<span class="k">using</span><span class="w"> </span><span class="n">WorldSE3</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE3</span><span class="o">&lt;</span><span class="n">geodex</span><span class="o">::</span><span class="n">SE3InvariantMetric</span><span class="p">,</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE3RightExponentialMap</span><span class="o">&gt;</span><span class="p">;</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="o">&gt;</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="n">a</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.8660</span><span class="p">;</span><span class="w">  </span><span class="c1">// pose [t; q]</span>
+<span class="n">b</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">2.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.7071</span><span class="p">,</span><span class="w"> </span><span class="mf">0.7071</span><span class="p">;</span>
+
+<span class="c1">// SE(3) does not have a bi-invariant metric, and the frames report different</span>
+<span class="c1">// distances.</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">db</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BodySE3</span><span class="p">{}.</span><span class="n">distance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">);</span><span class="w">   </span><span class="c1">// 3.2424</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">dw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">WorldSE3</span><span class="p">{}.</span><span class="n">distance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">);</span><span class="w">  </span><span class="c1">// 2.8023</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">w_rot</span></code> and <code class="docutils literal notranslate"><span class="pre">w_trans</span></code> weights of <span class="math notranslate nohighlight">\(\mathrm{SE}(3)\)</span> set how a radian of rotation
+trades against a unit of translation.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 22.0%" />
+<col style="width: 26.0%" />
+<col style="width: 52.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Manifold</p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">frame</span></code> argument</p></th>
+<th class="head"><p>Metric</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(\mathrm{SO}(2)\)</span></p></td>
+<td><p>none</p></td>
+<td><p>Canonical, bi-invariant</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(\mathrm{SO}(3)\)</span></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">body</span></code> or <code class="docutils literal notranslate"><span class="pre">world</span></code></p></td>
+<td><p>Canonical, bi-invariant, the same distance in both frames</p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(\mathrm{SE}(2)\)</span></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">body</span></code> or <code class="docutils literal notranslate"><span class="pre">world</span></code></p></td>
+<td><p>Left- or right-invariant</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(\mathrm{SE}(3)\)</span></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">body</span></code> or <code class="docutils literal notranslate"><span class="pre">world</span></code></p></td>
+<td><p>Left- or right-invariant</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+<section id="combine-manifolds">
+<h2>9. Combine manifolds<a class="headerlink" href="#combine-manifolds" title="Link to this heading">#</a></h2>
+<p>A <strong>product manifold</strong> joins several manifolds into one configuration space. Points and
+tangent vectors stack the blocks, exp, log and geodesic act block by block, and the distance
+is the L2 combination of the block distances. A point in space and a planar base pose, such as
+an end-effector position and the pose of a mobile base, form a point of
+<span class="math notranslate nohighlight">\(\mathbb{R}^3 \times \mathrm{SE}(2)\)</span>.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-45" name="sd-tab-set-23" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-45">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">space</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Product</span><span class="p">([</span><span class="n">geodex</span><span class="o">.</span><span class="n">Euclidean</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2</span><span class="p">()])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"dim ="</span><span class="p">,</span> <span class="n">space</span><span class="o">.</span><span class="n">dim</span><span class="p">())</span>  <span class="c1"># 6</span>
+
+<span class="n">c</span> <span class="o">=</span> <span class="n">space</span><span class="o">.</span><span class="n">random_point</span><span class="p">()</span>  <span class="c1"># one joint low-discrepancy sample over both blocks</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-46" name="sd-tab-set-23" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-46">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">auto</span><span class="w"> </span><span class="n">space</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">make_product</span><span class="p">(</span><span class="n">geodex</span><span class="o">::</span><span class="n">Euclidean</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="p">{},</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2</span><span class="o">&lt;&gt;</span><span class="p">{});</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"dim = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">space</span><span class="p">.</span><span class="n">dim</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">  </span><span class="c1">// 6</span>
+
+<span class="k">auto</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="n">space</span><span class="p">.</span><span class="n">random_point</span><span class="p">();</span><span class="w">  </span><span class="c1">// one joint low-discrepancy sample over both blocks</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">dim</span> <span class="pre">=</span> <span class="pre">6</span></code>. The product samples from one low-discrepancy sequence over the combined
+coordinates (see <a class="reference internal" href="../concepts/sampling.html"><span class="doc">Sampling on Manifolds</span></a>).</p>
+</section>
+<section id="change-the-metric">
+<h2>10. Change the metric<a class="headerlink" href="#change-the-metric" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ConstantSPDMetric</span></code> defines a point-independent inner product from a symmetric positive
+definite matrix <span class="math notranslate nohighlight">\(A\)</span>,</p>
+<div class="math notranslate nohighlight">
+\[\langle u, v \rangle = u^\top A\, v .\]</div>
+<p>With <span class="math notranslate nohighlight">\(A = \mathrm{diag}(4, 1, 1)\)</span>, a unit step along the first coordinate has length
+<span class="math notranslate nohighlight">\(\sqrt{4} = 2\)</span>, twice the length of a unit step along the others. In
+Python, <code class="docutils literal notranslate"><span class="pre">ConfigurationSpace(base,</span> <span class="pre">metric)</span></code> puts a metric on a base manifold. In C++, the
+metric is a template parameter, as in <code class="docutils literal notranslate"><span class="pre">Euclidean&lt;3,</span> <span class="pre">ConstantSPDMetric&lt;3&gt;&gt;</span></code>.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-47" name="sd-tab-set-24" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-47">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mf">4.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+<span class="n">weighted</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">ConstantSPDMetric</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+
+<span class="n">r3_weighted</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">ConfigurationSpace</span><span class="p">(</span><span class="n">geodex</span><span class="o">.</span><span class="n">Euclidean</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">weighted</span><span class="p">)</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+<span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+<span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+
+<span class="n">ip</span> <span class="o">=</span> <span class="n">r3_weighted</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>  <span class="c1"># 0.0, still orthogonal</span>
+<span class="n">n</span> <span class="o">=</span> <span class="n">r3_weighted</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>       <span class="c1"># 2.0, scaled by sqrt(4)</span>
+
+<span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">r3_weighted</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"d ="</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>  <span class="c1"># sqrt(4 + 1 + 1) = sqrt(6), about 2.449</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-48" name="sd-tab-set-24" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-48">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">Eigen</span><span class="o">::</span><span class="n">Matrix3d</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="p">(</span><span class="mf">4.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">).</span><span class="n">asDiagonal</span><span class="p">();</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">ConstantSPDMetric</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="w"> </span><span class="n">weighted</span><span class="p">{</span><span class="n">A</span><span class="p">};</span>
+
+<span class="n">geodex</span><span class="o">::</span><span class="n">Euclidean</span><span class="o">&lt;</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">ConstantSPDMetric</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">r3_weighted</span><span class="p">{</span><span class="n">weighted</span><span class="p">};</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">p</span><span class="p">{</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">};</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">u</span><span class="p">{</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">};</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">v</span><span class="p">{</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">};</span>
+
+<span class="kt">double</span><span class="w"> </span><span class="n">ip</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r3_weighted</span><span class="p">.</span><span class="n">inner</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">u</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">);</span><span class="w">  </span><span class="c1">// 0.0, still orthogonal</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r3_weighted</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">u</span><span class="p">);</span><span class="w">       </span><span class="c1">// 2.0, scaled by sqrt(4)</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">q</span><span class="p">{</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">};</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r3_weighted</span><span class="p">.</span><span class="n">distance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">q</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"d = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">  </span><span class="c1">// sqrt(4 + 1 + 1) = sqrt(6), about 2.449</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">d</span> <span class="pre">=</span> <span class="pre">2.449489742783178</span></code>, <span class="math notranslate nohighlight">\(\sqrt{6}\)</span>, against <span class="math notranslate nohighlight">\(\sqrt{3}\)</span> under the
+standard metric. The same metric works on any manifold with 3-vector tangents, the sphere
+among them.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-49" name="sd-tab-set-25" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-49">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mf">4.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+<span class="n">weighted</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">ConstantSPDMetric</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+
+<span class="n">sphere_weighted</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">ConfigurationSpace</span><span class="p">(</span><span class="n">geodex</span><span class="o">.</span><span class="n">Sphere</span><span class="p">(),</span> <span class="n">weighted</span><span class="p">)</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+<span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="n">sphere_weighted</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"n ="</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>  <span class="c1"># 2.0, the same weighting</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-50" name="sd-tab-set-25" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-50">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">Eigen</span><span class="o">::</span><span class="n">Matrix3d</span><span class="w"> </span><span class="n">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="p">(</span><span class="mf">4.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">).</span><span class="n">asDiagonal</span><span class="p">();</span>
+<span class="n">geodex</span><span class="o">::</span><span class="n">ConstantSPDMetric</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="w"> </span><span class="n">weighted</span><span class="p">{</span><span class="n">A</span><span class="p">};</span>
+
+<span class="n">geodex</span><span class="o">::</span><span class="n">Sphere</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">ConstantSPDMetric</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">sphere_weighted</span><span class="p">{</span><span class="n">weighted</span><span class="p">};</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">p</span><span class="p">{</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">};</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">u</span><span class="p">{</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">};</span>
+
+<span class="kt">double</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sphere_weighted</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">u</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"n = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span><span class="w">  </span><span class="c1">// 2.0, the same weighting</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">=</span> <span class="pre">2.0</span></code>. The metric decides what we measure (inner products, norms,
+distances), and the retraction decides how we move.</p>
+</section>
+<section id="try-it-swap-the-retraction">
+<h2>11. Try it: swap the retraction<a class="headerlink" href="#try-it-swap-the-retraction" title="Link to this heading">#</a></h2>
+<p>A <strong>retraction</strong> is a cheaper map that agrees with the exponential map near the base point.
+On the sphere, the projection retraction normalizes <span class="math notranslate nohighlight">\(p + v\)</span> instead of following a great
+circle. It agrees with the exponential map to second order in <span class="math notranslate nohighlight">\(\|v\|\)</span> and does not
+evaluate trigonometric functions.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-51" name="sd-tab-set-26" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-51">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sphere</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">Sphere</span><span class="p">(</span><span class="n">retraction</span><span class="o">=</span><span class="s2">"projection"</span><span class="p">)</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+<span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+
+<span class="c1"># log and exp under the projection retraction give an approximate round trip</span>
+<span class="n">v</span> <span class="o">=</span> <span class="n">sphere</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+<span class="n">q_approx</span> <span class="o">=</span> <span class="n">sphere</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"q_approx ="</span><span class="p">,</span> <span class="n">q_approx</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-52" name="sd-tab-set-26" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-52">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">using</span><span class="w"> </span><span class="n">ProjectionSphere</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">Sphere</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">SphereRoundMetric</span><span class="p">,</span>
+<span class="w">                                        </span><span class="n">geodex</span><span class="o">::</span><span class="n">SphereProjectionRetraction</span><span class="o">&gt;</span><span class="p">;</span>
+<span class="n">ProjectionSphere</span><span class="w"> </span><span class="n">sphere</span><span class="p">;</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">p</span><span class="p">{</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">};</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">q</span><span class="p">{</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">};</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">IOFormat</span><span class="w"> </span><span class="n">fmt</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">DontAlignCols</span><span class="p">,</span><span class="w"> </span><span class="s">", "</span><span class="p">,</span><span class="w"> </span><span class="s">", "</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="p">,</span><span class="w"> </span><span class="s">"["</span><span class="p">,</span><span class="w"> </span><span class="s">"]"</span><span class="p">);</span>
+
+<span class="c1">// log and exp under the projection retraction give an approximate round trip</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sphere</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">q</span><span class="p">);</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="w"> </span><span class="n">q_approx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sphere</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"q_approx = "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">q_approx</span><span class="p">.</span><span class="n">transpose</span><span class="p">().</span><span class="n">format</span><span class="p">(</span><span class="n">fmt</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p>It prints <code class="docutils literal notranslate"><span class="pre">q_approx</span> <span class="pre">=</span> <span class="pre">[0.7071</span> <span class="pre">0</span> <span class="pre">0.7071]</span></code>. The projection retraction reaches only the open
+hemisphere around <span class="math notranslate nohighlight">\(p\)</span>, and a target 90 degrees away comes back at 45 degrees. Use it for
+short steps, and the exponential map for long ones. The metric stays the round metric.</p>
+<p><span class="math notranslate nohighlight">\(\mathrm{SE}(2)\)</span> also has a cheap Euler retraction.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 25.0%" />
+<col style="width: 45.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Retraction</p></th>
+<th class="head"><p>Accuracy</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">SE2LeftExponentialMap</span></code></p></td>
+<td><p>exact</p></td>
+<td><p>The group exponential through the <span class="math notranslate nohighlight">\(V(\omega)\)</span> matrix (default)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">SE2EulerRetraction</span></code></p></td>
+<td><p>first order, at heading 0 only</p></td>
+<td><p>Adds the tangent to the coordinates and wraps the angle, which treats SE(2) as
+<span class="math notranslate nohighlight">\(\mathbb{R}^2 \times \mathbb{S}^1\)</span> and reads the tangent as world-frame rates</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-53" name="sd-tab-set-27" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-53">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># SE(2) with the Euler retraction, the cheapest one. It matches the group</span>
+<span class="c1"># exponential to first order only at heading 0.</span>
+<span class="n">se2_euler</span> <span class="o">=</span> <span class="n">geodex</span><span class="o">.</span><span class="n">SE2</span><span class="p">(</span><span class="n">retraction</span><span class="o">=</span><span class="s2">"euler"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.py">examples/tutorials/geodex_basics.py</a></p>
+</div>
+<input id="sd-tab-item-54" name="sd-tab-set-27" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-54">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// SE(2) with the Euler retraction, the cheapest one. It matches the group</span>
+<span class="c1">// exponential to first order only at heading 0.</span>
+<span class="k">using</span><span class="w"> </span><span class="n">SE2Euler</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2</span><span class="o">&lt;</span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2LeftInvariantMetric</span><span class="p">,</span><span class="w"> </span><span class="n">geodex</span><span class="o">::</span><span class="n">SE2EulerRetraction</span><span class="o">&gt;</span><span class="p">;</span>
+<span class="n">SE2Euler</span><span class="w"> </span><span class="n">se2_euler</span><span class="p">;</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/tutorials/geodex_basics.cpp">examples/tutorials/geodex_basics.cpp</a></p>
+</div>
+</div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">distance()</span></code> and <code class="docutils literal notranslate"><span class="pre">geodesic()</span></code> build on exp and log, and a cheaper retraction makes them
+less accurate. Use the exponential map where accuracy matters.</p>
+</section>
+<section id="where-to-go-next">
+<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="minimum-energy-planning.html"><span class="doc">Minimum-Energy Planning on Configuration Manifolds</span></a> plans on configuration spaces with position-dependent
+metrics.</p></li>
+<li><p><a class="reference internal" href="se2-planning.html"><span class="doc">SE(2) Motion Planning</span></a> plans for mobile robots on <span class="math notranslate nohighlight">\(\mathrm{SE}(2)\)</span>.</p></li>
+<li><p><a class="reference internal" href="../concepts/riemannian-geometry.html"><span class="doc">Riemannian Geometry</span></a> defines the geometry behind each step.</p></li>
+<li><p><a class="reference internal" href="../api/index.html"><span class="doc">API Reference</span></a> covers every class and function.</p></li>
+</ul>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
+<div class="docutils container" id="id8">
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="footcite-kyaw2026geometry" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id2">2</a>)</span>
+<p>Phone Thiha Kyaw and Jonathan Kelly. Geometry-aware sampling-based motion planning on Riemannian manifolds. In <em>Proceedings of the 17th World Symposium on the Algorithmic Foundations of Robotics (WAFR)</em>. Oulu, Finland, jun 2026. URL: <a class="reference external" href="https://arxiv.org/abs/2602.00992">https://arxiv.org/abs/2602.00992</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-belta2002euclidean" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">2</a><span class="fn-bracket">]</span></span>
+<p>Calin Belta and Vijay Kumar. Euclidean metrics for motion generation on SE(3). <em>Proceedings of the Institution of Mechanical Engineers, Part C: Journal of Mechanical Engineering Science</em>, 216(1):47–60, 2002.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-park1995distance" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id5">1</a>,<a role="doc-backlink" href="#id6">2</a>,<a role="doc-backlink" href="#id7">3</a>)</span>
+<p>F. C. Park. Distance metrics on the rigid-body motions with applications to mechanism design. <em>Journal of Mechanical Design</em>, 117(1):48–54, 1995.</p>
+</aside>
+</aside>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Tutorials</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="minimum-energy-planning.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Minimum-Energy Planning on Configuration Manifolds</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-a-manifold">1. Create a manifold</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#measure-tangent-vectors">2. Measure tangent vectors</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#move-with-exp-and-log">3. Move with exp and log</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#measure-distances">4. Measure distances</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interpolate-along-geodesics">5. Interpolate along geodesics</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-random-points">6. Sample random points</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wrap-angles-on-the-torus">7. Wrap angles on the torus</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rotate-and-move-rigid-bodies">8. Rotate and move rigid bodies</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#body-and-world-frames">Body and world frames</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#combine-manifolds">9. Combine manifolds</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#change-the-metric">10. Change the metric</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#try-it-swap-the-retraction">11. Try it: swap the retraction</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#where-to-go-next">Where to go next</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Space and Terrestrial Autonomous Robotic Systems (STARS) Lab.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

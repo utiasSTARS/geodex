@@ -1,0 +1,318 @@
+{
+ "robot": "panda",
+ "label": "Franka Panda",
+ "root": "panda_link0",
+ "joint_names": [
+  "panda_joint1",
+  "panda_joint2",
+  "panda_joint3",
+  "panda_joint4",
+  "panda_joint5",
+  "panda_joint6",
+  "panda_joint7"
+ ],
+ "links": [
+  "panda_link0",
+  "panda_link1",
+  "panda_link2",
+  "panda_link3",
+  "panda_link4",
+  "panda_link5",
+  "panda_link6",
+  "panda_link7"
+ ],
+ "joints": [
+  {
+   "name": "panda_joint1",
+   "type": "revolute",
+   "parent": "panda_link0",
+   "child": "panda_link1",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.0,
+     0.333
+    ],
+    "quat": [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 0
+  },
+  {
+   "name": "panda_joint2",
+   "type": "revolute",
+   "parent": "panda_link1",
+   "child": "panda_link2",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "quat": [
+     -0.707106781187,
+     0.0,
+     0.0,
+     0.707106781187
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 1
+  },
+  {
+   "name": "panda_joint3",
+   "type": "revolute",
+   "parent": "panda_link2",
+   "child": "panda_link3",
+   "origin": {
+    "xyz": [
+     0.0,
+     -0.316,
+     0.0
+    ],
+    "quat": [
+     0.707106781187,
+     0.0,
+     0.0,
+     0.707106781187
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 2
+  },
+  {
+   "name": "panda_joint4",
+   "type": "revolute",
+   "parent": "panda_link3",
+   "child": "panda_link4",
+   "origin": {
+    "xyz": [
+     0.0825,
+     0.0,
+     0.0
+    ],
+    "quat": [
+     0.707106781187,
+     0.0,
+     0.0,
+     0.707106781187
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 3
+  },
+  {
+   "name": "panda_joint5",
+   "type": "revolute",
+   "parent": "panda_link4",
+   "child": "panda_link5",
+   "origin": {
+    "xyz": [
+     -0.0825,
+     0.384,
+     0.0
+    ],
+    "quat": [
+     -0.707106781187,
+     0.0,
+     0.0,
+     0.707106781187
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 4
+  },
+  {
+   "name": "panda_joint6",
+   "type": "revolute",
+   "parent": "panda_link5",
+   "child": "panda_link6",
+   "origin": {
+    "xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "quat": [
+     0.707106781187,
+     0.0,
+     0.0,
+     0.707106781187
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 5
+  },
+  {
+   "name": "panda_joint7",
+   "type": "revolute",
+   "parent": "panda_link6",
+   "child": "panda_link7",
+   "origin": {
+    "xyz": [
+     0.088,
+     0.0,
+     0.0
+    ],
+    "quat": [
+     0.707106781187,
+     0.0,
+     0.0,
+     0.707106781187
+    ]
+   },
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "index": 6
+  }
+ ],
+ "ee": {
+  "link": "panda_link8",
+  "parent": "panda_link7",
+  "xyz": [
+   0.0,
+   0.0,
+   0.107
+  ],
+  "quat": [
+   0.0,
+   0.0,
+   0.0,
+   1.0
+  ]
+ },
+ "meshes": {
+  "full": "panda.glb",
+  "ghost": "panda_ghost.glb"
+ },
+ "bounds": {
+  "panda_link0": [
+   [
+    -0.1541,
+    -0.0946,
+    0.0
+   ],
+   [
+    0.0716,
+    0.0946,
+    0.14
+   ]
+  ],
+  "panda_link1": [
+   [
+    -0.055,
+    -0.1294,
+    -0.192
+   ],
+   [
+    0.055,
+    0.055,
+    0.055
+   ]
+  ],
+  "panda_link2": [
+   [
+    -0.055,
+    -0.193,
+    -0.055
+   ],
+   [
+    0.055,
+    0.054,
+    0.1294
+   ]
+  ],
+  "panda_link3": [
+   [
+    -0.055,
+    -0.055,
+    -0.121
+   ],
+   [
+    0.1375,
+    0.1111,
+    0.0568
+   ]
+  ],
+  "panda_link4": [
+   [
+    -0.1375,
+    -0.0549,
+    -0.055
+   ],
+   [
+    0.055,
+    0.123,
+    0.1111
+   ]
+  ],
+  "panda_link5": [
+   [
+    -0.055,
+    -0.055,
+    -0.259
+   ],
+   [
+    0.055,
+    0.1299,
+    0.0533
+   ]
+  ],
+  "panda_link6": [
+   [
+    -0.0478,
+    -0.0512,
+    -0.044
+   ],
+   [
+    0.132,
+    0.0819,
+    0.057
+   ]
+  ],
+  "panda_link7": [
+   [
+    -0.0817,
+    -0.0817,
+    0.052
+   ],
+   [
+    0.0832,
+    0.0832,
+    0.2193
+   ]
+  ]
+ }
+}

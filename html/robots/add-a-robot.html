@@ -1,0 +1,774 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Add a Robot &#8212; geodex</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/robot-viewer/robot-viewer.css?v=77e37a9e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=28229f57" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme.css?v=26c09b9b" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../_static/documentation_options.js?v=8d563738"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=b8b12719"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>window.MathJax = {"loader": {"paths": {"mathjax-termes": "[mathjax]/fonts/termes"}}, "chtml": {"font": "mathjax-termes"}, "options": {"enableSpeech": false, "enableBraille": false, "enableEnrichment": false, "enableExplorer": false, "menuOptions": {"settings": {"speech": false, "braille": false, "enrich": false}}}}</script>
+    <script defer="defer" src="../_static/mathjax/tex-mml-chtml.js?v=4a2f07e4"></script>
+    <script type="module" src="../_static/robot-viewer/robot-viewer.js?v=4cd922f8"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'robots/add-a-robot';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <script src="../_static/mermaid-intrinsic-size.js?v=f42d09f7"></script>
+    <script src="../_static/geodex.js?v=d44686ee"></script>
+    <link rel="icon" href="../_static/favicon.svg"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ROS 2" href="../ros2/index.html" />
+    <link rel="prev" title="Whole-Body Planning" href="mobile-manipulation.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="1.0.0" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/logo-light.svg" class="logo__image only-light" alt=""/>
+    <img src="../_static/logo-dark.svg" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">geodex</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting-started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../concepts/index.html">
+    Core Concepts
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Robot Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../ros2/index.html">
+    ROS 2
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/utiasSTARS/geodex" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pygeodex/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting-started/index.html">
+    Getting Started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../concepts/index.html">
+    Core Concepts
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Robot Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../ros2/index.html">
+    ROS 2
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/utiasSTARS/geodex" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pygeodex/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="manipulation.html">Manipulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="navigation.html">Navigation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mobile-manipulation.html">Whole-Body Planning</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Add a Robot</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Robot Guides</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Add a Robot</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="add-a-robot">
+<h1>Add a Robot<a class="headerlink" href="#add-a-robot" title="Link to this heading">#</a></h1>
+<p>In this guide, we add a robot to geodex, a Clearpath Husky A200 with a UR5e. A pipeline turns
+the robot’s URDF into a VAMP collision model, a mass matrix generated as C++ and a lower bound
+of that mass matrix for the planner’s heuristic. The pipeline runs once per robot on Linux
+x86-64, and a regular geodex build compiles its output.</p>
+<div class="geodex-figure geodex-robot-figure docutils container">
+<div class="geodex-robot-scene" data-scene="../_static/robot-scenes/robots-gallery-husky-ur5e.json" data-robots="../_static/robots/" data-alt="A Clearpath Husky with a UR5e, with the 130 collision spheres of its VAMP model drawn
+over its meshes." data-spheres="1" style="aspect-ratio:6/5;width:100%;margin:0 auto"><img class="geodex-robot-poster" src="../_static/robot-scenes/robots-gallery-husky-ur5e-spheres.jpg" alt="A Clearpath Husky with a UR5e, with the 130 collision spheres of its VAMP model drawn
+over its meshes." loading="lazy"><div class="geodex-robot-stage"></div><div class="geodex-robot-hint" aria-hidden="true">Drag to orbit</div><div class="geodex-robot-controls" hidden><button type="button" class="geodex-robot-play" aria-label="Play"><svg class="geodex-robot-icon-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg><svg class="geodex-robot-icon-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 2.5h3v11h-3zM9.5 2.5h3v11h-3z"/></svg></button><input type="range" class="geodex-robot-scrub" min="0" max="1000" value="1000" aria-label="Position along the path"><button type="button" class="geodex-robot-spheres" aria-pressed="true">Spheres</button></div></div><div class="geodex-caption docutils container">
+<p>The Husky with a UR5e and the 130 spheres of its VAMP model. The Spheres button hides them.</p>
+</div>
+</div>
+<section id="write-a-recipe">
+<h2>1. Write a recipe<a class="headerlink" href="#write-a-recipe" title="Link to this heading">#</a></h2>
+<p>A recipe in <code class="docutils literal notranslate"><span class="pre">scripts/robotgen/robots/&lt;name&gt;.json</span></code> describes the robot to the pipeline. The
+Husky’s recipe names its description, its base and drive, the joints the planner moves and the
+number of spheres per link.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"husky_ur5e"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Clearpath Husky (A200) with a Universal Robots UR5e on the default top plate, skid-steer differential-drive base"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"vamp_struct"</span><span class="p">:</span><span class="w"> </span><span class="s2">"HuskyUR5e"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"source"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"xacro_file"</span><span class="p">:</span><span class="w"> </span><span class="s2">"husky_ur5e.urdf.xacro"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"packages"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"clearpath_platform_description"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="s2">"CLEARPATH_COMMON"</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">"clearpath_platform_description"</span>
+<span class="w">      </span><span class="p">],</span>
+<span class="w">      </span><span class="nt">"clearpath_control"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="s2">"CLEARPATH_COMMON"</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">"clearpath_control"</span>
+<span class="w">      </span><span class="p">],</span>
+<span class="w">      </span><span class="nt">"ur_description"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="s2">"UR_DESCRIPTION"</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">""</span>
+<span class="w">      </span><span class="p">]</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"package"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CLEARPATH_COMMON"</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">"base_link"</span><span class="p">:</span><span class="w"> </span><span class="s2">"base_link"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"base_height"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.13228</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"drive"</span><span class="p">:</span><span class="w"> </span><span class="s2">"differential"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"planning_joints"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="s2">"arm_0_shoulder_pan_joint"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"arm_0_shoulder_lift_joint"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"arm_0_elbow_joint"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"arm_0_wrist_1_joint"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"arm_0_wrist_2_joint"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"arm_0_wrist_3_joint"</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">"limit_overrides"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">  </span><span class="nt">"end_effector"</span><span class="p">:</span><span class="w"> </span><span class="s2">"arm_0_tool0"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"spherize"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"branch"</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"link_scale"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"arm_0_base_link_inertia"</span><span class="p">:</span><span class="w"> </span><span class="mf">4.0</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"arm_0_shoulder_link"</span><span class="p">:</span><span class="w"> </span><span class="mf">4.0</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"arm_0_upper_arm_link"</span><span class="p">:</span><span class="w"> </span><span class="mf">3.0</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"arm_0_forearm_link"</span><span class="p">:</span><span class="w"> </span><span class="mf">2.0</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"arm_0_wrist_1_link"</span><span class="p">:</span><span class="w"> </span><span class="mf">2.0</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"arm_0_wrist_2_link"</span><span class="p">:</span><span class="w"> </span><span class="mf">2.0</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"arm_0_wrist_3_link"</span><span class="p">:</span><span class="w"> </span><span class="mf">2.0</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"front_left_wheel_link"</span><span class="p">:</span><span class="w"> </span><span class="mf">6.0</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"front_right_wheel_link"</span><span class="p">:</span><span class="w"> </span><span class="mf">6.0</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"rear_left_wheel_link"</span><span class="p">:</span><span class="w"> </span><span class="mf">6.0</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"rear_right_wheel_link"</span><span class="p">:</span><span class="w"> </span><span class="mf">6.0</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">"box_covers"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"link"</span><span class="p">:</span><span class="w"> </span><span class="s2">"base_link"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"links"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="s2">"base_link"</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">"top_plate_link"</span>
+<span class="w">      </span><span class="p">],</span>
+<span class="w">      </span><span class="nt">"cells"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="mi">7</span><span class="p">,</span>
+<span class="w">        </span><span class="mi">4</span><span class="p">,</span>
+<span class="w">        </span><span class="mi">2</span>
+<span class="w">      </span><span class="p">]</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 24.0%" />
+<col style="width: 76.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">vamp_struct</span></code></p></td>
+<td><p>The robot’s name in geodex, and the name of the model struct in its VAMP kernel.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">source</span></code></p></td>
+<td><p>The description, an archive listed in <code class="docutils literal notranslate"><span class="pre">third_party/robot_descriptions.cmake</span></code>, and how
+to expand it into a URDF.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">base_link</span></code>, <code class="docutils literal notranslate"><span class="pre">base_height</span></code></p></td>
+<td><p>The link that the planar base joints attach to, and its height above the floor.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">drive</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">differential</span></code> or <code class="docutils literal notranslate"><span class="pre">holonomic</span></code>. A mobile robot’s recipe has it, and the pipeline adds
+the planar base joints <span class="math notranslate nohighlight">\((x, y, \theta)\)</span>. A fixed-base arm leaves it out.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">planning_joints</span></code></p></td>
+<td><p>The joints the planner moves, in order. Every other joint is fixed.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">end_effector</span></code></p></td>
+<td><p>The link that VAMP attaches held objects to.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">spherize</span></code>, <code class="docutils literal notranslate"><span class="pre">box_covers</span></code></p></td>
+<td><p>The number of spheres per link, and links covered by a grid of spheres instead.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="generate-the-robot">
+<h2>2. Generate the robot<a class="headerlink" href="#generate-the-robot" title="Link to this heading">#</a></h2>
+<p>For a mobile robot, add <code class="docutils literal notranslate"><span class="pre">husky_ur5e=differential</span></code> to <code class="docutils literal notranslate"><span class="pre">GEODEX_ROBOT_BASES</span></code> in
+<code class="docutils literal notranslate"><span class="pre">cmake/robots_manifest.cmake</span></code>. Then register the robot and run the pipeline.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>scripts/robotgen/update_robot_registry.py<span class="w"> </span>--name<span class="w"> </span>husky_ur5e<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--urdf<span class="w"> </span>data/robots/husky_ur5e/husky_ur5e_dynamics.urdf
+pixi<span class="w"> </span>run<span class="w"> </span>--manifest-path<span class="w"> </span>scripts/robotgen/pixi.toml<span class="w"> </span>scripts/robotgen/generate.sh<span class="w"> </span>husky_ur5e
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">generate.sh</span></code> writes the robot’s sphere model under <code class="docutils literal notranslate"><span class="pre">data/robots/husky_ur5e/</span></code>, its VAMP
+kernel and sweep data under <code class="docutils literal notranslate"><span class="pre">include/geodex/integration/vamp/robots/generated/</span></code>, and its mass
+matrix and lower bound under <code class="docutils literal notranslate"><span class="pre">src/robots/generated/</span></code>. It ends by comparing them with
+Pinocchio on the original description.</p>
+</section>
+<section id="connect-the-kernel">
+<h2>3. Connect the kernel<a class="headerlink" href="#connect-the-kernel" title="Link to this heading">#</a></h2>
+<p>Add the robot’s name to <code class="docutils literal notranslate"><span class="pre">cmake/vamp_robots.cmake</span></code>, and write a header
+<code class="docutils literal notranslate"><span class="pre">include/geodex/integration/vamp/robots/&lt;name&gt;.hpp</span></code> that includes the kernel and its sweep
+data and names the kernel’s model.</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">"geodex/integration/vamp/robots/generated/husky_ur5e.hh"</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">"geodex/integration/vamp/robots/generated/husky_ur5e_sweep.hh"</span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">geodex</span><span class="o">::</span><span class="nn">integration</span><span class="o">::</span><span class="nn">vamp</span><span class="o">::</span><span class="nn">detail</span><span class="w"> </span><span class="p">{</span>
+
+<span class="c1">/// @brief VAMP model of this robot.</span>
+<span class="k">using</span><span class="w"> </span><span class="n">husky_ur5e_model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">::</span><span class="n">vamp</span><span class="o">::</span><span class="n">robots</span><span class="o">::</span><span class="n">HuskyUR5e</span><span class="p">;</span>
+
+<span class="p">}</span><span class="w">  </span><span class="c1">// namespace geodex::integration::vamp::detail</span>
+</pre></div>
+</div>
+<p>The Python class of the robot is a model struct and a <code class="docutils literal notranslate"><span class="pre">bind_mobile</span></code> or <code class="docutils literal notranslate"><span class="pre">bind_fixed</span></code> call in
+<code class="docutils literal notranslate"><span class="pre">python/src/bind_robots.cpp</span></code>.</p>
+</section>
+<section id="rebuild-and-list-the-robots">
+<h2>4. Rebuild and list the robots<a class="headerlink" href="#rebuild-and-list-the-robots" title="Link to this heading">#</a></h2>
+<p>After a rebuild, <code class="docutils literal notranslate"><span class="pre">geodex.robots.available()</span></code> lists the new robot, and it plans like every
+other robot.</p>
+<div class="geodex-code-pair docutils container">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="python" for="sd-tab-item-0">
+Python</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">geodex</span>
+
+<span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">geodex</span><span class="o">.</span><span class="n">robots</span><span class="o">.</span><span class="n">available</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">&gt;16</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">geodex</span><span class="o">.</span><span class="n">vamp</span><span class="o">.</span><span class="n">robot_dimension</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="si">}</span><span class="s2"> coordinates"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/robots/catalog.py">examples/robots/catalog.py</a></p>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" data-sync-group="lang" data-sync-id="cpp" for="sd-tab-item-1">
+C++</label><div class="sd-tab-content docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;cstdio&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;geodex/integration/vamp/registry.hpp&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;geodex/robots/mass_matrix.hpp&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="o">**</span><span class="w"> </span><span class="n">argv</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">namespace</span><span class="w"> </span><span class="nn">gr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">geodex</span><span class="o">::</span><span class="nn">robots</span><span class="p">;</span>
+<span class="w">  </span><span class="k">namespace</span><span class="w"> </span><span class="nn">gv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">geodex</span><span class="o">::</span><span class="nn">integration</span><span class="o">::</span><span class="nn">vamp</span><span class="p">;</span>
+
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">robot</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">gr</span><span class="o">::</span><span class="n">registered_robots</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="n">gr</span><span class="o">::</span><span class="n">name</span><span class="p">(</span><span class="n">robot</span><span class="p">));</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">"%16s: %d coordinates</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="n">gv</span><span class="o">::</span><span class="n">robot_dimension</span><span class="p">(</span><span class="n">name</span><span class="p">));</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p class="geodex-example-link">Full example: <a class="reference external" href="https://github.com/utiasSTARS/geodex/blob/v1.0.0/examples/robots/catalog.cpp">examples/robots/catalog.cpp</a></p>
+</div>
+</div>
+</div>
+</section>
+<section id="try-it-add-a-fixed-base-arm">
+<h2>5. Try it: add a fixed-base arm<a class="headerlink" href="#try-it-add-a-fixed-base-arm" title="Link to this heading">#</a></h2>
+<p>A recipe without <code class="docutils literal notranslate"><span class="pre">drive</span></code> builds a fixed-base arm. The recipe of the Franka FR3 with its
+Robotiq 2F-85 is <code class="docutils literal notranslate"><span class="pre">scripts/robotgen/robots/fr3_arm_gripper.json</span></code>. Write a recipe for your arm
+the same way and run steps 2 to 4.</p>
+</section>
+<section id="where-to-go-next">
+<h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="mobile-manipulation.html"><span class="doc">Whole-Body Planning</span></a> plans a whole-body motion for a generated robot.</p></li>
+<li><p><a class="reference internal" href="../concepts/planning.html"><span class="doc">Planning</span></a> covers the planner’s heuristic, which uses the lower bound.</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="mobile-manipulation.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Whole-Body Planning</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../ros2/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">ROS 2</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#write-a-recipe">1. Write a recipe</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generate-the-robot">2. Generate the robot</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#connect-the-kernel">3. Connect the kernel</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rebuild-and-list-the-robots">4. Rebuild and list the robots</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#try-it-add-a-fixed-base-arm">5. Try it: add a fixed-base arm</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#where-to-go-next">Where to go next</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Space and Terrestrial Autonomous Robotic Systems (STARS) Lab.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

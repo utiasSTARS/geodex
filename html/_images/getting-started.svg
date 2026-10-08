@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200">
+  <rect x="30" y="28" width="340" height="144" rx="10" fill="#1f2a37"/>
+  <circle cx="52" cy="46" r="5" fill="#eb6834"/>
+  <circle cx="68" cy="46" r="5" fill="#eda100"/>
+  <circle cx="84" cy="46" r="5" fill="#1baf7a"/>
+  <g font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="15" fill="#e7f0fa">
+    <text x="52" y="84"><tspan fill="#86b6ef">$</tspan> pip install pygeodex</text>
+    <text x="52" y="112"><tspan fill="#86b6ef">$</tspan> pixi run test</text>
+    <text x="52" y="140"><tspan fill="#86b6ef">$</tspan> cmake --install build</text>
+  </g>
+</svg>
