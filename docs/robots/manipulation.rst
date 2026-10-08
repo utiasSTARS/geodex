@@ -54,8 +54,28 @@ every edge with VAMP, the box included.
 .. code-pair:: robots/manipulation/arm_ke plan
 
 It prints ``solved=True cost=1.143 waypoints=1597``. The cost is the length of the path under the
-kinetic-energy metric. On a laptop CPU (Intel Core i7-10875H), the planner finds a first path
-in 0.4 ms, after 7 iterations. The 1500 iterations take 69 ms, and smoothing takes 51 ms.
+kinetic-energy metric.
+
+.. grid:: 3
+   :gutter: 2
+
+   .. grid-item-card:: 120 ms
+      :class-card: geodex-stat
+
+      planning time
+
+   .. grid-item-card:: 0.4 ms
+      :class-card: geodex-stat
+
+      first solution
+
+   .. grid-item-card:: 1500
+      :class-card: geodex-stat
+
+      iterations
+
+The times are from a laptop CPU (Intel Core i7-10875H). The planner finds the first path after
+7 iterations. The 1500 iterations take 69 ms, and smoothing takes 51 ms.
 ``result.first_solution_ms``, ``result.time_ms`` and ``result.smooth_ms`` hold these times.
 
 3. Measure the path
@@ -80,7 +100,25 @@ Pass ``metric="euclidean"`` and plan again. The Euclidean metric measures a join
 
 It prints ``joint length=1.688 rad kinetic-energy length=1.263``. The Euclidean path turns the
 joints less in total, and the kinetic-energy path is 10 percent shorter under the kinetic-energy
-metric. The Euclidean plan finds a first path in 0.2 ms and takes 38 ms with smoothing.
+metric.
+
+.. grid:: 3
+   :gutter: 2
+
+   .. grid-item-card:: 38 ms
+      :class-card: geodex-stat
+
+      planning time
+
+   .. grid-item-card:: 0.2 ms
+      :class-card: geodex-stat
+
+      first solution
+
+   .. grid-item-card:: 1500
+      :class-card: geodex-stat
+
+      iterations
 
 .. robot-scene:: robots-fr3-euclidean
    :alt: The same FR3 move under the Euclidean metric, with the gripper trace in blue.

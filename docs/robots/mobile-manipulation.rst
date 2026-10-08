@@ -47,8 +47,28 @@ island. The Stretch 3's arm points to the right of its base.
 .. code-pair:: robots/mobile_manipulation/stretch plan
 
 It prints ``solved=True cost=5.332 waypoints=641``. The cost is the length of the path under
-the robot's metric. On a laptop CPU (Intel Core i7-10875H), the planner finds a first path in
-1.3 ms, after 57 iterations. The 1500 iterations take 55 ms, and smoothing takes 67 ms.
+the robot's metric.
+
+.. grid:: 3
+   :gutter: 2
+
+   .. grid-item-card:: 122 ms
+      :class-card: geodex-stat
+
+      planning time
+
+   .. grid-item-card:: 1.3 ms
+      :class-card: geodex-stat
+
+      first solution
+
+   .. grid-item-card:: 1500
+      :class-card: geodex-stat
+
+      iterations
+
+The times are from a laptop CPU (Intel Core i7-10875H). The planner finds the first path after
+57 iterations. The 1500 iterations take 55 ms, and smoothing takes 67 ms.
 ``result.first_solution_ms``, ``result.time_ms`` and ``result.smooth_ms`` hold these times.
 
 .. _whole-body-sideways:
@@ -73,8 +93,25 @@ holonomic one. Its arm points forward, and its goal faces the island.
 .. code-pair:: robots/mobile_manipulation/stretch try-it
 
 It prints ``solved=True cost=4.580 sideways share=0.684``. Two thirds of the Stretch 4's base
-travel is sideways. The plan finds a first path in 2.6 ms and takes 80 ms with smoothing. The
-two costs are lengths under two different metrics.
+travel is sideways. The two costs are lengths under two different metrics.
+
+.. grid:: 3
+   :gutter: 2
+
+   .. grid-item-card:: 80 ms
+      :class-card: geodex-stat
+
+      planning time
+
+   .. grid-item-card:: 2.6 ms
+      :class-card: geodex-stat
+
+      first solution
+
+   .. grid-item-card:: 1500
+      :class-card: geodex-stat
+
+      iterations
 
 .. robot-scene:: robots-stretch-4
    :alt: A Stretch 4 sliding from the table around the island and reaching over it, with faint
@@ -165,8 +202,28 @@ The plan uses the settings of the Stretch 3 with 1000 iterations.
 
 .. code-pair:: robots/mobile_manipulation/clearpath plan
 
-It prints ``solved=True cost=6.877``. The planner finds a first path in 0.7 ms, after 8
-iterations. The 1000 iterations take 117 ms, and smoothing takes 117 ms.
+It prints ``solved=True cost=6.877``.
+
+.. grid:: 3
+   :gutter: 2
+
+   .. grid-item-card:: 234 ms
+      :class-card: geodex-stat
+
+      planning time
+
+   .. grid-item-card:: 0.7 ms
+      :class-card: geodex-stat
+
+      first solution
+
+   .. grid-item-card:: 1000
+      :class-card: geodex-stat
+
+      iterations
+
+The planner finds the first path after 8 iterations. The 1000 iterations take 117 ms, and
+smoothing takes 117 ms.
 
 .. robot-scene:: robots-husky-ur5e
    :alt: A Husky with a UR5e driving from a shelf past a pillar to a table and reaching over it,
@@ -193,8 +250,25 @@ start, the goal and the settings stay the same.
 .. code-pair:: robots/mobile_manipulation/clearpath try-it
 
 It prints ``solved=True cost=4.688 sideways share=0.785``. More than three quarters of the
-Ridgeback's base travel is sideways. The plan finds a first path in 3.3 ms and takes 129 ms
-with smoothing.
+Ridgeback's base travel is sideways.
+
+.. grid:: 3
+   :gutter: 2
+
+   .. grid-item-card:: 129 ms
+      :class-card: geodex-stat
+
+      planning time
+
+   .. grid-item-card:: 3.3 ms
+      :class-card: geodex-stat
+
+      first solution
+
+   .. grid-item-card:: 1000
+      :class-card: geodex-stat
+
+      iterations
 
 .. robot-scene:: robots-ridgeback-ur5e
    :alt: A Ridgeback with a UR5e sliding from a shelf around a pillar to a table and reaching

@@ -35,8 +35,8 @@ geodex
    .. grid-item::
 
       .. video-figure:: real-fr3-shelf
-         :alt: A Franka FR3 arm moves a cracker box from the bottom compartment of a shelf to the
-               top compartment and back
+         :alt: A Franka FR3 arm moves a cracker box from the middle compartment of a shelf to the
+               top compartment
 
          A Franka FR3 moves a box between shelf compartments with the MoveIt 2 plugin under the
          kinetic-energy metric.
@@ -110,7 +110,8 @@ geodex
 Citing geodex
 -------------
 
-If you use geodex in your research, please cite the geodex paper.
+If you use geodex in your research, please cite the
+`geodex paper <https://arxiv.org/abs/2610.09165>`_.
 
 .. code-block:: bibtex
 
@@ -118,9 +119,9 @@ If you use geodex in your research, please cite the geodex paper.
      title   = {geodex: A Library for Motion Planning on {Riemannian} Manifolds},
      author  = {Kyaw, Phone Thiha and Wei, Ben and Samavi, Sepehr and
                 {Rogel Garcia}, Miguel Angel and Kelly, Jonathan},
-     journal = {arXiv preprint arXiv:26XX.XXXXX},
+     journal = {arXiv preprint arXiv:2610.09165},
      year    = {2026},
-     url     = {https://arxiv.org/abs/26XX.XXXXX}
+     url     = {https://arxiv.org/abs/2610.09165}
    }
 
 geodex implements the methods of the papers below. Please also cite the ones your work uses.

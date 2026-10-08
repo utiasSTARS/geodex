@@ -21,7 +21,7 @@ that is short under that metric.
 
 <table>
   <tr>
-    <td width="50%"><img alt="A Franka FR3 arm moves a cracker box from the bottom compartment of a shelf to the top compartment and back" src="https://raw.githubusercontent.com/utiasSTARS/geodex/master/docs/_static/videos/real-fr3-shelf.webp" width="100%"></td>
+    <td width="50%"><img alt="A Franka FR3 arm moves a cracker box from the middle compartment of a shelf to the top compartment" src="https://raw.githubusercontent.com/utiasSTARS/geodex/master/docs/_static/videos/real-fr3-shelf.webp" width="100%"></td>
     <td width="50%"><img alt="A Clearpath Jackal drives between office desks and through a narrow passage" src="https://raw.githubusercontent.com/utiasSTARS/geodex/master/docs/_static/videos/real-jackal-office.webp" width="100%"></td>
   </tr>
   <tr>
@@ -117,16 +117,16 @@ and the API reference for Python and C++. To build the site locally, run `pixi r
 
 ## Citation
 
-If you use geodex in your research, please cite the geodex paper.
+If you use geodex in your research, please cite the [geodex paper](https://arxiv.org/abs/2610.09165).
 
 ```bibtex
 @article{kyaw2026geodex,
   title   = {geodex: A Library for Motion Planning on {Riemannian} Manifolds},
   author  = {Kyaw, Phone Thiha and Wei, Ben and Samavi, Sepehr and
              {Rogel Garcia}, Miguel Angel and Kelly, Jonathan},
-  journal = {arXiv preprint arXiv:26XX.XXXXX},
+  journal = {arXiv preprint arXiv:2610.09165},
   year    = {2026},
-  url     = {https://arxiv.org/abs/26XX.XXXXX}
+  url     = {https://arxiv.org/abs/2610.09165}
 }
 ```
 
